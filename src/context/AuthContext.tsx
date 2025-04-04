@@ -1,107 +1,75 @@
-import React, { useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect } from 'react';
 import { 
-  createUserWithEmailAndPassword, 
+  getAuth, 
+  onAuthStateChanged, 
   signInWithEmailAndPassword, 
+  createUserWithEmailAndPassword,
   signOut as firebaseSignOut,
-  onAuthStateChanged,
   sendPasswordResetEmail
 } from 'firebase/auth';
-import { auth } from '../firebase/index';
-import { ApiResponse, UserData, AppError } from '../types/common';
+import { app } from '../services/firebase';
 
-// Update the import path to the correct filename
-import { AuthContext, formatAuthError, formatUserData } from './authContextUtils';
+interface AuthContextType {
+  currentUser: any;
+  signIn: (email: string, password: string) => Promise<any>;
+  signUp: (email: string, password: string) => Promise<any>;
+  signOut: () => Promise<void>;
+  resetPassword: (email: string) => Promise<void>;
+  loading: boolean;
+}
 
-// Only export the component
+const AuthContext = createContext<AuthContextType | null>(null);
+
+export const useAuth = () => {
+  const context = useContext(AuthContext);
+  if (!context) {
+    throw new Error('useAuth must be used within an AuthProvider');
+  }
+  return context;
+};
+
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [currentUser, setCurrentUser] = useState<UserData | null>(null);
+  const [currentUser, setCurrentUser] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const auth = getAuth(app);
 
   useEffect(() => {
-    // Use onAuthStateChanged directly instead of auth.onAuthStateChanged
     const unsubscribe = onAuthStateChanged(auth, (user) => {
-      logger.info('Auth state changed', { context: 'Auth', data: { userExists: !!user } });
-      setCurrentUser(user ? formatUserData(user) : null);
-      // Ensure loading is set to false regardless of authentication status
+      setCurrentUser(user);
       setLoading(false);
     });
 
-    // Handle potential errors in auth state change
-    const authErrorHandler = () => {
-      // If there's an error, still set loading to false so UI isn't blocked
-      setLoading(false);
-    };
+    return unsubscribe;
+  }, [auth]);
 
-    // Add error handling
-    auth.onAuthStateChanged(null, authErrorHandler);
-
-    return () => {
-      unsubscribe();
-    };
-  }, []);
-
-  const signUp = async (email: string, password: string): Promise<ApiResponse<UserData>> => {
-    try {
-      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-      return {
-        success: true,
-        data: formatUserData(userCredential.user)
-      };
-    } catch (error) {
-      return {
-        success: false,
-        error: formatAuthError(error as AppError)
-      };
-    }
+  const signIn = (email: string, password: string) => {
+    return signInWithEmailAndPassword(auth, email, password);
   };
 
-  const login = async (email: string, password: string): Promise<ApiResponse<UserData>> => {
-    try {
-      const userCredential = await signInWithEmailAndPassword(auth, email, password);
-      return {
-        success: true,
-        data: formatUserData(userCredential.user)
-      };
-    } catch (error) {
-      return {
-        success: false,
-        error: formatAuthError(error as AppError)
-      };
-    }
+  const signUp = (email: string, password: string) => {
+    return createUserWithEmailAndPassword(auth, email, password);
   };
 
-  const signOut = async (): Promise<ApiResponse<void>> => {
-    try {
-      await firebaseSignOut(auth);
-      return { success: true };
-    } catch (error) {
-      return {
-        success: false,
-        error: formatAuthError(error as AppError)
-      };
-    }
+  const signOut = () => {
+    return firebaseSignOut(auth);
   };
 
-  const resetPassword = async (email: string): Promise<ApiResponse<void>> => {
-    try {
-      await sendPasswordResetEmail(auth, email);
-      return { success: true };
-    } catch (error) {
-      return {
-        success: false,
-        error: formatAuthError(error as AppError)
-      };
-    }
+  const resetPassword = (email: string) => {
+    return sendPasswordResetEmail(auth, email);
   };
 
   const value = {
     currentUser,
-    loading,
+    signIn,
     signUp,
-    login,
     signOut,
-    resetPassword
+    resetPassword,
+    loading
   };
 
-  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
+  return (
+    <AuthContext.Provider value={value}>
+      {children}
+    </AuthContext.Provider>
+  );
 };

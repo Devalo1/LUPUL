@@ -1,4 +1,4 @@
-import { createContext, useContext } from 'react';
+import { createContext } from 'react';
 import { User as FirebaseUser } from 'firebase/auth';
 import { ApiResponse, UserData, AppError } from '../types/common';
 
@@ -61,20 +61,8 @@ export const formatUserData = (user: FirebaseUser): UserData => ({
   providerData: user.providerData
 });
 
-// Hook to use auth context
-export const useAuth = () => {
-  const context = useContext(AuthContext);
-  if (!context) {
-    // Instead of throwing an error, return a default context that won't break the app
-    return {
-      currentUser: null,
-      loading: false,
-      signUp: () => Promise.resolve({ success: false, error: 'Not initialized' }),
-      login: () => Promise.resolve({ success: false, error: 'Not initialized' }),
-      signOut: () => Promise.resolve({ success: false, error: 'Not initialized' }),
-      resetPassword: () => Promise.resolve({ success: false, error: 'Not initialized' })
-    } as AuthContextType;
-  }
-  
-  return context;
+// Helper to validate email format
+export const isValidEmail = (email: string): boolean => {
+  const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  return re.test(email);
 };

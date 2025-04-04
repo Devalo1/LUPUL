@@ -1,99 +1,155 @@
-import React, { useState, useEffect } from 'react';
-import { Link, useLocation } from 'react-router-dom';
-import { useAuth } from '../contexts/authContextUtils';
+import React, { useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import { useAuth } from '../context/useAuth';
 
 const Navbar: React.FC = () => {
-  const [scrolled, setScrolled] = useState(false);
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const { currentUser } = useAuth();
-  const location = useLocation();
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const { currentUser, signOut } = useAuth();
+  const navigate = useNavigate();
 
-  useEffect(() => {
-    const handleScroll = () => {
-      const isScrolled = window.scrollY > 10;
-      if (isScrolled !== scrolled) {
-        setScrolled(isScrolled);
-      }
-    };
+  const toggleMenu = () => {
+    setIsMenuOpen(!isMenuOpen);
+  };
 
-    document.addEventListener('scroll', handleScroll);
-    return () => {
-      document.removeEventListener('scroll', handleScroll);
-    };
-  }, [scrolled]);
-
-  // Close mobile menu when location changes
-  useEffect(() => {
-    setMobileMenuOpen(false);
-  }, [location]);
+  const handleLogout = async () => {
+    try {
+      await signOut();
+      navigate('/');
+    } catch (error) {
+      console.error('Logout failed:', error);
+    }
+  };
 
   return (
-    <header className={`fixed top-0 left-0 w-full z-50 transition-all duration-300 ${scrolled ? 'bg-white shadow-md py-2' : 'bg-transparent py-4'}`}>
-      <div className="container mx-auto px-4">
-        <div className="flex justify-between items-center">
-          <Link to="/" className="text-2xl font-bold text-blue-600 flex items-center">
-            <span>Lupul și Corbul</span>
-          </Link>
+    <nav className="bg-white shadow-md fixed w-full z-10">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="flex justify-between h-16">
+          <div className="flex">
+            <Link to="/" className="flex-shrink-0 flex items-center">
+              <img className="h-12 w-auto" src="/images/LC.png" alt="Lupul și Corbul" />
+            </Link>
+            <div className="hidden sm:ml-6 sm:flex sm:space-x-8">
+              <Link to="/" className="border-transparent text-gray-900 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium">
+                Acasă
+              </Link>
+              <Link to="/products" className="border-transparent text-gray-500 hover:text-gray-700 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium">
+                Produse
+              </Link>
+              <Link to="/about" className="border-transparent text-gray-500 hover:text-gray-700 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium">
+                Despre noi
+              </Link>
+              <Link to="/contact" className="border-transparent text-gray-500 hover:text-gray-700 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium">
+                Contact
+              </Link>
+            </div>
+          </div>
           
-          {/* Desktop Menu */}
-          <nav className="hidden md:flex space-x-6">
-            <Link to="/" className="nav-link">Acasă</Link>
-            <Link to="/despre-noi" className="nav-link">Despre Noi</Link>
-            <Link to="/servicii" className="nav-link">Servicii</Link>
-            <Link to="/produse" className="nav-link">Produse</Link>
-            <Link to="/comunitate" className="nav-link">Comunitate</Link>
-            <Link to="/contact" className="nav-link">Contact</Link>
-          </nav>
-          
-          <div className="hidden md:flex items-center space-x-4">
+          <div className="hidden sm:ml-6 sm:flex sm:items-center">
+            <Link to="/cart" className="px-3 py-2 text-gray-500 hover:text-gray-700 relative">
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
+              </svg>
+              <span className="absolute top-0 right-0 inline-flex items-center justify-center px-2 py-1 text-xs font-bold leading-none text-white transform translate-x-1/2 -translate-y-1/2 bg-blue-600 rounded-full">0</span>
+            </Link>
+            
             {currentUser ? (
-              <div className="relative group">
-                <button className="flex items-center space-x-2">
-                  <div className="h-8 w-8 rounded-full bg-blue-500 flex items-center justify-center text-white">
-                    {currentUser.displayName ? currentUser.displayName[0].toUpperCase() : 'U'}
-                  </div>
-                  <span>{currentUser.displayName || 'Utilizator'}</span>
-                </button>
+              <div className="ml-3 relative">
+                <div>
+                  <button
+                    type="button"
+                    onClick={handleLogout}
+                    className="bg-blue-600 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-blue-700 ml-3"
+                  >
+                    Deconectare
+                  </button>
+                </div>
               </div>
             ) : (
-              <Link to="/login" className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors">
-                Autentificare
-              </Link>
+              <div className="ml-3">
+                <Link
+                  to="/login"
+                  className="bg-blue-600 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-blue-700"
+                >
+                  Autentificare
+                </Link>
+              </div>
             )}
           </div>
           
-          {/* Mobile menu button */}
-          <button 
-            className="md:hidden flex items-center" 
-            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-          >
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6">
-              <path strokeLinecap="round" strokeLinejoin="round" d={mobileMenuOpen ? "M6 18L18 6M6 6l12 12" : "M3.75 6.75h16.5M3.75 12h16.5M3.75 17.25h16.5"} />
-            </svg>
-          </button>
+          <div className="-mr-2 flex items-center sm:hidden">
+            <button
+              onClick={toggleMenu}
+              className="inline-flex items-center justify-center p-2 rounded-md text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-blue-500"
+            >
+              <span className="sr-only">Open main menu</span>
+              <svg
+                className={`${isMenuOpen ? 'hidden' : 'block'} h-6 w-6`}
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+                aria-hidden="true"
+              >
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h16M4 18h16" />
+              </svg>
+              <svg
+                className={`${isMenuOpen ? 'block' : 'hidden'} h-6 w-6`}
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+                aria-hidden="true"
+              >
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+          </div>
         </div>
       </div>
-      
-      {/* Mobile Menu */}
-      {mobileMenuOpen && (
-        <div className="md:hidden bg-white shadow-lg">
-          <div className="px-4 py-3 space-y-1">
-            <Link to="/" className="block py-2 px-3 text-blue-600 hover:bg-blue-50 rounded">Acasă</Link>
-            <Link to="/despre-noi" className="block py-2 px-3 hover:bg-blue-50 rounded">Despre Noi</Link>
-            <Link to="/servicii" className="block py-2 px-3 hover:bg-blue-50 rounded">Servicii</Link>
-            <Link to="/produse" className="block py-2 px-3 hover:bg-blue-50 rounded">Produse</Link>
-            <Link to="/comunitate" className="block py-2 px-3 hover:bg-blue-50 rounded">Comunitate</Link>
-            <Link to="/contact" className="block py-2 px-3 hover:bg-blue-50 rounded">Contact</Link>
+
+      <div className={`${isMenuOpen ? 'block' : 'hidden'} sm:hidden`}>
+        <div className="pt-2 pb-3 space-y-1">
+          <Link to="/" className="bg-blue-50 border-blue-500 text-blue-700 block pl-3 pr-4 py-2 border-l-4 text-base font-medium">
+            Acasă
+          </Link>
+          <Link to="/products" className="border-transparent text-gray-500 hover:bg-gray-50 hover:border-gray-300 hover:text-gray-700 block pl-3 pr-4 py-2 border-l-4 text-base font-medium">
+            Produse
+          </Link>
+          <Link to="/about" className="border-transparent text-gray-500 hover:bg-gray-50 hover:border-gray-300 hover:text-gray-700 block pl-3 pr-4 py-2 border-l-4 text-base font-medium">
+            Despre noi
+          </Link>
+          <Link to="/contact" className="border-transparent text-gray-500 hover:bg-gray-50 hover:border-gray-300 hover:text-gray-700 block pl-3 pr-4 py-2 border-l-4 text-base font-medium">
+            Contact
+          </Link>
+        </div>
+        
+        <div className="pt-4 pb-3 border-t border-gray-200">
+          <div className="mt-3 space-y-1">
+            <Link to="/cart" className="border-transparent text-gray-500 hover:bg-gray-50 hover:border-gray-300 hover:text-gray-700 block pl-3 pr-4 py-2 border-l-4 text-base font-medium">
+              Coș de cumpărături
+            </Link>
             
-            {!currentUser && (
-              <Link to="/login" className="block py-2 px-3 mt-4 text-center bg-blue-600 text-white rounded">
+            {currentUser ? (
+              <>
+                <Link to="/account" className="border-transparent text-gray-500 hover:bg-gray-50 hover:border-gray-300 hover:text-gray-700 block pl-3 pr-4 py-2 border-l-4 text-base font-medium">
+                  Contul meu
+                </Link>
+                <button
+                  onClick={handleLogout}
+                  className="w-full text-left border-transparent text-gray-500 hover:bg-gray-50 hover:border-gray-300 hover:text-gray-700 block pl-3 pr-4 py-2 border-l-4 text-base font-medium"
+                >
+                  Deconectare
+                </button>
+              </>
+            ) : (
+              <Link to="/login" className="border-transparent text-gray-500 hover:bg-gray-50 hover:border-gray-300 hover:text-gray-700 block pl-3 pr-4 py-2 border-l-4 text-base font-medium">
                 Autentificare
               </Link>
             )}
           </div>
         </div>
-      )}
-    </header>
+      </div>
+    </nav>
   );
 };
 

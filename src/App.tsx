@@ -16,6 +16,9 @@ import Products from './pages/Products';
 import ProductDetail from './pages/ProductDetail';
 import Cart from './pages/Cart';
 import NotFound from './pages/NotFound';
+import About from './pages/About';
+import './App.css';
+import './assets/styles/main.css';
 
 // Loading fallback component
 const LoadingFallback = () => (
@@ -29,53 +32,56 @@ function App() {
     <AuthProvider>
       <Suspense fallback={<LoadingFallback />}>
         <Router>
-          <Routes>
-            {/* Public routes */}
-            <Route path="/" element={<Layout />}>
-              <Route index element={<HomePage />} />
-              <Route path="login" element={<Login />} />
-              <Route path="register" element={<Register />} />
-              <Route path="reset-password" element={<ForgotPassword />} />
-              <Route path="products" element={<Products />} />
-              <Route path="products/:id" element={<ProductDetail />} />
-              <Route path="cart" element={<Cart />} />
-              
-              {/* Protected routes */}
-              <Route 
-                path="checkout" 
-                element={
-                  <ProtectedRoute>
-                    <Checkout />
-                  </ProtectedRoute>
-                } 
-              />
-              <Route 
-                path="account" 
-                element={
-                  <ProtectedRoute>
-                    <Account />
-                  </ProtectedRoute>
-                } 
-              />
-              <Route 
-                path="dashboard" 
-                element={
-                  <ProtectedRoute>
-                    <Dashboard />
-                  </ProtectedRoute>
-                } 
-              />
-              <Route 
-                path="admin" 
-                element={
-                  <ProtectedRoute adminOnly>
-                    <Admin />
-                  </ProtectedRoute>
-                } 
-              />
-              <Route path="*" element={<NotFound />} />
-            </Route>
-          </Routes>
+          <div className="app-container">
+            <Routes>
+              {/* Public routes */}
+              <Route path="/" element={<Layout />}>
+                <Route index element={<HomePage />} />
+                <Route path="about" element={<About />} />
+                <Route path="login" element={<Login />} />
+                <Route path="register" element={<Register />} />
+                <Route path="reset-password" element={<ForgotPassword />} />
+                <Route path="products" element={<Products />} />
+                <Route path="products/:id" element={<ProductDetail />} />
+                <Route path="cart" element={<Cart />} />
+                
+                {/* Protected routes */}
+                <Route 
+                  path="checkout" 
+                  element={
+                    <ProtectedRoute>
+                      <Checkout />
+                    </ProtectedRoute>
+                  } 
+                />
+                <Route 
+                  path="account" 
+                  element={
+                    <ProtectedRoute>
+                      <Account />
+                    </ProtectedRoute>
+                  } 
+                />
+                <Route 
+                  path="dashboard" 
+                  element={
+                    <ProtectedRoute>
+                      <Dashboard />
+                    </ProtectedRoute>
+                  } 
+                />
+                <Route 
+                  path="admin" 
+                  element={
+                    <ProtectedRoute adminOnly>
+                      <Admin />
+                    </ProtectedRoute>
+                  } 
+                />
+                <Route path="*" element={<NotFound />} />
+              </Route>
+            </Routes>
+          </div>
         </Router>
       </Suspense>
     </AuthProvider>

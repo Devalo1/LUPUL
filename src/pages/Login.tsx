@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
-import { useAuth } from '../context/authContextUtils';
+import { useAuth } from '../context/useAuth'; // Changed from authContextUtils to useAuth
 import { isValidEmail } from '../context/authHelpers';
 import { signInWithGoogle } from '../services/firebase';
 

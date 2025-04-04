@@ -38,13 +38,18 @@ const Navbar: React.FC = () => {
     setIsMenuOpen(!isMenuOpen);
   };
 
+  console.log('Navbar render - Current User:', currentUser);
+
   return (
     <nav className={`fixed top-0 w-full z-10 bg-white shadow-md transition-all duration-300 ${scrolled ? 'py-2' : 'py-4'}`}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center">
           {/* Logo */}
           <div className="flex items-center">
-            <Link to="/" className="flex-shrink-0">
+            <Link 
+              to={currentUser ? "/user-home" : "/"} 
+              className="flex-shrink-0"
+            >
               <img className="h-10 w-auto" src="/images/LOGO LC.png" alt="Lupul și Corbul" />
             </Link>
             <div className="hidden md:ml-6 md:flex md:space-x-6">

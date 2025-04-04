@@ -1,5 +1,5 @@
 import { initializeApp } from 'firebase/app';
-import { getAuth } from 'firebase/auth';
+import { getAuth, setPersistence, browserLocalPersistence } from 'firebase/auth';
 import { getFirestore } from 'firebase/firestore';
 import { getStorage } from 'firebase/storage';
 
@@ -21,6 +21,11 @@ const app = initializeApp(firebaseConfig);
 
 // Initialize services
 export const auth = getAuth(app);
+
+// Set persistence to LOCAL (will persist even after browser restart)
+// This makes the session last approximately 60-90 days (standard for e-commerce)
+setPersistence(auth, browserLocalPersistence);
+
 export const firestore = getFirestore(app);
 export const storage = getStorage(app);
 

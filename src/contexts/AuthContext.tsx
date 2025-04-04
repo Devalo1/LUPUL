@@ -1,5 +1,4 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { User, AuthContextProps } from '../types';
 import { 
   createUserWithEmailAndPassword, 
   signInWithEmailAndPassword,
@@ -10,74 +9,55 @@ import {
   GoogleAuthProvider,
   signInWithPopup
 } from 'firebase/auth';
-import { auth } from '../services/firebase';
+import { auth } from '../firebase';
 
-// Export the context so it can be imported in other files
-export const AuthContext = createContext<AuthContextProps>({
+// Definim tipul utilizatorului
+interface User {
+  uid: string;
+  email: string | null;
+  displayName: string | null;
+  photoURL: string | null;
+}
+
+// Definim tipul contextului
+interface AuthContextProps {
+  currentUser: User | null;
+  loading: boolean;
+  login: (email: string, password: string) => Promise<{ success: boolean; error?: string }>;
+  logOut: () => Promise<boolean>;
+  signUp: (email: string, password: string) => Promise<any>;
+  resetPassword: (email: string) => Promise<void>;
+  updateProfile: (data: Partial<User>) => Promise<void>;
+  signInWithGoogle: () => Promise<{ success: boolean; error?: string }>;
+}
+
+// Cream contextul
+const AuthContext = createContext<AuthContextProps>({
   currentUser: null,
-  login: async () => {},
-  logOut: async () => {},
-  signUp: async () => {},
+  loading: true,
+  login: async () => ({ success: false }),
+  logOut: async () => false,
+  signUp: async () => ({}),
   resetPassword: async () => {},
   updateProfile: async () => {},
-  signInWithGoogle: async () => {}
+  signInWithGoogle: async () => ({ success: false })
 });
 
-export const useAuth = () => {
-  return useContext(AuthContext);
-};
+// Hook pentru a folosi contextul
+export const useAuth = () => useContext(AuthContext);
 
+// Provider-ul de autentificare
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
 
-  const signUp = async (email: string, password: string) => {
-    return createUserWithEmailAndPassword(auth, email, password);
-  };
-
-  async function login(email: string, password: string): Promise<{ success: boolean; error?: string }> {
-    try {
-      await signInWithEmailAndPassword(auth, email, password);
-      return { success: true };
-    } catch (error: any) {
-      return { success: false, error: error.message };
-    }
-  }
-
-  const logOut = async () => {
-    return signOut(auth);
-  };
-
-  const resetPassword = async (email: string) => {
-    return sendPasswordResetEmail(auth, email);
-  };
-
-  const updateProfile = async (data: Partial<User>) => {
-    if (!currentUser) {
-      throw new Error('No user is logged in');
-    }
-    
-    // Update Firebase profile
-    if (data.displayName || data.photoURL) {
-      await firebaseUpdateProfile(auth.currentUser!, {
-        displayName: data.displayName || currentUser.displayName,
-        photoURL: data.photoURL || currentUser.photoURL
-      });
-    }
-    
-    // Update additional user data in Firestore if needed
-    // ...
-  };
-
-  const signInWithGoogle = async () => {
-    const provider = new GoogleAuthProvider();
-    return signInWithPopup(auth, provider);
-  };
-
+  // Monitorizăm starea de autentificare
   useEffect(() => {
+    console.log('Setting up auth state listener');
     const unsubscribe = onAuthStateChanged(auth, (user) => {
-      console.log('User state changed:', user);
+      console.log('Auth state changed:', user ? `User ${user.uid}` : 'No user');
       if (user) {
+        // Actualizăm starea cu utilizatorul curent
         setCurrentUser({
           uid: user.uid,
           email: user.email,
@@ -93,8 +73,85 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     return unsubscribe;
   }, []);
 
+  // Funcția de înregistrare
+  const signUp = async (email: string, password: string) => {
+    return createUserWithEmailAndPassword(auth, email, password);
+  };
+
+  // Funcția de autentificare
+  async function login(email: string, password: string): Promise<{ success: boolean; error?: string }> {
+    try {
+      const userCredential = await signInWithEmailAndPassword(auth, email, password);
+      
+      // Dacă utilizatorul nu are displayName, setăm unul implicit
+      if (userCredential.user && !userCredential.user.displayName) {
+        const username = email.split('@')[0];
+        try {
+          await firebaseUpdateProfile(userCredential.user, {
+            displayName: username.charAt(0).toUpperCase() + username.slice(1)
+          });
+        } catch (profileError) {
+          console.error("Couldn't update profile with displayName:", profileError);
+        }
+      }
+      
+      return { success: true };
+    } catch (error: any) {
+      console.error("Login error:", error);
+      return { success: false, error: error.message };
+    }
+  }
+
+  // Funcția de deconectare
+  const logOut = async () => {
+    try {
+      await signOut(auth);
+      
+      // Forțăm o reîncărcare completă pentru a curăța starea
+      if (window.location.pathname !== '/') {
+        window.location.href = '/';
+      }
+      
+      return true;
+    } catch (error) {
+      console.error('Logout error:', error);
+      return false;
+    }
+  };
+
+  // Resetare parolă
+  const resetPassword = async (email: string) => {
+    return sendPasswordResetEmail(auth, email);
+  };
+
+  // Actualizare profil
+  const updateProfile = async (data: Partial<User>) => {
+    if (!auth.currentUser) {
+      throw new Error('No user is logged in');
+    }
+    
+    await firebaseUpdateProfile(auth.currentUser, {
+      displayName: data.displayName || currentUser?.displayName || null,
+      photoURL: data.photoURL || currentUser?.photoURL || null
+    });
+  };
+
+  // Autentificare cu Google
+  const signInWithGoogle = async () => {
+    try {
+      const provider = new GoogleAuthProvider();
+      await signInWithPopup(auth, provider);
+      return { success: true };
+    } catch (error: any) {
+      console.error("Google sign-in error:", error);
+      return { success: false, error: error.message };
+    }
+  };
+
+  // Valoarea contextului
   const value = {
     currentUser,
+    loading,
     login,
     logOut,
     signUp,
@@ -105,7 +162,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   return (
     <AuthContext.Provider value={value}>
-      {!loading && children}
+      {children}
     </AuthContext.Provider>
   );
 };
+
+export default AuthContext;

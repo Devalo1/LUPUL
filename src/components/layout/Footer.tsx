@@ -15,8 +15,8 @@ const Footer: React.FC = () => {
             <h4 className="text-lg font-semibold mb-4">Legături Rapide</h4>
             <ul className="space-y-2">
               <li><Link to="/" className="text-gray-300 hover:text-white">Acasă</Link></li>
-              <li><Link to="/lupul-si-corbul" className="text-gray-300 hover:text-white">Lupul și Corbul</Link></li>
-              <li><Link to="/shop" className="text-gray-300 hover:text-white">Shop</Link></li>
+              <li><Link to="/shop" className="text-gray-300 hover:text-white">Produse</Link></li>
+              <li><Link to="/dashboard" className="text-gray-300 hover:text-white">Dashboard</Link></li>
             </ul>
           </div>
           
@@ -49,7 +49,86 @@ const Footer: React.FC = () => {
           </div>
         </div>
         
-        <div className="border-t border-gray-800 mt-12 pt-8 text-center text-gray-400">
+        {/* Secțiunea pentru informații legale și logo-uri obligatorii */}
+        <div className="border-t border-gray-800 mt-8 pt-8">
+          {/* Logo-uri ANPC, SOL și alte elemente obligatorii */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+            {/* ANPC Logo - Structură uniformă */}
+            <div className="flex flex-col items-center">
+              <a 
+                href="https://anpc.ro/" 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="bg-white p-2 rounded-md mb-2 flex items-center justify-center h-16 w-full"
+              >
+                <img 
+                  src="/images/anpc-logo.png" 
+                  alt="ANPC - Autoritatea Națională pentru Protecția Consumatorilor" 
+                  className="max-h-12 max-w-full object-contain"
+                />
+              </a>
+              <p className="text-xs text-gray-400 text-center">Autoritatea Națională pentru Protecția Consumatorilor</p>
+            </div>
+
+            {/* SOL Platform Logo */}
+            <div className="flex flex-col items-center">
+              <a 
+                href="https://ec.europa.eu/consumers/odr/" 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="bg-white p-2 rounded-md mb-2 flex items-center justify-center h-16 w-full"
+              >
+                <img 
+                  src="/images/sol-logo.png" 
+                  alt="SOL - Soluționarea Online a Litigiilor" 
+                  className="max-h-12 max-w-full object-contain"
+                />
+              </a>
+              <p className="text-xs text-gray-400 text-center">Soluționarea Online a Litigiilor</p>
+            </div>
+
+            {/* InfoCons Logo - Folosim fișierul local */}
+            <div className="flex flex-col items-center">
+              <a 
+                href="https://www.infocons.ro/" 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="bg-white p-2 rounded-md mb-2 flex items-center justify-center h-16 w-full"
+              >
+                <img 
+                  src="/images/info-cons.png" 
+                  alt="InfoCons - Asociația pentru Protecția Consumatorilor" 
+                  className="max-h-12 max-w-full object-contain"
+                  onError={(e) => {
+                    console.error('Eroare la încărcarea logoului InfoCons local');
+                    e.currentTarget.src = 'https://www.infocons.ro/wp-content/themes/sydney-child/images/InfoCons-logo.png';
+                  }}
+                />
+              </a>
+              <p className="text-xs text-gray-400 text-center">Asociația pentru Protecția Consumatorilor</p>
+            </div>
+
+            {/* Metode de plată */}
+            <div className="flex flex-col items-center">
+              <div className="bg-white p-2 rounded-md mb-2 flex items-center justify-center h-16 w-full">
+                <img 
+                  src="/images/payment-methods.png" 
+                  alt="Metode de plată acceptate" 
+                  className="max-h-12 max-w-full object-contain"
+                />
+              </div>
+              <p className="text-xs text-gray-400 text-center">Metode de plată acceptate</p>
+            </div>
+          </div>
+
+          {/* Informații companie */}
+          <div className="text-center text-xs text-gray-400 mb-6">
+            <p className="mb-1">Lupul și Corbul SRL | CUI: RO12345678 | Reg. Comerțului: J12/345/2023</p>
+            <p>Adresa: Str. Exemplu nr. 123, București, România | Email: contact@lupulcorbul.ro | Tel: +40 712 345 678</p>
+          </div>
+        </div>
+        
+        <div className="border-t border-gray-800 mt-4 pt-6 text-center text-gray-400">
           <p>&copy; {new Date().getFullYear()} Lupul și Corbul. Toate drepturile rezervate.</p>
         </div>
       </div>

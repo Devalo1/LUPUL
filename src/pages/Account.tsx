@@ -1,6 +1,6 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext';
+import { useAuth } from '../contexts/AuthContext'; // Actualizat importul
 import Button from '../components/common/Button';
 
 const Account: React.FC = () => {

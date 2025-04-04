@@ -14,7 +14,8 @@ import {
   QueryConstraint,
   serverTimestamp,
   onSnapshot,
-  Unsubscribe
+  Unsubscribe,
+  WhereFilterOp
 } from 'firebase/firestore';
 import { firestore } from './firebase';
 
@@ -104,6 +105,6 @@ export const deleteDocument = async (collectionName: string, docId: string) => {
 };
 
 // Helper functions to construct queries
-export const queryWhere = (field: string, operator: string, value: unknown) => where(field, operator, value);
+export const queryWhere = (field: string, operator: WhereFilterOp, value: unknown) => where(field, operator, value);
 export const queryOrderBy = (field: string, direction: 'asc' | 'desc' = 'asc') => orderBy(field, direction);
 export const queryLimit = (limitCount: number) => limit(limitCount);

@@ -1,12 +1,12 @@
 import React from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { useCart } from '../context/CartContext';
-import { formatCurrency, calculateDiscountedPrice } from '../utils/helpers';
+import { useCart } from '../contexts/CartContext';
+import { formatCurrency } from '../utils/helpers';
 import Button from '../components/common/Button';
 
 const Cart: React.FC = () => {
-  const { items, removeItem, updateQuantity, getCartTotal, clearCart } = useCart();
+  const { items, removeItem, updateQuantity, getTotal, clearCart } = useCart();
   const navigate = useNavigate();
   
   const handleQuantityChange = (productId: string, newQuantity: number) => {
@@ -30,190 +30,149 @@ const Cart: React.FC = () => {
   return (
     <div className="bg-gray-50 py-16">
       <div className="container mx-auto px-4">
-        <h1 className="text-3xl font-bold mb-8 text-center">Coșul tău</h1>
+        <h1 className="text-3xl font-bold text-center mb-10">Coșul meu</h1>
         
         {items.length === 0 ? (
-          <div className="text-center bg-white rounded-lg shadow-md p-8 max-w-md mx-auto">
-            <svg
-              className="w-16 h-16 mx-auto text-gray-300 mb-4"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-              xmlns="http://www.w3.org/2000/svg"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth="2"
-                d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"
-              ></path>
-            </svg>
-            <h2 className="text-xl font-semibold mb-4">Coșul tău este gol</h2>
-            <p className="text-gray-600 mb-6">
-              Se pare că nu ai adăugat încă niciun produs în coș.
-            </p>
-            <Link
-              to="/shop"
-              className="bg-blue-600 text-white px-6 py-2 rounded-md hover:bg-blue-700 transition-colors inline-block"
-            >
-              Continuă cumpărăturile
+          <motion.div 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            className="text-center py-12"
+          >
+            <div className="text-gray-500 mb-6">Coșul tău este gol</div>
+            <Link to="/shop">
+              <Button variant="primary">
+                Înapoi la cumpărături
+              </Button>
             </Link>
-          </div>
+          </motion.div>
         ) : (
-          <div className="grid md:grid-cols-3 gap-8">
-            <div className="md:col-span-2">
-              <motion.div
-                className="bg-white rounded-lg shadow-md p-6"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ duration: 0.3 }}
-              >
-                <div className="flex justify-between items-center mb-6">
-                  <h2 className="text-xl font-semibold">Produse ({items.length})</h2>
-                  <button
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            {/* Cart Items */}
+            <div className="lg:col-span-2">
+              <div className="bg-white rounded-lg shadow-sm overflow-hidden">
+                <div className="divide-y divide-gray-200">
+                  {items.map((item) => (
+                    <motion.div 
+                      key={item.id}
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      className="p-6 flex flex-col sm:flex-row items-center"
+                    >
+                      {/* Product Image */}
+                      <div className="w-24 h-24 flex-shrink-0 bg-gray-100 rounded-md overflow-hidden mr-6">
+                        <img 
+                          src={item.image} 
+                          alt={item.name} 
+                          className="w-full h-full object-cover"
+                        />
+                      </div>
+                      
+                      {/* Product Details */}
+                      <div className="flex-grow ml-0 sm:ml-4 mt-4 sm:mt-0">
+                        <h3 className="text-lg font-medium text-gray-800">
+                          <Link to={`/products/${item.id}`} className="hover:text-blue-600">
+                            {item.name}
+                          </Link>
+                        </h3>
+                        <p className="text-blue-600 font-medium">
+                          {formatCurrency(item.price)}
+                        </p>
+                      </div>
+                      
+                      {/* Quantity */}
+                      <div className="flex items-center mt-4 sm:mt-0">
+                        <button 
+                          onClick={() => handleQuantityChange(item.id, item.quantity - 1)}
+                          className="text-gray-500 hover:text-gray-700 focus:outline-none"
+                          disabled={item.quantity <= 1}
+                        >
+                          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 12H4" />
+                          </svg>
+                        </button>
+                        
+                        <span className="mx-2 text-center w-8">{item.quantity}</span>
+                        
+                        <button 
+                          onClick={() => handleQuantityChange(item.id, item.quantity + 1)}
+                          className="text-gray-500 hover:text-gray-700 focus:outline-none"
+                        >
+                          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v12m6-6H6" />
+                          </svg>
+                        </button>
+                      </div>
+                      
+                      {/* Subtotal */}
+                      <div className="font-medium text-right ml-6">
+                        {formatCurrency(item.price * item.quantity)}
+                      </div>
+                      
+                      {/* Remove Button */}
+                      <button 
+                        onClick={() => handleRemoveItem(item.id)}
+                        className="ml-4 text-red-500 hover:text-red-700 focus:outline-none"
+                        aria-label="Remove item"
+                      >
+                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                        </svg>
+                      </button>
+                    </motion.div>
+                  ))}
+                </div>
+                
+                <div className="p-4 border-t border-gray-200">
+                  <button 
                     onClick={handleClearCart}
-                    className="text-red-600 hover:text-red-800 text-sm"
+                    className="text-sm text-red-600 hover:text-red-800 focus:outline-none"
                   >
                     Golește coșul
                   </button>
                 </div>
-                
-                <div className="divide-y divide-gray-200">
-                  {items.map((item) => {
-                    const discountedPrice = item.product.discount
-                      ? calculateDiscountedPrice(item.product.price, item.product.discount)
-                      : item.product.price;
-                    
-                    return (
-                      <div key={item.product.id} className="py-6 flex flex-col sm:flex-row">
-                        <div className="sm:w-24 sm:h-24 flex-shrink-0 mr-0 sm:mr-4 mb-4 sm:mb-0">
-                          <Link to={`/product/${item.product.id}`}>
-                            <img
-                              src={item.product.image}
-                              alt={item.product.name}
-                              className="w-full h-full object-cover rounded"
-                            />
-                          </Link>
-                        </div>
-                        
-                        <div className="flex-grow">
-                          <div className="flex justify-between items-start">
-                            <div>
-                              <Link
-                                to={`/product/${item.product.id}`}
-                                className="text-lg font-medium hover:text-blue-600"
-                              >
-                                {item.product.name}
-                              </Link>
-                              
-                              {item.product.discount && (
-                                <span className="ml-2 bg-red-600 text-white text-xs px-2 py-1 rounded">
-                                  -{item.product.discount}%
-                                </span>
-                              )}
-                              
-                              <div className="text-sm text-gray-500 mt-1 mb-4">
-                                Categorie: {item.product.category === 'books' 
-                                  ? 'Cărți' 
-                                  : item.product.category === 'wellness' 
-                                    ? 'Wellness' 
-                                    : 'Cursuri'}
-                              </div>
-                            </div>
-                            
-                            <div className="text-right">
-                              {item.product.discount ? (
-                                <div>
-                                  <span className="font-bold">
-                                    {formatCurrency(discountedPrice)}
-                                  </span>
-                                  <span className="text-sm text-gray-500 line-through ml-2">
-                                    {formatCurrency(item.product.price)}
-                                  </span>
-                                </div>
-                              ) : (
-                                <span className="font-bold">
-                                  {formatCurrency(item.product.price)}
-                                </span>
-                              )}
-                            </div>
-                          </div>
-                          
-                          <div className="flex justify-between items-center mt-4">
-                            <div className="flex items-center">
-                              <button
-                                onClick={() => handleQuantityChange(item.product.id, item.quantity - 1)}
-                                className="w-8 h-8 flex items-center justify-center border border-gray-300 rounded-l"
-                              >
-                                -
-                              </button>
-                              <span className="w-12 h-8 flex items-center justify-center border-t border-b border-gray-300">
-                                {item.quantity}
-                              </span>
-                              <button
-                                onClick={() => handleQuantityChange(item.product.id, item.quantity + 1)}
-                                className="w-8 h-8 flex items-center justify-center border border-gray-300 rounded-r"
-                              >
-                                +
-                              </button>
-                            </div>
-                            
-                            <button
-                              onClick={() => handleRemoveItem(item.product.id)}
-                              className="text-red-600 hover:text-red-800 text-sm"
-                            >
-                              Elimină
-                            </button>
-                          </div>
-                          
-                          <div className="mt-2 text-right font-medium">
-                            Total: {formatCurrency(discountedPrice * item.quantity)}
-                          </div>
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              </motion.div>
+              </div>
             </div>
             
-            <div className="md:col-span-1">
-              <motion.div
-                className="bg-white rounded-lg shadow-md p-6 sticky top-24"
-                initial={{ opacity: 0, x: 20 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ duration: 0.3, delay: 0.1 }}
-              >
-                <h2 className="text-xl font-semibold mb-6">Sumar comandă</h2>
+            {/* Order Summary */}
+            <div className="lg:col-span-1">
+              <div className="bg-white rounded-lg shadow-sm p-6">
+                <h2 className="text-lg font-medium text-gray-800 mb-4">Sumar comandă</h2>
                 
-                <div className="space-y-4 mb-6">
+                <div className="space-y-3 mb-6">
                   <div className="flex justify-between">
-                    <span>Subtotal</span>
-                    <span>{formatCurrency(getCartTotal())}</span>
+                    <span className="text-gray-600">Subtotal</span>
+                    <span className="text-gray-800 font-medium">{formatCurrency(getTotal())}</span>
                   </div>
                   <div className="flex justify-between">
-                    <span>Transport</span>
-                    <span>Gratuit</span>
+                    <span className="text-gray-600">Transport</span>
+                    <span className="text-gray-800 font-medium">Calculat la checkout</span>
                   </div>
                 </div>
                 
                 <div className="border-t border-gray-200 pt-4 mb-6">
-                  <div className="flex justify-between font-bold text-lg">
-                    <span>Total</span>
-                    <span>{formatCurrency(getCartTotal())}</span>
+                  <div className="flex justify-between">
+                    <span className="text-lg font-medium">Total</span>
+                    <span className="text-lg font-bold text-blue-600">{formatCurrency(getTotal())}</span>
                   </div>
                 </div>
                 
-                <Button onClick={handleCheckout} className="w-full">
+                <Button 
+                  variant="primary" 
+                  className="w-full"
+                  onClick={handleCheckout}
+                >
                   Finalizează comanda
                 </Button>
                 
-                <div className="mt-4 text-center">
-                  <Link to="/shop" className="text-blue-600 hover:text-blue-800 text-sm">
+                <div className="mt-6 text-center">
+                  <Link 
+                    to="/shop" 
+                    className="text-blue-600 hover:text-blue-800 text-sm font-medium"
+                  >
                     Continuă cumpărăturile
                   </Link>
                 </div>
-              </motion.div>
+              </div>
             </div>
           </div>
         )}

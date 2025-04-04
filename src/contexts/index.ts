@@ -1,4 +1,13 @@
 import { AuthProvider } from './AuthContext';
-import { useAuth } from './authContextUtils';
+import useAuth from './AuthContext';
+import { CartProvider } from './CartContext';
+import { ThemeProvider } from './ThemeContext';
+import useTheme from './ThemeContext';
 
-export { AuthProvider, useAuth };
+export {
+  AuthProvider,
+  useAuth,
+  CartProvider,
+  ThemeProvider,
+  useTheme
+};

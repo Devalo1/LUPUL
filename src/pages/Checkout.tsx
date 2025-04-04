@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useCart } from '../context/CartContext';
+import { useCart } from '../contexts/CartContext';
 import { useAuth } from '../context/useAuth';
 import { logger } from '../utils/debug';
 
@@ -36,11 +36,7 @@ const Checkout: React.FC = () => {
   });
 
   // Validate form on changes
-  useEffect(() => {
-    validateForm();
-  }, [formData]);
-
-  const validateForm = () => {
+  const validateForm = useCallback(() => {
     const newErrors = { ...errors };
     let isValid = true;
 
@@ -112,7 +108,11 @@ const Checkout: React.FC = () => {
     setErrors(newErrors);
     setFormValid(isValid);
     return isValid;
-  };
+  }, [formData, errors]);
+
+  useEffect(() => {
+    validateForm();
+  }, [formData, validateForm]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value, type } = e.target;

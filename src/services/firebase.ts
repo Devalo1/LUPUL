@@ -1,9 +1,10 @@
+import { initializeApp } from 'firebase/app';
 import { 
+  getAuth, 
   signInWithEmailAndPassword as firebaseSignIn,
   GoogleAuthProvider,
   signInWithPopup
 } from 'firebase/auth';
-import { initializeApp } from 'firebase/app';
 import { getFirestore } from 'firebase/firestore';
 import { getStorage } from 'firebase/storage';
 import { logger } from '../utils/debug';
@@ -21,14 +22,12 @@ const firebaseConfig = {
 
 // Initialize Firebase
 export const app = initializeApp(firebaseConfig);
+export const auth = getAuth(app);
 export const firestore = getFirestore(app);
 export const storage = getStorage(app);
 
-// Import Firebase instances from the main config instead of initializing again
-import { auth } from '../firebase/index';
-
 // Debug function to check if this module is loaded properly
-logger.info("Auth service initialized", { context: "Auth" });
+logger.info("Firebase services initialized", { context: "Firebase" });
 
 // Add Google sign-in function
 export const signInWithGoogle = async () => {
@@ -47,11 +46,7 @@ export const signInWithGoogle = async () => {
 };
 
 // Add debug interceptors for Firebase
-const debugAuth = (email: string, password: string) => {
+export const signInWithEmailAndPassword = (email: string, password: string) => {
   logger.info('Attempting sign in', { data: { email } });
   return firebaseSignIn(auth, email, password);
 };
-
-// Export firebase app instance
-export { app, auth };
-export const signInWithEmailAndPassword = debugAuth;

@@ -1,3 +1,3 @@
 // Re-export from CartContext
-import { useCart } from '../context/CartContext';
+import { useCart } from '../contexts/CartContext'; // Updated import
 export default useCart;

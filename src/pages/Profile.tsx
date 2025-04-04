@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
+import useAuth from '../contexts/AuthContext'; // Updated default import
 import { useNavigate } from 'react-router-dom';
-import { useAuth } from '../contexts/AuthContext';
 
 const Profile: React.FC = () => {
   const { currentUser, signOut } = useAuth();

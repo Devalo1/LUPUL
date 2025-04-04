@@ -1,8 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
-import { useAuth } from '../context/useAuth'; // Changed from authContextUtils to useAuth
-import { isValidEmail } from '../context/authHelpers';
-import { signInWithGoogle } from '../services/firebase';
+import { isValidEmail } from '../contexts/AuthContextUtils';
+import { signInWithGoogle, signInWithEmailAndPassword } from '../services/firebase';
 
 const Login: React.FC = () => {
   const [email, setEmail] = useState('');
@@ -11,7 +10,6 @@ const Login: React.FC = () => {
   const [error, setError] = useState('');
   const [emailError, setEmailError] = useState('');
   
-  const auth = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -59,12 +57,7 @@ const Login: React.FC = () => {
     
     try {
       setLoading(true);
-      const result = await auth.login(email, password);
-      if (!result.success) {
-        setError(result.error || 'Authentication failed');
-        return;
-      }
-      // Redirect to the page the user was trying to access
+      await signInWithEmailAndPassword(email, password);
       navigate(from);
     } catch (err) {
       console.error('Login error:', err);

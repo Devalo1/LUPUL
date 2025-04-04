@@ -1,78 +1,72 @@
 import React, { forwardRef } from 'react';
-import { Link } from 'react-router-dom';
 
 export interface ButtonProps {
   children: React.ReactNode;
-  variant?: 'primary' | 'secondary' | 'outline' | 'ghost';
-  size?: 'sm' | 'md' | 'lg';
+  onClick?: (e: React.MouseEvent<HTMLButtonElement>) => void;
   className?: string;
-  as?: React.ElementType;
-  to?: string;
-  href?: string;
-  onClick?: () => void;
-  type?: 'button' | 'submit' | 'reset';
   disabled?: boolean;
+  type?: 'button' | 'submit' | 'reset';
+  variant?: 'primary' | 'secondary' | 'outline' | 'ghost' | 'white';
+  size?: 'sm' | 'md' | 'lg';
+  as?: React.ElementType;
+  fullWidth?: boolean;
 }
 
 const Button = forwardRef<HTMLButtonElement, ButtonProps>(
   ({ 
     children, 
-    variant = 'primary', 
-    size = 'md', 
+    onClick, 
     className = '', 
-    as: Component = 'button',
-    to,
-    href,
-    onClick,
+    disabled = false, 
     type = 'button',
-    disabled = false,
-    ...props 
+    variant = 'primary',
+    size = 'md',
+    as: Component = 'button',
+    fullWidth = false,
+    ...rest 
   }, ref) => {
     
-    const baseClasses = 'inline-flex items-center justify-center font-medium transition-colors';
+    const baseClasses = 'inline-flex items-center justify-center font-medium rounded-md focus:outline-none transition-colors';
     
     const variantClasses = {
-      primary: 'bg-blue-600 text-white hover:bg-blue-700',
-      secondary: 'bg-gray-200 text-gray-800 hover:bg-gray-300',
-      outline: 'border border-blue-600 text-blue-600 hover:bg-blue-50',
-      ghost: 'text-blue-600 hover:bg-blue-50'
+      primary: 'bg-blue-600 text-white hover:bg-blue-700 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2',
+      secondary: 'bg-green-600 text-white hover:bg-green-700 focus:ring-2 focus:ring-green-500 focus:ring-offset-2',
+      outline: 'bg-transparent border border-blue-600 text-blue-600 hover:bg-blue-50 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2',
+      ghost: 'bg-transparent text-blue-600 hover:bg-blue-50 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2',
+      white: 'bg-white text-gray-800 hover:bg-gray-100 border border-gray-300 focus:ring-2 focus:ring-gray-400 focus:ring-offset-2'
     };
     
     const sizeClasses = {
-      sm: 'text-sm px-2 py-1 rounded',
-      md: 'px-4 py-2 rounded-md',
-      lg: 'text-lg px-6 py-3 rounded-md'
+      sm: 'px-3 py-1.5 text-sm',
+      md: 'px-4 py-2 text-base',
+      lg: 'px-6 py-3 text-lg',
     };
     
-    const classes = `${baseClasses} ${variantClasses[variant]} ${sizeClasses[size]} ${className}`;
+    const widthClass = fullWidth ? 'w-full' : '';
     
-    // If we're rendering a Link (react-router)
-    if (Component === Link && to) {
+    const classes = `${baseClasses} ${variantClasses[variant]} ${sizeClasses[size]} ${widthClass} ${className}`;
+    
+    if (Component !== 'button') {
       return (
-        <Link to={to} className={classes} {...props}>
+        <Component 
+          className={classes} 
+          disabled={disabled} 
+          ref={ref}
+          {...rest}
+        >
           {children}
-        </Link>
+        </Component>
       );
     }
     
-    // If we're rendering an anchor
-    if (Component === 'a' && href) {
-      return (
-        <a href={href} className={classes} {...props}>
-          {children}
-        </a>
-      );
-    }
-    
-    // Default button
     return (
-      <button 
+      <button
         ref={ref}
-        type={type}
         className={classes}
         onClick={onClick}
         disabled={disabled}
-        {...props}
+        type={type}
+        {...rest}
       >
         {children}
       </button>

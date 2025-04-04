@@ -52,7 +52,22 @@ export const signInWithGoogle = async () => {
 
 // Sign out
 export const signOut = async () => {
-  return firebaseSignOut(auth);
+  try {
+    logger.info("Signing out user", { context: "Auth" });
+    await firebaseSignOut(auth);
+    // Log successful sign out before clearing local storage
+    logger.info("Firebase signOut completed", { context: "Auth" });
+    localStorage.removeItem('firebase:authUser:' + import.meta.env.VITE_FIREBASE_API_KEY + ':[DEFAULT]');
+    return true;
+  } catch (error: unknown) {
+    logger.error("Logout failed", error as Error, { context: "Auth" });
+    throw error;
+  }
+};
+
+// Add a function to check if we're in test mode
+export const isTestMode = (): boolean => {
+  return new URLSearchParams(window.location.search).has('test-mode');
 };
 
 // Make sure this function is properly exported and defined

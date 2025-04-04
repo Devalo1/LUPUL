@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { collection, getDocs, doc, deleteDoc, updateDoc } from 'firebase/firestore';
 import { firestore } from '../services/firebase';
-import { useAuth } from '../context/AuthContext';
+import { useAuth } from '../contexts/AuthContext';
 import Button from '../components/common/Button';
 import { Product } from '../types';
 

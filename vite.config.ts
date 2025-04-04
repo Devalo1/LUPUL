@@ -1,6 +1,6 @@
-import { defineConfig } from 'vite';
-import react from '@vitejs/plugin-react';
-import path from 'path';
+import { defineConfig } from 'vite'
+import react from '@vitejs/plugin-react'
+import path from 'path'
 
 // https://vitejs.dev/config/
 export default defineConfig({
@@ -11,16 +11,12 @@ export default defineConfig({
     },
   },
   server: {
-    port: 5173, // Changed from 3000 to 5173
-    strictPort: false,
-    open: true,
-    cors: true,
+    port: 5173,
+    strictPort: true, // This will fail if port 5173 is already in use
+    host: true, // Listen on all addresses
+    open: true, // Open browser on server start
   },
-  build: {
-    outDir: 'dist',
-    sourcemap: true,
-  },
-  define: {
-    'process.env.NODE_ENV': JSON.stringify(process.env.NODE_ENV),
-  },
-});
+  preview: {
+    port: 5173,
+  }
+})

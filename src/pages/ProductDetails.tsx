@@ -3,9 +3,10 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { doc, getDoc } from 'firebase/firestore';
 import { firestore } from '../services/firebase';
 import { Product } from '../types';
-import { useCart } from '../context/CartContext';
+import { useCart } from '../contexts/CartContext'; // Updated path
 import Button from '../components/common/Button';
 import { formatCurrency, calculateDiscountedPrice } from '../utils/helpers';
+import LoadingSpinner from '../components/ui/LoadingSpinner';
 
 const ProductDetails: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -60,19 +61,13 @@ const ProductDetails: React.FC = () => {
         quantity
       });
       
-      // Optionally navigate to cart or show confirmation
+      // Show a success notification
+      alert(`${product.name} a fost adăugat în coș!`);
     }
   };
 
   if (loading) {
-    return (
-      <div className="container mx-auto px-4 py-16">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
-          <p className="mt-4 text-gray-600">Se încarcă produsul...</p>
-        </div>
-      </div>
-    );
+    return <LoadingSpinner fullScreen text="Se încarcă produsul..." />;
   }
 
   if (error || !product) {
@@ -89,90 +84,103 @@ const ProductDetails: React.FC = () => {
   return (
     <div className="container mx-auto px-4 py-16">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-        <div className="bg-white p-4 rounded-lg shadow-md">
+        {/* Product Image */}
+        <div className="rounded-lg overflow-hidden shadow-lg">
           <img 
             src={product.image} 
             alt={product.name} 
-            className="w-full h-auto object-cover rounded-lg"
+            className="w-full h-auto object-cover"
           />
         </div>
         
-        <div>
-          <h1 className="text-3xl font-bold mb-4">{product.name}</h1>
+        {/* Product Details */}
+        <div className="flex flex-col">
+          <h1 className="text-3xl font-bold text-gray-800 mb-2">{product.name}</h1>
           
+          {/* Price Section */}
           <div className="mb-4">
             {product.discount ? (
-              <div className="flex items-center gap-2">
-                <span className="text-2xl font-bold text-blue-600">
+              <div className="flex items-center">
+                <span className="text-xl font-bold text-blue-600">
                   {formatCurrency(calculateDiscountedPrice(product.price, product.discount))}
                 </span>
-                <span className="text-lg text-gray-500 line-through">
+                <span className="ml-2 text-sm line-through text-gray-500">
                   {formatCurrency(product.price)}
                 </span>
-                <span className="bg-red-600 text-white text-sm px-2 py-1 rounded">
+                <span className="ml-2 bg-red-100 text-red-700 px-2 py-1 rounded text-xs">
                   -{product.discount}%
                 </span>
               </div>
             ) : (
-              <span className="text-2xl font-bold text-blue-600">
+              <span className="text-xl font-bold text-blue-600">
                 {formatCurrency(product.price)}
               </span>
             )}
           </div>
           
+          {/* Description */}
           <div className="mb-6">
-            <p className="text-gray-700 mb-4">{product.description}</p>
-            
-            <div className="flex items-center mb-2">
-              <span className="text-gray-700 mr-2">Categorie:</span>
-              <span className="capitalize">{product.category}</span>
-            </div>
-            
-            <div className="flex items-center">
-              <span className="text-gray-700 mr-2">Disponibilitate:</span>
-              <span 
-                className={`px-2 py-1 rounded-full text-xs ${
-                  product.inStock
-                    ? 'bg-green-100 text-green-800'
-                    : 'bg-red-100 text-red-800'
-                }`}
-              >
-                {product.inStock ? 'În Stoc' : 'Indisponibil'}
-              </span>
-            </div>
+            <p className="text-gray-700">{product.description}</p>
           </div>
           
+          {/* In Stock Status */}
+          <div className="mb-6">
+            {product.inStock ? (
+              <span className="text-green-600 bg-green-100 px-3 py-1 rounded-full text-sm">
+                În stoc
+              </span>
+            ) : (
+              <span className="text-red-600 bg-red-100 px-3 py-1 rounded-full text-sm">
+                Stoc epuizat
+              </span>
+            )}
+          </div>
+          
+          {/* Quantity Input */}
           {product.inStock && (
-            <div className="mb-6">
-              <label htmlFor="quantity" className="block text-gray-700 mb-2">Cantitate:</label>
-              <div className="flex items-center">
-                <input
-                  type="number"
-                  id="quantity"
-                  name="quantity"
-                  min="1"
-                  value={quantity}
-                  onChange={handleQuantityChange}
-                  className="w-20 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                />
-                <Button 
-                  onClick={handleAddToCart}
-                  className="ml-4"
-                >
-                  Adaugă în coș
-                </Button>
-              </div>
+            <div className="flex items-center mb-6">
+              <label htmlFor="quantity" className="mr-3 text-gray-700">
+                Cantitate:
+              </label>
+              <input
+                id="quantity"
+                type="number"
+                min="1"
+                value={quantity}
+                onChange={handleQuantityChange}
+                className="w-16 border border-gray-300 rounded px-3 py-2 text-center focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
             </div>
           )}
           
+          {/* Add to Cart Button */}
           <Button 
-            onClick={() => navigate('/shop')}
-            variant="secondary"
+            onClick={handleAddToCart}
+            disabled={!product.inStock}
+            className="mt-auto"
           >
-            Înapoi la magazin
+            Adaugă în coș
           </Button>
+          
+          {/* Back to Shop */}
+          <button 
+            onClick={() => navigate('/shop')}
+            className="mt-4 text-blue-600 hover:underline text-center"
+          >
+            Înapoi la produse
+          </button>
         </div>
       </div>
+      
+      {/* Additional Product Information (if available) */}
+      {product.details && (
+        <div className="mt-12">
+          <h2 className="text-2xl font-bold mb-4">Detalii produs</h2>
+          <div className="bg-gray-50 p-6 rounded-lg">
+            <p className="text-gray-700">{product.details}</p>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

@@ -2,10 +2,10 @@ import React from 'react';
 import { Outlet } from 'react-router-dom';
 import Navbar from './Navbar';
 import Footer from './Footer';
-import { useAuth } from '../context/useAuth';
+import useAuth from '../contexts/AuthContext'; // Updated import from context to contexts
 
 const Layout: React.FC = () => {
-  const { loading } = useAuth();
+  const { currentUser, loading } = useAuth(); // Acum cunoaștem dacă utilizatorul este logat
 
   if (loading) {
     return (
@@ -17,7 +17,7 @@ const Layout: React.FC = () => {
 
   return (
     <div className="flex flex-col min-h-screen">
-      <Navbar />
+      <Navbar isLoggedIn={!!currentUser} /> {/* Navbar se adaptează în funcție de starea de autentificare */}
       <main className="flex-grow">
         <Outlet />
       </main>

@@ -9,6 +9,7 @@ const noop = (): void => {};
 // Safe wrappers for console methods that respect ESLint rules
 /* eslint-disable no-console */
 const safeConsoleDebug = isDevelopment ? console.debug : noop;
+const safeConsoleLog = isDevelopment ? console.log : noop;
 const safeConsoleInfo = isDevelopment ? console.info : noop;
 const safeConsoleWarn = console.warn; // Warnings are allowed in production
 const safeConsoleError = console.error; // Errors are allowed in production
@@ -25,39 +26,44 @@ const safeConsoleTrace = isDevelopment ? console.trace : noop;
 export const logger = {
   debug: (message: string, options?: LoggingOptions): void => {
     if (isDevelopment && options?.level !== 'error') {
-      // Only log debug messages in development
       safeConsoleDebug(`[DEBUG]${options?.context ? ` [${options.context}]` : ''}: ${message}`, options?.data || '');
     }
   },
-  
+
+  log: (message: string, options?: LoggingOptions | unknown): void => {
+    if (isDevelopment) {
+      safeConsoleLog(`[LOG]${options?.context ? ` [${options.context}]` : ''}: ${message}`, options?.data || options || '');
+    }
+  },
+
   info: (message: string, options?: LoggingOptions): void => {
     if (isDevelopment && options?.level !== 'error') {
       safeConsoleInfo(`[INFO]${options?.context ? ` [${options.context}]` : ''}: ${message}`, options?.data || '');
     }
   },
-  
+
   warn: (message: string, options?: LoggingOptions): void => {
     // Warnings can be useful in production but can be filtered
     if (isDevelopment || options?.level === 'warn') {
-      safeConsoleWarn(`[WARN]${options?.context ? ` [${options.context}]` : ''}: ${message}`, options?.data || '');
+      safeConsoleWarn(`[WARN]${options?.context ? ` [${options.context}]` : ''}: ${message}`, options?.data || '', options?.error || '');
     }
   },
-  
+
   error: (message: string, error?: Error, options?: LoggingOptions): void => {
     // Always log errors
     safeConsoleError(`[ERROR]${options?.context ? ` [${options.context}]` : ''}: ${message}`, error || '', options?.data || '');
   },
-  
+
   // Group related logs
   group: safeConsoleGroup,
   groupEnd: safeConsoleGroupEnd,
-  
+
   // Performance measurements
   time: safeConsoleTime,
   timeEnd: safeConsoleTimeEnd,
-  
+
   // Development-only trace
-  trace: (message: string): void => safeConsoleTrace(`[TRACE]: ${message}`)
+  trace: (message: string): void => safeConsoleTrace(`[TRACE]: ${message}` as unknown)
 };
 
 /**
@@ -69,7 +75,7 @@ export const logComponentEvent = (
   details?: Record<string, unknown>
 ): void => {
   if (!isDevelopment) return;
-  
+
   logger.debug(
     `Component ${componentName} - ${event}`,
     { context: 'Component', data: details }
@@ -84,7 +90,7 @@ export const measurePerformance = (
   operation: () => unknown
 ): unknown => {
   if (!isDevelopment) return operation();
-  
+
   const label = `⏱️ ${operationName}`;
   logger.time(label);
   const result = operation();

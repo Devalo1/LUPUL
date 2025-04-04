@@ -1,101 +1,58 @@
-import React, { useState, useEffect } from 'react';
-// Import auth from the main Firebase config
-import { auth } from '../firebase/index';
-import { logger } from '../utils/debug';
-import { 
-  createUserWithEmailAndPassword, 
-  signInWithEmailAndPassword, 
-  signOut as firebaseSignOut,
-  sendPasswordResetEmail,
-  User as FirebaseUser,
-  onAuthStateChanged
-} from 'firebase/auth';
-import { ApiResponse, UserData, AppError } from '../types/common';
-// Fix the import path to point to the correct directory
-import { AuthContext, formatAuthError, formatUserData } from '../contexts/authContextUtils';
+import React, { createContext, useContext, useState, useEffect } from 'react';
+import { User } from 'firebase/auth';
+import { onAuthChanged, signOut } from '../services/auth';
 
-// Define interface for props
-interface AuthProviderProps {
-  children: React.ReactNode;
+// Definirea tipului pentru context
+interface AuthContextType {
+  currentUser: User | null;
+  loading: boolean;
+  signOut: () => Promise<void>;
 }
 
-// Only export the component
-export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
-  const [currentUser, setCurrentUser] = useState<UserData | null>(null);
+// Crearea contextului
+const AuthContext = createContext<AuthContextType | undefined>(undefined);
+
+// Hook personalizat pentru accesarea contextului de autentificare
+export const useAuth = () => {
+  const context = useContext(AuthContext);
+  if (!context) {
+    throw new Error('useAuth trebuie utilizat în interiorul unui AuthProvider');
+  }
+  return context;
+};
+
+// Furnizorul de context pentru autentificare
+export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Use onAuthStateChanged directly instead of auth.onAuthStateChanged
-    const unsubscribe = onAuthStateChanged(auth, (user: FirebaseUser | null) => {
-      logger.info('Auth state changed', { context: 'Auth', data: { userExists: !!user } });
-      setCurrentUser(user ? formatUserData(user) : null);
+    // Abonare la schimbările stării de autentificare
+    const unsubscribe = onAuthChanged((user: User | null) => {
+      setCurrentUser(user);
       setLoading(false);
     });
 
+    // Curățare la demontare
     return unsubscribe;
   }, []);
 
-  const signUp = async (email: string, password: string): Promise<ApiResponse<UserData>> => {
+  // Funcție pentru delogare
+  const handleSignOut = async () => {
     try {
-      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-      return {
-        success: true,
-        data: formatUserData(userCredential.user)
-      };
+      await signOut();
+      setCurrentUser(null);
     } catch (error) {
-      return {
-        success: false,
-        error: formatAuthError(error as AppError)
-      };
+      console.error('Eroare la deconectare:', error);
+      throw error;
     }
   };
 
-  const login = async (email: string, password: string): Promise<ApiResponse<UserData>> => {
-    try {
-      const userCredential = await signInWithEmailAndPassword(auth, email, password);
-      return {
-        success: true,
-        data: formatUserData(userCredential.user)
-      };
-    } catch (error) {
-      return {
-        success: false,
-        error: formatAuthError(error as AppError)
-      };
-    }
-  };
-
-  const signOut = async (): Promise<ApiResponse<void>> => {
-    try {
-      await firebaseSignOut(auth);
-      return { success: true };
-    } catch (error) {
-      return {
-        success: false,
-        error: formatAuthError(error as AppError)
-      };
-    }
-  };
-
-  const resetPassword = async (email: string): Promise<ApiResponse<void>> => {
-    try {
-      await sendPasswordResetEmail(auth, email);
-      return { success: true };
-    } catch (error) {
-      return {
-        success: false,
-        error: formatAuthError(error as AppError)
-      };
-    }
-  };
-
-  const value = {
+  // Valorile furnizate de context
+  const value: AuthContextType = {
     currentUser,
     loading,
-    signUp,
-    login,
-    signOut,
-    resetPassword
+    signOut: handleSignOut
   };
 
   return (
@@ -104,3 +61,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     </AuthContext.Provider>
   );
 };
+
+// Export implicit pentru hook
+export default useAuth;

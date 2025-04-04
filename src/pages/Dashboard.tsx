@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { useAuth } from '../context/useAuth'; // Updated import path
+import useAuth from '../contexts/AuthContext'; // Updated default import
 import { Navigate, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 

@@ -3,6 +3,7 @@ module.exports = {
   content: [
     "./index.html",
     "./src/**/*.{js,ts,jsx,tsx}",
+    "./src/assets/styles/main.css", // Asigură-te că această cale este inclusă
   ],
   theme: {
     extend: {

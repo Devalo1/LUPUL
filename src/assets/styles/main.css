@@ -1,3 +1,4 @@
+/* Ensure this file contains only valid CSS */
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@100;200;300;400;500;600;700;800;900&display=swap');
 
 @tailwind base;
@@ -31,6 +32,7 @@ body {
   background-color: var(--bg-light);
   min-height: 100vh;
   position: relative;
+  padding-top: 4rem; /* Adjust based on navbar height */
 }
 
 /* Full-screen background styles */
@@ -66,12 +68,10 @@ body.home-page {
 
 /* Background and container styles */
 .app-container {
-  background-image: url('/images/background.svg');
+  background-image: url('/images/background.jpg'); /* Asigură-te că această cale este corectă */
   background-size: cover;
   background-position: center;
   background-attachment: fixed;
-  position: relative;
-  min-height: 100vh;
 }
 
 .app-container::before {
@@ -86,7 +86,7 @@ body.home-page {
 }
 
 .login-container {
-  background-image: url('/images/background.svg');
+  background-image: url('/images/background.svg'); /* Asigură-te că această cale este corectă */
   background-size: cover;
   background-position: center;
   background-attachment: fixed;
@@ -95,10 +95,19 @@ body.home-page {
 
 /* Navigation link styles */
 @layer components {
+  /* Logo styling */
+  .nav-logo {
+    height: 2rem; /* Dimensiune estetică pentru logo */
+    width: auto; /* Păstrează proporțiile */
+    margin-right: 0.5rem;
+  }
+
+  /* Navigation link styling */
   .nav-link {
-    @apply relative px-1 py-2 text-gray-800 transition-colors duration-300;
-    position: relative;
-    overflow: hidden;
+    color: white;
+    font-weight: bold;
+    text-transform: uppercase;
+    transition: color 0.3s ease;
   }
   
   .nav-link::before {
@@ -128,7 +137,7 @@ body.home-page {
   }
   
   .nav-link:hover {
-    color: var(--ro-blue);
+    color: #FFD700; /* Highlighted yellow on hover */
   }
   
   /* Romanian flag navbar animation */
@@ -367,43 +376,141 @@ body.home-page {
   }
 }
 
+/* Navbar animation */
+@keyframes flagWave {
+  0%, 100% {
+    background-position: 0% 0%;
+  }
+  50% {
+    background-position: 100% 0%;
+  }
+}
+
+/* Animation for the waving effect */
+@keyframes flagWave {
+  0%, 100% {
+    background-position: 0% 0%;
+  }
+  50% {
+    background-position: 100% 0%;
+  }
+}
+
+/* Subtle floating effect */
+@keyframes flagFloat {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-5px);
+  }
+}
+
+/* Blur effect for the flag */
+.navbar-romanian-flag::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: inherit;
+  filter: blur(10px); /* Adaugă un efect de blur */
+  z-index: -1;
+}
+
+@keyframes flagFloat {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-5px);
+  }
+}
+
+/* Navbar with Romanian flag theme */
+.navbar-romanian-flag {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  z-index: 1000;
+  padding: 1rem 0;
+  overflow: hidden;
+  backdrop-filter: blur(5px);
+  background: linear-gradient(
+    90deg,
+    var(--ro-blue) 33.33%,
+    var(--ro-yellow) 33.33%,
+    var(--ro-yellow) 66.66%,
+    var(--ro-red) 66.66%
+  );
+  animation: flagWave 6s infinite ease-in-out, flagFloat 8s infinite ease-in-out;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.navbar-romanian-flag::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: inherit;
+  filter: blur(10px);
+  z-index: -1;
+}
+
+@keyframes flagWave {
+  0%, 100% {
+    transform: perspective(1000px) rotateX(0deg) rotateY(0deg);
+  }
+  25% {
+    transform: perspective(1000px) rotateX(3deg) rotateY(5deg);
+  }
+  50% {
+    transform: perspective(1000px) rotateX(-2deg) rotateY(-3deg);
+  }
+  75% {
+    transform: perspective(1000px) rotateX(2deg) rotateY(-5deg);
+  }
+}
+
+@keyframes flagFloat {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-5px);
+  }
+}
+
 /* Global Button Styles */
 .btn {
-  @apply px-6 py-2 rounded-md font-medium transition-all duration-300;
+  /* Stiluri de bază pentru butoane */
+  padding: 0.5rem 1rem;
+  border-radius: 0.375rem;
 }
-
 .btn-primary {
-  @apply bg-blue-600 hover:bg-blue-700 text-white;
+  background-color: var(--primary, #3b82f6);
+  color: white;
 }
-
 .btn-secondary {
-  @apply bg-gray-200 hover:bg-gray-300 text-gray-800;
+  background-color: var(--secondary, #059669);
+  color: white;
 }
 
 /* Romanian flag-themed buttons */
 .btn-ro {
-  @apply relative overflow-hidden border-2 border-transparent px-6 py-2 rounded-md font-medium transition-all duration-300 bg-white text-gray-800;
+  border: 2px solid var(--ro-blue);
+  padding: 0.5rem 1rem;
+  border-radius: 0.375rem;
+  color: var(--ro-blue);
+  transition: background-color 0.3s;
 }
-
-.btn-ro::before {
-  content: '';
-  position: absolute;
-  left: 0;
-  bottom: 0;
-  width: 100%;
-  height: 0;
-  background: linear-gradient(to right, var(--ro-blue) 33.33%, var(--ro-yellow) 33.33%, var(--ro-yellow) 66.66%, var(--ro-red) 66.66%);
-  transition: height 0.3s ease;
-  z-index: -1;
-}
-
 .btn-ro:hover {
+  background-color: var(--ro-blue);
   color: white;
-  border-color: transparent;
-}
-
-.btn-ro:hover::before {
-  height: 100%;
 }
 
 /* Green and Blue Trust Colors */
@@ -619,5 +726,63 @@ main {
 @media (min-width: 1025px) {
   .hide-on-desktop {
     display: none !important;
+  }
+}
+
+/* Adaugă aceste stiluri la sfârșitul fișierului main.css */
+
+.navbar-romanian-flag {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  z-index: 1000;
+  padding: 1rem 0;
+  overflow: hidden;
+  backdrop-filter: blur(5px);
+  background: linear-gradient(
+    90deg,
+    var(--ro-blue) 33.33%,
+    var(--ro-yellow) 33.33%,
+    var(--ro-yellow) 66.66%,
+    var(--ro-red) 66.66%
+  );
+  animation: flagWave 6s infinite ease-in-out, flagFloat 8s infinite ease-in-out;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.navbar-romanian-flag::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: inherit;
+  filter: blur(10px);
+  z-index: -1;
+}
+
+@keyframes flagWave {
+  0%, 100% {
+    transform: perspective(1000px) rotateX(0deg) rotateY(0deg);
+  }
+  25% {
+    transform: perspective(1000px) rotateX(3deg) rotateY(5deg);
+  }
+  50% {
+    transform: perspective(1000px) rotateX(-2deg) rotateY(-3deg);
+  }
+  75% {
+    transform: perspective(1000px) rotateX(2deg) rotateY(-5deg);
+  }
+}
+
+@keyframes flagFloat {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-5px);
   }
 }

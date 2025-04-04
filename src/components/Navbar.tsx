@@ -41,48 +41,17 @@ const Navbar: React.FC = () => {
           </div>
           
           <div className="hidden sm:ml-6 sm:flex sm:items-center">
-            {isLoggedIn ? (
-              <div className="ml-3 relative">
-                <div>
-                  <button
-                    type="button"
-                    className="flex text-sm rounded-full focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-                    id="user-menu-button"
-                    onClick={toggleMenu}
-                  >
-                    <span className="sr-only">Open user menu</span>
-                    <div className="h-8 w-8 rounded-full bg-blue-100 flex items-center justify-center">
-                      {currentUser.displayName?.[0]?.toUpperCase() || currentUser.email?.[0]?.toUpperCase() || 'U'}
-                    </div>
-                  </button>
-                </div>
-                
-                {isMenuOpen && (
-                  <div className="origin-top-right absolute right-0 mt-2 w-48 rounded-md shadow-lg py-1 bg-white ring-1 ring-black ring-opacity-5 focus:outline-none" role="menu">
-                    <Link to="/profile" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
-                      Profil
-                    </Link>
-                    <Link to="/account" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
-                      Cont
-                    </Link>
-                    <button
-                      onClick={handleLogout}
-                      className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                    >
-                      Deconectare
-                    </button>
-                  </div>
-                )}
-              </div>
+            {!isLoggedIn ? (
+              <Link to="/login" className="text-white hover:text-gray-100 transition-colors">
+                Log in
+              </Link>
             ) : (
-              <div className="flex items-center space-x-4">
-                <Link to="/login" className="text-gray-500 hover:text-gray-900 font-medium">
-                  Log in
-                </Link>
-                <Link to="/register" className="bg-blue-600 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-blue-700">
-                  Creează cont
-                </Link>
-              </div>
+              <button
+                onClick={handleLogout}
+                className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-md transition-colors"
+              >
+                Deconectare
+              </button>
             )}
           </div>
           

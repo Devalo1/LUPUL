@@ -1,35 +1,84 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
+import { Link, useNavigate } from 'react-router-dom';
+import { FaShoppingCart } from 'react-icons/fa';
 
 const UserHome: React.FC = () => {
   const { currentUser } = useAuth();
-  
-  // Generează un nume pentru afișare dacă nu există
-  const displayName = currentUser?.displayName || 
-                     (currentUser?.email ? currentUser.email.split('@')[0] : 'Utilizator');
-  
+  const navigate = useNavigate();
+
+  if (!currentUser) {
+    navigate('/'); // Redirect guests to the main page
+    return <div>Se încarcă...</div>;
+  }
+
   return (
-    <div className="container mx-auto px-4 py-8">
-      <h1 className="text-2xl font-bold mb-6">Bine ai venit, {displayName}!</h1>
-      
-      <section className="mb-8">
-        <h2 className="text-xl font-semibold mb-4">Implicarea ta în comunitate</h2>
-        <p className="text-gray-700">Aici poți vedea cum te-ai implicat în comunitatea noastră și ce impact ai avut.</p>
-        <Link to="/community" className="text-blue-600 hover:underline">Vezi detalii</Link>
-      </section>
+    <div className="min-h-screen bg-gray-50">
+      {/* Navbar */}
+      <nav className="bg-gradient-to-r from-blue-700 to-blue-600 text-white py-4 shadow-md">
+        <div className="container mx-auto flex justify-between items-center px-4">
+          {/* Logo */}
+          <div
+            className="cursor-pointer flex items-center"
+            onClick={() => navigate(currentUser ? '/user-home' : '/')}
+          >
+            <img
+              src="/images/LC.png" // Ensure this path is correct
+              alt="Lupul și Corbul"
+              className="h-12 w-auto mr-2" // Updated height for consistency
+            />
+            <h1 className="text-xl font-bold">Lupul și Corbul</h1>
+          </div>
 
-      <section className="mb-8">
-        <h2 className="text-xl font-semibold mb-4">Evenimente viitoare</h2>
-        <p className="text-gray-700">Descoperă evenimentele viitoare la care poți participa.</p>
-        <Link to="/events" className="text-blue-600 hover:underline">Vezi evenimente</Link>
-      </section>
+          {/* Navigation Links */}
+          <ul className="flex space-x-6">
+            <li>
+              <Link
+                to={currentUser ? '/user-home' : '/'}
+                className="px-3 py-2 rounded-md bg-blue-800 hover:bg-blue-900 transition-colors text-white font-medium"
+              >
+                Acasă
+              </Link>
+            </li>
+            <li>
+              <Link
+                to="/shop"
+                className="px-3 py-2 rounded-md bg-blue-800 hover:bg-blue-900 transition-colors text-white font-medium"
+              >
+                Produse
+              </Link>
+            </li>
+            <li>
+              <Link
+                to="/dashboard"
+                className="px-3 py-2 rounded-md bg-blue-800 hover:bg-blue-900 transition-colors text-white font-medium"
+              >
+                Dashboard
+              </Link>
+            </li>
+          </ul>
+        </div>
+      </nav>
 
-      <section>
-        <h2 className="text-xl font-semibold mb-4">Evenimente la care ai participat</h2>
-        <p className="text-gray-700">Aici poți vedea evenimentele la care ai participat și impactul tău.</p>
-        <Link to="/my-events" className="text-blue-600 hover:underline">Vezi istoricul tău</Link>
-      </section>
+      {/* Dashboard */}
+      <div className="container mx-auto px-4 py-8">
+        {/* Welcome Section */}
+        <div className="bg-white rounded-lg shadow-sm p-6 mb-8 border-l-4 border-yellow-400">
+          <div className="flex items-center">
+            <div className="bg-blue-100 p-3 rounded-full mr-4">
+              <FaShoppingCart className="text-blue-600 text-xl" />
+            </div>
+            <div>
+              <h2 className="text-2xl font-semibold text-gray-800">
+                Bun venit, {currentUser.displayName || currentUser.email || 'Utilizator'}!
+              </h2>
+              <p className="text-gray-600">
+                Membru din {new Date(currentUser.metadata?.creationTime || Date.now()).toLocaleDateString('ro-RO')}
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   );
 };

@@ -2,9 +2,10 @@ import React, { useEffect, useState } from 'react';
 import { useAuth } from '../contexts/AuthContext'; // Corectarea importului
 import { Navigate, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
+import { updateProfile } from 'firebase/auth';
 
 const Dashboard: React.FC = () => {
-  const { currentUser, loading } = useAuth();
+  const { currentUser, loading, setCurrentUser } = useAuth();
   const navigate = useNavigate();
   const [greeting, setGreeting] = useState('');
 
@@ -14,6 +15,16 @@ const Dashboard: React.FC = () => {
     else if (hour < 18) setGreeting('Bună ziua');
     else setGreeting('Bună seara');
   }, []);
+
+  const handleUpdateDisplayName = async (newDisplayName: string) => {
+    try {
+      await updateProfile(auth.currentUser, { displayName: newDisplayName });
+      // Actualizează contextul
+      setCurrentUser({ ...currentUser, displayName: newDisplayName });
+    } catch (error) {
+      console.error('Failed to update display name:', error);
+    }
+  };
 
   // Redirect if not logged in
   if (!loading && !currentUser) {

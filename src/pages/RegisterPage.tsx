@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { useAuth } from '../context/useAuth'; // Updated import
+import { useAuth } from '../contexts/AuthContext'; // Updated import
 import Button from '../components/common/Button';
 
 const RegisterPage: React.FC = () => {
@@ -23,7 +23,7 @@ const RegisterPage: React.FC = () => {
     try {
       setError(null);
       setLoading(true);
-      await signUp(email, password, name);
+      await signUp(email, password);
       navigate('/dashboard');
     } catch (err) {
       setError('Înregistrare eșuată. Vă rugăm să încercați din nou.');

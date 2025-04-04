@@ -14,7 +14,7 @@ export default defineConfig({
     port: 5173,
     strictPort: true, // This will fail if port 5173 is already in use
     host: true, // Listen on all addresses
-    open: true, // Open browser on server start
+    open: true, // Automatically opens the browser on dev start
   },
   preview: {
     port: 5173,

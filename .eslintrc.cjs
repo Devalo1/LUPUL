@@ -20,5 +20,10 @@ module.exports = {
       destructuredArrayIgnorePattern: '^_' 
     }],
     'no-console': ['warn', { allow: ['warn', 'error'] }],
+    '@typescript-eslint/no-explicit-any': 'warn',
+    'react-refresh/only-export-components': [
+      'warn',
+      { allowConstantExports: true }
+    ],
   },
 }

@@ -1,5 +1,7 @@
 // Common interfaces and types for the application
 
+import { Timestamp } from 'firebase/firestore';
+
 export interface Product {
   id: string;
   name: string;
@@ -10,6 +12,8 @@ export interface Product {
   discount?: number;
   details?: string;
   category?: string;
+  featured?: boolean;
+  createdAt?: string;
 }
 
 export interface CartItem {
@@ -85,7 +89,7 @@ export interface Order {
   items: CartItem[];
   total: number;
   status: 'pending' | 'processing' | 'completed' | 'cancelled';
-  createdAt: any; // Firestore timestamp
+  createdAt: Timestamp; // Firestore timestamp
   shippingAddress: {
     fullName: string;
     address: string;

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { useAuth } from '../context/authContextUtils';
+import { useAuth } from '../contexts/AuthContext';
 
 const ResetPassword: React.FC = () => {
   const [email, setEmail] = useState('');

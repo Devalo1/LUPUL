@@ -1,5 +1,5 @@
 import React from 'react';
-import Login from './Login';
+import Login from '../components/auth/Login';
 
 const Register: React.FC = () => {
   return <Login isRegister={true} />;

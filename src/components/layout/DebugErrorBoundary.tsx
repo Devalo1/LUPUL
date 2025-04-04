@@ -1,5 +1,4 @@
-import React, { Component, ErrorInfo, ReactNode } from 'react';
-import { logger } from '../../utils/debug';
+import { Component, ErrorInfo, ReactNode } from 'react';
 
 interface Props {
   children: ReactNode;
@@ -12,6 +11,8 @@ interface State {
   error: Error | null;
   errorInfo: ErrorInfo | null;
 }
+
+const logger = console; // Use console as a fallback logger
 
 class DebugErrorBoundary extends Component<Props, State> {
   constructor(props: Props) {
@@ -35,10 +36,10 @@ class DebugErrorBoundary extends Component<Props, State> {
     this.setState({ errorInfo });
     
     // Log error details
-    logger.group(`🔴 Error in ${this.props.componentName || 'component'}`);
+    logger.debug(`🔴 Error in ${this.props.componentName || 'component'}`);
     logger.error('Error details:', error);
     logger.error('Component stack:', errorInfo.componentStack);
-    logger.groupEnd();
+    logger.debug('End of error log');
     
     // Send to an error tracking service in production
     if (process.env.NODE_ENV === 'production') {

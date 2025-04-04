@@ -1,44 +1,93 @@
-import { useState, useCallback } from 'react';
+import { useState } from 'react';
 
-/**
- * Custom hook for handling errors in components
- * @returns error handling utilities
- */
-export function useErrorHandler() {
-  const [error, setError] = useState<Error | null>(null);
-  const [isLoading, setIsLoading] = useState(false);
+interface ErrorState {
+  error: string | null;
+  isError: boolean;
+}
 
-  const handleError = useCallback((err: unknown) => {
-    console.error('Error caught by useErrorHandler:', err);
-    const formattedError = err instanceof Error ? err : new Error(String(err));
-    setError(formattedError);
-    setIsLoading(false);
-    return formattedError;
-  }, []);
+type ErrorHandlerHook = {
+  errorState: ErrorState;
+  setError: (message: string) => void;
+  clearError: () => void;
+  handleError: (error: unknown) => void;
+  withErrorHandling: <T>(fn: (...args: any[]) => T) => (...args: any[]) => T;
+};
 
-  const clearError = useCallback(() => {
-    setError(null);
-  }, []);
+export const useErrorHandler = (): ErrorHandlerHook => {
+  const [errorState, setErrorState] = useState<ErrorState>({
+    error: null,
+    isError: false
+  });
 
-  /**
-   * Wraps an async function with error handling and loading state
-   */
-  const withErrorHandling = useCallback(<T>(asyncFn: () => Promise<T>): Promise<T | null> => {
-    setIsLoading(true);
-    clearError();
-    
-    return asyncFn()
-      .catch(handleError)
-      .finally(() => {
-        setIsLoading(false);
-      });
-  }, [clearError, handleError]);
+  const setError = (message: string) => {
+    setErrorState({
+      error: message,
+      isError: true
+    });
+  };
+
+  const clearError = () => {
+    setErrorState({
+      error: null,
+      isError: false
+    });
+  };
+
+  const handleError = (error: unknown) => {
+    if (error instanceof Error) {
+      setError(error.message);
+    } else if (typeof error === 'string') {
+      setError(error);
+    } else {
+      setError('A apărut o eroare neașteptată');
+    }
+  };
+
+  const withErrorHandling = <T,>(fn: (...args: any[]) => T) => {
+    return (...args: any[]): T => {
+      try {
+        return fn(...args);
+      } catch (error) {
+        handleError(error);
+        throw error;
+      }
+    };
+  };
 
   return {
-    error,
-    isLoading,
-    handleError,
+    errorState,
+    setError,
     clearError,
+    handleError,
     withErrorHandling
   };
-}
+};
+
+/**
+ * Custom hook for handling async operations with error handling and loading state
+ */
+export const useAsyncHandler = <T>(asyncFn: () => Promise<T>): [
+  () => Promise<T | null>,
+  boolean,
+  Error | null
+] => {
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<Error | null>(null);
+
+  const execute = async (): Promise<T | null> => {
+    setLoading(true);
+    setError(null);
+    
+    try {
+      return await asyncFn();
+    } catch (err) {
+      const error = err instanceof Error ? err : new Error(String(err));
+      setError(error);
+      return null;
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return [execute, loading, error];
+};

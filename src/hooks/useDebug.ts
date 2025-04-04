@@ -1,53 +1,48 @@
-import { useEffect, useRef } from 'react';
-import { logger } from '../utils/debug';
+import { useRef, useEffect } from 'react';
+import { logger } from '../utils/logger';
 
-export function useComponentDebug(componentName: string) {
+export function useDebugRender(componentName: string) {
   const renderCount = useRef(0);
-  
+  renderCount.current++;
+
   useEffect(() => {
-    renderCount.current++;
-    logger.log(`Component ${componentName} rendered (${renderCount.current})`);
-    
+    logger.debug(`Component ${componentName} rendered (${renderCount.current})`);
     return () => {
-      logger.log(`Component ${componentName} unmounted`);
+      logger.debug(`Component ${componentName} unmounted`);
     };
   }, [componentName]);
-  
-  return renderCount.current;
 }
 
-export function useStateDebug<T>(state: T, stateName: string, componentName?: string) {
-  const prev = useRef<T>(state);
+export function useDebugState<T>(
+  componentName: string, 
+  stateName: string, 
+  state: T
+) {
+  const prevState = useRef<T>(state);
   
   useEffect(() => {
-    if (prev.current !== state) {
-      const prefix = componentName ? `[${componentName}]` : '';
-      logger.log(`${prefix} State "${stateName}" changed:`, {
-        from: prev.current,
+    const prefix = `[${componentName}]`;
+    if (prevState.current !== state) {
+      logger.debug(`${prefix} State "${stateName}" changed:`, {
+        from: prevState.current,
         to: state
       });
-      prev.current = state;
+      prevState.current = state;
     }
-  }, [state, stateName, componentName]);
+  }, [componentName, stateName, state]);
 }
 
-export function useEffectDebug(
-  effect: React.EffectCallback,
-  deps: React.DependencyList | undefined,
+export function useDebugEffect(
+  componentName: string,
   effectName: string,
-  componentName?: string
+  deps: any[]
 ) {
   useEffect(() => {
-    const prefix = componentName ? `[${componentName}]` : '';
-    logger.log(`${prefix} Effect "${effectName}" running`);
-    
-    const cleanup = effect();
+    const prefix = `[${componentName}]`;
+    logger.debug(`${prefix} Effect "${effectName}" running`);
     
     return () => {
-      logger.log(`${prefix} Effect "${effectName}" cleanup`);
-      if (typeof cleanup === 'function') {
-        cleanup();
-      }
+      logger.debug(`${prefix} Effect "${effectName}" cleanup`);
     };
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, deps);

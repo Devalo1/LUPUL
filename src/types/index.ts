@@ -10,14 +10,42 @@ export interface TherapyService {
   price: number;
 }
 
+// Re-export auth types
+export * from './auth';
+
 // User related types
 export interface User {
   uid: string;
   email: string | null;
   displayName: string | null;
   photoURL: string | null;
-  createdAt?: string;
+  phoneNumber?: string | null;
+  emailVerified?: boolean;
   isAdmin?: boolean;
+  address?: {
+    city?: string;
+    country?: string;
+    // Add other address fields as needed
+  };
+  // Add any other user properties you need
+}
+
+// User Profile type
+export interface UserProfile {
+  uid: string;
+  displayName?: string;
+  email?: string;
+  photoURL?: string;
+  phoneNumber?: string;
+  address?: {
+    street?: string;
+    city?: string;
+    state?: string;
+    postalCode?: string;
+    country?: string;
+  };
+  createdAt?: any;
+  lastLogin?: any;
 }
 
 // Product related types
@@ -26,11 +54,11 @@ export interface Product {
   name: string;
   description: string;
   price: number;
-  images: string[];
   category: string;
-  stock: number;
+  imageUrl: string;
+  stockQuantity: number;
   featured?: boolean;
-  discountPercent?: number;
+  createdAt?: string | Date;
 }
 
 // Order related types
@@ -45,22 +73,21 @@ export interface Order {
   id: string;
   userId: string;
   items: Array<{
-    id: string;
-    name: string;
-    price: number;
+    productId: string;
     quantity: number;
+    price: number;
+    name: string;
   }>;
   total: number;
-  status: 'pending' | 'processing' | 'shipped' | 'delivered' | 'cancelled';
-  createdAt: number;
+  status: 'pending' | 'processing' | 'shipped' | 'delivered' | 'canceled';
+  createdAt?: any;
   shippingAddress: {
-    fullName: string;
+    name: string;
     address: string;
     city: string;
     postalCode: string;
     country: string;
   };
-  paymentMethod: string;
 }
 
 // Address type
@@ -118,4 +145,20 @@ export interface ThemeConfig {
     lg: string;
     xl: string;
   };
+}
+
+// Layout component props
+export interface LayoutProps {
+  children: React.ReactNode;
+}
+
+// Authentication context props
+export interface AuthContextProps {
+  currentUser: User | null;
+  login: (email: string, password: string) => Promise<void>;
+  logOut: () => Promise<void>;
+  signUp: (email: string, password: string) => Promise<void>;
+  resetPassword: (email: string) => Promise<void>;
+  updateProfile: (data: Partial<User>) => Promise<void>;
+  signInWithGoogle: () => Promise<void>;
 }

@@ -1,16 +1,16 @@
 import React, { useState } from 'react';
-import useAuth from '../contexts/AuthContext'; // Updated default import
+import { useAuth } from '../contexts/AuthContext'; // Corrected import
 import { useNavigate } from 'react-router-dom';
 
 const Profile: React.FC = () => {
-  const { currentUser, signOut } = useAuth();
+  const { currentUser, logOut } = useAuth(); // Change signOut to logOut
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
 
   const handleSignOut = async () => {
     try {
       setLoading(true);
-      await signOut();
+      await logOut();
       navigate('/');
     } catch (error) {
       console.error('Error signing out:', error);

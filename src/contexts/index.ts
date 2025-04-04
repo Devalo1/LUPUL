@@ -1,8 +1,6 @@
-import { AuthProvider } from './AuthContext';
-import { useAuth } from './AuthContext';
+import { AuthProvider, useAuth } from './AuthContext';
 import { CartProvider } from './CartContext';
-import { ThemeProvider } from './ThemeContext';
-import useTheme from './ThemeContext';
+import { ThemeProvider, useTheme } from './ThemeContext';
 
 export {
   AuthProvider,

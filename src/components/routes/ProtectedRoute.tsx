@@ -21,12 +21,8 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children, adminOnly = f
   if (!currentUser) {
     return <Navigate to="/login" />;
   }
-  
-  // For admin routes, you would check a custom claim or a specific property
-  // This is a simplified example
+
   if (adminOnly) {
-    // Check if user has admin permissions
-    // For example: if (!currentUser.email?.endsWith('@admin.com'))
     // Replace with your actual admin check logic
     return <Navigate to="/" />;
   }

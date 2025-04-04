@@ -4,8 +4,9 @@ import { useAuth } from '../contexts/AuthContext';
 
 const Navbar: React.FC = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const { currentUser, signOut } = useAuth();
+  const { currentUser, logOut } = useAuth();
   const navigate = useNavigate();
+  const isLoggedIn = !!currentUser;
 
   const toggleMenu = () => {
     setIsMenuOpen(!isMenuOpen);
@@ -13,7 +14,7 @@ const Navbar: React.FC = () => {
 
   const handleLogout = async () => {
     try {
-      await signOut();
+      await logOut();
       navigate('/');
       setIsMenuOpen(false);
     } catch (error) {
@@ -40,7 +41,7 @@ const Navbar: React.FC = () => {
           </div>
           
           <div className="hidden sm:ml-6 sm:flex sm:items-center">
-            {currentUser ? (
+            {isLoggedIn ? (
               <div className="ml-3 relative">
                 <div>
                   <button
@@ -118,7 +119,7 @@ const Navbar: React.FC = () => {
             </Link>
           </div>
           <div className="pt-4 pb-3 border-t border-gray-200">
-            {currentUser ? (
+            {isLoggedIn ? (
               <>
                 <div className="flex items-center px-4">
                   <div className="flex-shrink-0">

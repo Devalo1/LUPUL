@@ -1,111 +1,108 @@
 import { 
-  createUserWithEmailAndPassword, 
   signInWithEmailAndPassword, 
-  signOut as firebaseSignOut,
-  GoogleAuthProvider,
-  signInWithPopup,
-  onAuthStateChanged as firebaseOnAuthStateChanged,
-  User,
+  createUserWithEmailAndPassword,
+  signOut,
+  sendPasswordResetEmail,
   updateProfile,
-  sendPasswordResetEmail
+  User as FirebaseUser
 } from 'firebase/auth';
-import { auth } from './firebase';
-import { logger } from '../utils/debug';
+import { doc, getDoc, setDoc } from 'firebase/firestore';
+import { auth, firestore as db } from './firebase';
+import { User } from '../types/auth';  // Updated import path
 
-// Debug function to check if this module is loaded properly
-logger.info("Auth service initialized", { context: "Auth" });
+// Convert Firebase user to our custom User type
+const mapFirebaseUserToUser = (firebaseUser: FirebaseUser): User => {
+  return {
+    uid: firebaseUser.uid,
+    email: firebaseUser.email,
+    displayName: firebaseUser.displayName,
+    photoURL: firebaseUser.photoURL
+  };
+};
 
-// Register a new user
-export const registerUser = async (email: string, password: string, name?: string) => {
-  const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-  
-  // Update profile with display name if provided
-  if (name && userCredential.user) {
-    await updateProfile(userCredential.user, {
-      displayName: name
-    });
-  }
-  
-  return userCredential;
+// Subscribe to auth state changes
+export const onAuthChanged = (callback: (user: User | null) => void) => {
+  return auth.onAuthStateChanged((firebaseUser) => {
+    callback(firebaseUser ? mapFirebaseUserToUser(firebaseUser) : null);
+  });
 };
 
 // Sign in with email and password
-export const signIn = async (email: string, password: string) => {
-  return signInWithEmailAndPassword(auth, email, password);
+export const signIn = async (email: string, password: string): Promise<User> => {
+  const userCredential = await signInWithEmailAndPassword(auth, email, password);
+  return mapFirebaseUserToUser(userCredential.user);
 };
 
-// Sign in with Google
-export const signInWithGoogle = async () => {
+// Check if a user has admin privileges
+export const checkAdmin = async (user: User | null): Promise<boolean> => {
+  if (!user) return false;
+  
   try {
-    const provider = new GoogleAuthProvider();
-    provider.setCustomParameters({ 
-      prompt: 'select_account',
-      redirect_uri: window.location.origin  // ensures correct redirect
-    });
-    const result = await signInWithPopup(auth, provider);
-    return result;
-  } catch (error: unknown) {
-    logger.error("Login failed", error as Error, { context: "Auth" });
-    throw error;
+    const firebaseUser = auth.currentUser;
+    if (!firebaseUser) return false;
+
+    // Check for custom claims in the ID token
+    const idTokenResult = await firebaseUser.getIdTokenResult();
+    if (idTokenResult.claims.admin === true) {
+      return true;
+    }
+    
+    // If no admin claim in token, check Firestore for admin status
+    const userDoc = await getDoc(doc(db, 'users', user.uid));
+    if (userDoc.exists() && userDoc.data().isAdmin === true) {
+      return true;
+    }
+    
+    // For development purposes, check email domain
+    if (user.email?.endsWith('@admin.com')) {
+      return true;
+    }
+    
+    return false;
+  } catch (error) {
+    console.error('Error checking admin status:', error);
+    return false;
   }
 };
 
-// Sign out
-export const signOut = async () => {
-  try {
-    logger.info("Signing out user", { context: "Auth" });
-    await firebaseSignOut(auth);
-    // Log successful sign out before clearing local storage
-    logger.info("Firebase signOut completed", { context: "Auth" });
-    localStorage.removeItem('firebase:authUser:' + import.meta.env.VITE_FIREBASE_API_KEY + ':[DEFAULT]');
-    return true;
-  } catch (error: unknown) {
-    logger.error("Logout failed", error as Error, { context: "Auth" });
-    throw error;
-  }
+// Sign out user
+export const logOut = async (): Promise<void> => {
+  return signOut(auth);
 };
 
-// Add a function to check if we're in test mode
-export const isTestMode = (): boolean => {
-  return new URLSearchParams(window.location.search).has('test-mode');
-};
-
-// Make sure this function is properly exported and defined
-export function onAuthChanged(callback: (user: User | null) => void) {
-  logger.info("Auth service - onAuthChanged called", { context: "Auth" });
-  return firebaseOnAuthStateChanged(auth, callback);
-}
-
-// Export it again to be 100% sure
-export { onAuthChanged as listenAuthStateChanged };
-
-// Update user profile
-export const updateUserProfile = async (displayName?: string, photoURL?: string) => {
-  if (!auth.currentUser) throw new Error('No user logged in');
-  
-  const updateData: {displayName?: string, photoURL?: string} = {};
-  if (displayName) updateData.displayName = displayName;
-  if (photoURL) updateData.photoURL = photoURL;
-  
-  return updateProfile(auth.currentUser, updateData);
-};
-
-// Reset password
-export const resetPassword = async (email: string) => {
+// Send password reset email
+export const resetPassword = async (email: string): Promise<void> => {
   return sendPasswordResetEmail(auth, email);
 };
 
-// Get current user
-export const getCurrentUser = () => auth.currentUser;
-
-// Add this to create a test export object that we can check
-const testExport = { 
-  onAuthChanged, 
-  registerUser, 
-  signIn, 
-  signOut,
-  signInWithGoogle
+// Sign up with email and password
+export const signUp = async (email: string, password: string): Promise<User> => {
+  const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+  const firebaseUser = userCredential.user;
+  
+  // Create a user document in Firestore
+  await setDoc(doc(db, 'users', firebaseUser.uid), {
+    email: firebaseUser.email,
+    createdAt: new Date(),
+    isAdmin: false // Set admin status to false by default
+  });
+  
+  return mapFirebaseUserToUser(firebaseUser);
 };
-logger.info("Auth service exports available", { context: "Auth", exports: Object.keys(testExport) });
 
-export default testExport;
+// Update user profile
+export const updateUserProfile = async (displayName: string, photoURL?: string): Promise<void> => {
+  if (!auth.currentUser) {
+    throw new Error('No user is logged in');
+  }
+  
+  return updateProfile(auth.currentUser, {
+    displayName,
+    photoURL: photoURL || auth.currentUser.photoURL
+  });
+};
+
+// Check if current user is logged in
+export const isUserLoggedIn = (): boolean => {
+  return !!auth.currentUser;
+};

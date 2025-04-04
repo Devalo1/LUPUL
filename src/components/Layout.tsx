@@ -1,25 +1,20 @@
-import React from 'react';
-import { Outlet } from 'react-router-dom';
-import Navbar from './Navbar';
-import Footer from './Footer';
+import React, { ReactNode } from 'react';
+import Navbar from './layout/Navbar';
+import Footer from './layout/Footer';
 import { useAuth } from '../contexts/AuthContext';
 
-const Layout: React.FC = () => {
-  const { currentUser, loading } = useAuth(); // Updated import
+interface LayoutProps {
+  children: ReactNode;
+}
 
-  if (loading) {
-    return (
-      <div className="flex justify-center items-center min-h-screen">
-        <div className="animate-spin rounded-full h-16 w-16 border-t-4 border-blue-500"></div>
-      </div>
-    );
-  }
-
+const Layout: React.FC<LayoutProps> = ({ children }) => {
+  const { currentUser } = useAuth();
+  
   return (
     <div className="flex flex-col min-h-screen">
-      <Navbar isLoggedIn={!!currentUser} /> {/* Navbar se adaptează în funcție de starea de autentificare */}
+      <Navbar isLoggedIn={!!currentUser} />
       <main className="flex-grow">
-        <Outlet />
+        {children}
       </main>
       <Footer />
     </div>

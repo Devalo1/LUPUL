@@ -14,7 +14,7 @@ import {
   setDoc 
 } from 'firebase/firestore';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
-import { Product, Order, User, UserProfile } from '../types';
+import { Product, Order, UserProfile } from '../types';
 
 // Generic error handler
 const handleError = (error: unknown, message: string): never => {
@@ -166,7 +166,7 @@ export const orderApi = {
 // Users API
 export const userApi = {
   // Get user profile
-  getProfile: async (userId: string): Promise<User> => {
+  getProfile: async (userId: string): Promise<UserProfile> => {
     try {
       const docRef = doc(db, 'users', userId);
       const docSnap = await getDoc(docRef);
@@ -175,7 +175,7 @@ export const userApi = {
         throw new Error(`User profile for ID ${userId} not found`);
       }
       
-      return { uid: docSnap.id, ...docSnap.data() } as User;
+      return { uid: docSnap.id, ...docSnap.data() } as UserProfile;
     } catch (error) {
       return handleError(error, 'Failed to fetch user profile');
     }

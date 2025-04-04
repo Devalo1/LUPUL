@@ -6,7 +6,7 @@ import { useCart } from '../../contexts/CartContext';
 const Header: React.FC = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
-  const { currentUser, signOut } = useAuth(); // Renamed logout to signOut
+  const { currentUser, logOut } = useAuth(); // Renamed signOut to logOut
   const { items, getItemsCount } = useCart();
   const location = useLocation();
   const navigate = useNavigate();
@@ -33,7 +33,7 @@ const Header: React.FC = () => {
   const handleLogout = async () => {
     try {
       setIsMenuOpen(false);
-      await signOut();
+      await logOut(); // Folosim funcția logOut în loc de signOut
       navigate('/');
       // Temporarily remove the forced reload to debug sign-out errors
       // window.location.reload();

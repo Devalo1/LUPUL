@@ -1,4 +1,5 @@
 import React, { forwardRef } from 'react';
+import { Link } from 'react-router-dom';
 
 export interface ButtonProps {
   children: React.ReactNode;
@@ -10,6 +11,8 @@ export interface ButtonProps {
   size?: 'sm' | 'md' | 'lg';
   as?: React.ElementType;
   fullWidth?: boolean;
+  to?: string; // Add this prop for React Router Links
+  href?: string; // Add this prop for regular anchor links
 }
 
 const Button = forwardRef<HTMLButtonElement, ButtonProps>(
@@ -23,6 +26,8 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>(
     size = 'md',
     as: Component = 'button',
     fullWidth = false,
+    to,
+    href,
     ...rest 
   }, ref) => {
     
@@ -45,6 +50,32 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>(
     const widthClass = fullWidth ? 'w-full' : '';
     
     const classes = `${baseClasses} ${variantClasses[variant]} ${sizeClasses[size]} ${widthClass} ${className}`;
+    
+    // If 'to' prop is provided, render a React Router Link
+    if (to) {
+      return (
+        <Link 
+          to={to} 
+          className={classes}
+          {...rest}
+        >
+          {children}
+        </Link>
+      );
+    }
+    
+    // If 'href' prop is provided, render an anchor tag
+    if (href) {
+      return (
+        <a 
+          href={href} 
+          className={classes}
+          {...rest}
+        >
+          {children}
+        </a>
+      );
+    }
     
     if (Component !== 'button') {
       return (

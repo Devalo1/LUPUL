@@ -1,10 +1,10 @@
 import { logger } from './debug';
-import useAuth from '../contexts/AuthContext'; // default import
 
-export const performance = {
+// Define window performance wrapper to prevent name conflicts
+export const performanceUtil = {
   mark: (name: string): void => {
     try {
-      performance.mark(name);
+      window.performance.mark(name);
       logger.info(`Performance mark: ${name}`);
     } catch (e: unknown) {
       logger.error(`Error creating performance mark ${name}:`, e as Error);
@@ -12,7 +12,7 @@ export const performance = {
   },
   measure: (name: string, startMark: string, endMark: string): number => {
     try {
-      const measure = performance.measure(name, startMark, endMark); // ideally type this measure
+      const measure = window.performance.measure(name, startMark, endMark);
       logger.info(`Performance measure: ${name}`, { data: { duration: measure.duration } });
       return measure.duration;
     } catch (e: unknown) {
@@ -29,14 +29,21 @@ export const performance = {
   }
 };
 
+// This should be used inside a component, not at module level
 export const initPerformanceMonitoring = (): void => {
+  if (typeof window === 'undefined') return;
+  
   window.addEventListener('load', () => {
     setTimeout(() => {
-      performance.logNavigation();
+      performanceUtil.logNavigation();
     }, 0);
-
-    // Use hook to get current user info
-    const { currentUser } = useAuth();
-    logger.info('Performance monitoring initialized', { data: { user: currentUser?.email } });
+    
+    logger.info('Performance monitoring initialized');
   });
+};
+
+// Hook for use in React components
+export const usePerformanceMonitoring = () => {
+  // This is a custom hook to be used within components
+  return performanceUtil;
 };

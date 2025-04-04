@@ -1,0 +1,623 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@100;200;300;400;500;600;700;800;900&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --primary: #0369a1; /* Ocean Blue */
+  --primary-dark: #075985;
+  --secondary: #059669; /* Emerald Green */
+  --secondary-dark: #047857;
+  --text-primary: #1e293b;
+  --text-secondary: #475569;
+  --bg-light: #f0f9ff; /* Light blue tint */
+  --bg-white: #ffffff;
+  
+  /* Romanian flag colors */
+  --ro-blue: #002B7F;
+  --ro-yellow: #FCD116;
+  --ro-red: #CE1126;
+}
+
+html {
+  scroll-behavior: smooth;
+  scroll-padding-top: 80px;
+}
+
+body {
+  font-family: 'Montserrat', sans-serif;
+  color: var(--text-primary);
+  background-color: var(--bg-light);
+  min-height: 100vh;
+  position: relative;
+}
+
+/* Full-screen background styles */
+.fullscreen-bg {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100vh;
+  z-index: -1;
+  overflow: hidden;
+}
+
+.fullscreen-bg img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+}
+
+/* Override any margin/padding on the body and html for the home page */
+body.home-page {
+  margin: 0;
+  padding: 0;
+  overflow-x: hidden;
+}
+
+#root {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Background and container styles */
+.app-container {
+  background-image: url('/images/background.svg');
+  background-size: cover;
+  background-position: center;
+  background-attachment: fixed;
+  position: relative;
+  min-height: 100vh;
+}
+
+.app-container::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(255, 255, 255, 0.95);
+  z-index: -1;
+}
+
+.login-container {
+  background-image: url('/images/background.svg');
+  background-size: cover;
+  background-position: center;
+  background-attachment: fixed;
+  min-height: 100vh;
+}
+
+/* Navigation link styles */
+@layer components {
+  .nav-link {
+    @apply relative px-1 py-2 text-gray-800 transition-colors duration-300;
+    position: relative;
+    overflow: hidden;
+  }
+  
+  .nav-link::before {
+    @apply content-[''] absolute top-0 left-0 w-full h-0 transition-all duration-500;
+    background-color: var(--ro-blue);
+    z-index: -1;
+    height: 0;
+  }
+  
+  .nav-link::after {
+    @apply content-[''] absolute left-0 bottom-0 w-0 h-0.5 transition-all duration-500 ease-in-out;
+    background: linear-gradient(90deg, 
+      var(--ro-blue) 0%, 
+      var(--ro-blue) 33.33%, 
+      var(--ro-yellow) 33.33%, 
+      var(--ro-yellow) 66.66%, 
+      var(--ro-red) 66.66%, 
+      var(--ro-red) 100%);
+  }
+  
+  .nav-link:hover::before {
+    height: 5px;
+  }
+  
+  .nav-link:hover::after {
+    @apply w-full;
+  }
+  
+  .nav-link:hover {
+    color: var(--ro-blue);
+  }
+  
+  /* Romanian flag navbar animation */
+  .ro-flag-nav {
+    @apply flex items-center justify-center gap-4 bg-white/80 py-3 px-6 rounded-full shadow-md;
+    position: relative;
+    overflow: hidden;
+  }
+  
+  .ro-flag-nav::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 4px;
+    background: linear-gradient(90deg, 
+      var(--ro-blue) 0%, 
+      var(--ro-blue) 33.33%, 
+      var(--ro-yellow) 33.33%, 
+      var(--ro-yellow) 66.66%, 
+      var(--ro-red) 66.66%, 
+      var(--ro-red) 100%);
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform 0.5s ease;
+  }
+  
+  .ro-flag-nav:hover::before {
+    transform: scaleX(1);
+  }
+  
+  /* Romanian flag menu styles */
+  .ro-flag-menu {
+    @apply flex flex-col rounded-xl overflow-hidden shadow-2xl w-80 relative;
+    min-height: 400px;
+    transform-style: preserve-3d;
+    transform: perspective(1000px);
+    animation: flagWave 8s ease-in-out infinite;
+  }
+  
+  @keyframes flagWave {
+    0%, 100% {
+      transform: perspective(1000px) rotateX(0deg) rotateY(0deg);
+    }
+    25% {
+      transform: perspective(1000px) rotateX(3deg) rotateY(5deg);
+    }
+    50% {
+      transform: perspective(1000px) rotateX(-2deg) rotateY(-3deg);
+    }
+    75% {
+      transform: perspective(1000px) rotateX(2deg) rotateY(-5deg);
+    }
+  }
+  
+  .ro-flag-blue, .ro-flag-yellow, .ro-flag-red {
+    @apply flex flex-col items-center justify-center;
+    flex: 1;
+    padding: 2rem;
+    position: relative;
+    overflow: hidden;
+  }
+  
+  .ro-flag-blue {
+    background-color: #002B7F;
+  }
+  
+  .ro-flag-yellow {
+    background-color: #FCD116;
+  }
+  
+  .ro-flag-red {
+    background-color: #CE1126;
+  }
+  
+  .ro-flag-blue::after, .ro-flag-yellow::after, .ro-flag-red::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(45deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0.05) 100%);
+    animation: shimmer 4s infinite;
+  }
+  
+  @keyframes shimmer {
+    0%, 100% {
+      opacity: 0.2;
+      transform: translateX(-100%) skewX(-15deg);
+    }
+    50% {
+      opacity: 0.5;
+      transform: translateX(100%) skewX(-15deg);
+    }
+  }
+  
+  .ro-flag-link {
+    @apply text-white font-bold text-xl py-3 px-12 rounded-md transition-all duration-300 my-2 w-full text-center;
+    text-shadow: 0px 1px 2px rgba(0,0,0,0.3);
+    backdrop-filter: blur(5px);
+    border: 2px solid rgba(255,255,255,0.2);
+  }
+  
+  .ro-flag-yellow .ro-flag-link {
+    @apply text-gray-800;
+    text-shadow: 0px 1px 2px rgba(255,255,255,0.3);
+  }
+  
+  .ro-flag-link:hover {
+    @apply transform scale-105 bg-white/10;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+  }
+  
+  /* Header styling */
+  .header-transparent {
+    @apply bg-transparent;
+    backdrop-filter: blur(5px);
+  }
+  
+  .header-scrolled {
+    @apply bg-white shadow-md;
+    backdrop-filter: blur(10px);
+  }
+  
+  /* Form styles */
+  .form-input {
+    @apply block w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500;
+  }
+  
+  .form-label {
+    @apply block text-sm font-medium text-gray-700 mb-1;
+  }
+  
+  /* Card styling */
+  .card {
+    @apply bg-white/95 backdrop-blur-sm rounded-lg shadow-md overflow-hidden transition-all duration-300 hover:shadow-lg;
+  }
+  
+  /* Responsive container classes */
+  .container-fluid {
+    @apply w-full px-4 sm:px-6 md:px-8;
+  }
+  
+  .container-responsive {
+    @apply w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8;
+  }
+  
+  /* Responsive grid system */
+  .grid-responsive {
+    @apply grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6;
+  }
+  
+  /* Responsive text sizes */
+  .text-responsive {
+    @apply text-base sm:text-lg md:text-xl;
+  }
+  
+  .heading-responsive {
+    @apply text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold;
+  }
+  
+  /* Responsive padding and margins */
+  .section-padding {
+    @apply py-8 sm:py-12 md:py-16 lg:py-20;
+  }
+  
+  /* Responsive image */
+  .img-responsive {
+    @apply w-full h-auto object-cover;
+  }
+}
+
+/* Romanian Flag Side Menu Animation */
+.ro-flag-animate {
+  position: relative;
+  overflow: hidden;
+}
+
+.flag-wave {
+  position: relative;
+  animation: flagWave 8s ease-in-out infinite;
+}
+
+.flag-wave-delay {
+  position: relative;
+  animation: flagWave 8s ease-in-out 0.3s infinite;
+}
+
+.flag-wave-delay-more {
+  position: relative;
+  animation: flagWave 8s ease-in-out 0.6s infinite;
+}
+
+@keyframes flagWave {
+  0%, 100% {
+    transform: scaleX(1);
+  }
+  25% {
+    transform: skewY(1deg) scaleX(1.02);
+  }
+  50% {
+    transform: skewY(-1deg) scaleX(0.98);
+  }
+  75% {
+    transform: skewY(0.5deg) scaleX(1.01);
+  }
+}
+
+/* Add a subtle shimmer effect to the flag colors */
+.ro-flag-animate::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  background: linear-gradient(
+    45deg,
+    rgba(255, 255, 255, 0) 0%,
+    rgba(255, 255, 255, 0.2) 50%,
+    rgba(255, 255, 255, 0) 100%
+  );
+  background-size: 200% 200%;
+  animation: shimmer 3s infinite;
+  pointer-events: none;
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: -100% -100%;
+  }
+  100% {
+    background-position: 100% 100%;
+  }
+}
+
+/* Global Button Styles */
+.btn {
+  @apply px-6 py-2 rounded-md font-medium transition-all duration-300;
+}
+
+.btn-primary {
+  @apply bg-blue-600 hover:bg-blue-700 text-white;
+}
+
+.btn-secondary {
+  @apply bg-gray-200 hover:bg-gray-300 text-gray-800;
+}
+
+/* Romanian flag-themed buttons */
+.btn-ro {
+  @apply relative overflow-hidden border-2 border-transparent px-6 py-2 rounded-md font-medium transition-all duration-300 bg-white text-gray-800;
+}
+
+.btn-ro::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  width: 100%;
+  height: 0;
+  background: linear-gradient(to right, var(--ro-blue) 33.33%, var(--ro-yellow) 33.33%, var(--ro-yellow) 66.66%, var(--ro-red) 66.66%);
+  transition: height 0.3s ease;
+  z-index: -1;
+}
+
+.btn-ro:hover {
+  color: white;
+  border-color: transparent;
+}
+
+.btn-ro:hover::before {
+  height: 100%;
+}
+
+/* Green and Blue Trust Colors */
+.trust-bg-blue {
+  background-color: rgba(3, 105, 161, 0.05);
+  background-image: 
+    radial-gradient(circle at 10% 20%, rgba(3, 105, 161, 0.05) 0%, rgba(5, 150, 105, 0.03) 90%);
+}
+
+.trust-bg-green {
+  background-color: rgba(5, 150, 105, 0.05);
+  background-image: 
+    radial-gradient(circle at 90% 20%, rgba(5, 150, 105, 0.05) 0%, rgba(3, 105, 161, 0.03) 90%);
+}
+
+/* Gradient Buttons */
+.btn-gradient-blue {
+  @apply bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white;
+}
+
+.btn-gradient-green {
+  @apply bg-gradient-to-r from-emerald-600 to-emerald-700 hover:from-emerald-700 hover:to-emerald-800 text-white;
+}
+
+.btn-gradient-blend {
+  @apply bg-gradient-to-r from-blue-600 via-blue-700 to-emerald-700 hover:from-blue-700 hover:via-blue-800 hover:to-emerald-800 text-white;
+}
+
+/* Page Containers */
+.container {
+  @apply max-w-[1280px] mx-auto px-4;
+}
+
+.page-container {
+  @apply pt-24 pb-16 min-h-screen;
+}
+
+/* Section Styling */
+.section {
+  @apply py-12 md:py-20;
+}
+
+.section-title {
+  @apply text-3xl md:text-4xl font-bold mb-6 text-center;
+}
+
+.section-subtitle {
+  @apply text-xl text-gray-600 mb-12 text-center max-w-3xl mx-auto;
+}
+
+/* Hero Container with Custom Gradient */
+.hero-container {
+  position: relative;
+  overflow: hidden;
+}
+
+.hero-container::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(135deg, rgba(3, 105, 161, 0.08) 0%, rgba(5, 150, 105, 0.08) 100%);
+  z-index: -1;
+}
+
+/* Animations */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideUp {
+  from {
+    transform: translateY(20px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.5s ease-in-out;
+}
+
+.animate-slide-up {
+  animation: slideUp 0.5s ease-in-out;
+}
+
+/* Side Menu Animation */
+@keyframes slideIn {
+  from { transform: translateX(100%); }
+  to { transform: translateX(0); }
+}
+
+@keyframes slideOut {
+  from { transform: translateX(0); }
+  to { transform: translateX(100%); }
+}
+
+.slide-in {
+  animation: slideIn 0.3s forwards;
+}
+
+.slide-out {
+  animation: slideOut 0.3s forwards;
+}
+
+/* Make sure scrollbars match the design */
+.custom-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: #3b82f6 #f3f4f6;
+}
+
+.custom-scrollbar::-webkit-scrollbar {
+  width: 6px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: #f3f4f6;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background-color: #3b82f6;
+  border-radius: 3px;
+}
+
+/* Hero section enhanced typography */
+.hero-title {
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+  letter-spacing: -0.02em;
+}
+
+.hero-subtitle {
+  text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.4);
+}
+
+.hero-text {
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+  max-width: 80ch;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+/* Hero buttons with enhanced styling */
+.hero-button {
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  letter-spacing: 0.025em;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.hero-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 8px rgba(0, 0, 0, 0.15);
+}
+
+/* Screen size specific adjustments */
+@media (min-width: 1280px) {
+  .hero-container {
+    padding-bottom: 2rem;
+  }
+  
+  .hero-title {
+    font-size: 5.5rem;
+    margin-bottom: 1.5rem;
+  }
+  
+  .hero-subtitle {
+    font-size: 2.75rem;
+    margin-bottom: 2rem;
+  }
+  
+  .hero-text {
+    font-size: 1.5rem;
+    margin-bottom: 3rem;
+  }
+  
+  .hero-buttons {
+    gap: 1.5rem;
+  }
+  
+  .hero-button {
+    font-size: 1.25rem;
+    padding: 1rem 2rem;
+  }
+}
+
+/* Account for fixed header */
+main {
+  padding-top: 4rem;
+}
+
+/* Media query helpers */
+@media (max-width: 640px) {
+  .hide-on-mobile {
+    display: none !important;
+  }
+}
+
+@media (min-width: 641px) and (max-width: 1024px) {
+  .hide-on-tablet {
+    display: none !important;
+  }
+}
+
+@media (min-width: 1025px) {
+  .hide-on-desktop {
+    display: none !important;
+  }
+}

@@ -1,62 +1,85 @@
-import React from 'react';
-import { Routes, Route } from 'react-router-dom';
-import Home from './pages/Home';
+import React, { Suspense } from 'react';
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { AuthProvider } from './context/AuthContext';
+import ProtectedRoute from './components/ProtectedRoute';
 import Layout from './components/Layout';
-import NotFound from './pages/NotFound';
-import LoginPage from './pages/Login';
-import AboutUs from './pages/AboutUs';
-import Services from './pages/Services';
+// Import pages
+import Login from './pages/Login';
+import Register from './pages/Register';
+import ForgotPassword from './pages/ForgotPassword';
+import Dashboard from './pages/Dashboard';
+import Account from './pages/Account';
+import Checkout from './pages/Checkout';
+import Admin from './pages/Admin';
+import HomePage from './pages/HomePage';
 import Products from './pages/Products';
-import Community from './pages/Community';
-import Contact from './pages/Contact';
-// Import AuthProvider from the correct path
-import { AuthProvider } from './contexts/AuthContext';
+import ProductDetail from './pages/ProductDetail';
+import Cart from './pages/Cart';
+import NotFound from './pages/NotFound';
 
-const App: React.FC = () => {
-  console.log('App component rendering');
-  
+// Loading fallback component
+const LoadingFallback = () => (
+  <div className="flex justify-center items-center min-h-screen">
+    <div className="animate-spin rounded-full h-16 w-16 border-t-4 border-blue-500"></div>
+  </div>
+);
+
+function App() {
   return (
-    <div className="app-container">
-      {/* Add AuthProvider to wrap all routes */}
-      <AuthProvider>
-        <Routes>
-          {/* Use Layout component for pages that need header and footer */}
-          <Route path="/" element={
-            <Layout>
-              <Home />
-            </Layout>
-          } />
-          <Route path="/login" element={<LoginPage />} />
-          <Route path="/despre-noi" element={
-            <Layout>
-              <AboutUs />
-            </Layout>
-          } />
-          <Route path="/servicii" element={
-            <Layout>
-              <Services />
-            </Layout>
-          } />
-          <Route path="/produse" element={
-            <Layout>
-              <Products />
-            </Layout>
-          } />
-          <Route path="/comunitate" element={
-            <Layout>
-              <Community />
-            </Layout>
-          } />
-          <Route path="/contact" element={
-            <Layout>
-              <Contact />
-            </Layout>
-          } />
-          <Route path="*" element={<NotFound />} />
-        </Routes>
-      </AuthProvider>
-    </div>
+    <AuthProvider>
+      <Suspense fallback={<LoadingFallback />}>
+        <Router>
+          <Routes>
+            {/* Public routes */}
+            <Route path="/" element={<Layout />}>
+              <Route index element={<HomePage />} />
+              <Route path="login" element={<Login />} />
+              <Route path="register" element={<Register />} />
+              <Route path="reset-password" element={<ForgotPassword />} />
+              <Route path="products" element={<Products />} />
+              <Route path="products/:id" element={<ProductDetail />} />
+              <Route path="cart" element={<Cart />} />
+              
+              {/* Protected routes */}
+              <Route 
+                path="checkout" 
+                element={
+                  <ProtectedRoute>
+                    <Checkout />
+                  </ProtectedRoute>
+                } 
+              />
+              <Route 
+                path="account" 
+                element={
+                  <ProtectedRoute>
+                    <Account />
+                  </ProtectedRoute>
+                } 
+              />
+              <Route 
+                path="dashboard" 
+                element={
+                  <ProtectedRoute>
+                    <Dashboard />
+                  </ProtectedRoute>
+                } 
+              />
+              <Route 
+                path="admin" 
+                element={
+                  <ProtectedRoute adminOnly>
+                    <Admin />
+                  </ProtectedRoute>
+                } 
+              />
+              <Route path="*" element={<NotFound />} />
+            </Route>
+          </Routes>
+        </Router>
+      </Suspense>
+    </AuthProvider>
   );
-};
+}
 
 export default App;

@@ -18,12 +18,26 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    // Use onAuthStateChanged directly instead of auth.onAuthStateChanged
     const unsubscribe = onAuthStateChanged(auth, (user) => {
+      logger.info('Auth state changed', { context: 'Auth', data: { userExists: !!user } });
       setCurrentUser(user ? formatUserData(user) : null);
+      // Ensure loading is set to false regardless of authentication status
       setLoading(false);
     });
 
-    return unsubscribe;
+    // Handle potential errors in auth state change
+    const authErrorHandler = () => {
+      // If there's an error, still set loading to false so UI isn't blocked
+      setLoading(false);
+    };
+
+    // Add error handling
+    auth.onAuthStateChanged(null, authErrorHandler);
+
+    return () => {
+      unsubscribe();
+    };
   }, []);
 
   const signUp = async (email: string, password: string): Promise<ApiResponse<UserData>> => {

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/authContextUtils';
 import { isValidEmail } from '../context/authHelpers';
 import { signInWithGoogle } from '../services/firebase';
@@ -13,6 +13,10 @@ const Login: React.FC = () => {
   
   const auth = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
+
+  // Get the path the user was trying to access
+  const from = location.state?.from || '/';
 
   // Clear errors when component mounts
   useEffect(() => {
@@ -60,7 +64,8 @@ const Login: React.FC = () => {
         setError(result.error || 'Authentication failed');
         return;
       }
-      navigate('/');
+      // Redirect to the page the user was trying to access
+      navigate(from);
     } catch (err) {
       console.error('Login error:', err);
       setError('Authentication failed');
@@ -73,7 +78,7 @@ const Login: React.FC = () => {
     try {
       setLoading(true);
       await signInWithGoogle();
-      navigate('/');
+      navigate(from);
     } catch (err) {
       console.error('Google login error:', err);
       setError('Google authentication failed');
@@ -89,6 +94,11 @@ const Login: React.FC = () => {
           <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
             Autentificare
           </h2>
+          {from !== '/' && (
+            <p className="mt-2 text-center text-sm text-gray-600">
+              Vă rugăm să vă autentificați pentru a continua
+            </p>
+          )}
         </div>
         
         {error && (

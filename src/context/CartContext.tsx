@@ -22,18 +22,16 @@ interface CartContextType {
 }
 
 // Create the context with a default value
-const CartContext = createContext<CartContextType>({
-  items: [],
-  addItem: () => {},
-  removeItem: () => {},
-  updateQuantity: () => {},
-  clearCart: () => {},
-  getTotal: () => 0,
-  getItemsCount: () => 0
-});
+const CartContext = createContext<CartContextType | undefined>(undefined);
 
 // Custom hook to use the cart context
-export const useCart = () => useContext(CartContext);
+export const useCart = () => {
+  const context = useContext(CartContext);
+  if (!context) {
+    throw new Error('useCart must be used within a CartProvider');
+  }
+  return context;
+};
 
 // Cart provider component
 export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
@@ -51,13 +49,16 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
   // Add item to cart
   const addItem = (item: Omit<CartItem, 'quantity'>) => {
     setItems(prevItems => {
-      const existingItem = prevItems.find(i => i.id === item.id);
+      const existingItemIndex = prevItems.findIndex(i => i.id === item.id);
       
-      if (existingItem) {
+      if (existingItemIndex !== -1) {
         // If item already exists in cart, increase quantity
-        return prevItems.map(i => 
-          i.id === item.id ? { ...i, quantity: i.quantity + 1 } : i
-        );
+        const updatedItems = [...prevItems];
+        updatedItems[existingItemIndex] = {
+          ...updatedItems[existingItemIndex],
+          quantity: updatedItems[existingItemIndex].quantity + 1
+        };
+        return updatedItems;
       } else {
         // If item doesn't exist, add it with quantity 1
         return [...prevItems, { ...item, quantity: 1 }];

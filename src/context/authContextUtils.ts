@@ -65,7 +65,16 @@ export const formatUserData = (user: FirebaseUser): UserData => ({
 export const useAuth = () => {
   const context = useContext(AuthContext);
   if (!context) {
-    throw new Error('useAuth must be used within an AuthProvider');
+    // Instead of throwing an error, return a default context that won't break the app
+    return {
+      currentUser: null,
+      loading: false,
+      signUp: () => Promise.resolve({ success: false, error: 'Not initialized' }),
+      login: () => Promise.resolve({ success: false, error: 'Not initialized' }),
+      signOut: () => Promise.resolve({ success: false, error: 'Not initialized' }),
+      resetPassword: () => Promise.resolve({ success: false, error: 'Not initialized' })
+    } as AuthContextType;
   }
+  
   return context;
 };

@@ -1,15 +1,15 @@
 import { Suspense, lazy } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate, Outlet } from 'react-router-dom';
-import { AuthProvider } from './contexts/AuthContext';
+import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { CartProvider } from './contexts/CartContext';
-import Layout from './components/layout/Layout';
-import ProtectedRoute from './components/routes/ProtectedRoute';
+import Navbar from './components/layout/Navbar';
+import Footer from './components/layout/Footer';
 import LoadingFallback from './components/ui/LoadingFallback';
 
 // Lazy loaded components to improve initial load time
 const HomePage = lazy(() => import('./pages/HomePage'));
 const About = lazy(() => import('./pages/About'));
-const Login = lazy(() => import('./pages/LoginPage')); // Updated import path
+const LoginPage = lazy(() => import('./pages/LoginPage'));
 const Register = lazy(() => import('./pages/Register'));
 const ForgotPassword = lazy(() => import('./pages/ForgotPassword'));
 const Products = lazy(() => import('./pages/Products'));
@@ -22,20 +22,48 @@ const Orders = lazy(() => import('./pages/Orders'));
 const Events = lazy(() => import('./pages/Events'));
 const Ong = lazy(() => import('./pages/Ong'));
 
+interface LayoutProps {
+  children: React.ReactNode;
+}
+
+const Layout: React.FC<LayoutProps> = ({ children }) => {
+  return (
+    <div className="flex flex-col min-h-screen">
+      <Navbar />
+      <main className="flex-grow">{children}</main>
+      <Footer />
+    </div>
+  );
+};
+
+const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const { currentUser, loading } = useAuth();
+
+  if (loading) {
+    return <div>Se încarcă...</div>;
+  }
+
+  if (!currentUser) {
+    return <Navigate to="/login" />;
+  }
+
+  return <>{children}</>;
+};
+
 function App() {
   return (
     <AuthProvider>
-      <Router>
-        <CartProvider>
+      <CartProvider>
+        <Router>
           <Suspense fallback={<LoadingFallback />}>
             <Routes>
               {/* Make HomePage the default route */}
               <Route path="/" element={<HomePage />} />
-              
+
               <Route element={<Layout><Outlet /></Layout>}>
                 {/* Public routes */}
                 <Route path="/about" element={<About />} />
-                <Route path="/login" element={<Login />} />
+                <Route path="/login" element={<LoginPage />} />
                 <Route path="/register" element={<Register />} />
                 <Route path="/forgot-password" element={<ForgotPassword />} />
                 <Route path="/products" element={<Products />} />
@@ -71,8 +99,8 @@ function App() {
               <Route path="*" element={<Navigate to="/" replace />} />
             </Routes>
           </Suspense>
-        </CartProvider>
-      </Router>
+        </Router>
+      </CartProvider>
     </AuthProvider>
   );
 }

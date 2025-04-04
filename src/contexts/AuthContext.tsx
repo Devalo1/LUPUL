@@ -35,9 +35,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     return createUserWithEmailAndPassword(auth, email, password);
   };
 
-  const login = async (email: string, password: string) => {
-    return signInWithEmailAndPassword(auth, email, password);
-  };
+  async function login(email: string, password: string): Promise<{ success: boolean; error?: string }> {
+    try {
+      await signInWithEmailAndPassword(auth, email, password);
+      return { success: true };
+    } catch (error: any) {
+      return { success: false, error: error.message };
+    }
+  }
 
   const logOut = async () => {
     return signOut(auth);
@@ -71,13 +76,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
+      console.log('User state changed:', user);
       if (user) {
         setCurrentUser({
           uid: user.uid,
           email: user.email,
           displayName: user.displayName,
           photoURL: user.photoURL,
-          isAdmin: false // Default value, you might want to check from Firestore
         });
       } else {
         setCurrentUser(null);

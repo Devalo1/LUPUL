@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import Button from '../common/Button';
+import { GoogleAuthProvider, signInWithPopup } from 'firebase/auth';
+import { auth } from '../../firebase';
 
 interface LoginProps {
   isRegister?: boolean;
@@ -13,7 +15,7 @@ const Login: React.FC<LoginProps> = ({ isRegister = false }) => {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
-  const { login, signUp, signInWithGoogle } = useAuth();
+  const { login, signUp } = useAuth();
   const navigate = useNavigate();
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -41,14 +43,20 @@ const Login: React.FC<LoginProps> = ({ isRegister = false }) => {
     }
   };
 
+  const signInWithGoogle = async () => {
+    const provider = new GoogleAuthProvider();
+    const result = await signInWithPopup(auth, provider);
+    console.log('Google Sign-In Result:', result);
+  };
+
   const handleGoogleSignIn = async () => {
     try {
       setError('');
       setLoading(true);
       await signInWithGoogle();
-      navigate('/');
-    } catch (err: any) {
-      setError(err.message || 'A apărut o eroare la autentificare cu Google');
+      navigate('/dashboard'); // Redirecționează utilizatorul
+    } catch (err) {
+      setError('A apărut o eroare la autentificare cu Google');
     } finally {
       setLoading(false);
     }

@@ -14,6 +14,8 @@ const firebaseConfig = {
   measurementId: import.meta.env.VITE_FIREBASE_MEASUREMENT_ID,
 };
 
+console.log('Firebase Config:', firebaseConfig);
+
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
 
@@ -23,15 +25,17 @@ export const firestore = getFirestore(app);
 export const storage = getStorage(app);
 
 // Optional: configure Firebase emulators for local development
-if (import.meta.env.VITE_USE_EMULATORS === 'true') {
+if (import.meta.env.VITE_USE_EMULATORS === 'false') {
+  console.log('Firebase emulators are disabled.');
+} else if (import.meta.env.VITE_USE_EMULATORS === 'true') {
   import('firebase/auth').then(({ connectAuthEmulator }) => {
     connectAuthEmulator(auth, 'http://localhost:9099');
   });
-  
+
   import('firebase/firestore').then(({ connectFirestoreEmulator }) => {
     connectFirestoreEmulator(firestore, 'localhost', 8080);
   });
-  
+
   import('firebase/storage').then(({ connectStorageEmulator }) => {
     connectStorageEmulator(storage, 'localhost', 9199);
   });

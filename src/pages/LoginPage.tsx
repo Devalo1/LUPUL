@@ -1,21 +1,23 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { useAuth } from '../contexts/AuthContext'; // Corectarea căii de import
+import { useAuth } from '../contexts/AuthContext';
 import Button from '../components/common/Button';
+import { GoogleAuthProvider, signInWithPopup } from 'firebase/auth';
+import { auth } from '../firebase'; // Assuming you have a firebase configuration file
 
 const LoginPage: React.FC = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
-  const { login, signInWithGoogle } = useAuth();
+  const { login } = useAuth();
   const navigate = useNavigate();
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     setError(null);
-    
+
     try {
       const result = await login(email, password);
       if (result.success) {
@@ -31,13 +33,20 @@ const LoginPage: React.FC = () => {
     }
   };
 
+  const signInWithGoogle = async () => {
+    const provider = new GoogleAuthProvider();
+    const result = await signInWithPopup(auth, provider);
+    console.log('Google Sign-In Result:', result);
+  };
+
   const handleGoogleSignIn = async () => {
     try {
+      setError('');
+      setLoading(true);
       await signInWithGoogle();
-      navigate('/dashboard');
+      navigate('/dashboard'); // Redirecționează utilizatorul
     } catch (err) {
-      setError('Autentificare cu Google eșuată.');
-      console.error(err);
+      setError('A apărut o eroare la autentificare cu Google');
     } finally {
       setLoading(false);
     }
@@ -47,21 +56,21 @@ const LoginPage: React.FC = () => {
     <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-md w-full space-y-8 bg-white p-8 rounded-lg shadow-md">
         <div>
-          <h2 className="text-center text-3xl font-extrabold text-gray-900">Autentificare</h2>
+          <h2 className="text-center text-3xl font-extrabold text-gray-900">Log in</h2>
           <p className="mt-2 text-center text-sm text-gray-600">
-            Sau{' '}
+            Nu ai un cont?{' '}
             <Link to="/register" className="font-medium text-blue-600 hover:text-blue-500">
-              creează-ți un cont nou
+              Creează cont
             </Link>
           </p>
         </div>
-        
+
         {error && (
           <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-md">
             {error}
           </div>
         )}
-        
+
         <form className="mt-8 space-y-6" onSubmit={handleLogin}>
           <div className="rounded-md shadow-sm -space-y-px">
             <div>
@@ -124,32 +133,14 @@ const LoginPage: React.FC = () => {
             </Button>
           </div>
         </form>
-        
-        <div className="mt-6">
-          <div className="relative">
-            <div className="absolute inset-0 flex items-center">
-              <div className="w-full border-t border-gray-300"></div>
-            </div>
-            <div className="relative flex justify-center text-sm">
-              <span className="px-2 bg-white text-gray-500">
-                Sau continuă cu
-              </span>
-            </div>
-          </div>
 
-          <div className="mt-6">
-            <button
-              type="button"
-              onClick={handleGoogleSignIn}
-              disabled={loading}
-              className="w-full inline-flex justify-center py-2 px-4 border border-gray-300 rounded-md shadow-sm bg-white text-sm font-medium text-gray-500 hover:bg-gray-50"
-            >
-              <svg className="w-5 h-5 mr-2" viewBox="0 0 24 24" fill="currentColor">
-                <path d="M12.545 12.151c0 1.054-.87 1.91-1.925 1.91a1.919 1.919 0 01-1.935-1.91c0-1.055.87-1.88 1.935-1.88 1.054 0 1.925.835 1.925 1.88m-1.925-4.371c-1.054 0-1.935-.826-1.935-1.89 0-1.054.87-1.88 1.935-1.88 1.054 0 1.925.826 1.925 1.88 0 1.064-.87 1.89-1.925 1.89m0-7.276c-2.998 0-5.415 2.428-5.415 5.415 0 2.998 2.417 5.426 5.415 5.426 2.997 0 5.426-2.428 5.426-5.426 0-2.987-2.429-5.415-5.426-5.415M12 24c-6.627 0-12-5.373-12-12s5.373-12 12-12 12 5.373 12 12-5.373 12-12 12" />
-              </svg>
-              Autentificare cu Google
-            </button>
-          </div>
+        <div className="mt-4">
+          <Button
+            onClick={handleGoogleSignIn}
+            className="w-full bg-red-500 text-white hover:bg-red-600"
+          >
+            Autentificare cu Google
+          </Button>
         </div>
       </div>
     </div>

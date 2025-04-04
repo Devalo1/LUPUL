@@ -1,4 +1,9 @@
 import { Component, ReactNode, ErrorInfo } from 'react';
+import ErrorBoundary from './components/layout/ErrorBoundary';
+import { lazy } from 'react';
+
+const LoginPage = lazy(() => import('./pages/LoginPage'));
+const Register = lazy(() => import('./pages/Register'));
 
 interface ErrorBoundaryProps {
   children: ReactNode;
@@ -106,4 +111,22 @@ class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
   }
 }
 
-export default ErrorBoundary;
+function App() {
+  return (
+    <ErrorBoundary>
+      <AuthProvider>
+        <CartProvider>
+          <Router>
+            <Suspense fallback={<LoadingFallback />}>
+              <Routes>
+                {/* Rutele aplicației */}
+              </Routes>
+            </Suspense>
+          </Router>
+        </CartProvider>
+      </AuthProvider>
+    </ErrorBoundary>
+  );
+}
+
+export default App;

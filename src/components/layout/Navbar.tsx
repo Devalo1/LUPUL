@@ -3,45 +3,34 @@ import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import { useCart } from '../../contexts/CartContext';
 
-interface NavbarProps {
-  isLoggedIn?: boolean;
-}
-
-const Navbar: React.FC<NavbarProps> = ({ isLoggedIn = false }) => {
+const Navbar: React.FC = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const { currentUser, logOut } = useAuth();
   const { items, getItemsCount } = useCart();
   const location = useLocation();
   const navigate = useNavigate();
-  
+
   // Close menu when route changes
   useEffect(() => {
     setIsMenuOpen(false);
   }, [location.pathname]);
-  
+
   // Add scroll effect
   useEffect(() => {
     const handleScroll = () => {
-      if (window.scrollY > 10) {
-        setScrolled(true);
-      } else {
-        setScrolled(false);
-      }
+      setScrolled(window.scrollY > 10);
     };
-    
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
   const handleLogout = async () => {
     try {
-      setIsMenuOpen(false);
       await logOut();
       navigate('/');
     } catch (error) {
-      console.error('Logout error:', error);
-      alert('A apărut o eroare la deconectare. Vă rugăm încercați din nou.');
+      console.error('Logout failed:', error);
     }
   };
 
@@ -53,26 +42,20 @@ const Navbar: React.FC<NavbarProps> = ({ isLoggedIn = false }) => {
     <nav className={`fixed top-0 w-full z-10 bg-white shadow-md transition-all duration-300 ${scrolled ? 'py-2' : 'py-4'}`}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center">
+          {/* Logo */}
           <div className="flex items-center">
             <Link to="/" className="flex-shrink-0">
-              <img className="h-10 w-auto" src="/images/LC.png" alt="Lupul și Corbul" />
+              <img className="h-10 w-auto" src="/images/LOGO LC.png" alt="Lupul și Corbul" />
             </Link>
             <div className="hidden md:ml-6 md:flex md:space-x-6">
-              <Link to="/" className="text-gray-900 hover:text-blue-600 px-3 py-2 font-medium">
-                Acasă
-              </Link>
-              <Link to="/shop" className="text-gray-500 hover:text-blue-600 px-3 py-2 font-medium">
-                Produse
-              </Link>
-              <Link to="/about" className="text-gray-500 hover:text-blue-600 px-3 py-2 font-medium">
-                Despre noi
-              </Link>
-              <Link to="/contact" className="text-gray-500 hover:text-blue-600 px-3 py-2 font-medium">
-                Contact
-              </Link>
+              <Link to="/" className="text-gray-900 hover:text-blue-600 px-3 py-2 font-medium">Acasă</Link>
+              <Link to="/shop" className="text-gray-500 hover:text-blue-600 px-3 py-2 font-medium">Produse</Link>
+              <Link to="/about" className="text-gray-500 hover:text-blue-600 px-3 py-2 font-medium">Despre noi</Link>
+              <Link to="/contact" className="text-gray-500 hover:text-blue-600 px-3 py-2 font-medium">Contact</Link>
             </div>
           </div>
-          
+
+          {/* Cart and User Actions */}
           <div className="hidden md:flex items-center space-x-4">
             <Link to="/cart" className="relative p-2">
               <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -84,52 +67,30 @@ const Navbar: React.FC<NavbarProps> = ({ isLoggedIn = false }) => {
                 </span>
               )}
             </Link>
-            
-            {isLoggedIn ? (
-              currentUser ? (
-                <div className="relative">
-                  <button 
-                    className="flex items-center space-x-1"
-                    onClick={() => setIsMenuOpen(!isMenuOpen)}
-                  >
-                    <div className="h-8 w-8 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 font-semibold">
-                      {currentUser.displayName?.[0]?.toUpperCase() || currentUser.email?.[0]?.toUpperCase() || 'U'}
-                    </div>
-                  </button>
-                  
-                  {isMenuOpen && (
-                    <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-20">
-                      <Link to="/account" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
-                        Contul meu
-                      </Link>
-                      <button
-                        onClick={handleLogout}
-                        className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                      >
-                        Deconectare
-                      </button>
-                    </div>
-                  )}
-                </div>
-              ) : null
+
+            {currentUser ? (
+              <div className="relative">
+                <button className="flex items-center space-x-1" onClick={toggleMenu}>
+                  <span className="text-gray-700 font-medium">{currentUser.displayName || 'Profil'}</span>
+                </button>
+                {isMenuOpen && (
+                  <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1">
+                    <Link to="/dashboard" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Dashboard</Link>
+                    <button onClick={handleLogout} className="block w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-gray-100">Deconectare</button>
+                  </div>
+                )}
+              </div>
             ) : (
               <div className="flex items-center space-x-4">
-                <Link to="/login" className="text-gray-600 hover:text-blue-600">
-                  Autentificare
-                </Link>
-                <Link to="/register" className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700">
-                  Înregistrare
-                </Link>
+                <Link to="/login" className="text-gray-500 hover:text-gray-900 font-medium">Log in</Link>
+                <Link to="/register" className="bg-blue-600 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-blue-700">Creează cont</Link>
               </div>
             )}
           </div>
-          
+
           {/* Mobile menu button */}
           <div className="flex items-center md:hidden">
-            <button
-              onClick={toggleMenu}
-              className="p-2 rounded-md text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none"
-            >
+            <button onClick={toggleMenu} className="p-2 rounded-md text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none">
               {isMenuOpen ? (
                 <svg className="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -143,61 +104,31 @@ const Navbar: React.FC<NavbarProps> = ({ isLoggedIn = false }) => {
           </div>
         </div>
       </div>
-      
+
       {/* Mobile menu */}
       {isMenuOpen && (
         <div className="md:hidden">
           <div className="pt-2 pb-3 space-y-1">
-            <Link to="/" className="block pl-3 pr-4 py-2 text-base font-medium text-gray-700 hover:bg-gray-50 hover:text-blue-600">
-              Acasă
-            </Link>
-            <Link to="/shop" className="block pl-3 pr-4 py-2 text-base font-medium text-gray-700 hover:bg-gray-50 hover:text-blue-600">
-              Produse
-            </Link>
-            <Link to="/about" className="block pl-3 pr-4 py-2 text-base font-medium text-gray-700 hover:bg-gray-50 hover:text-blue-600">
-              Despre noi
-            </Link>
-            <Link to="/contact" className="block pl-3 pr-4 py-2 text-base font-medium text-gray-700 hover:bg-gray-50 hover:text-blue-600">
-              Contact
-            </Link>
+            <Link to="/" className="block pl-3 pr-4 py-2 text-base font-medium text-gray-700 hover:bg-gray-50 hover:text-blue-600">Acasă</Link>
+            <Link to="/shop" className="block pl-3 pr-4 py-2 text-base font-medium text-gray-700 hover:bg-gray-50 hover:text-blue-600">Produse</Link>
+            <Link to="/about" className="block pl-3 pr-4 py-2 text-base font-medium text-gray-700 hover:bg-gray-50 hover:text-blue-600">Despre noi</Link>
+            <Link to="/contact" className="block pl-3 pr-4 py-2 text-base font-medium text-gray-700 hover:bg-gray-50 hover:text-blue-600">Contact</Link>
           </div>
-          
           <div className="pt-4 pb-3 border-t border-gray-200">
-            {isLoggedIn ? (
-              currentUser ? (
-                <div>
-                  <div className="flex items-center px-4">
-                    <div className="flex-shrink-0">
-                      <div className="h-10 w-10 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 font-bold">
-                        {currentUser.displayName?.[0]?.toUpperCase() || currentUser.email?.[0]?.toUpperCase() || 'U'}
-                      </div>
-                    </div>
-                    <div className="ml-3">
-                      <div className="text-base font-medium text-gray-800">{currentUser.displayName || 'Utilizator'}</div>
-                      <div className="text-sm font-medium text-gray-500">{currentUser.email}</div>
-                    </div>
-                  </div>
-                  <div className="mt-3 space-y-1">
-                    <Link to="/account" className="block px-4 py-2 text-base font-medium text-gray-500 hover:text-gray-800 hover:bg-gray-100">
-                      Contul meu
-                    </Link>
-                    <button
-                      onClick={handleLogout}
-                      className="block w-full text-left px-4 py-2 text-base font-medium text-gray-500 hover:text-gray-800 hover:bg-gray-100"
-                    >
-                      Deconectare
-                    </button>
-                  </div>
+            {currentUser ? (
+              <div>
+                <div className="flex items-center px-4">
+                  <span className="text-gray-700 font-medium">{currentUser.displayName || 'Profil'}</span>
                 </div>
-              ) : null
+                <div className="mt-3 space-y-1">
+                  <Link to="/dashboard" className="block px-4 py-2 text-base font-medium text-gray-700 hover:bg-gray-100">Dashboard</Link>
+                  <button onClick={handleLogout} className="block w-full text-left px-4 py-2 text-base font-medium text-red-600 hover:bg-gray-100">Deconectare</button>
+                </div>
+              </div>
             ) : (
               <div className="space-y-1 px-4">
-                <Link to="/login" className="block text-base font-medium text-gray-500 hover:text-gray-800 hover:bg-gray-100 py-2">
-                  Autentificare
-                </Link>
-                <Link to="/register" className="block text-base font-medium text-gray-500 hover:text-gray-800 hover:bg-gray-100 py-2">
-                  Înregistrare
-                </Link>
+                <Link to="/login" className="block px-4 py-2 text-base font-medium text-gray-500 hover:text-gray-800 hover:bg-gray-100">Log in</Link>
+                <Link to="/register" className="block px-4 py-2 text-base font-medium text-gray-500 hover:text-gray-800 hover:bg-gray-100">Creează cont</Link>
               </div>
             )}
           </div>

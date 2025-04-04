@@ -2,10 +2,10 @@ import React from 'react';
 import { Outlet } from 'react-router-dom';
 import Navbar from './Navbar';
 import Footer from './Footer';
-import useAuth from '../contexts/AuthContext'; // Updated import from context to contexts
+import { useAuth } from '../contexts/AuthContext';
 
 const Layout: React.FC = () => {
-  const { currentUser, loading } = useAuth(); // Acum cunoaștem dacă utilizatorul este logat
+  const { currentUser, loading } = useAuth(); // Updated import
 
   if (loading) {
     return (

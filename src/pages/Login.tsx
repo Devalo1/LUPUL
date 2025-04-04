@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
-import { isValidEmail } from '../contexts/AuthContextUtils';
+import { isValidEmail } from '../utils/helpers';
 import { signInWithGoogle, signInWithEmailAndPassword } from '../services/firebase';
 
 const Login: React.FC = () => {

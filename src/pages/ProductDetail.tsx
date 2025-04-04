@@ -4,6 +4,7 @@ import { productApi } from '../services/api';
 import { Product } from '../types';
 import LoadingSpinner from '../components/common/LoadingSpinner';
 import Button from '../components/common/Button';
+import { useCart } from '../contexts/CartContext'; // Using the correct plural path
 
 const ProductDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();

@@ -3,7 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { doc, getDoc } from 'firebase/firestore';
 import { firestore } from '../services/firebase';
 import { Product } from '../types';
-import { useCart } from '../contexts/CartContext'; // Updated path
+import { useCart } from '../contexts/CartContext'; // Corrected path from 'context' to 'contexts'
 import Button from '../components/common/Button';
 import { formatCurrency, calculateDiscountedPrice } from '../utils/helpers';
 import LoadingSpinner from '../components/ui/LoadingSpinner';

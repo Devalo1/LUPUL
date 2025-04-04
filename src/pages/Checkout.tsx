@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useCart } from '../contexts/CartContext';
-import { useAuth } from '../context/useAuth';
+import { useAuth } from '../contexts/AuthContext';
 import { logger } from '../utils/debug';
 
 const Checkout: React.FC = () => {

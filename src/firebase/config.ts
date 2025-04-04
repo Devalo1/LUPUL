@@ -7,13 +7,13 @@ import { logger } from '../utils/debug';
 
 // Firebase configuration
 const firebaseConfig = {
-  apiKey: import.meta.env.VITE_FIREBASE_API_KEY || "test-api-key",
-  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN || "test-domain",
-  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID || "test-project",
-  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET || "test-bucket",
-  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID || "test-sender",
-  appId: import.meta.env.VITE_FIREBASE_APP_ID || "test-app-id",
-  measurementId: import.meta.env.VITE_FIREBASE_MEASUREMENT_ID || "test-measurement-id"
+  apiKey: "AIzaSyCZEWoZn-c7NSH1AGbetWEbtxwEz-iaMR4",
+  authDomain: "lupulcorbul.firebaseapp.com",
+  projectId: "lupulcorbul",
+  storageBucket: "lupulcorbul.appspot.com", // Fixed the storage bucket URL
+  messagingSenderId: "312943074536",
+  appId: "1:312943074536:web:13fc0660014bc58c5c7d5d",
+  measurementId: "G-38YSZKVXDC"
 };
 
 // Initialize Firebase
@@ -23,9 +23,13 @@ const db = getFirestore(app);
 const storage = getStorage(app);
 let analytics = null;
 
+// Initialize analytics if supported
 isSupported().then(supported => {
   if (supported) {
     analytics = getAnalytics(app);
+    logger.info('Firebase Analytics initialized successfully');
+  } else {
+    logger.info('Firebase Analytics not supported in this environment');
   }
 });
 

@@ -4,11 +4,14 @@ import {
   signOut,
   sendPasswordResetEmail,
   updateProfile,
-  User as FirebaseUser
+  User as FirebaseUser,
+  GoogleAuthProvider,
+  signInWithPopup,
+  onAuthStateChanged
 } from 'firebase/auth';
 import { doc, getDoc, setDoc } from 'firebase/firestore';
-import { auth, firestore as db } from './firebase';
-import { User } from '../types/auth';  // Updated import path
+import { auth, firestore } from './firestore';
+import { User } from '../types/auth';
 
 // Convert Firebase user to our custom User type
 const mapFirebaseUserToUser = (firebaseUser: FirebaseUser): User => {
@@ -20,20 +23,31 @@ const mapFirebaseUserToUser = (firebaseUser: FirebaseUser): User => {
   };
 };
 
-// Subscribe to auth state changes
+// Subscribe to auth state changes - CORECTAREA IMPLEMENTĂRII
 export const onAuthChanged = (callback: (user: User | null) => void) => {
-  return auth.onAuthStateChanged((firebaseUser) => {
+  return onAuthStateChanged(auth, (firebaseUser) => {
     callback(firebaseUser ? mapFirebaseUserToUser(firebaseUser) : null);
   });
 };
 
 // Sign in with email and password
-export const signIn = async (email: string, password: string): Promise<User> => {
-  const userCredential = await signInWithEmailAndPassword(auth, email, password);
-  return mapFirebaseUserToUser(userCredential.user);
+export const signIn = async (email: string, password: string): Promise<{success: boolean, user?: User, error?: string}> => {
+  try {
+    const userCredential = await signInWithEmailAndPassword(auth, email, password);
+    return {
+      success: true,
+      user: mapFirebaseUserToUser(userCredential.user)
+    };
+  } catch (error: any) {
+    console.error('Eroare la autentificare:', error);
+    return {
+      success: false,
+      error: error.message || 'A apărut o eroare la autentificare'
+    };
+  }
 };
 
-// Check if a user has admin privileges
+// Check admin status
 export const checkAdmin = async (user: User | null): Promise<boolean> => {
   if (!user) return false;
   
@@ -41,20 +55,17 @@ export const checkAdmin = async (user: User | null): Promise<boolean> => {
     const firebaseUser = auth.currentUser;
     if (!firebaseUser) return false;
 
-    // Check for custom claims in the ID token
     const idTokenResult = await firebaseUser.getIdTokenResult();
     if (idTokenResult.claims.admin === true) {
       return true;
     }
     
-    // If no admin claim in token, check Firestore for admin status
-    const userDoc = await getDoc(doc(db, 'users', user.uid));
+    const userDoc = await getDoc(doc(firestore, 'users', firebaseUser.uid));
     if (userDoc.exists() && userDoc.data().isAdmin === true) {
       return true;
     }
     
-    // For development purposes, check email domain
-    if (user.email?.endsWith('@admin.com')) {
+    if (firebaseUser.email?.endsWith('@admin.com')) {
       return true;
     }
     
@@ -66,40 +77,98 @@ export const checkAdmin = async (user: User | null): Promise<boolean> => {
 };
 
 // Sign out user
-export const logOut = async (): Promise<void> => {
-  return signOut(auth);
+export const logOut = async (): Promise<{success: boolean, error?: string}> => {
+  try {
+    await signOut(auth);
+    return { success: true };
+  } catch (error: any) {
+    console.error('Eroare la delogare:', error);
+    return {
+      success: false,
+      error: error.message || 'A apărut o eroare la delogare'
+    };
+  }
 };
 
 // Send password reset email
-export const resetPassword = async (email: string): Promise<void> => {
-  return sendPasswordResetEmail(auth, email);
+export const resetPassword = async (email: string): Promise<{success: boolean, error?: string}> => {
+  try {
+    await sendPasswordResetEmail(auth, email);
+    return { success: true };
+  } catch (error: any) {
+    console.error('Eroare la resetarea parolei:', error);
+    return {
+      success: false,
+      error: error.message || 'A apărut o eroare la resetarea parolei'
+    };
+  }
 };
 
 // Sign up with email and password
-export const signUp = async (email: string, password: string): Promise<User> => {
-  const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-  const firebaseUser = userCredential.user;
-  
-  // Create a user document in Firestore
-  await setDoc(doc(db, 'users', firebaseUser.uid), {
-    email: firebaseUser.email,
-    createdAt: new Date(),
-    isAdmin: false // Set admin status to false by default
-  });
-  
-  return mapFirebaseUserToUser(firebaseUser);
+export const signUp = async (email: string, password: string): Promise<{success: boolean, user?: User, error?: string}> => {
+  try {
+    const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+    const firebaseUser = userCredential.user;
+    
+    await setDoc(doc(firestore, 'users', firebaseUser.uid), {
+      email: firebaseUser.email,
+      createdAt: new Date(),
+      isAdmin: false
+    });
+    
+    return {
+      success: true,
+      user: mapFirebaseUserToUser(firebaseUser)
+    };
+  } catch (error: any) {
+    console.error('Eroare la înregistrare:', error);
+    return {
+      success: false,
+      error: error.message || 'A apărut o eroare la înregistrare'
+    };
+  }
 };
 
 // Update user profile
-export const updateUserProfile = async (displayName: string, photoURL?: string): Promise<void> => {
-  if (!auth.currentUser) {
-    throw new Error('No user is logged in');
+export const updateUserProfile = async (displayName: string, photoURL?: string): Promise<{success: boolean, error?: string}> => {
+  try {
+    if (!auth.currentUser) {
+      return {
+        success: false,
+        error: 'Nu există niciun utilizator autentificat'
+      };
+    }
+    
+    await updateProfile(auth.currentUser, {
+      displayName,
+      photoURL: photoURL || auth.currentUser.photoURL
+    });
+    return { success: true };
+  } catch (error: any) {
+    console.error('Eroare la actualizarea profilului:', error);
+    return {
+      success: false,
+      error: error.message || 'A apărut o eroare la actualizarea profilului'
+    };
   }
-  
-  return updateProfile(auth.currentUser, {
-    displayName,
-    photoURL: photoURL || auth.currentUser.photoURL
-  });
+};
+
+// Sign in with Google - STANDARDIZAREA METODEI DE AUTENTIFICARE
+export const signInWithGoogle = async (): Promise<{success: boolean, user?: User, error?: string}> => {
+  try {
+    const provider = new GoogleAuthProvider();
+    const result = await signInWithPopup(auth, provider);
+    return {
+      success: true,
+      user: mapFirebaseUserToUser(result.user)
+    };
+  } catch (error: any) {
+    console.error('Eroare la autentificarea cu Google:', error);
+    return {
+      success: false,
+      error: error.message || 'A apărut o eroare la autentificarea cu Google'
+    };
+  }
 };
 
 // Check if current user is logged in

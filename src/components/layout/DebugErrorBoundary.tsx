@@ -1,4 +1,4 @@
-import { Component, ErrorInfo, ReactNode } from 'react';
+import React, { Component, ReactNode, ErrorInfo } from 'react';
 
 interface Props {
   children: ReactNode;
@@ -12,7 +12,7 @@ interface State {
   errorInfo: ErrorInfo | null;
 }
 
-const logger = console; // Use console as a fallback logger
+const logger = console;
 
 class DebugErrorBoundary extends Component<Props, State> {
   constructor(props: Props) {
@@ -40,11 +40,6 @@ class DebugErrorBoundary extends Component<Props, State> {
     logger.error('Error details:', error);
     logger.error('Component stack:', errorInfo.componentStack);
     logger.debug('End of error log');
-    
-    // Send to an error tracking service in production
-    if (process.env.NODE_ENV === 'production') {
-      // Example: reportError({ error, errorInfo });
-    }
   }
 
   render(): ReactNode {
@@ -60,12 +55,7 @@ class DebugErrorBoundary extends Component<Props, State> {
           </h3>
           {process.env.NODE_ENV === 'development' && this.state.error && (
             <div className="mt-2">
-              <p className="text-sm text-red-600">{this.state.error.toString()}</p>
-              {this.state.errorInfo && (
-                <pre className="mt-2 text-xs bg-red-100 p-2 rounded overflow-auto max-h-40">
-                  {this.state.errorInfo.componentStack}
-                </pre>
-              )}
+              <p className="text-sm text-red-600">{this.state.error.message}</p>
             </div>
           )}
         </div>

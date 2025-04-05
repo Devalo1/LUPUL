@@ -1,19 +1,29 @@
-import React, { ReactNode } from 'react';
+import React from 'react';
 import Navbar from './Navbar';
-import Footer from './Footer';
+import Footer from './Footer'; // Importăm Footer
+import { useLocation } from 'react-router-dom';
 
-interface LayoutProps {
-  children: ReactNode;
-}
+const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const location = useLocation();
 
-const Layout: React.FC<LayoutProps> = ({ children }) => {
   return (
-    <div className="flex flex-col min-h-screen">
+    <div className="app-container relative flex flex-col min-h-screen">
       <Navbar />
-      <main className="flex-grow">
-        {children}
-      </main>
-      <Footer />
+      {/* Afișăm textul doar pe pagina principală */}
+      {location.pathname === '/' && (
+        <div className="absolute top-20 left-0 w-full text-center pointer-events-none">
+          <h2
+            className="text-xl font-bold opacity-17"
+            style={{ fontSize: '3.5rem', lineHeight: '1', color: '#002B7F' }}
+          >
+            <span style={{ color: '#002B7F' }}>Un brand </span>
+            <span style={{ color: '#FCD116' }}>Românesc </span>
+            <span style={{ color: '#CE1126' }}>pentru Români</span>
+          </h2>
+        </div>
+      )}
+      <main className="flex-grow">{children}</main>
+      <Footer /> {/* Adăugăm Footer la final */}
     </div>
   );
 };

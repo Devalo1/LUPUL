@@ -1,54 +1,44 @@
-import { Suspense, lazy, useEffect } from 'react';
+import React, { useEffect } from 'react';
 import { Routes, Route, Navigate, useNavigate } from 'react-router-dom';
+import HomePage from './pages/HomePage';
+import Dashboard from './pages/Dashboard';
+import Events from './pages/Events';
+import UserHome from './pages/UserHome';
+import LoginPage from './pages/LoginPage';
+import Layout from './components/layout/Layout';
 import { useAuth } from './contexts/AuthContext';
-import Navbar from './components/layout/Navbar';
-import Footer from './components/layout/Footer';
-import LoadingFallback from './components/ui/LoadingFallback';
-import ProtectedRoute from './components/routes/ProtectedRoute';
 
-const HomePage = lazy(() => import('./pages/HomePage'));
-const UserHome = lazy(() => import('./pages/UserHome'));
-const LoginPage = lazy(() => import('./pages/LoginPage'));
-const Register = lazy(() => import('./pages/Register'));
-const Profile = lazy(() => import('./pages/Profile'));
-const Orders = lazy(() => import('./pages/Orders'));
-const About = lazy(() => import('./pages/About'));
-const Contact = lazy(() => import('./pages/Contact'));
-const Dashboard = lazy(() => import('./pages/Dashboard'));
-
-const App = () => {
+const App: React.FC = () => {
   const { currentUser, loading } = useAuth();
   const navigate = useNavigate();
 
   useEffect(() => {
-    if (!loading && currentUser && window.location.pathname === '/') {
-      navigate('/dashboard', { replace: true });
+    // Redirecționează utilizatorii conectați către Dashboard
+    if (!loading && currentUser) {
+      navigate('/dashboard');
     }
   }, [currentUser, loading, navigate]);
 
   if (loading) {
-    return <div className="min-h-screen flex items-center justify-center">Se încarcă aplicația...</div>;
+    return (
+      <div className="flex justify-center items-center min-h-screen">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+        <p className="ml-4 text-gray-600">Se încarcă...</p>
+      </div>
+    );
   }
 
   return (
-    <Suspense fallback={<LoadingFallback />}>
-      <Navbar /> {/* Navbar este inclus o singură dată aici */}
-      <div className="pt-16">
-        <Routes>
-          <Route path="/about" element={<About />} />
-          <Route path="/contact" element={<Contact />} />
-          <Route path="/login" element={currentUser ? <Navigate to="/dashboard" replace /> : <LoginPage />} />
-          <Route path="/register" element={currentUser ? <Navigate to="/dashboard" replace /> : <Register />} />
-          <Route path="/" element={currentUser ? <Navigate to="/dashboard" replace /> : <HomePage />} />
-          <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
-          <Route path="/user-home" element={<ProtectedRoute><UserHome /></ProtectedRoute>} />
-          <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
-          <Route path="/orders" element={<ProtectedRoute><Orders /></ProtectedRoute>} />
-          <Route path="*" element={<Navigate to="/" replace />} />
-        </Routes>
-      </div>
-      <Footer />
-    </Suspense>
+    <Layout>
+      <Routes>
+        <Route path="/" element={<HomePage />} />
+        <Route path="/login" element={<LoginPage />} />
+        <Route path="/dashboard" element={<Dashboard />} />
+        <Route path="/events" element={<Events />} />
+        <Route path="/user-home" element={<UserHome />} />
+        <Route path="*" element={<Navigate to="/" replace />} />
+      </Routes>
+    </Layout>
   );
 };
 

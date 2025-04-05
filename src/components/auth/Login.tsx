@@ -2,8 +2,11 @@ import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import Button from '../common/Button';
-import { GoogleAuthProvider, signInWithPopup } from 'firebase/auth';
+import { GoogleAuthProvider, signInWithPopup, createUserWithEmailAndPassword } from 'firebase/auth';
 import { auth } from '../../firebase';
+import { doc, setDoc } from 'firebase/firestore';
+import { firestore } from '../../firebase';
+import { mapFirebaseUserToUser } from '../../utils/userMapper';
 
 interface LoginProps {
   isRegister?: boolean;
@@ -36,8 +39,9 @@ const Login: React.FC<LoginProps> = ({ isRegister = false }) => {
         await login(email, password);
         navigate('/');
       }
-    } catch (err: any) {
-      setError(err.message || 'A apărut o eroare la autentificare');
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : 'An unknown error occurred';
+      setError(errorMessage || 'A apărut o eroare la autentificare');
     } finally {
       setLoading(false);
     }
@@ -55,8 +59,9 @@ const Login: React.FC<LoginProps> = ({ isRegister = false }) => {
       setLoading(true);
       await signInWithGoogle();
       navigate('/dashboard'); // Redirecționează utilizatorul
-    } catch (err) {
-      setError('A apărut o eroare la autentificare cu Google');
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : 'An unknown error occurred';
+      setError(errorMessage || 'A apărut o eroare la autentificare cu Google');
     } finally {
       setLoading(false);
     }
@@ -200,3 +205,19 @@ const Login: React.FC<LoginProps> = ({ isRegister = false }) => {
 };
 
 export default Login;
+
+// Verifică dacă signUp are return
+export const signUp = async (email: string, password: string): Promise<User> => {
+  const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+  const firebaseUser = userCredential.user;
+  
+  // Create a user document in Firestore
+  await setDoc(doc(firestore, 'users', firebaseUser.uid), {
+    email: firebaseUser.email,
+    createdAt: new Date(),
+    isAdmin: false 
+  });
+  
+  // Adaugă acest return care lipsește:
+  return mapFirebaseUserToUser(firebaseUser);
+};

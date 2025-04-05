@@ -35,9 +35,17 @@ html, body {
   overflow-x: hidden;
 }
 
+body, #root, .home-container {
+  background-image: url('/images/background.jpeg');
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-attachment: fixed;
+}
+
 body {
   margin: 0;
-  display: block; /* Changed from flex to block */
+  display: block;
   min-width: 320px;
   min-height: 100vh;
   font-family: 'Montserrat', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen,
@@ -62,6 +70,17 @@ code {
   min-height: 100vh;
   max-width: 100%;
   overflow-x: hidden;
+}
+
+.layout-background {
+  min-height: 100vh;
+  width: 100%;
+  background-image: url('/images/background.jpeg');
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-attachment: fixed;
+  padding-top: 6rem; /* Înălțimea header-ului */
 }
 
 a {

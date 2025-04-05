@@ -1,110 +1,75 @@
-import {
-  collection,
-  doc,
-  getDoc,
-  getDocs,
-  addDoc,
-  updateDoc,
-  deleteDoc,
-  query,
-  where,
-  orderBy,
-  limit,
-  DocumentData,
-  QueryConstraint,
-  serverTimestamp,
-  onSnapshot,
-  Unsubscribe,
-  WhereFilterOp
-} from 'firebase/firestore';
-import { firestore } from './firebase';
+// Complete implementation of firestore service
+import { initializeApp } from 'firebase/app';
+import { getAuth } from 'firebase/auth';
+import { getFirestore, collection, doc, getDoc, getDocs, addDoc, 
+  updateDoc, deleteDoc, query, onSnapshot, DocumentData, 
+  QueryConstraint, Unsubscribe } from 'firebase/firestore';
+import { getStorage } from 'firebase/storage';
 
-// Add a document to a collection
-export const addDocument = async (collectionName: string, data: DocumentData) => {
-  return addDoc(collection(firestore, collectionName), {
-    ...data,
-    createdAt: serverTimestamp(),
-    updatedAt: serverTimestamp()
-  });
+// Firebase configuration
+const firebaseConfig = {
+  apiKey: "AIzaSyCZEWoZn-c7NSH1AGbetWEbtxwEz-iaMR4",
+  authDomain: "lupulcorbul.firebaseapp.com",
+  projectId: "lupulcorbul",
+  storageBucket: "lupulcorbul.appspot.com",
+  messagingSenderId: "312943074536",
+  appId: "1:312943074536:web:13fc0660014bc58c5c7d5d",
+  measurementId: "G-38YSZKVXDC"
 };
 
-// Get a document by ID
+// Initialize Firebase
+const app = initializeApp(firebaseConfig);
+console.log('Firebase inițializat:', app);
+
+export const auth = getAuth(app);
+console.log('Serviciul de autentificare inițializat:', auth);
+
+export const firestore = getFirestore(app);
+console.log('Serviciul Firestore inițializat:', firestore);
+
+export const storage = getStorage(app);
+console.log('Serviciul de stocare inițializat:', storage);
+
+export default app;
+
+// Firestore service methods
+export const addDocument = async (collectionName: string, data: DocumentData) => {
+  const collectionRef = collection(firestore, collectionName);
+  const docRef = await addDoc(collectionRef, { ...data, createdAt: new Date() });
+  return docRef.id;
+};
+
 export const getDocument = async (collectionName: string, docId: string) => {
   const docRef = doc(firestore, collectionName, docId);
   const docSnap = await getDoc(docRef);
   return docSnap.exists() ? { id: docSnap.id, ...docSnap.data() } : null;
 };
 
-// Get all documents from a collection
 export const getCollection = async (collectionName: string) => {
-  const querySnapshot = await getDocs(collection(firestore, collectionName));
-  return querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+  const collectionRef = collection(firestore, collectionName);
+  const snapshot = await getDocs(collectionRef);
+  return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
 };
 
-// Query documents with constraints
-export const queryDocuments = async (
-  collectionName: string, 
-  constraints: QueryConstraint[]
-) => {
-  const q = query(collection(firestore, collectionName), ...constraints);
-  const querySnapshot = await getDocs(q);
-  return querySnapshot.docs.map(doc => ({
-    id: doc.id,
-    ...(doc.data() as DocumentData)
-  }));
+export const updateDocument = async (collectionName: string, docId: string, data: DocumentData) => {
+  const docRef = doc(firestore, collectionName, docId);
+  await updateDoc(docRef, { ...data, updatedAt: new Date() });
+  return docId;
 };
 
-// Listen to real-time updates on a collection
-export const subscribeToCollection = (
-  collectionName: string,
-  callback: (data: Array<DocumentData>) => void,
-  constraints: QueryConstraint[] = []
-): Unsubscribe => {
-  const q = query(collection(firestore, collectionName), ...constraints);
-  
-  return onSnapshot(q, (snapshot) => {
-    const data = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-    callback(data);
-  });
+export const deleteDocument = async (collectionName: string, docId: string) => {
+  const docRef = doc(firestore, collectionName, docId);
+  await deleteDoc(docRef);
+  return docId;
 };
 
-// Listen to real-time updates on a document
 export const subscribeToDocument = (
   collectionName: string,
   docId: string,
   callback: (data: DocumentData | null) => void
 ): Unsubscribe => {
   const docRef = doc(firestore, collectionName, docId);
-  
   return onSnapshot(docRef, (snapshot) => {
-    if (snapshot.exists()) {
-      callback({ id: snapshot.id, ...snapshot.data() });
-    } else {
-      callback(null);
-    }
+    callback(snapshot.exists() ? { id: snapshot.id, ...snapshot.data() } : null);
   });
 };
-
-// Update a document
-export const updateDocument = async (
-  collectionName: string, 
-  docId: string, 
-  data: DocumentData
-) => {
-  const docRef = doc(firestore, collectionName, docId);
-  return updateDoc(docRef, {
-    ...data,
-    updatedAt: serverTimestamp()
-  });
-};
-
-// Delete a document
-export const deleteDocument = async (collectionName: string, docId: string) => {
-  const docRef = doc(firestore, collectionName, docId);
-  return deleteDoc(docRef);
-};
-
-// Helper functions to construct queries
-export const queryWhere = (field: string, operator: WhereFilterOp, value: unknown) => where(field, operator, value);
-export const queryOrderBy = (field: string, direction: 'asc' | 'desc' = 'asc') => orderBy(field, direction);
-export const queryLimit = (limitCount: number) => limit(limitCount);

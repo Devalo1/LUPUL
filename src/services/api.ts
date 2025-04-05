@@ -1,4 +1,5 @@
 import { db, storage } from '../firebase/config';
+import { auth } from '../services/firestore';
 import { 
   collection, 
   doc, 
@@ -15,6 +16,7 @@ import {
 } from 'firebase/firestore';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { Product, Order, UserProfile } from '../types';
+import { firestore } from '../services/firebase';
 
 // Generic error handler
 const handleError = (error: unknown, message: string): never => {

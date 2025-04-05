@@ -1,11 +1,9 @@
 import React from 'react';
-import { Navigate } from 'react-router-dom';
+import { Navigate, Routes, Route } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 
 const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { currentUser, loading } = useAuth();
-  
-  console.log('ProtectedRoute - Current User:', currentUser, 'Loading:', loading);
 
   if (loading) {
     return (
@@ -16,11 +14,34 @@ const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) =
   }
 
   if (!currentUser) {
-    console.log('No user detected, redirecting to login');
     return <Navigate to="/login" replace />;
   }
 
   return <>{children}</>;
 };
+
+const AppRoutes = () => (
+  <Routes>
+    <Route path="/" element={<Layout><HomePage /></Layout>} />
+    <Route path="/login" element={<Layout><LoginPage /></Layout>} />
+    <Route path="/register" element={<Layout><RegisterPage /></Layout>} />
+    <Route
+      path="/dashboard"
+      element={
+        <ProtectedRoute>
+          <Layout><Dashboard /></Layout>
+        </ProtectedRoute>
+      }
+    />
+    <Route
+      path="/userhome"
+      element={
+        <ProtectedRoute>
+          <Layout><UserHome /></Layout>
+        </ProtectedRoute>
+      }
+    />
+  </Routes>
+);
 
 export default ProtectedRoute;

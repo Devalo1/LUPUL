@@ -4,7 +4,7 @@
   "private": true,
   "type": "module",
   "dependencies": {
-    "firebase": "^10.7.0",
+    "firebase": "^11.6.0",
     "framer-motion": "^10.16.5",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
@@ -19,11 +19,11 @@
     "@types/node": "^20.10.0",
     "@types/react": "^18.2.39",
     "@types/react-dom": "^18.2.17",
-    "@typescript-eslint/eslint-plugin": "^6.13.1",
-    "@typescript-eslint/parser": "^6.13.1",
+    "@typescript-eslint/eslint-plugin": "^6.21.0",
+    "@typescript-eslint/parser": "^6.21.0",
     "@vitejs/plugin-react": "^4.2.0",
     "autoprefixer": "^10.4.16",
-    "eslint": "^8.54.0",
+    "eslint": "^8.57.1",
     "eslint-plugin-react-hooks": "^4.6.0",
     "eslint-plugin-react-refresh": "^0.4.4",
     "postcss": "^8.4.31",
@@ -61,6 +61,21 @@
       "last 1 chrome version",
       "last 1 firefox version",
       "last 1 safari version"
+    ]
+  },
+  "firebaseAuth": {
+    "import": [
+      "import { getAuth, onAuthStateChanged } from 'firebase/auth';"
+    ],
+    "authLogic": [
+      "const auth = getAuth();",
+      "onAuthStateChanged(auth, (user) => {",
+      "  if (user) {",
+      "    console.log('User is signed in:', user);",
+      "  } else {",
+      "    console.log('No user is signed in.');",
+      "  }",
+      "});"
     ]
   }
 }

@@ -434,7 +434,7 @@ body.home-page {
   top: 0;
   left: 0;
   width: 100%;
-  z-index: 1000;
+  z-index: 1000; /* Asigură-te că z-index este destul de mare */
   padding: 1rem 0;
   overflow: hidden;
   backdrop-filter: blur(5px);
@@ -447,6 +447,13 @@ body.home-page {
   );
   animation: flagWave 6s infinite ease-in-out, flagFloat 8s infinite ease-in-out;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.navbar-romanian-flag a,
+.navbar-romanian-flag button {
+  position: relative;
+  z-index: 1001; /* Un z-index mai mare decât navbar-ul */
+  cursor: pointer;
 }
 
 .navbar-romanian-flag::before {
@@ -462,7 +469,7 @@ body.home-page {
 }
 
 @keyframes flagWave {
-  0%, 100% {
+   0%, 100% {
     transform: perspective(1000px) rotateX(0deg) rotateY(0deg);
   }
   25% {
@@ -482,6 +489,48 @@ body.home-page {
   }
   50% {
     transform: translateY(-5px);
+  }
+}
+
+/* Flag Container Styles */
+.flag-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100px;
+  margin-top: 20px;
+}
+
+.flag {
+  width: 150px;
+  height: 100px;
+  background: linear-gradient(
+    90deg,
+    var(--ro-blue) 33.33%,
+    var(--ro-yellow) 33.33%,
+    var(--ro-yellow) 66.66%,
+    var(--ro-red) 66.66%
+  );
+  border: 2px solid #000;
+  animation: flagWave 2s infinite ease-in-out;
+  transform-origin: left;
+}
+
+@keyframes flagWave {
+  0% {
+    transform: perspective(1000px) rotateY(0deg);
+  }
+  25% {
+    transform: perspective(1000px) rotateY(15deg);
+  }
+  50% {
+    transform: perspective(1000px) rotateY(0deg);
+  }
+  75% {
+    transform: perspective(1000px) rotateY(-15deg);
+  }
+  100% {
+    transform: perspective(1000px) rotateY(0deg);
   }
 }
 
@@ -736,7 +785,7 @@ main {
   top: 0;
   left: 0;
   width: 100%;
-  z-index: 1000;
+  z-index: 1000; /* Asigură-te că z-index este destul de mare */
   padding: 1rem 0;
   overflow: hidden;
   backdrop-filter: blur(5px);
@@ -749,6 +798,13 @@ main {
   );
   animation: flagWave 6s infinite ease-in-out, flagFloat 8s infinite ease-in-out;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.navbar-romanian-flag a,
+.navbar-romanian-flag button {
+  position: relative;
+  z-index: 1001; /* Un z-index mai mare decât navbar-ul */
+  cursor: pointer;
 }
 
 .navbar-romanian-flag::before {
@@ -764,7 +820,7 @@ main {
 }
 
 @keyframes flagWave {
-  0%, 100% {
+   0%, 100% {
     transform: perspective(1000px) rotateX(0deg) rotateY(0deg);
   }
   25% {
@@ -784,5 +840,47 @@ main {
   }
   50% {
     transform: translateY(-5px);
+  }
+}
+
+/* Flag Container Styles */
+.flag-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100px;
+  margin-top: 20px;
+}
+
+.flag {
+  width: 150px;
+  height: 100px;
+  background: linear-gradient(
+    90deg,
+    var(--ro-blue) 33.33%,
+    var(--ro-yellow) 33.33%,
+    var(--ro-yellow) 66.66%,
+    var(--ro-red) 66.66%
+  );
+  border: 2px solid #000;
+  animation: flagWave 2s infinite ease-in-out;
+  transform-origin: left;
+}
+
+@keyframes flagWave {
+  0% {
+    transform: perspective(1000px) rotateY(0deg);
+  }
+  25% {
+    transform: perspective(1000px) rotateY(15deg);
+  }
+  50% {
+    transform: perspective(1000px) rotateY(0deg);
+  }
+  75% {
+    transform: perspective(1000px) rotateY(-15deg);
+  }
+  100% {
+    transform: perspective(1000px) rotateY(0deg);
   }
 }

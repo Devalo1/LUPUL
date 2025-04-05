@@ -1,0 +1,248 @@
+/* Container general pentru header */
+#navbar-container #header-container {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  z-index: 50;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  transition: background-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+#navbar-container #header-container.scrolled {
+  background-color: rgba(255, 255, 255, 0.9);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+/* Navbar styles */
+#navbar-container #navbar {
+  background-color: #87CEEB; /* Albastru deschis */
+  padding: 0.5rem 1rem;
+  transition: padding 0.3s ease;
+}
+
+#navbar-container #navbar #nav-links {
+  display: flex;
+  gap: 1rem;
+}
+
+#navbar-container #navbar #nav-links.active {
+  display: flex;
+}
+
+#navbar-container #navbar #nav-links a {
+  color: #333;
+  font-weight: bold;
+  padding: 0.5rem 1rem;
+  border-radius: 4px;
+  transition: background-color 0.3s ease, color 0.3s ease, transform 0.2s ease;
+}
+
+#navbar-container #navbar #nav-links a:hover {
+  background-color: rgba(0, 0, 0, 0.1);
+  color: #000;
+  transform: scale(1.1);
+}
+
+/* Unique Animated Hamburger button */
+#navbar-container #hamburger-button {
+  display: none; /* Hidden by default */
+  background: none;
+  border: none;
+  cursor: pointer;
+  position: relative;
+  width: 30px;
+  height: 24px;
+  z-index: 200;
+}
+
+#navbar-container #hamburger-button .line {
+  display: block;
+  position: absolute;
+  width: 100%;
+  height: 3px;
+  background-color: #333;
+  border-radius: 2px;
+  transition: all 0.3s ease-in-out;
+}
+
+#navbar-container #hamburger-button .line:nth-child(1) {
+  top: 0;
+}
+
+#navbar-container #hamburger-button .line:nth-child(2) {
+  top: 10px;
+}
+
+#navbar-container #hamburger-button .line:nth-child(3) {
+  top: 20px;
+}
+
+#navbar-container #hamburger-button.open .line:nth-child(1) {
+  transform: translateY(10px) rotate(45deg);
+}
+
+#navbar-container #hamburger-button.open .line:nth-child(2) {
+  opacity: 0;
+}
+
+#navbar-container #hamburger-button.open .line:nth-child(3) {
+  transform: translateY(-10px) rotate(-45deg);
+}
+
+/* Responsive styles */
+@media (max-width: 768px) {
+  #navbar-container #hamburger-button {
+    display: block; /* Show hamburger on small screens */
+  }
+
+  #navbar-container #nav-links {
+    display: none; /* Hide links by default */
+    flex-direction: column; /* Vertical layout when visible */
+    position: absolute;
+    top: 3rem; /* Below the header */
+    left: 0;
+    width: 100%;
+    background-color: #87CEEB; /* Navbar background */
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    z-index: 100;
+    transition: transform 0.3s ease-in-out;
+    transform: translateY(-100%);
+  }
+
+  #navbar-container #nav-links.active {
+    display: flex; /* Show links when active */
+    transform: translateY(0);
+  }
+}
+
+/* Improved flag animation with smoother transitions */
+.flag-banner {
+  position: relative;
+  height: 3.5rem; /* Slightly taller for better visibility */
+  overflow: hidden;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+  background: linear-gradient(
+    to right,
+    #0033a0 0%, #0033a0 33.33%,
+    #ffda44 33.33%, #ffda44 66.66%,
+    #cc0b2f 66.66%, #cc0b2f 100%
+  );
+  filter: blur(0.2px);
+  perspective: 1200px;
+  transform-style: preserve-3d;
+  animation: waveFlag 10s cubic-bezier(0.42, 0, 0.58, 1) infinite, shadowShift 8s ease-in-out infinite;
+}
+
+/* Refined wave animation for realistic flag movement */
+@keyframes waveFlag {
+  0%, 100% {
+    transform: rotateX(0deg) rotateY(0deg) rotateZ(0deg);
+    background-position: 0% 0%;
+  }
+  25% {
+    transform: rotateX(3deg) rotateY(1deg) rotateZ(0.5deg);
+    background-position: -3% 2%;
+  }
+  50% {
+    transform: rotateX(0deg) rotateY(-1deg) rotateZ(-0.5deg);
+    background-position: 0% 0%;
+  }
+  75% {
+    transform: rotateX(-3deg) rotateY(1deg) rotateZ(0deg);
+    background-position: 3% -2%;
+  }
+}
+
+/* Enhanced ripple effect for texture overlay */
+@keyframes rippleEffect {
+  0%, 100% {
+    background-position: 0% 0%;
+    opacity: 0.5;
+  }
+  50% {
+    background-position: 5% 0%;
+    opacity: 0.7;
+  }
+}
+
+/* Improved shadow animation for depth */
+@keyframes shadowShift {
+  0%, 100% {
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+  }
+  50% {
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.4);
+  }
+}
+
+/* Optimized overlay for texture and lighting */
+.flag-banner::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 120%;
+  height: 100%;
+  background: linear-gradient(
+    45deg,
+    rgba(255, 255, 255, 0.1) 0%,
+    rgba(255, 255, 255, 0.2) 50%,
+    rgba(255, 255, 255, 0.1) 100%
+  );
+  opacity: 0.6;
+  mix-blend-mode: overlay;
+  animation: rippleEffect 6s ease-in-out infinite;
+}
+
+/* Subtle texture for depth */
+.flag-banner::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 130%;
+  height: 100%;
+  background: radial-gradient(
+    circle at 50% 50%,
+    rgba(255, 255, 255, 0.1) 0%,
+    rgba(0, 0, 0, 0) 70%
+  );
+  opacity: 0.2;
+  animation: rippleEffect 8s ease-in-out infinite reverse;
+}
+
+/* Enhanced glowing text effect */
+.flag-banner .flag-message {
+  color: white;
+  font-weight: bold;
+  font-size: 1.4rem; /* Slightly larger for better readability */
+  white-space: nowrap;
+  position: absolute;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  text-align: center;
+  z-index: 5;
+  text-shadow: 0 0 8px rgba(0, 0, 0, 0.8), 0 2px 4px rgba(0, 0, 0, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: text-glow 4s ease-in-out infinite;
+}
+
+@keyframes text-glow {
+  0%, 100% {
+    text-shadow: 0 0 8px rgba(0, 0, 0, 0.8), 0 2px 4px rgba(0, 0, 0, 0.6);
+  }
+  50% {
+    text-shadow: 0 0 12px rgba(0, 0, 0, 0.9), 0 3px 6px rgba(0, 0, 0, 0.7);
+  }
+}
+
+/* Elimină spațiul dintre header și footer */
+.layout-background {
+  padding-top: 6rem; /* Înălțimea header-ului */
+  margin: 0;
+  padding: 0;
+}

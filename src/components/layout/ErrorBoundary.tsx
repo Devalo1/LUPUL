@@ -1,132 +1,146 @@
-import { Component, ReactNode, ErrorInfo } from 'react';
-import ErrorBoundary from './components/layout/ErrorBoundary';
+import React, { Component, ErrorInfo, ReactNode, useEffect, useState } from 'react';
 import { lazy } from 'react';
+import { Routes, Route, useNavigate } from 'react-router-dom';
+import { AuthProvider, useAuth } from '../../contexts/AuthContext';
+import { CartProvider } from '../../contexts/CartContext';
+import { getAuth, onAuthStateChanged, signInWithEmailAndPassword } from 'firebase/auth'; // Importă funcțiile Firebase
+import { signInWithGoogle } from '../../services/Index'; // Importă funcția pentru autentificarea cu Google
+import ProtectedRoute from '../../components/routes/ProtectedRoute';
+import Layout from '../layout/Layout'; // Add this import
 
-const LoginPage = lazy(() => import('./pages/LoginPage'));
-const Register = lazy(() => import('./pages/Register'));
+// Lazy-loaded pages
+const LoginPage = lazy(() => import('../../pages/LoginPage'));
+const RegisterPage = lazy(() => import('../../pages/RegisterPage'));
+const HomePage = lazy(() => import('../../pages/HomePage'));
+const Dashboard = lazy(() => import('../../pages/Dashboard'));
+const UserHome = lazy(() => import('../../pages/UserHome')); // Pagina pentru utilizatori autentificați
 
-interface ErrorBoundaryProps {
-  children: ReactNode;
-  fallback?: ReactNode;
-}
-
-interface ErrorBoundaryState {
-  hasError: boolean;
-  error: Error | null;
-  errorInfo: ErrorInfo | null;
-}
-
-class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
-  constructor(props: ErrorBoundaryProps) {
+class ErrorBoundary extends Component<{ children: ReactNode }, { hasError: boolean; error?: Error; errorInfo?: ErrorInfo }> {
+  constructor(props: { children: ReactNode }) {
     super(props);
-    this.state = {
-      hasError: false,
-      error: null,
-      errorInfo: null
-    };
+    this.state = { hasError: false };
   }
 
-  static getDerivedStateFromError(error: Error): ErrorBoundaryState {
-    return {
-      hasError: true,
-      error,
-      errorInfo: null
-    };
+  static getDerivedStateFromError(error: Error): { hasError: boolean; error: Error } {
+    return { hasError: true, error };
   }
 
-  componentDidCatch(error: Error, errorInfo: ErrorInfo): void {
-    console.error('Error caught by ErrorBoundary:', error, errorInfo);
-    this.setState({
-      errorInfo
-    });
-    
-    // Here you could send to a monitoring service or analytics
-    if (process.env.NODE_ENV === 'production') {
-      try {
-        // Example: send error to a service
-        // reportError({ error, errorInfo });
-      } catch (reportingError) {
-        console.error('Failed to report error:', reportingError);
-      }
-    }
+  componentDidCatch(_error: Error, errorInfo: ErrorInfo): void {
+    this.setState({ errorInfo });
   }
 
-  render(): ReactNode {
+  render() {
     if (this.state.hasError) {
-      if (this.props.fallback) {
-        return this.props.fallback;
-      }
-      
-      // Default error UI
       return (
-        <div className="min-h-screen bg-red-50 p-8 flex flex-col items-center justify-center">
-          <div className="max-w-2xl w-full bg-white rounded-lg shadow-lg p-8">
-            <h1 className="text-2xl font-bold text-red-600 mb-4">
-              Oops! A apărut o eroare
-            </h1>
-            <p className="text-gray-700 mb-4">
-              Ne pare rău, a apărut o problemă neașteptată. Am înregistrat această eroare și o vom remedia în curând.
-            </p>
-            
-            {process.env.NODE_ENV === 'development' && (
-              <div className="mt-6">
-                <details className="bg-gray-100 p-4 rounded-lg">
-                  <summary className="font-semibold cursor-pointer">
-                    Detalii eroare (doar în modul dezvoltare)
-                  </summary>
-                  <div className="mt-3">
-                    <p className="text-red-600 font-mono text-sm mb-2">
-                      {this.state.error?.toString()}
-                    </p>
-                    {this.state.errorInfo && (
-                      <pre className="text-xs bg-gray-800 text-white p-4 rounded overflow-auto max-h-96">
-                        {this.state.errorInfo.componentStack}
-                      </pre>
-                    )}
-                  </div>
-                </details>
-              </div>
-            )}
-            
-            <div className="mt-6 flex justify-center">
-              <button
-                onClick={() => window.location.href = '/'}
-                className="bg-blue-600 text-white py-2 px-4 rounded hover:bg-blue-700 transition mr-4"
-              >
-                Înapoi la pagina principală
-              </button>
-              <button
-                onClick={() => window.location.reload()}
-                className="bg-gray-100 text-gray-800 py-2 px-4 rounded hover:bg-gray-200 transition"
-              >
-                Reîncarcă pagina
-              </button>
+        <div className="p-4 bg-red-50 border border-red-200 rounded-md">
+          <h1 className="text-xl font-bold text-red-800 mb-2">A apărut o eroare</h1>
+          {process.env.NODE_ENV === 'development' && (
+            <div>
+              <p className="text-red-600">{this.state.error?.message}</p>
+              <pre className="mt-2 bg-gray-100 p-2 rounded text-xs overflow-auto">
+                {this.state.errorInfo?.componentStack}
+              </pre>
             </div>
-          </div>
+          )}
         </div>
       );
     }
-
     return this.props.children;
   }
 }
 
-function App() {
+const App = () => {
+  const { currentUser, setCurrentUser, setLoading, loading } = useAuth(); // Asigură-te că setCurrentUser și setLoading sunt disponibile
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    const auth = getAuth();
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      try {
+        setCurrentUser(user);
+        setLoading(false);
+      } catch (error) {
+        console.error('Eroare la verificarea autentificării:', error);
+      }
+    });
+
+    return () => unsubscribe();
+  }, [setCurrentUser, setLoading]);
+
+  useEffect(() => {
+    if (!loading) {
+      if (currentUser) {
+        navigate('/userhome'); // Redirecționează utilizatorii autentificați către UserHome
+      }
+    }
+  }, [currentUser, loading, navigate]);
+
+  const handleLogin = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      const auth = getAuth();
+      const userCredential = await signInWithEmailAndPassword(auth, email, password);
+      console.log('Autentificare reușită:', userCredential.user);
+      navigate('/userhome'); // Redirecționează utilizatorul
+    } catch (err: any) {
+      if (err.code === 'auth/user-not-found') {
+        setError('Utilizatorul nu există.');
+      } else if (err.code === 'auth/wrong-password') {
+        setError('Parola este incorectă.');
+      } else {
+        console.error('Eroare la autentificare:', err);
+        setError('A apărut o eroare la autentificare.');
+      }
+    }
+  };
+
+  const handleGoogleLogin = async () => {
+    try {
+      await signInWithGoogle();
+      navigate('/userhome'); // Redirecționează utilizatorul
+    } catch (err) {
+      console.error('Eroare la autentificarea cu Google:', err);
+      setError('A apărut o eroare la autentificarea cu Google.');
+    }
+  };
+
+  return (
+    <Routes>
+      <Route path="/" element={<Layout><HomePage /></Layout>} />
+      <Route path="/login" element={<Layout><LoginPage /></Layout>} />
+      <Route path="/register" element={<Layout><RegisterPage /></Layout>} />
+      <Route
+        path="/dashboard"
+        element={
+          <ProtectedRoute>
+            <Layout><Dashboard /></Layout>
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/userhome"
+        element={
+          <ProtectedRoute>
+            <Layout><UserHome /></Layout>
+          </ProtectedRoute>
+        }
+      />
+    </Routes>
+  );
+};
+
+function Root() {
   return (
     <ErrorBoundary>
       <AuthProvider>
         <CartProvider>
-          <Router>
-            <Suspense fallback={<LoadingFallback />}>
-              <Routes>
-                {/* Rutele aplicației */}
-              </Routes>
-            </Suspense>
-          </Router>
+          <React.Suspense fallback={<div>Loading...</div>}>
+            <App />
+          </React.Suspense>
         </CartProvider>
       </AuthProvider>
     </ErrorBoundary>
   );
 }
 
-export default App;
+export default Root;

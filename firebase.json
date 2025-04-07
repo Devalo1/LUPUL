@@ -8,28 +8,69 @@
   },
   "emulators": {
     "auth": {
+      "host": "127.0.0.1",
       "port": 9099
     },
     "firestore": {
+      "host": "127.0.0.1",
       "port": 8080
+    },
+    "functions": {
+      "host": "127.0.0.1",
+      "port": 5002
+    },
+    "hosting": {
+      "host": "127.0.0.1",
+      "port": 5000
     },
     "storage": {
       "port": 9199
     },
     "ui": {
       "enabled": true,
-      "port": 5173
-    },
-    "singleProjectMode": true
+      "port": 4000
+    }
   },
   "hosting": {
     "public": "build",
-    "ignore": ["firebase.json", "**/.*", "**/node_modules/**"],
+    "ignore": [
+      "firebase.json",
+      "**/.*",
+      "**/node_modules/**"
+    ],
     "rewrites": [
       {
         "source": "**",
-        "destination": "/index.html" 
+        "destination": "/index.html"
+      }
+    ],
+    "trailingSlash": false,
+    "headers": [
+      {
+        "source": "**",
+        "headers": [
+          {
+            "key": "Cache-Control",
+            "value": "no-cache, no-store, must-revalidate"
+          }
+        ]
       }
     ]
-  }
+  },
+  "functions": [
+    {
+      "source": "functions",
+      "codebase": "default",
+      "ignore": [
+        "node_modules",
+        ".git",
+        "firebase-debug.log",
+        "firebase-debug.*.log",
+        "*.local"
+      ],
+      "predeploy": [
+        "npm --prefix \"$RESOURCE_DIR\" run lint"
+      ]
+    }
+  ]
 }

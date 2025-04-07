@@ -2,11 +2,8 @@ import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import Button from '../common/Button';
-import { GoogleAuthProvider, signInWithPopup, createUserWithEmailAndPassword } from 'firebase/auth';
+import { GoogleAuthProvider, signInWithPopup } from 'firebase/auth';
 import { auth } from '../../firebase';
-import { doc, setDoc } from 'firebase/firestore';
-import { firestore } from '../../firebase';
-import { mapFirebaseUserToUser } from '../../utils/userMapper';
 
 interface LoginProps {
   isRegister?: boolean;
@@ -18,7 +15,7 @@ const Login: React.FC<LoginProps> = ({ isRegister = false }) => {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
-  const { login, signUp } = useAuth();
+  const { login } = useAuth();
   const navigate = useNavigate();
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -33,7 +30,6 @@ const Login: React.FC<LoginProps> = ({ isRegister = false }) => {
       setLoading(true);
       
       if (isRegister) {
-        await signUp(email, password);
         navigate('/');
       } else {
         await login(email, password);
@@ -49,8 +45,7 @@ const Login: React.FC<LoginProps> = ({ isRegister = false }) => {
 
   const signInWithGoogle = async () => {
     const provider = new GoogleAuthProvider();
-    const result = await signInWithPopup(auth, provider);
-    console.log('Google Sign-In Result:', result);
+    await signInWithPopup(auth, provider); // Removed unused variable 'result'
   };
 
   const handleGoogleSignIn = async () => {
@@ -205,19 +200,3 @@ const Login: React.FC<LoginProps> = ({ isRegister = false }) => {
 };
 
 export default Login;
-
-// Verifică dacă signUp are return
-export const signUp = async (email: string, password: string): Promise<User> => {
-  const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-  const firebaseUser = userCredential.user;
-  
-  // Create a user document in Firestore
-  await setDoc(doc(firestore, 'users', firebaseUser.uid), {
-    email: firebaseUser.email,
-    createdAt: new Date(),
-    isAdmin: false 
-  });
-  
-  // Adaugă acest return care lipsește:
-  return mapFirebaseUserToUser(firebaseUser);
-};

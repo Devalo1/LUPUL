@@ -14,8 +14,8 @@ const Footer: React.FC = () => {
           <div>
             <h4 className="text-lg font-semibold mb-4">Legături Rapide</h4>
             <ul className="space-y-2">
-              <li><Link to="/" className="text-gray-300 hover:text-white">Acasă</Link></li>
-              <li><Link to="/shop" className="text-gray-300 hover:text-white">Produse</Link></li>
+              <li><Link to="/user-home" className="text-gray-300 hover:text-white">Acasă</Link></li>
+              <li><Link to="/products" className="text-gray-300 hover:text-white">Produse</Link></li>
               <li><Link to="/dashboard" className="text-gray-300 hover:text-white">Dashboard</Link></li>
             </ul>
           </div>

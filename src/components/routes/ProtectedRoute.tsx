@@ -1,5 +1,5 @@
 import React from 'react';
-import { Navigate, Routes, Route } from 'react-router-dom';
+import { Navigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 
 const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
@@ -19,29 +19,5 @@ const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) =
 
   return <>{children}</>;
 };
-
-const AppRoutes = () => (
-  <Routes>
-    <Route path="/" element={<Layout><HomePage /></Layout>} />
-    <Route path="/login" element={<Layout><LoginPage /></Layout>} />
-    <Route path="/register" element={<Layout><RegisterPage /></Layout>} />
-    <Route
-      path="/dashboard"
-      element={
-        <ProtectedRoute>
-          <Layout><Dashboard /></Layout>
-        </ProtectedRoute>
-      }
-    />
-    <Route
-      path="/userhome"
-      element={
-        <ProtectedRoute>
-          <Layout><UserHome /></Layout>
-        </ProtectedRoute>
-      }
-    />
-  </Routes>
-);
 
 export default ProtectedRoute;

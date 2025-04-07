@@ -9,8 +9,8 @@ type ErrorHandlerHook = {
   errorState: ErrorState;
   setError: (message: string) => void;
   clearError: () => void;
-  handleError: (error: unknown) => void;
-  withErrorHandling: <T>(fn: (...args: any[]) => T) => (...args: any[]) => T;
+  handleError: (error: Error | string, _context: Record<string, unknown>) => void;
+  withErrorHandling: <T>(fn: (...args: unknown[]) => T) => (...args: unknown[]) => T;
 };
 
 export const useErrorHandler = (): ErrorHandlerHook => {
@@ -33,7 +33,7 @@ export const useErrorHandler = (): ErrorHandlerHook => {
     });
   };
 
-  const handleError = (error: unknown) => {
+  const handleError = (error: Error | string, _context: Record<string, unknown>) => {
     if (error instanceof Error) {
       setError(error.message);
     } else if (typeof error === 'string') {
@@ -43,12 +43,12 @@ export const useErrorHandler = (): ErrorHandlerHook => {
     }
   };
 
-  const withErrorHandling = <T,>(fn: (...args: any[]) => T) => {
-    return (...args: any[]): T => {
+  const withErrorHandling = <T,>(fn: (...args: unknown[]) => T) => {
+    return (...args: unknown[]): T => {
       try {
         return fn(...args);
       } catch (error) {
-        handleError(error);
+        handleError(error as Error | string, {});
         throw error;
       }
     };

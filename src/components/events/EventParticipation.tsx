@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { doc, getDoc, updateDoc, arrayUnion, Timestamp } from 'firebase/firestore';
-import { firestore } from '../../services/firebase';
+import { db } from '../../firebase'; // Import only the Firestore database instance
 import { useAuth } from '../../contexts/AuthContext';
 import Button from '../common/Button';
 
@@ -28,7 +28,7 @@ const EventParticipation: React.FC<EventParticipationProps> = ({ eventId }) => {
       }
 
       try {
-        const eventDoc = doc(firestore, 'events', eventId);
+        const eventDoc = doc(db, 'events', eventId);
         const eventSnapshot = await getDoc(eventDoc);
         
         if (eventSnapshot.exists()) {
@@ -59,7 +59,7 @@ const EventParticipation: React.FC<EventParticipationProps> = ({ eventId }) => {
     setSuccess(null);
 
     try {
-      const eventDoc = doc(firestore, 'events', eventId);
+      const eventDoc = doc(db, 'events', eventId);
       
       await updateDoc(eventDoc, {
         participants: arrayUnion({
@@ -88,7 +88,7 @@ const EventParticipation: React.FC<EventParticipationProps> = ({ eventId }) => {
     setSuccess(null);
 
     try {
-      const eventDoc = doc(firestore, 'events', eventId);
+      const eventDoc = doc(db, 'events', eventId);
       const eventSnapshot = await getDoc(eventDoc);
       
       if (eventSnapshot.exists()) {
@@ -120,7 +120,7 @@ const EventParticipation: React.FC<EventParticipationProps> = ({ eventId }) => {
     setSuccess(null);
 
     try {
-      const eventDoc = doc(firestore, 'events', eventId);
+      const eventDoc = doc(db, 'events', eventId);
       
       await updateDoc(eventDoc, {
         comments: arrayUnion({

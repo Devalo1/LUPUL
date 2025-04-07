@@ -1,44 +1,75 @@
-import React, { useEffect } from 'react';
-import { Routes, Route, Navigate, useNavigate } from 'react-router-dom';
+import React, { useEffect, useState } from 'react';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import HomePage from './pages/HomePage';
-import Dashboard from './pages/Dashboard';
-import Events from './pages/Events';
-import UserHome from './pages/UserHome';
-import LoginPage from './pages/LoginPage';
-import Layout from './components/layout/Layout';
-import { useAuth } from './contexts/AuthContext';
+import { AuthProvider } from './contexts/AuthContext';
+import { ThemeProvider } from './contexts/ThemeContext';
+import ErrorBoundary from './components/layout/ErrorBoundary';
+import LandingPage from './LandingPage';
+
+// Add custom styles to force transparency
+const appStyle = {
+  backgroundColor: 'transparent',
+  background: 'none',
+  height: '100%',
+  width: '100%'
+};
 
 const App: React.FC = () => {
-  const { currentUser, loading } = useAuth();
-  const navigate = useNavigate();
+  const [showLanding, setShowLanding] = useState(true);
 
   useEffect(() => {
-    // Redirecționează utilizatorii conectați către Dashboard
-    if (!loading && currentUser) {
-      navigate('/dashboard');
+    // Check if this is the first visit using localStorage
+    const hasVisited = localStorage.getItem('hasVisited');
+    if (hasVisited) {
+      setShowLanding(false);
+    } else {
+      // Mark as visited for future
+      localStorage.setItem('hasVisited', 'true');
     }
-  }, [currentUser, loading, navigate]);
 
-  if (loading) {
-    return (
-      <div className="flex justify-center items-center min-h-screen">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
-        <p className="ml-4 text-gray-600">Se încarcă...</p>
-      </div>
-    );
-  }
+    // Add event listener for navigation
+    const handleNavigation = () => {
+      setShowLanding(false);
+    };
+
+    window.addEventListener('popstate', handleNavigation);
+    return () => window.removeEventListener('popstate', handleNavigation);
+  }, []);
 
   return (
-    <Layout>
-      <Routes>
-        <Route path="/" element={<HomePage />} />
-        <Route path="/login" element={<LoginPage />} />
-        <Route path="/dashboard" element={<Dashboard />} />
-        <Route path="/events" element={<Events />} />
-        <Route path="/user-home" element={<UserHome />} />
-        <Route path="*" element={<Navigate to="/" replace />} />
-      </Routes>
-    </Layout>
+    <>
+      {showLanding && <LandingPage />}
+      {!showLanding && (
+        <>
+          <ErrorBoundary>
+            <Router>
+              <AuthProvider>
+                <ThemeProvider>
+                  <header className="navbar-romanian-flag">
+                    {/* Navbar content */}
+                  </header>
+                  <main>
+                    <div className="content-overlay">
+                      <h1>Your content here</h1>
+                    </div>
+                    <button className="btn-primary">Button Example</button>
+                  </main>
+                  <footer>
+                    {/* Footer content */}
+                  </footer>
+                  <div style={appStyle} className="app-container">
+                    <Routes>
+                      <Route path="/" element={<HomePage />} />
+                      {/* ...other routes */}
+                    </Routes>
+                  </div>
+                </ThemeProvider>
+              </AuthProvider>
+            </Router>
+          </ErrorBoundary>
+        </>
+      )}
+    </>
   );
 };
 

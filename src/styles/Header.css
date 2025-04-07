@@ -1,17 +1,196 @@
 /* Container general pentru header */
-#navbar-container #header-container {
-  position: fixed;
+.header-container {
+  position: sticky;
+  top: 0;
+  z-index: 40;
+  width: 100%;
+  min-height: 64px; /* Înălțimea minimă a header-ului */
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+  
+  /* Fundal cu temă românească care umple tot header-ul */
+  background: linear-gradient(rgba(0, 43, 127, 0.9), rgba(0, 43, 127, 0.9)), 
+              url('/images/romanian-pattern.png');
+  background-size: 200px;
+  background-position: center;
+  position: relative;
+  background-color: transparent; /* Ensure the header container doesn't have a background by default */
+}
+
+.header-container.bg-transparent {
+  background-color: transparent !important; /* Ensure transparency overrides other styles */
+  transition: background-color 0.3s ease-in-out;
+}
+
+#header-container.bg-transparent {
+  background-color: transparent !important;
+}
+
+/* Bandă tricoloră care traversează întregul header */
+.header-container::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: linear-gradient(to right, 
+    #002B7F 0%, #002B7F 33.33%,
+    #FCD116 33.33%, #FCD116 66.66%,
+    #CE1126 66.66%, #CE1126 100%);
+  z-index: 1;
+}
+
+/* Bandă tricoloră la partea de jos a header-ului */
+.header-container::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 4px;
+  background: linear-gradient(to right, 
+    #002B7F 0%, #002B7F 33.33%,
+    #FCD116 33.33%, #FCD116 66.66%,
+    #CE1126 66.66%, #CE1126 100%);
+  z-index: 1;
+}
+
+/* Efectul la scroll */
+.header-container.scrolled {
+  background-color: rgba(17, 24, 39, 0.95) !important; /* slightly transparent dark background */
+  background: linear-gradient(rgba(0, 43, 127, 0.95), rgba(0, 43, 127, 0.95)), 
+              url('/images/romanian-pattern.png');
+  background-size: 200px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+}
+
+/* Asigură că navbar-ul acoperă tot header-ul */
+.header-container nav {
+  width: 100%;
+  min-height: 64px;
+  display: flex;
+  align-items: center;
+  background: transparent;
+  position: relative;
+  z-index: 2;
+}
+
+/* Adaugă elemente decorative tradiționale românești */
+.romanian-motif {
+  position: absolute;
+  width: 40px;
+  height: 40px;
+  opacity: 0.2;
+  background-image: url('/images/romanian-motif.svg');
+  background-size: contain;
+  background-repeat: no-repeat;
+  z-index: 1;
+}
+
+.romanian-motif.left {
+  left: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+.romanian-motif.right {
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+/* Animație pentru butoane */
+.header-container a, .header-container button {
+  position: relative;
+  overflow: hidden;
+  z-index: 2;
+}
+
+.header-container a::after, 
+.header-container button::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  width: 0;
+  height: 2px;
+  background: #FCD116; /* Galben din drapelul românesc */
+  transition: all 0.3s ease;
+  transform: translateX(-50%);
+}
+
+.header-container a:hover::after,
+.header-container button:hover::after {
+  width: 70%;
+}
+
+/* Excepții pentru butoanele cu fundal */
+.header-container a.bg-blue-700::after,
+.header-container button.bg-red-600::after,
+.header-container .auth-button::after {
+  display: none;
+}
+
+/* Stilizare pentru meniul mobil */
+.mobile-menu {
+  box-shadow: 5px 0 15px rgba(0, 0, 0, 0.3);
+  background: linear-gradient(rgba(0, 43, 127, 0.97), rgba(0, 43, 127, 0.97)), 
+              url('/images/romanian-pattern.png');
+  background-size: 200px;
+  border-right: 3px solid #FCD116; /* Bordură galbenă */
+  padding-top: 60px; /* Spațiu pentru butonul hamburger */
+}
+
+/* Adaugă elemente decorative în meniul mobil */
+.mobile-menu::before {
+  content: '';
+  position: absolute;
   top: 0;
   left: 0;
   width: 100%;
-  z-index: 50;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  transition: background-color 0.3s ease, box-shadow 0.3s ease;
+  height: 4px;
+  background: linear-gradient(to right, 
+    #002B7F 0%, #002B7F 33.33%,
+    #FCD116 33.33%, #FCD116 66.66%,
+    #CE1126 66.66%, #CE1126 100%);
 }
 
-#navbar-container #header-container.scrolled {
-  background-color: rgba(255, 255, 255, 0.9);
+.mobile-menu a, .mobile-menu button {
+  display: block;
+  width: 100%;
+  text-align: left;
+}
+
+/* Stilizare specifică pentru butoane în tema românească */
+.nav-link {
+  color: white !important;
+  font-weight: 500 !important;
+  letter-spacing: 0.02em !important;
+  position: relative;
+  overflow: hidden;
+}
+
+.auth-button {
+  background-color: #CE1126 !important; /* Roșu din drapelul românesc */
+  border: 2px solid #FCD116 !important; /* Galben din drapelul românesc */
+  color: white !important;
+  font-weight: bold !important;
+}
+
+.auth-button:hover {
+  background-color: #9e0e1e !important;
+  transform: translateY(-2px);
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+/* Logo-ul să iasă în evidență */
+.logo {
+  position: relative;
+  z-index: 5;
+}
+
+.logo span {
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
 }
 
 /* Navbar styles */
@@ -113,6 +292,41 @@
   #navbar-container #nav-links.active {
     display: flex; /* Show links when active */
     transform: translateY(0);
+  }
+
+  .header-container nav {
+    justify-content: space-between;
+    padding: 0 1rem;
+  }
+  
+  .menu-button {
+    position: relative;
+    left: 0;
+    z-index: 50;
+  }
+  
+  /* Ajustăm logo-ul pentru a fi centrat pe mobil */
+  .logo {
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+  }
+  
+  /* Efect de highlight pentru butonul coșului pe mobil */
+  .header-container a[href="/cart"] {
+    padding: 0.5rem;
+    border-radius: 50%;
+    transition: background-color 0.2s;
+  }
+  
+  .header-container a[href="/cart"]:active {
+    background-color: rgba(255, 255, 255, 0.2);
+  }
+  
+  /* Ajustarea mărimii badge-ului pentru mobil */
+  .header-container a[href="/cart"] .absolute {
+    font-size: 0.7rem;
+    font-weight: bold;
   }
 }
 
@@ -245,4 +459,11 @@
   padding-top: 6rem; /* Înălțimea header-ului */
   margin: 0;
   padding: 0;
+}
+
+/* Adaugă stilizare pentru butonul hamburger când meniul este deschis */
+.menu-button.active {
+  position: fixed;
+  top: 16px;
+  left: 16px;
 }

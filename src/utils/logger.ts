@@ -1,20 +1,20 @@
 export const logger = {
-  debug: (message: string, ...args: unknown[]) => {
+  debug: (_message: string, ..._args: unknown[]) => {
     if (process.env.NODE_ENV === 'development') {
-      console.log(`[DEBUG] ${message}`, ...args);
+      // Removed console statement
     }
   },
-  info: (message: string, ...args: unknown[]) => {
-    console.info(`[INFO] ${message}`, ...args);
+  info: (_message: string, ..._args: unknown[]) => {
+    console.info(`[INFO] ${_message}`, ..._args);
   },
-  warn: (message: string, ...args: unknown[]) => {
-    console.warn(`[WARN] ${message}`, ...args);
+  warn: (_message: string, ..._args: unknown[]) => {
+    console.warn(`[WARN] ${_message}`, ..._args);
   },
-  error: (message: string, error?: unknown, ...args: unknown[]) => {
+  error: (_message: string, _error?: unknown, ..._args: unknown[]) => {
     console.error(
-      `[ERROR] ${message}`,
-      error instanceof Error ? { message: error.message, stack: error.stack } : error,
-      ...args
+      `[ERROR] ${_message}`,
+      _error instanceof Error ? { message: _error.message, stack: _error.stack } : _error,
+      ..._args
     );
   }
 };

@@ -38,11 +38,12 @@ export const signIn = async (email: string, password: string): Promise<{success:
       success: true,
       user: mapFirebaseUserToUser(userCredential.user)
     };
-  } catch (error: any) {
-    console.error('Eroare la autentificare:', error);
+  } catch (error: unknown) {
+    const errorMessage = (error as Error).message || 'A apărut o eroare la autentificare';
+    console.error('Eroare la autentificare:', errorMessage);
     return {
       success: false,
-      error: error.message || 'A apărut o eroare la autentificare'
+      error: errorMessage
     };
   }
 };
@@ -70,8 +71,9 @@ export const checkAdmin = async (user: User | null): Promise<boolean> => {
     }
     
     return false;
-  } catch (error) {
-    console.error('Error checking admin status:', error);
+  } catch (error: unknown) {
+    const errorMessage = (error as Error).message || 'Error checking admin status';
+    console.error('Error checking admin status:', errorMessage);
     return false;
   }
 };
@@ -81,11 +83,12 @@ export const logOut = async (): Promise<{success: boolean, error?: string}> => {
   try {
     await signOut(auth);
     return { success: true };
-  } catch (error: any) {
-    console.error('Eroare la delogare:', error);
+  } catch (error: unknown) {
+    const errorMessage = (error as Error).message || 'A apărut o eroare la delogare';
+    console.error('Eroare la delogare:', errorMessage);
     return {
       success: false,
-      error: error.message || 'A apărut o eroare la delogare'
+      error: errorMessage
     };
   }
 };
@@ -95,11 +98,12 @@ export const resetPassword = async (email: string): Promise<{success: boolean, e
   try {
     await sendPasswordResetEmail(auth, email);
     return { success: true };
-  } catch (error: any) {
-    console.error('Eroare la resetarea parolei:', error);
+  } catch (error: unknown) {
+    const errorMessage = (error as Error).message || 'A apărut o eroare la resetarea parolei';
+    console.error('Eroare la resetarea parolei:', errorMessage);
     return {
       success: false,
-      error: error.message || 'A apărut o eroare la resetarea parolei'
+      error: errorMessage
     };
   }
 };
@@ -120,11 +124,12 @@ export const signUp = async (email: string, password: string): Promise<{success:
       success: true,
       user: mapFirebaseUserToUser(firebaseUser)
     };
-  } catch (error: any) {
-    console.error('Eroare la înregistrare:', error);
+  } catch (error: unknown) {
+    const errorMessage = (error as Error).message || 'A apărut o eroare la înregistrare';
+    console.error('Eroare la înregistrare:', errorMessage);
     return {
       success: false,
-      error: error.message || 'A apărut o eroare la înregistrare'
+      error: errorMessage
     };
   }
 };
@@ -144,11 +149,12 @@ export const updateUserProfile = async (displayName: string, photoURL?: string):
       photoURL: photoURL || auth.currentUser.photoURL
     });
     return { success: true };
-  } catch (error: any) {
-    console.error('Eroare la actualizarea profilului:', error);
+  } catch (error: unknown) {
+    const errorMessage = (error as Error).message || 'A apărut o eroare la actualizarea profilului';
+    console.error('Eroare la actualizarea profilului:', errorMessage);
     return {
       success: false,
-      error: error.message || 'A apărut o eroare la actualizarea profilului'
+      error: errorMessage
     };
   }
 };
@@ -162,11 +168,12 @@ export const signInWithGoogle = async (): Promise<{success: boolean, user?: User
       success: true,
       user: mapFirebaseUserToUser(result.user)
     };
-  } catch (error: any) {
-    console.error('Eroare la autentificarea cu Google:', error);
+  } catch (error: unknown) {
+    const errorMessage = (error as Error).message || 'A apărut o eroare la autentificarea cu Google';
+    console.error('Eroare la autentificarea cu Google:', errorMessage);
     return {
       success: false,
-      error: error.message || 'A apărut o eroare la autentificarea cu Google'
+      error: errorMessage
     };
   }
 };

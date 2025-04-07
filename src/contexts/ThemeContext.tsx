@@ -1,5 +1,4 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
-import { THEME_LIGHT, THEME_DARK } from './themeUtils';
+import React, { createContext, useState, useContext, useEffect } from 'react';
 
 type Theme = 'light' | 'dark';
 
@@ -8,8 +7,13 @@ interface ThemeContextType {
   toggleTheme: () => void;
 }
 
-export const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
+// Create the context with default values
+const ThemeContext = createContext<ThemeContextType>({
+  theme: 'light',
+  toggleTheme: () => {}
+});
 
+// Create and export the hook
 export const useTheme = () => useContext(ThemeContext);
 
 export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
@@ -17,7 +21,7 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     // Check for stored theme or system preference
     const savedTheme = localStorage.getItem('theme');
     if (savedTheme && (savedTheme === 'light' || savedTheme === 'dark')) {
-      return savedTheme;
+      return savedTheme as Theme;
     }
     
     // Check system preference
@@ -50,5 +54,3 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     </ThemeContext.Provider>
   );
 };
-
-export default ThemeContext;

@@ -1,0 +1,15 @@
+@import url('https://fonts.googleapis.com/css2?family=Satisfy&display=swap');
+
+.font-handwriting {
+  font-family: 'Satisfy', cursive;
+}
+
+/* Animații pentru butonul de adăugare în coș */
+@keyframes cartBounce {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.1); }
+}
+
+.cart-animation {
+  animation: cartBounce 0.5s ease;
+}

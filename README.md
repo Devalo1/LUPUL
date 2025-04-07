@@ -1,4 +1,4 @@
-# Lupul și Corbul - TypeScript Application
+# My TypeScript App
 
 ## Overview
 
@@ -55,6 +55,69 @@ Start the development server:
 ```
 npm run dev
 ```
+
+## Pornirea aplicației cu emulatori Firebase
+
+Pentru a rula aplicația corect cu emulatorii Firebase, urmează acești pași:
+
+1. **Pornește emulatorii Firebase într-un terminal:**
+```bash
+npm run emulators
+```
+
+2. **Pornește aplicația într-un alt terminal:**
+```bash
+npm run dev
+```
+
+3. **Sau pornește ambele simultan:**
+```bash
+npm run dev:all
+```
+
+## Depanare probleme cu emulatorii
+
+Dacă întâmpini erori de conexiune precum `ERR_CONNECTION_REFUSED` când accesezi portul 8080 (Firestore) sau alte porturi ale emulatorilor:
+
+1. Verifică dacă emulatorii rulează:
+```bash
+npm run check-emulators
+```
+
+2. Asigură-te că porturile nu sunt blocate de firewall sau alte aplicații.
+
+3. Pentru probleme persistente, încearcă să resetezi emulatorii:
+```bash
+firebase emulators:stop
+firebase emulators:start
+```
+
+## Porturile utilizate de emulatori
+
+- **Firestore**: 8080
+- **Auth**: 9099
+- **Functions**: 5002
+- **Storage**: 9199
+- **Emulator UI**: 4000
+
+## Configurare
+
+Dacă dorești să folosești Firebase live în loc de emulatori, modifică flag-ul `useEmulators` din `src/services/firestore.ts` la `false`.
+
+## Porturi utilizate
+
+- **Aplicația React**: http://localhost:5173
+- **Firebase UI**: http://localhost:4000
+- **Firebase Functions**: http://localhost:5002
+- **Firestore**: http://localhost:8080
+
+## Depanare
+
+Dacă apar probleme cu pornirea aplicației:
+
+1. Verificați că porturile necesare sunt disponibile
+2. Opriți orice instanțe anterior pornite ale emulatorilor Firebase
+3. Ștergeți directoarele `.cache` și `node_modules` și reinstalați pachetele
 
 ## Available Scripts
 

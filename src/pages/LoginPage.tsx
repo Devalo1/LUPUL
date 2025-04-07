@@ -1,120 +1,125 @@
-import React, { useState, useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import React, { useState } from 'react';
+// Update import path
 import { useAuth } from '../contexts/AuthContext';
+import { useNavigate, Link } from 'react-router-dom';
+import '../styles/AuthPages.css';
 
 const LoginPage: React.FC = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [showPassword, setShowPassword] = useState(false);
-  const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
-  const { signInWithGoogle, login, currentUser } = useAuth();
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const { login, loginWithGoogle } = useAuth();
   const navigate = useNavigate();
 
-  useEffect(() => {
-    if (currentUser) {
-      navigate('/dashboard'); // Redirecționează direct către dashboard
-      console.log('Redirecting to dashboard');
-    }
-  }, [currentUser, navigate]);
-
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    setError('');
-    
+    setErrorMessage(null);
+    console.log('Încercare de autentificare cu:', email);
+
     try {
       await login(email, password);
-      navigate('/dashboard'); // Navighează direct către dashboard după autentificare
+      console.log('Autentificare reușită!');
+      navigate('/dashboard');
     } catch (error: any) {
-      setError(error.message || 'A apărut o eroare la autentificare');
+      console.error('Eroare detaliată la autentificare:', error);
+      
+      let message = `Eroare la autentificare: ${error.code || 'necunoscută'}`;
+      if (error.code === 'auth/user-not-found' || error.code === 'auth/wrong-password') {
+        message = "Email sau parolă incorectă.";
+      } else if (error.code === 'auth/invalid-email') {
+        message = "Formatul email-ului este invalid.";
+      } else if (error.code === 'auth/too-many-requests') {
+        message = "Prea multe încercări eșuate. Încercați mai târziu.";
+      }
+      
+      setErrorMessage(message);
     } finally {
       setLoading(false);
     }
   };
 
-  const togglePasswordVisibility = () => {
-    setShowPassword(!showPassword);
+  const handleGoogleLogin = async () => {
+    setLoading(true);
+    setErrorMessage(null);
+    console.log('Încercare de autentificare cu Google');
+
+    try {
+      await loginWithGoogle();
+      console.log('Autentificare Google reușită!');
+      navigate('/dashboard');
+    } catch (error: any) {
+      console.error('Eroare detaliată la autentificare cu Google:', error);
+      setErrorMessage(`Autentificarea cu Google a eșuat: ${error.code || error.message || 'Eroare necunoscută'}`);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-md w-full space-y-8 bg-white p-8 rounded-lg shadow-md">
-        <div>
-          <h2 className="text-center text-3xl font-extrabold text-gray-900">Autentificare</h2>
-          <p className="mt-2 text-center text-sm text-gray-600">
-            Nu ai un cont?{' '}
-            <Link to="/register" className="font-medium text-blue-600 hover:text-blue-500">
-              Creează cont
-            </Link>
-          </p>
-        </div>
-
-        {error && (
-          <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-md">
-            {error}
+    <div className="auth-container">
+      <div className="auth-card">
+        <h2 className="auth-title">Autentificare</h2>
+        
+        {errorMessage && (
+          <div className="error-message">
+            {errorMessage}
           </div>
         )}
-
-        <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
-          <div className="rounded-md shadow-sm -space-y-px">
-            <div>
-              <label htmlFor="email-address" className="sr-only">Email</label>
-              <input
-                id="email-address"
-                name="email"
-                type="email"
-                autoComplete="email"
-                required
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-t-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm"
-                placeholder="Adresa de email"
-              />
-            </div>
-            <div className="relative">
-              <label htmlFor="password" className="sr-only">Parola</label>
-              <input
-                id="password"
-                name="password"
-                type={showPassword ? 'text' : 'password'}
-                autoComplete="current-password"
-                required
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-b-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm"
-                placeholder="Parola"
-              />
-              <button
-                type="button"
-                onClick={togglePasswordVisibility}
-                className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-500"
-              >
-                {showPassword ? '🙈' : '👁️'}
-              </button>
-            </div>
+        
+        <form onSubmit={handleLogin} className="auth-form">
+          <div className="form-group">
+            <label htmlFor="email">Email</label>
+            <input
+              type="email"
+              id="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
+            />
           </div>
-
-          <div>
-            <button
-              type="submit"
-              className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-              disabled={loading}
-            >
-              {loading ? 'Se încarcă...' : 'Autentificare'}
-            </button>
+          
+          <div className="form-group">
+            <label htmlFor="password">Parolă</label>
+            <input
+              type="password"
+              id="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+            />
           </div>
-
-          <div className="mt-6">
-            <button
-              type="button"
-              onClick={signInWithGoogle}
-              className="w-full flex justify-center py-2 px-4 border border-gray-300 rounded-md shadow-sm bg-white text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-            >
-              Conectare cu Google
-            </button>
-          </div>
+          
+          <button 
+            type="submit" 
+            className="auth-button primary"
+            disabled={loading}
+          >
+            {loading ? "Se procesează..." : "Autentificare"}
+          </button>
         </form>
+        
+        <div className="divider">
+          <span>sau</span>
+        </div>
+        
+        <button 
+          onClick={handleGoogleLogin} 
+          className="google-button"
+          disabled={loading}
+        >
+          <svg viewBox="0 0 24 24" width="24" height="24" xmlns="http://www.w3.org/2000/svg">
+            <g transform="matrix(1, 0, 0, 1, 0, 0)">
+              <path d="M21.35 11.1h-9.17v2.73h6.51c-.33 3.81-3.5 5.44-6.5 5.44C8.36 19.27 5 16.25 5 12c0-4.1 3.2-7.27 7.2-7.27 3.09 0 4.9 1.97 4.9 1.97L19 4.72S16.56 2 12.1 2C6.42 2 2.03 6.8 2.03 12c0 5.05 4.13 10 10.22 10 5.35 0 9.25-3.67 9.25-9.09 0-1.15-.15-1.81-.15-1.81z" fill="#4285F4"></path>
+            </g>
+          </svg>
+          <span>Autentificare cu Google</span>
+        </button>
+        
+        <div className="auth-links">
+          <Link to="/register">Nu ai cont? Înregistrează-te</Link>
+        </div>
       </div>
     </div>
   );

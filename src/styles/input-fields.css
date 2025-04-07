@@ -1,0 +1,48 @@
+/* Elegant styling for all input fields with white background */
+input,
+textarea,
+select,
+.form-control,
+[contenteditable="true"] {
+  background-color: white;
+  color: #333;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  padding: 8px 12px;
+  transition: all 0.3s ease;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+/* Focus state */
+input:focus,
+textarea:focus,
+select:focus,
+.form-control:focus,
+[contenteditable="true"]:focus {
+  outline: none;
+  border-color: #4a90e2;
+  box-shadow: 0 0 0 2px rgba(74, 144, 226, 0.2);
+}
+
+/* Placeholder styling */
+::placeholder {
+  color: #aaa;
+  opacity: 1;
+}
+
+/* Custom styling for specific form elements */
+.data-entry-field {
+  background-color: white;
+  padding: 10px;
+  margin-bottom: 15px;
+  border-radius: 6px;
+  border: 1px solid #e0e0e0;
+}
+
+/* Style for the label associated with input fields */
+label {
+  display: block;
+  margin-bottom: 6px;
+  font-weight: 500;
+  color: #555;
+}

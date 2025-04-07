@@ -3,30 +3,30 @@ const isDevelopment = process.env.NODE_ENV === 'development' || import.meta.env.
 
 // Logger implementation
 export const logger = {
-  debug: (message: string, options?: Record<string, unknown>) => {
+  debug: (_message: string, _options?: Record<string, unknown>) => {
     if (isDevelopment) {
-      console.debug(`[DEBUG] ${message}`, options || '');
+      // Removed console.debug statement
     }
   },
-  info: (message: string, options?: Record<string, unknown>) => {
+  info: (_message: string, _options?: Record<string, unknown>) => {
     if (isDevelopment) {
-      console.info(`[INFO] ${message}`, options || '');
+      // Removed console.info statement
     }
   },
-  warn: (message: string, options?: Record<string, unknown>) => {
-    console.warn(`[WARN] ${message}`, options || '');
+  warn: (_message: string, _options?: Record<string, unknown>) => {
+    // Removed console.warn statement
   },
-  error: (message: string, error?: unknown, options?: Record<string, unknown>) => {
-    console.error(`[ERROR] ${message}`, error || '', options || '');
+  error: (_message: string, _error?: unknown, _options?: Record<string, unknown>) => {
+    // Removed console.error statement
   },
-  time: (label: string) => {
+  time: (_label: string) => {
     if (isDevelopment) {
-      console.time(label);
+      // Removed console.time statement
     }
   },
-  timeEnd: (label: string) => {
+  timeEnd: (_label: string) => {
     if (isDevelopment) {
-      console.timeEnd(label);
+      // Removed console.timeEnd statement
     }
   }
 };
@@ -35,13 +35,13 @@ export const logger = {
 export const logComponentEvent = (
   componentName: string,
   event: 'mount' | 'update' | 'unmount' | 'render' | 'error',
-  details?: Record<string, unknown>
+  _details?: Record<string, unknown>
 ): void => {
   if (!isDevelopment) return;
 
   logger.debug(
     `Component ${componentName} - ${event}`,
-    { context: 'Component', data: details }
+    { context: 'Component', data: _details }
   );
 };
 

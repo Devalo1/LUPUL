@@ -44,8 +44,8 @@ export interface UserProfile {
     postalCode?: string;
     country?: string;
   };
-  createdAt?: any;
-  lastLogin?: any;
+  createdAt?: string | Date;
+  lastLogin?: string | Date;
 }
 
 // Product related types
@@ -80,7 +80,7 @@ export interface Order {
   }>;
   total: number;
   status: 'pending' | 'processing' | 'shipped' | 'delivered' | 'canceled';
-  createdAt?: any;
+  createdAt?: string | Date;
   shippingAddress: {
     name: string;
     address: string;

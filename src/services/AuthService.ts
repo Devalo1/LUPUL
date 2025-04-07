@@ -1,8 +1,7 @@
 import { User } from '../types/auth';
 
 class AuthService {
-  login(email: string, password: string): Promise<User> {
-    console.log(`Login with password length: ${password.length}`);
+  login(email: string, _password: string): Promise<User> {
     return Promise.resolve({
       uid: '123',
       email,
@@ -12,8 +11,7 @@ class AuthService {
     });
   }
   
-  signUp(email: string, password: string): Promise<User> {
-    console.log(`Signup with password length: ${password.length}`);
+  signUp(email: string, _password: string): Promise<User> {
     return Promise.resolve({
       uid: '123',
       email,
@@ -23,8 +21,7 @@ class AuthService {
     });
   }
   
-  resetPassword(email: string): Promise<void> {
-    console.log(`Reset password for: ${email}`);
+  resetPassword(_email: string): Promise<void> {
     return Promise.resolve();
   }
   

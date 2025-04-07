@@ -1,14 +1,18 @@
-import { useContext } from 'react';
-import { AuthContext, useAuth as useAuthFromContext } from '../contexts/AuthContext';
+/**
+ * DEPRECATED: Import useAuth directly from contexts/AuthContext instead.
+ * This file exists only for backward compatibility.
+ */
+import { useAuth as useAuthFromContext } from '../contexts/AuthContext';
 
-// Option 1: Just re-export the hook from the context
-export const useAuth = useAuthFromContext;
+export const useAuth = () => {
+    // Just a direct re-export to maintain backward compatibility
+    return useAuthFromContext();
+};
 
-// Option 2: Or if you need to customize the hook
-// export const useAuth = () => {
-//   const context = useContext(AuthContext);
-//   if (context === undefined) {
-//     throw new Error('useAuth must be used within an AuthProvider');
-//   }
-//   return context;
-// };
+// Log deprecation warning
+if (process.env.NODE_ENV === 'development') {
+    console.warn(
+        'Warning: Importing from "hooks/useAuth.ts" is deprecated. ' +
+        'Please import useAuth directly from "contexts/AuthContext" instead.'
+    );
+}

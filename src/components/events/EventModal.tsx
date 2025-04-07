@@ -12,7 +12,11 @@ interface EventModalProps {
     description?: string;
   };
   onClose: () => void;
-  currentUser: any;
+  currentUser: {
+    id: string;
+    name: string;
+    email: string;
+  } | null;
 }
 
 const EventModal: React.FC<EventModalProps> = ({ event, onClose, currentUser }) => {

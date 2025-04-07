@@ -1,15 +1,15 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useAuth } from '../contexts/AuthContext'; // Actualizat importul
+import { useAuth } from '../contexts/AuthContext';
 import Button from '../components/common/Button';
 
 const Account: React.FC = () => {
-  const { currentUser, logOut } = useAuth();
+  const { currentUser, logout } = useAuth(); // Changed logOut to logout
   const navigate = useNavigate();
 
   const handleSignOut = async () => {
     try {
-      await logOut();
+      await logout(); // Changed logOut to logout
       navigate('/');
     } catch (error) {
       console.error('Failed to sign out:', error);

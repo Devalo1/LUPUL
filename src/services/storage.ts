@@ -1,69 +1,49 @@
-import { 
-  ref, 
-  uploadBytes, 
-  getDownloadURL, 
-  listAll, 
-  deleteObject,
-  uploadBytesResumable,
-  UploadTask
-} from 'firebase/storage';
-import { storage } from './firebase';
+import { ref, uploadBytes, getDownloadURL, deleteObject, listAll } from 'firebase/storage';
+import { storage } from '../services/firestore';
 
 // Upload a file to Firebase Storage
-export const uploadFile = async (path: string, file: File) => {
-  const storageRef = ref(storage, path);
-  const snapshot = await uploadBytes(storageRef, file);
-  const downloadURL = await getDownloadURL(snapshot.ref);
-  return { path, downloadURL };
-};
-
-// Upload a file with progress tracking
-export const uploadFileWithProgress = (
-  path: string, 
-  file: File, 
-  onProgress?: (progress: number) => void
-): UploadTask => {
-  const storageRef = ref(storage, path);
-  const uploadTask = uploadBytesResumable(storageRef, file);
-  
-  if (onProgress) {
-    uploadTask.on('state_changed', 
-      (snapshot) => {
-        const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
-        onProgress(progress);
-      }
-    );
+export const uploadFile = async (file: File, path: string): Promise<string> => {
+  try {
+    const storageRef = ref(storage, path);
+    await uploadBytes(storageRef, file);
+    return await getDownloadURL(storageRef);
+  } catch (error) {
+    console.error('Error uploading file:', error);
+    throw new Error(`Failed to upload file: ${error instanceof Error ? error.message : String(error)}`);
   }
-  
-  return uploadTask;
 };
 
 // Get download URL for a file
-export const getFileURL = async (path: string) => {
-  const storageRef = ref(storage, path);
-  return getDownloadURL(storageRef);
+export const getFileUrl = async (path: string): Promise<string> => {
+  try {
+    const storageRef = ref(storage, path);
+    return await getDownloadURL(storageRef);
+  } catch (error) {
+    console.error('Error getting file URL:', error);
+    throw new Error(`Failed to get file URL: ${error instanceof Error ? error.message : String(error)}`);
+  }
+};
+
+// Delete a file from Firebase Storage
+export const deleteFile = async (path: string): Promise<void> => {
+  try {
+    const storageRef = ref(storage, path);
+    await deleteObject(storageRef);
+  } catch (error) {
+    console.error('Error deleting file:', error);
+    throw new Error(`Failed to delete file: ${error instanceof Error ? error.message : String(error)}`);
+  }
 };
 
 // List all files in a directory
-export const listFiles = async (path: string) => {
-  const storageRef = ref(storage, path);
-  const result = await listAll(storageRef);
-  const files = await Promise.all(
-    result.items.map(async (item) => {
-      const url = await getDownloadURL(item);
-      return {
-        name: item.name,
-        fullPath: item.fullPath,
-        url
-      };
-    })
-  );
-  
-  return files;
-};
-
-// Delete a file
-export const deleteFile = async (path: string) => {
-  const storageRef = ref(storage, path);
-  return deleteObject(storageRef);
+export const listFiles = async (path: string): Promise<string[]> => {
+  try {
+    const storageRef = ref(storage, path);
+    const res = await listAll(storageRef);
+    const urls = await Promise.all(res.items.map(itemRef => getDownloadURL(itemRef)));
+    return urls;
+  } catch (error) {
+    console.error('Error listing files:', error);
+    throw new Error(`Failed to list files: ${error instanceof Error ? error.message : String(error)}`);
+  }
 };

@@ -1,10 +1,23 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { collection, getDocs, doc, deleteDoc, updateDoc } from 'firebase/firestore';
-import { firestore } from '../services/firebase';
+import { db } from '../firebase';
 import { useAuth } from '../contexts/AuthContext';
 import Button from '../components/common/Button';
 import { Product } from '../types';
+
+const admin = require('firebase-admin');
+admin.auth().setCustomUserClaims('USER_UID', { admin: true })
+  .then(() => {
+    console.log('Admin claim set successfully.');
+  })
+  .catch((error: unknown) => {
+    if (error instanceof Error) {
+      console.error('Error setting admin claim:', error.message);
+    } else {
+      console.error('Unknown error setting admin claim:', error);
+    }
+  });
 
 const Admin: React.FC = () => {
   const [products, setProducts] = useState<Product[]>([]);
@@ -62,7 +75,7 @@ const Admin: React.FC = () => {
     const fetchProducts = async () => {
       try {
         // Try to fetch from Firestore
-        const productsCollection = collection(firestore, 'products');
+        const productsCollection = collection(db, 'products');
         const productsSnapshot = await getDocs(productsCollection);
         const productsList = productsSnapshot.docs.map(doc => ({
           id: doc.id,
@@ -90,7 +103,7 @@ const Admin: React.FC = () => {
   const handleDeleteProduct = async (id: string) => {
     if (window.confirm('Ești sigur că vrei să ștergi acest produs?')) {
       try {
-        await deleteDoc(doc(firestore, 'products', id));
+        await deleteDoc(doc(db, 'products', id));
         setProducts(products.filter(product => product.id !== id));
       } catch (error) {
         console.error('Error deleting product:', error);
@@ -101,7 +114,7 @@ const Admin: React.FC = () => {
 
   const handleToggleProductStock = async (id: string, currentInStock: boolean) => {
     try {
-      await updateDoc(doc(firestore, 'products', id), {
+      await updateDoc(doc(db, 'products', id), {
         inStock: !currentInStock
       });
       

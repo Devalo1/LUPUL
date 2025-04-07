@@ -35,7 +35,7 @@ export function useDebugState<T>(
 export function useDebugEffect(
   componentName: string,
   effectName: string,
-  deps: any[]
+  deps: Record<string, unknown>[]
 ) {
   useEffect(() => {
     const prefix = `[${componentName}]`;

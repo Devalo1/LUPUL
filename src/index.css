@@ -2,6 +2,7 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Global theme variables */
 :root {
   --ro-blue: #002B7F;
   --ro-yellow: #FCD116;
@@ -13,7 +14,7 @@
 
   color-scheme: light dark;
   color: rgba(0, 0, 0, 0.87);
-  background-color: #ffffff;
+  background-color:rgb(139, 21, 21);
 
   font-synthesis: none;
   text-rendering: optimizeLegibility;
@@ -22,67 +23,100 @@
   -webkit-text-size-adjust: 100%;
 }
 
-/* Reset CSS to ensure full width coverage */
+/* Reset CSS */
 * {
   margin: 0;
   padding: 0;
   box-sizing: border-box;
 }
 
-html, body {
-  width: 100%;
-  height: 100%;
-  overflow-x: hidden;
-}
-
-body, #root, .home-container {
-  background-image: url('/images/background.jpeg');
-  background-size: cover;
-  background-position: center;
-  background-repeat: no-repeat;
-  background-attachment: fixed;
-}
-
+/* Full page background setup - highest priority */
 body {
+  background-image: url('/images/background.jpeg') !important; /* Force background */
+  background-size: cover !important;
+  background-position: center !important;
+  background-repeat: no-repeat !important;
+  background-attachment: fixed !important;
+  color: white; /* Light text for dark background */
   margin: 0;
-  display: block;
-  min-width: 320px;
   min-height: 100vh;
-  font-family: 'Montserrat', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen,
-    Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+  font-family: 'Montserrat', sans-serif;
 }
 
-code {
-  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
-    monospace;
-}
-
+/* Make the root container full height */
 #root {
-  width: 100%;
-  height: 100%;
-  display: block; /* Changed from flex to block */
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
 }
 
+/* Homepage specific container */
 .home-container {
-  width: 100vw;
-  min-height: 100vh;
-  max-width: 100%;
-  overflow-x: hidden;
-}
-
-.layout-background {
-  min-height: 100vh;
   width: 100%;
-  background-image: url('/images/background.jpeg');
-  background-size: cover;
-  background-position: center;
-  background-repeat: no-repeat;
-  background-attachment: fixed;
-  padding-top: 6rem; /* Înălțimea header-ului */
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
 }
 
+/* Content visibility control */
+.content-container {
+  background-color: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(3px);
+  border-radius: 8px;
+  padding: 1rem;
+  margin: 1rem 0;
+}
+
+/* Ensure primary elements are visible */
+.navbar-container, 
+.footer-container, 
+.button-container,
+.home-buttons {
+  position: relative;
+  z-index: 50;
+}
+
+/* Style buttons to stand out */
+.btn,
+.hero-button,
+.btn-primary-light,
+.btn-secondary-light,
+.btn-tertiary-light {
+  position: relative;
+  z-index: 20;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+  border: 2px solid rgba(255, 255, 255, 0.2);
+  backdrop-filter: blur(2px);
+  font-weight: bold;
+  transition: all 0.3s ease;
+}
+
+.btn:hover,
+.hero-button:hover,
+.btn-primary-light:hover,
+.btn-secondary-light:hover,
+.btn-tertiary-light:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.4);
+}
+
+/* Fixed header/navbar */
+header, .navbar-romanian-flag {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  z-index: 100;
+}
+
+/* Footer positioning */
+footer {
+  margin-top: auto;
+  position: relative;
+  z-index: 100;
+}
+
+/* Links */
 a {
   font-weight: 500;
   color: #646cff;
@@ -92,11 +126,13 @@ a:hover {
   color: #535bf2;
 }
 
+/* Headings */
 h1 {
   font-size: 3.2em;
   line-height: 1.1;
 }
 
+/* Buttons */
 button {
   border-radius: 8px;
   border: 1px solid transparent;
@@ -176,10 +212,10 @@ button:focus-visible {
   }
 }
 
-/* Dark mode - will be enabled if user prefers dark color scheme */
+/* Dark mode */
 @media (prefers-color-scheme: dark) {
   :root {
-    color: rgba(255, 255, 255, 0.87);
+    color: rgba(6, 240, 84, 0.87);
     background-color: #242424;
   }
   a:hover {

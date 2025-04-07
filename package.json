@@ -4,8 +4,10 @@
   "private": true,
   "type": "module",
   "dependencies": {
+    "cors": "^2.8.5",
     "firebase": "^11.6.0",
     "framer-motion": "^10.16.5",
+    "nodemailer": "^6.10.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-icons": "^5.5.0",
@@ -23,6 +25,7 @@
     "@typescript-eslint/parser": "^6.21.0",
     "@vitejs/plugin-react": "^4.2.0",
     "autoprefixer": "^10.4.16",
+    "concurrently": "^9.1.2",
     "eslint": "^8.57.1",
     "eslint-plugin-react-hooks": "^4.6.0",
     "eslint-plugin-react-refresh": "^0.4.4",
@@ -43,7 +46,10 @@
     "check-deps": "node scripts/check-dependencies.js",
     "clean": "rimraf node_modules dist",
     "dev": "vite",
-    "serve": "vite preview"
+    "serve": "vite preview",
+    "emulators": "firebase emulators:start",
+    "dev:all": "concurrently \"npm run dev\" \"npm run emulators\"",
+    "check-emulators": "node scripts/check-emulators.js"
   },
   "eslintConfig": {
     "extends": [

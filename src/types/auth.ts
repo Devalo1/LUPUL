@@ -1,5 +1,3 @@
-import { User as FirebaseUser } from 'firebase/auth';
-
 export interface User {
   uid: string;
   email: string | null;
@@ -16,10 +14,10 @@ export interface User {
 
 export interface AuthContextProps {
   currentUser: User | null;
-  login: (email: string, password: string) => Promise<any>;
+  login: (email: string, password: string) => Promise<void>;
   logOut: () => Promise<void>;
-  signUp: (email: string, password: string) => Promise<any>;
+  signUp: (email: string, password: string) => Promise<void>;
   resetPassword: (email: string) => Promise<void>;
   updateProfile: (data: Partial<User>) => Promise<void>;
-  signInWithGoogle: () => Promise<any>;
+  signInWithGoogle: () => Promise<void>;
 }

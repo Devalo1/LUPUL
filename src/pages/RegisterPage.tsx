@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
+import '../styles/AuthPages.css'; // Import the styles used by LoginPage
 
 const RegisterPage: React.FC = () => {
   const [email, setEmail] = useState('');
+  const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
@@ -11,12 +13,12 @@ const RegisterPage: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
-  const { register, currentUser } = useAuth();
+  const { register, loginWithGoogle, currentUser } = useAuth(); // Change signInWithGoogle to loginWithGoogle
   const navigate = useNavigate();
 
   useEffect(() => {
     if (currentUser) {
-      navigate('/dashboard'); // Redirecționează utilizatorii autentificați
+      navigate('/dashboard');
     }
   }, [currentUser, navigate]);
 
@@ -35,10 +37,34 @@ const RegisterPage: React.FC = () => {
     }
 
     try {
+      // The register function only accepts email and password (not username)
       await register(email, trimmedPassword);
-      navigate('/dashboard'); // Navighează direct către dashboard după înregistrare
+      // You can handle username storage separately as needed
+      // For example, you might update the user profile after registration
+      navigate('/dashboard');
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        setError(error.message || 'A apărut o eroare la înregistrare');
+      } else {
+        setError('A apărut o eroare la înregistrare');
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleGoogleLogin = async () => {
+    setLoading(true);
+    setError('');
+    console.log('Încercare de autentificare cu Google');
+
+    try {
+      await loginWithGoogle();
+      console.log('Autentificare Google reușită!');
+      navigate('/dashboard');
     } catch (error: any) {
-      setError(error.message || 'A apărut o eroare la înregistrare');
+      console.error('Eroare detaliată la autentificare cu Google:', error);
+      setError(`Autentificarea cu Google a eșuat: ${error.code || error.message || 'Eroare necunoscută'}`);
     } finally {
       setLoading(false);
     }
@@ -69,6 +95,19 @@ const RegisterPage: React.FC = () => {
         <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
           <div className="rounded-md shadow-sm -space-y-px">
             <div>
+              <label htmlFor="username" className="sr-only">Nume utilizator</label>
+              <input
+                id="username"
+                name="username"
+                type="text"
+                autoComplete="username"
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
+                className={`${inputClassName} rounded-t-md`}
+                placeholder="Nume utilizator"
+              />
+            </div>
+            <div>
               <label htmlFor="email-address" className="sr-only">Email</label>
               <input
                 id="email-address"
@@ -78,7 +117,7 @@ const RegisterPage: React.FC = () => {
                 required
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className={`${inputClassName} rounded-t-md`}
+                className={inputClassName}
                 placeholder="Adresa de email"
               />
             </div>
@@ -134,6 +173,32 @@ const RegisterPage: React.FC = () => {
             >
               {loading ? 'Se încarcă...' : 'Creează cont'}
             </button>
+          </div>
+          
+          <div className="mt-4">
+            <div className="relative">
+              <div className="absolute inset-0 flex items-center">
+                <div className="w-full border-t border-gray-300"></div>
+              </div>
+              <div className="relative flex justify-center text-sm">
+                <span className="px-2 bg-white text-gray-500">Sau</span>
+              </div>
+            </div>
+            
+            <div className="mt-4">
+              <button 
+                onClick={handleGoogleLogin} // Change handleGoogleSignIn to handleGoogleLogin
+                className="google-button"
+                disabled={loading}
+              >
+                <svg viewBox="0 0 24 24" width="24" height="24" xmlns="http://www.w3.org/2000/svg">
+                  <g transform="matrix(1, 0, 0, 1, 0, 0)">
+                    <path d="M21.35 11.1h-9.17v2.73h6.51c-.33 3.81-3.5 5.44-6.5 5.44C8.36 19.27 5 16.25 5 12c0-4.1 3.2-7.27 7.2-7.27 3.09 0 4.9 1.97 4.9 1.97L19 4.72S16.56 2 12.1 2C6.42 2 2.03 6.8 2.03 12c0 5.05 4.13 10 10.22 10 5.35 0 9.25-3.67 9.25-9.09 0-1.15-.15-1.81-.15-1.81z" fill="#4285F4"></path>
+                  </g>
+                </svg>
+                <span>Autentificare cu Google</span>
+              </button>
+            </div>
           </div>
         </form>
       </div>

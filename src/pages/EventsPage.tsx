@@ -5,13 +5,37 @@ import EventModal from '../components/events/EventModal';
 import { useAuth } from '../contexts/AuthContext';
 import { motion } from 'framer-motion';
 
+// Define Event type
+interface Event {
+  id: string;
+  title: string;
+  date: string;
+  time: string;
+  location: string;
+  imageUrl: string;
+  isLive: boolean;
+}
+
+// Define EventUser type for the EventModal component
+interface EventUser {
+  id: string;
+  name: string;
+  email: string;
+}
+
 const EventsPage: React.FC = () => {
   const [filter, setFilter] = useState<'all' | 'upcoming' | 'past'>('all');
-  const [selectedEvent, setSelectedEvent] = useState(null);
+  const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
   const { currentUser } = useAuth();
 
-  const events = [
-    // Exemplu de date pentru evenimente
+  // Map Firebase user to EventUser format
+  const eventUser: EventUser | null = currentUser ? {
+    id: currentUser.uid,
+    name: currentUser.displayName || 'Utilizator',
+    email: currentUser.email || ''
+  } : null;
+
+  const events: Event[] = [
     {
       id: '1',
       title: 'Atelier de mindfulness',
@@ -70,7 +94,7 @@ const EventsPage: React.FC = () => {
         <EventModal
           event={selectedEvent}
           onClose={() => setSelectedEvent(null)}
-          currentUser={currentUser}
+          currentUser={eventUser}
         />
       )}
     </div>

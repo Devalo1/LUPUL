@@ -1,0 +1,96 @@
+/* Emergency background fix with highest priority */
+html, body {
+  margin: 0 !important;
+  padding: 0 !important;
+  height: 100% !important;
+  overflow-x: hidden !important;
+}
+
+/* Force background image on body with maximum z-index priority */
+body::before {
+  content: "";
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: -9999;
+  background-image: url('/images/background.jpeg');
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-attachment: fixed;
+}
+
+/* Remove all backgrounds from containers to let the body background show through */
+body,
+#root,
+.app-container,
+.fullscreen-bg,
+.layout-background,
+.home-container,
+main {
+  background: transparent !important;
+  background-color: transparent !important;
+  background-image: none !important;
+}
+
+/* Make regular content semi-transparent with a dark overlay */
+.content-section:not(nav):not(header):not(footer):not(.button-container):not(.navbar-container):not(.home-buttons) {
+  background-color: rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(5px);
+  border-radius: 8px;
+  padding: 1.5rem;
+  margin: 1rem 0;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4);
+}
+
+/* Enhanced navbar visibility */
+header, 
+.navbar-romanian-flag, 
+nav {
+  position: relative;
+  z-index: 1000;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.6);
+}
+
+/* Enhanced footer visibility */
+footer {
+  position: relative;
+  z-index: 900;
+  margin-top: auto;
+  box-shadow: 0 -4px 15px rgba(0, 0, 0, 0.6);
+}
+
+/* Make buttons pop with strong visibility */
+.btn,
+button,
+.hero-button,
+.btn-primary,
+.btn-secondary,
+.btn-ro,
+.btn-primary-light, 
+.btn-secondary-light, 
+.btn-tertiary-light,
+.btn-gradient-blue,
+.btn-gradient-green,
+.btn-gradient-blend {
+  position: relative;
+  z-index: 800;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+  border: 2px solid rgba(255, 255, 255, 0.25);
+  text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.7);
+  font-weight: bold;
+  color: white;
+}
+
+/* Additional helper class for any content that needs to be visible */
+.visible-content {
+  background-color: rgba(0, 0, 0, 0.65);
+  backdrop-filter: blur(4px);
+  border-radius: 8px;
+  padding: 1.5rem;
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.4);
+  color: white;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}

@@ -3,7 +3,6 @@ import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { collection, getDocs } from 'firebase/firestore';
 import { firestore } from '../services/Index';
-import { auth, signIn } from '../services';
 import { Product } from '../types';
 import { useCart } from '../contexts/CartContext';
 import Button from '../components/common/Button';

@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { collection, addDoc, getDocs, deleteDoc, doc, updateDoc } from 'firebase/firestore';
-import { db } from '../firebase'; // Import corect de la fișierul central
+import { db } from '../firebase';
 import { useAuth } from '../contexts/AuthContext';
 import { Navigate } from 'react-router-dom';
+import AdminNavigation from '../components/AdminNavigation';
 
 const AdminPanel: React.FC = () => {
   const { currentUser, loading } = useAuth();
@@ -85,16 +86,51 @@ const AdminPanel: React.FC = () => {
     const fetchArticles = async () => {
       try {
         setIsLoading(true);
+        console.log("AdminPanel: Starting to fetch articles from Firestore");
+        
+        if (!db) {
+          console.error("AdminPanel: Firestore DB instance is undefined");
+          throw new Error("Database connection error");
+        }
+        
         const articlesRef = collection(db, 'articles');
-        const snapshot = await getDocs(articlesRef);
-        const articlesList = snapshot.docs.map((doc) => ({
-          id: doc.id,
-          ...doc.data(),
-        }));
+        console.log("AdminPanel: Articles collection reference created successfully");
+        
+        let snapshot;
+        try {
+          snapshot = await getDocs(articlesRef);
+          console.log(`AdminPanel: Successfully retrieved ${snapshot.docs.length} articles`);
+        } catch (queryError) {
+          console.error("AdminPanel: Error executing Firestore query:", queryError);
+          throw queryError;
+        }
+        
+        const articlesList = [];
+        
+        for (const doc of snapshot.docs) {
+          try {
+            const data = doc.data();
+            articlesList.push({
+              id: doc.id,
+              title: data.title || 'Untitled',
+              date: data.date || new Date().toLocaleDateString('ro-RO'),
+              author: data.author || 'Unknown Author',
+              preview: data.preview || '',
+              content: data.content || '',
+              createdAt: data.createdAt || new Date().toISOString(),
+            });
+          } catch (docError) {
+            console.error(`AdminPanel: Error processing article document ${doc.id}:`, docError);
+          }
+        }
+        
+        console.log(`AdminPanel: Successfully processed ${articlesList.length} articles`);
         setArticles(articlesList);
+        setError(null);
       } catch (err) {
-        console.error('Eroare la încărcarea articolelor:', err);
-        setError('A apărut o eroare la încărcarea articolelor.');
+        console.error('AdminPanel: Error fetching articles:', err);
+        setError('A apărut o eroare la încărcarea articolelor. Verificați conexiunea la internet și reîncărcați pagina.');
+        setArticles([]);
       } finally {
         setIsLoading(false);
       }
@@ -343,28 +379,27 @@ const AdminPanel: React.FC = () => {
     setIsLoading(true);
     setError(null);
     try {
+      if (!db) {
+        throw new Error("Database connection error");
+      }
+      
       const safeArticleData = {
-        title: articleData.title.trim(),
-        date: articleData.date || new Date().toISOString().substr(0, 10),
+        title: articleData.title.trim() || 'Untitled',
+        date: articleData.date || new Date().toLocaleDateString('ro-RO'),
         author: articleData.author.trim() || 'Autor necunoscut',
         preview: articleData.preview.trim() || articleData.content.substring(0, 100) + '...',
         content: articleData.content.trim(),
         createdAt: new Date().toISOString(),
       };
       
-      console.log("Se adaugă articolul:", safeArticleData);
+      console.log("AdminPanel: Adding article:", safeArticleData);
       
       const articlesRef = collection(db, 'articles');
       const docRef = await addDoc(articlesRef, safeArticleData);
       
-      console.log("Articol adăugat cu ID:", docRef.id);
+      console.log("AdminPanel: Article added with ID:", docRef.id);
       
-      const snapshot = await getDocs(articlesRef);
-      const articlesList = snapshot.docs.map((doc) => ({
-        id: doc.id,
-        ...doc.data(),
-      }));
-      setArticles(articlesList);
+      setArticles(prev => [...prev, { id: docRef.id, ...safeArticleData }]);
       
       setMessage(`Articolul a fost adăugat cu succes! ID: ${docRef.id}`);
       setArticleData({
@@ -375,9 +410,9 @@ const AdminPanel: React.FC = () => {
         content: '',
       });
       setShowArticleForm(false);
-    } catch (err: any) {
-      console.error('Eroare la adăugarea articolului:', err);
-      setError(err.message || 'A apărut o eroare la adăugarea articolului. Verificați consola pentru detalii.');
+    } catch (err) {
+      console.error('AdminPanel: Error adding article:', err instanceof Error ? err.message : err);
+      setError(err instanceof Error ? err.message : 'A apărut o eroare la adăugarea articolului.');
     } finally {
       setIsLoading(false);
     }
@@ -418,6 +453,8 @@ const AdminPanel: React.FC = () => {
     <div className="container mx-auto px-4 py-8">
       <h1 className="text-3xl font-bold mb-6 text-center">Panou de Administrare</h1>
 
+      <AdminNavigation />
+      
       {message && (
         <div className="mb-4 p-4 bg-green-100 text-green-700 rounded-md">
           {message}

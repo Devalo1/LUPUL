@@ -1,17 +1,40 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import { BrowserRouter } from 'react-router-dom';
-import AppLayout from './components/AppLayout';
 import { AuthProvider } from './contexts/AuthContext';
+import AppLayout from './components/AppLayout';
 import './index.css';
-import './assets/styles/main.css';
+// ...other imports...
 
-ReactDOM.createRoot(document.getElementById('root')!).render(
-  <React.StrictMode>
-    <AuthProvider>
+// Initialize app first, then try to initialize articles
+const rootElement = document.getElementById('root');
+if (rootElement) {
+  const root = ReactDOM.createRoot(rootElement);
+  root.render(
+    <React.StrictMode>
       <BrowserRouter>
-        <AppLayout />
+        <AuthProvider>
+          <AppLayout />
+        </AuthProvider>
       </BrowserRouter>
-    </AuthProvider>
-  </React.StrictMode>
-);
+    </React.StrictMode>
+  );
+  
+  // Try to initialize articles after app is rendered
+  import('./utils/initializeArticles')
+    .then(module => {
+      const { initializeArticles } = module;
+      if (typeof initializeArticles === 'function') {
+        initializeArticles()
+          .then(created => {
+            console.log(created ? "Sample articles created" : "Articles already exist");
+          })
+          .catch(err => {
+            console.error("Error initializing articles:", err);
+          });
+      }
+    })
+    .catch(err => {
+      console.error("Error importing initializeArticles:", err);
+    });
+}

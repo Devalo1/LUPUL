@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { Navigate } from 'react-router-dom';
 import { FaEnvelope, FaEnvelopeOpen, FaArrowLeft, FaCalendarAlt, FaUser } from 'react-icons/fa';
-import { collection, getDocs } from 'firebase/firestore';
+import { collection, getDocs, addDoc } from 'firebase/firestore';
 import { db } from '../firebase';
 
 interface Article {
@@ -21,172 +21,162 @@ const UserHome: React.FC = () => {
   const [loadingArticles, setLoadingArticles] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  // Încărcăm articolele din Firebase
   useEffect(() => {
-    const fetchArticles = async () => {
+    const fetchArticles = async (retryCount = 0) => {
       try {
         setLoadingArticles(true);
         setError(null);
-
+        
+        console.log(`Attempting to fetch articles (attempt ${retryCount + 1})`);
+        
+        if (!db) {
+          console.error("Firestore instance is undefined");
+          throw new Error("Database connection error");
+        }
+        
         const articlesRef = collection(db, 'articles');
-        const snapshot = await getDocs(articlesRef);
-
-        if (snapshot.empty) {
-          const defaultArticles = [
-            {
-              id: '1',
-              title: 'Importanța sănătății mentale în era digitală',
-              date: '10 Mai 2023',
-              author: 'Dr. Ana Popescu',
-              preview: 'Descoperă cum să-ți menții echilibrul mental în mijlocul agitației cotidiene...',
-              content: `Dragă ${currentUser?.displayName || 'prieten'},
-
-Îți scriu această scrisoare cu speranța că te vei opri pentru un moment din agitația zilnică pentru a reflecta asupra sănătății tale mentale.
-
-În lumea noastră digitală, suntem constant bombardați cu informații, notificări și stimuli care ne solicită atenția. Acest flux neîntrerupt poate duce la anxietate, burnout și sentimente de izolare, chiar dacă suntem mai conectați ca niciodată din punct de vedere tehnologic.
-
-Aș dori să îți împărtășesc câteva practici care m-au ajutat pe mine și pe pacienții mei:
-
-1. **Stabilește limite digitale** - Desemnează perioade din zi când nu folosești dispozitivele electronice
-2. **Practică mindfulness** - Chiar și 5 minute de meditație zilnică pot face diferența
-3. **Mișcarea fizică** - O plimbare de 30 de minute poate îmbunătăți considerabil starea de spirit
-4. **Conectează-te autentic** - Nimic nu înlocuiește conversațiile sincere față în față
-
-Sănătatea mentală nu este un lux, ci o necesitate, la fel de importantă ca sănătatea fizică. Te încurajez să o tratezi cu aceeași prioritate.
-
-Cu gânduri bune,
-Dr. Ana Popescu
-Specialist în psihologie clinică`,
-            },
-            {
-              id: '2',
-              title: 'Cum să cultivi motivația intrinsecă pentru obiective de lungă durată',
-              date: '23 Iunie 2023',
-              author: 'Prof. Mihai Ionescu',
-              preview: 'Află strategii dovedite științific pentru a-ți menține motivația în proiectele importante...',
-              content: `Dragă ${currentUser?.displayName || 'cititorule'},
-
-Îți scriu astăzi despre o provocare cu care mulți dintre noi ne confruntăm: cum să rămânem motivați când drumul este lung și rezultatele par îndepărtate.
-
-În cei 20 de ani de cercetare în psihologia motivației, am observat că oamenii care reușesc să-și mențină angajamentul față de obiectivele de lungă durată nu se bazează doar pe motivația extrinsecă (recompense, recunoaștere), ci dezvoltă o motivație intrinsecă puternică.
-
-Iată câteva strategii care te pot ajuta:
-
-1. **Conectează obiectivele la valorile tale profunde** - Când obiectivul este aliniat cu ceea ce contează cu adevărat pentru tine, motivația devine naturală
-   
-2. **Bucură-te de proces** - Găsește aspecte ale drumului care îți aduc satisfacție, nu te concentra doar pe destinație
-
-3. **Identifică progresul** - Ține un jurnal al micilor victorii și al lecțiilor învățate
-
-4. **Creează un sistem de responsabilizare** - Un mentor sau un grup de suport poate face diferența în momentele dificile
-
-5. **Practică auto-compasiunea** - În zilele când motivația scade, tratează-te cu înțelegere, nu cu critică
-
-Motivația fluctuează în mod natural - aceasta este experiența umană normală. Secretul constă în a crea sisteme și practici care te ajută să continui chiar și când entuziasmul inițial s-a diminuat.
-
-Cu încredere în călătoria ta,
-Prof. Mihai Ionescu
-Facultatea de Psihologie`,
-            },
-          ];
-          setArticles(defaultArticles);
-        } else {
+        console.log('Articles collection reference created');
+        
+        let snapshot;
+        try {
+          snapshot = await getDocs(articlesRef);
+          console.log(`Query returned ${snapshot.docs.length} documents`);
+        } catch (fetchError) {
+          console.error("Error fetching documents:", fetchError);
+          throw fetchError;
+        }
+        
+        if (!snapshot.empty) {
+          console.log(`Found ${snapshot.docs.length} articles in Firestore`);
           const fetchedArticles: Article[] = [];
 
           snapshot.docs.forEach(doc => {
-            const data = doc.data();
-
-            if (!data.title || !data.content) {
-              return;
+            try {
+              const data = doc.data();
+              
+              fetchedArticles.push({
+                id: doc.id,
+                title: data.title || 'Titlu lipsă',
+                date: data.date || new Date().toLocaleDateString('ro-RO'),
+                author: data.author || 'Autor necunoscut',
+                preview: data.preview || (data.content ? data.content.substring(0, 100) + '...' : 'Previzualizare indisponibilă'),
+                content: data.content || 'Conținut indisponibil',
+              });
+            } catch (docError) {
+              console.error(`Error processing document ${doc.id}:`, docError);
             }
+          });
 
-            fetchedArticles.push({
-              id: doc.id,
-              title: data.title || 'Titlu lipsă',
-              date: data.date || new Date().toLocaleDateString('ro-RO'),
-              author: data.author || 'Autor necunoscut',
-              preview: data.preview || 'Previzualizare indisponibilă',
-              content: data.content || 'Conținut indisponibil',
+          if (fetchedArticles.length > 0) {
+            const personalizedArticles = fetchedArticles.map(article => {
+              let personalizedContent = article.content;
+
+              if (currentUser?.displayName) {
+                personalizedContent = personalizedContent.replace(
+                  '${currentUser?.displayName || "prieten"}',
+                  currentUser.displayName
+                );
+              } else {
+                personalizedContent = personalizedContent.replace(
+                  '${currentUser?.displayName || "prieten"}',
+                  'prieten'
+                );
+              }
+
+              return {
+                ...article,
+                content: personalizedContent
+              };
             });
-          });
 
-          const personalizedArticles = fetchedArticles.map(article => {
-            let personalizedContent = article.content;
-
-            if (personalizedContent.includes('${currentUser?.displayName')) {
-              personalizedContent = personalizedContent.replace(
-                '${currentUser?.displayName || \'prieten\'}', 
-                currentUser?.displayName || 'prieten'
-              );
-            }
-
-            return {
-              ...article,
-              content: personalizedContent
-            };
-          });
-
-          setArticles(personalizedArticles);
+            console.log(`Setting ${personalizedArticles.length} personalized articles`);
+            setArticles(personalizedArticles);
+            setError(null);
+            return;
+          }
         }
-      } catch (error) {
-        setError("Nu s-au putut încărca articolele. Vă rugăm încercați din nou mai târziu.");
+        
+        if (retryCount === 0) {
+          console.log("No articles found. Attempting to create a default article");
+          try {
+            const content = `Dragă prieten,
+
+Te întâmpinăm cu bucurie în comunitatea noastră! Suntem încântați că ai decis să ni te alături în această călătorie de dezvoltare personală și descoperire.
+
+În următoarele săptămâni, vei primi mai multe resurse și scrisori personalizate care te vor ghida în acest proces de transformare.
+
+Cu apreciere,
+Echipa Lupul Corbul`;
+
+            const sampleArticle = {
+              title: 'Bine ai venit în comunitatea noastră!',
+              date: new Date().toLocaleDateString('ro-RO'),
+              author: 'Echipa Lupul Corbul',
+              preview: 'Un mesaj special de bun venit pentru tine...',
+              content,
+              createdAt: new Date().toISOString()
+            };
+            
+            const docRef = await addDoc(collection(db, 'articles'), sampleArticle);
+            console.log("Sample article created with ID:", docRef.id);
+            
+            setArticles([{
+              id: docRef.id,
+              ...sampleArticle
+            }]);
+            setError(null);
+            return;
+          } catch (createError) {
+            console.error("Failed to create sample article:", createError);
+          }
+        }
+        
+        console.log("Using default articles");
         setArticles([
           {
-            id: '1',
-            title: 'Importanța sănătății mentale în era digitală',
-            date: '10 Mai 2023',
-            author: 'Dr. Ana Popescu',
-            preview: 'Descoperă cum să-ți menții echilibrul mental în mijlocul agitației cotidiene...',
+            id: 'default-1',
+            title: 'Bine ai venit în comunitatea noastră!',
+            date: new Date().toLocaleDateString('ro-RO'),
+            author: 'Echipa Lupul Corbul',
+            preview: 'Un mesaj special de bun venit pentru tine...',
             content: `Dragă prieten,
 
-Îți scriu această scrisoare cu speranța că te vei opri pentru un moment din agitația zilnică pentru a reflecta asupra sănătății tale mentale.
+Te întâmpinăm cu bucurie în comunitatea noastră! Suntem încântați că ai decis să ni te alături în această călătorie de dezvoltare personală și descoperire.
 
-În lumea noastră digitală, suntem constant bombardați cu informații, notificări și stimuli care ne solicită atenția. Acest flux neîntrerupt poate duce la anxietate, burnout și sentimente de izolare, chiar dacă suntem mai conectați ca niciodată din punct de vedere tehnologic.
+În următoarele săptămâni, vei primi mai multe resurse și scrisori personalizate care te vor ghida în acest proces de transformare.
 
-Aș dori să îți împărtășesc câteva practici care m-au ajutat pe mine și pe pacienții mei:
-
-1. **Stabilește limite digitale** - Desemnează perioade din zi când nu folosești dispozitivele electronice
-2. **Practică mindfulness** - Chiar și 5 minute de meditație zilnică pot face diferența
-3. **Mișcarea fizică** - O plimbare de 30 de minute poate îmbunătăți considerabil starea de spirit
-4. **Conectează-te autentic** - Nimic nu înlocuiește conversațiile sincere față în față
-
-Sănătatea mentală nu este un lux, ci o necesitate, la fel de importantă ca sănătatea fizică. Te încurajez să o tratezi cu aceeași prioritate.
-
-Cu gânduri bune,
-Dr. Ana Popescu
-Specialist în psihologie clinică`,
-          },
-          {
-            id: '2',
-            title: 'Cum să cultivi motivația intrinsecă pentru obiective de lungă durată',
-            date: '23 Iunie 2023',
-            author: 'Prof. Mihai Ionescu',
-            preview: 'Află strategii dovedite științific pentru a-ți menține motivația în proiectele importante...',
-            content: `Dragă cititorule,
-
-Îți scriu astăzi despre o provocare cu care mulți dintre noi ne confruntăm: cum să rămânem motivați când drumul este lung și rezultatele par îndepărtate.
-
-În cei 20 de ani de cercetare în psihologia motivației, am observat că oamenii care reușesc să-și mențină angajamentul față de obiectivele de lungă durată nu se bazează doar pe motivația extrinsecă (recompense, recunoaștere), ci dezvoltă o motivație intrinsecă puternică.
-
-Iată câteva strategii care te pot ajuta:
-
-1. **Conectează obiectivele la valorile tale profunde** - Când obiectivul este aliniat cu ceea ce contează cu adevărat pentru tine, motivația devine naturală
-   
-2. **Bucură-te de proces** - Găsește aspecte ale drumului care îți aduc satisfacție, nu te concentra doar pe destinație
-
-3. **Identifică progresul** - Ține un jurnal al micilor victorii și al lecțiilor învățate
-
-4. **Creează un sistem de responsabilizare** - Un mentor sau un grup de suport poate face diferența în momentele dificile
-
-5. **Practică auto-compasiunea** - În zilele când motivația scade, tratează-te cu înțelegere, nu cu critică
-
-Motivația fluctuează în mod natural - aceasta este experiența umană normală. Secretul constă în a crea sisteme și practici care te ajută să continui chiar și când entuziasmul inițial s-a diminuat.
-
-Cu încredere în călătoria ta,
-Prof. Mihai Ionescu
-Facultatea de Psihologie`,
+Cu apreciere,
+Echipa Lupul Corbul`,
           },
         ]);
+        setError(null);
+        
+      } catch (error) {
+        console.error("Error in fetchArticles:", error);
+        
+        if (retryCount < 1) {
+          console.log(`Will retry article fetch in 2 seconds...`);
+          setTimeout(() => fetchArticles(retryCount + 1), 2000);
+          return;
+        }
+        
+        console.log("Using fallback local article after error");
+        setArticles([
+          {
+            id: 'fallback-1',
+            title: 'Bine ai venit în comunitatea noastră!',
+            date: new Date().toLocaleDateString('ro-RO'),
+            author: 'Echipa Lupul Corbul',
+            preview: 'Un mesaj special de bun venit pentru tine...',
+            content: `Dragă prieten,
+
+Te întâmpinăm cu bucurie în comunitatea noastră! Suntem încântați că ai decis să ni te alături.
+
+Echipa Lupul Corbul`,
+          },
+        ]);
+        
+        setError("Nu s-au putut încărca articolele. Vă rugăm încercați din nou mai târziu.");
       } finally {
         setLoadingArticles(false);
       }
@@ -197,7 +187,6 @@ Facultatea de Psihologie`,
     }
   }, [currentUser, loading]);
 
-  // Redirecționează utilizatorii neautentificați
   if (!loading && !currentUser) {
     return <Navigate to="/login" replace />;
   }
@@ -218,7 +207,6 @@ Facultatea de Psihologie`,
           </p>
         </div>
 
-        {/* Afișăm eroarea dacă există */}
         {error && (
           <div className="bg-red-100 border-l-4 border-red-500 text-red-700 p-4 mb-6 rounded">
             <p>{error}</p>
@@ -231,7 +219,6 @@ Facultatea de Psihologie`,
           </div>
         )}
 
-        {/* Secțiunea scrisorilor */}
         <div className="bg-white rounded-lg shadow-md p-6">
           <h3 className="text-2xl font-semibold text-gray-800 mb-6 border-b pb-2">Scrisori pentru sănătate și inspirație</h3>
           

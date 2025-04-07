@@ -48,8 +48,8 @@ const Cart: React.FC = () => {
           </button>
           <div className="text-right">
             <div className="mb-2">
-              <span className="font-semibold">Total:</span>
-              <span className="font-bold text-xl ml-2">{formatCurrency(total)}</span>
+              <span className="font-semibold text-gray-800">Total:</span>
+              <span className="font-bold text-xl ml-2 text-gray-800">{formatCurrency(total)}</span>
             </div>
             <button 
               onClick={handleCheckout}

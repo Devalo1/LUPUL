@@ -14,11 +14,11 @@ const CartTable: React.FC<CartTableProps> = ({ items, formatCurrency }) => {
       <table className="w-full">
         <thead>
           <tr className="border-b">
-            <th className="text-left pb-4">Produs</th>
-            <th className="text-center pb-4">Cantitate</th>
-            <th className="text-right pb-4">Preț</th>
-            <th className="text-right pb-4">Total</th>
-            <th className="text-right pb-4">Acțiuni</th>
+            <th className="text-left pb-4 text-gray-800">Produs</th>
+            <th className="text-center pb-4 text-gray-800">Cantitate</th>
+            <th className="text-right pb-4 text-gray-800">Preț</th>
+            <th className="text-right pb-4 text-gray-800">Total</th>
+            <th className="text-right pb-4 text-gray-800">Acțiuni</th>
           </tr>
         </thead>
         <tbody>
@@ -32,7 +32,7 @@ const CartTable: React.FC<CartTableProps> = ({ items, formatCurrency }) => {
                     className="w-16 h-16 object-cover rounded"
                   />
                   <div className="ml-4">
-                    <h3 className="font-semibold">{item.name}</h3>
+                    <h3 className="font-semibold text-gray-800">{item.name}</h3>
                     <p className="text-gray-600 text-sm">{formatCurrency(item.price)} / buc</p>
                   </div>
                 </div>
@@ -41,21 +41,21 @@ const CartTable: React.FC<CartTableProps> = ({ items, formatCurrency }) => {
                 <div className="flex items-center justify-center">
                   <button 
                     onClick={() => updateQuantity(item.id, Math.max(1, item.quantity - 1))}
-                    className="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center"
+                    className="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center text-gray-800"
                   >
                     -
                   </button>
-                  <span className="mx-3">{item.quantity}</span>
+                  <span className="mx-3 text-gray-800">{item.quantity}</span>
                   <button 
                     onClick={() => updateQuantity(item.id, item.quantity + 1)}
-                    className="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center"
+                    className="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center text-gray-800"
                   >
                     +
                   </button>
                 </div>
               </td>
-              <td className="py-4 text-right">{formatCurrency(item.price)}</td>
-              <td className="py-4 text-right">{formatCurrency(item.price * item.quantity)}</td>
+              <td className="py-4 text-right text-gray-800">{formatCurrency(item.price)}</td>
+              <td className="py-4 text-right text-gray-800">{formatCurrency(item.price * item.quantity)}</td>
               <td className="py-4 text-right">
                 <button 
                   onClick={() => removeItem(item.id)}

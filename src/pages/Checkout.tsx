@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useCart } from '../contexts/CartContext';
+import { functions } from '../firebase'; // Import Firebase functions from your firebase.ts
+import { httpsCallable } from 'firebase/functions';
 
 const Checkout: React.FC = () => {
   const { items, clearCart } = useCart();
@@ -8,7 +10,7 @@ const Checkout: React.FC = () => {
     name: '',
     address: '',
     phone: '',
-    email: '', // Adăugăm câmp pentru e-mail
+    email: '',
     paymentMethod: 'cash',
   });
   const [error, setError] = useState<string | null>(null);
@@ -26,33 +28,21 @@ const Checkout: React.FC = () => {
     try {
       console.log('Submitting order:', { ...formData, items });
 
-      // URL-ul complet și corect pentru funcția Firebase
-      const response = await fetch('http://127.0.0.1:5002/lupulcorbul/us-central1/sendOrderEmail', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ ...formData, items }),
-      });
-
-      console.log('Response status:', response.status);
-
-      if (response.ok) {
-        const responseData = await response.json();
-        const orderNumber = responseData.orderNumber;
-        console.log('Order sent successfully with number:', orderNumber);
-        
-        clearCart();
-        // Transmitem numărul comenzii către pagina de succes prin state navigation
-        navigate('/checkout-success', { state: { orderNumber } });
-      } else {
-        const errorText = await response.text();
-        console.error('Failed to send order:', errorText);
-        setError('A apărut o problemă la trimiterea comenzii. Te rugăm să încerci din nou.');
-      }
+      // Use Firebase SDK's httpsCallable instead of direct fetch
+      const sendOrderEmail = httpsCallable(functions, 'sendOrderEmail');
+      const result = await sendOrderEmail({ ...formData, items });
+      
+      console.log('Order response:', result.data);
+      
+      // Get order number from the result data
+      const responseData = result.data as any;
+      const orderNumber = responseData.orderNumber || 'N/A';
+      
+      clearCart();
+      navigate('/checkout-success', { state: { orderNumber } });
     } catch (error) {
       console.error('Error sending order:', error);
-      setError('A apărut o eroare de rețea. Te rugăm să verifici conexiunea și să încerci din nou.');
+      setError('A apărut o eroare la procesarea comenzii. Te rugăm să încerci din nou.');
     }
   };
 

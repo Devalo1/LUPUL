@@ -2,7 +2,9 @@ import React, { useState, useEffect } from 'react';
 import { useCart } from '../contexts/CartContext';
 import { collection, getDocs } from 'firebase/firestore';
 import { Link } from 'react-router-dom';
-import { db } from '../firebase'; // Import directly from central firebase.ts
+import { db } from '../firebase';
+import { FaStar, FaLeaf, FaAward, FaShoppingCart, FaRegStar } from 'react-icons/fa';
+import '../styles/ProductsPage.css';
 
 interface Product {
   id: string;
@@ -11,14 +13,19 @@ interface Product {
   price: number;
   image: string;
   inStock: boolean;
+  ratings?: {
+    count: number;
+    average: number;
+  };
 }
 
 const Products: React.FC = () => {
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [showOfferPopup, setShowOfferPopup] = useState(true); // State for the offer pop-up
-  const { addItem } = useCart(); // Obținem funcția addItem din context
+  const [showOfferPopup, setShowOfferPopup] = useState(true);
+  const [animatedItemId, setAnimatedItemId] = useState<string | null>(null);
+  const { addItem } = useCart();
 
   useEffect(() => {
     const fetchProducts = async () => {
@@ -31,7 +38,6 @@ const Products: React.FC = () => {
         
         if (snapshot.empty) {
           console.warn('Nu există produse în colecția "products".');
-          // Adăugăm produse hardcodate dacă nu există în baza de date
           const hardcodedProducts = [
             {
               id: 'dulceata-afine',
@@ -55,7 +61,6 @@ const Products: React.FC = () => {
         } else {
           const productsList: Product[] = snapshot.docs.map((doc) => {
             const data = doc.data();
-            // Actualizăm imaginea dacă există documente în baza de date
             if (doc.id === 'dulceata-afine') {
               data.image = '/images/AdobeStock_370191089.jpeg';
             } else if (doc.id.includes('miere')) {
@@ -81,17 +86,23 @@ const Products: React.FC = () => {
   }, []);
 
   const handleAddToCart = (product: Product) => {
-    // Adăugăm produsul în coș folosind contextul CartContext
+    setAnimatedItemId(product.id);
+    setTimeout(() => setAnimatedItemId(null), 700);
+    
     addItem({
       id: product.id,
       name: product.name,
       price: product.price,
       image: product.image,
-      quantity: 1 // Adăugăm o bucată implicit
+      quantity: 1
     });
     
-    // Afișăm un mesaj de confirmare
-    alert(`Produsul "${product.name}" a fost adăugat în coș!`);
+    const toast = document.getElementById('cart-toast');
+    if (toast) {
+      toast.textContent = `${product.name} a fost adăugat în coș`;
+      toast.classList.add('show-toast');
+      setTimeout(() => toast.classList.remove('show-toast'), 3000);
+    }
   };
 
   const formatCurrency = (price: number) => {
@@ -100,6 +111,7 @@ const Products: React.FC = () => {
 
   const handleClosePopup = () => {
     setShowOfferPopup(false);
+    localStorage.setItem('offerPopupClosed', 'true');
   };
 
   if (loading) {
@@ -132,64 +144,108 @@ const Products: React.FC = () => {
   }
 
   return (
-    <div className="container mx-auto px-4 py-16">
+    <div className="container mx-auto px-4 py-16 products-container">
+      <div id="cart-toast" className="cart-toast">
+        Produs adăugat în coș
+      </div>
+      
       {showOfferPopup && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg shadow-lg p-6 max-w-md text-center">
-            <h2 className="text-2xl font-bold mb-4 text-blue-600">Ofertă Specială!</h2>
-            <p className="text-gray-700 mb-6">
-              La fiecare 2 borcane cumpărate, primești unul gratuit! Profită acum de această ofertă limitată!
-            </p>
-            <button
-              onClick={handleClosePopup}
-              className="bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 transition-colors"
-            >
-              Închide
-            </button>
+        <div className="offer-popup">
+          <div className="offer-content">
+            <span className="offer-close" onClick={handleClosePopup}>&times;</span>
+            <h3 className="offer-title">Ofertă Specială!</h3>
+            <p className="offer-message">2+1 GRATUIT la toate produsele!</p>
+            <div className="offer-badge">Limitat</div>
           </div>
         </div>
       )}
 
-      <h1 className="text-3xl font-bold mb-8 text-center">Produse Tradiționale</h1>
+      <div className="text-center mb-12">
+        <h1 className="text-3xl md:text-4xl font-bold mb-4 product-title">Produse Tradiționale</h1>
+        <p className="text-gray-600 max-w-2xl mx-auto">Descoperă selecția noastră de produse autentice, create cu ingrediente naturale și după rețete tradiționale transmise din generație în generație.</p>
+        
+        <div className="trust-badges">
+          <div className="trust-badge">
+            <FaLeaf />
+            <span>100% Natural</span>
+          </div>
+          <div className="trust-badge">
+            <FaAward />
+            <span>Calitate Premium</span>
+          </div>
+          <div className="trust-badge">
+            <FaStar />
+            <span>Produse Autentice</span>
+          </div>
+        </div>
+      </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
         {products.map((product) => (
-          <div key={product.id} className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow">
-            <Link to={`/product/${product.id}`} className="block h-48 overflow-hidden">
-              <img
-                src={product.image || '/images/AdobeStock_370191089.jpeg'}
-                alt={product.name}
-                className="w-full h-full object-cover transition-transform hover:scale-105 duration-300"
-                onError={(e) => {
-                  console.error("Eroare la încărcarea imaginii:", product.image);
-                  e.currentTarget.src = '/images/AdobeStock_370191089.jpeg';
-                }}
-              />
+          <div 
+            key={product.id} 
+            className={`product-card ${animatedItemId === product.id ? 'card-added-animation' : ''}`}
+          >
+            <Link to={`/product/${product.id}`} className="product-image-container">
+              <div className="product-image-wrapper">
+                <img
+                  src={product.image || '/images/AdobeStock_370191089.jpeg'}
+                  alt={product.name}
+                  className="product-image"
+                  onError={(e) => {
+                    console.error("Eroare la încărcarea imaginii:", product.image);
+                    e.currentTarget.src = '/images/AdobeStock_370191089.jpeg';
+                  }}
+                />
+              </div>
+              {product.inStock && (
+                <div className="in-stock-badge">
+                  În Stoc
+                </div>
+              )}
             </Link>
             <div className="p-6">
               <Link to={`/product/${product.id}`}>
-                <h2 className="text-xl font-bold mb-2 hover:text-blue-600 transition-colors">{product.name}</h2>
+                <h2 className="product-title">{product.name}</h2>
               </Link>
               
-              {/* Îmbunătățim afișarea descrierii produsului */}
+              <div className="product-rating">
+                <div className="stars">
+                  {[1, 2, 3, 4, 5].map((star) => (
+                    <span key={star}>
+                      {star <= (product.ratings?.average || 0) ? (
+                        <FaStar />
+                      ) : (
+                        <FaRegStar />
+                      )}
+                    </span>
+                  ))}
+                </div>
+                <span className="rating-count">
+                  {product.ratings?.count ? 
+                    `(${product.ratings.average.toFixed(1)}) ${product.ratings.count} recenzii` : 
+                    'Fără recenzii'}
+                </span>
+              </div>
+              
               <div className="mb-4 h-16 overflow-hidden">
-                <p className="text-gray-600 line-clamp-3">{product.description || "Descrierea produsului nu este disponibilă."}</p>
+                <p className="product-description">{product.description || "Descrierea produsului nu este disponibilă."}</p>
               </div>
               
               <div className="mb-4">
-                <span className="text-lg font-bold text-blue-600">
+                <span className="product-price">
                   {formatCurrency(product.price)}
                 </span>
               </div>
               {product.inStock ? (
                 <button
                   onClick={() => handleAddToCart(product)}
-                  className="w-full py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
+                  className="add-to-cart-button"
                 >
-                  Adaugă în coș
+                  <FaShoppingCart className="mr-2" /> Adaugă în coș
                 </button>
               ) : (
-                <span className="text-red-600 bg-red-100 px-3 py-1 rounded-full text-sm">
+                <span className="out-of-stock-label">
                   Stoc epuizat
                 </span>
               )}

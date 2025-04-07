@@ -1,19 +1,11 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { doc, getDoc } from 'firebase/firestore'; // Update import path to the correct location
+import { doc, getDoc, collection, query, where, getDocs } from 'firebase/firestore'; // Update import path to the correct location
 import { db } from '../firebase';
 import { useAuth } from '../contexts/AuthContext'; // Update import path to the correct location
 import { Link } from 'react-router-dom';
 import { useCart } from '../contexts/CartContext'; // Import hook-ul cart
-
-interface Review {
-  id: string;
-  userId: string;
-  userName: string;
-  rating: number;
-  comment: string;
-  createdAt: string;
-}
+import { FaStar, FaRegStar, FaCheck } from 'react-icons/fa';
 
 interface Product {
   id: string;
@@ -26,6 +18,15 @@ interface Product {
   story?: string;
   ingredients?: string[];
   weight?: string;
+  ratings?: {
+    average: number;
+    count: number;
+    userRatings: {
+      rating: number;
+      date: string;
+      comment?: string;
+    }[];
+  };
 }
 
 interface RelatedProduct {
@@ -41,13 +42,13 @@ const ProductDetails: React.FC = () => {
   const [quantity, setQuantity] = useState(1);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [reviews] = useState<Review[]>([]); // Removed unused setter
   const [relatedProducts] = useState<RelatedProduct[]>([]); // Removed unused setter
   const [addedToCart, setAddedToCart] = useState(false);
   const audioRef = useRef<HTMLAudioElement>(null);
   const { currentUser } = useAuth();
   const { addItem } = useCart(); // Obținem funcția addItem din context
   const navigate = useNavigate();
+  const [userHasOrdered, setUserHasOrdered] = useState(false);
 
   useEffect(() => {
     const fetchProduct = async () => {
@@ -77,6 +78,28 @@ const ProductDetails: React.FC = () => {
 
     fetchProduct();
   }, [id, navigate]);
+
+  useEffect(() => {
+    const checkUserOrders = async () => {
+      if (!id || !currentUser) return;
+
+      try {
+        const ordersRef = collection(db, 'orders');
+        const q = query(
+          ordersRef,
+          where('userId', '==', currentUser.uid),
+          where('itemIds', 'array-contains', id)
+        );
+
+        const querySnapshot = await getDocs(q);
+        setUserHasOrdered(!querySnapshot.empty);
+      } catch (err) {
+        console.error("Error checking user orders:", err);
+      }
+    };
+
+    checkUserOrders();
+  }, [id, currentUser]);
 
   const handleQuantityChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = parseInt(e.target.value);
@@ -283,79 +306,116 @@ const ProductDetails: React.FC = () => {
           )}
         </div>
         
-        {/* Reviews section */}
+        {/* Reviews section - enhanced */}
         <div className="p-8 border-t border-gray-200">
           <h2 className="text-xl font-bold mb-6 text-gray-800">Recenzii clienți</h2>
           
-          {reviews.length > 0 ? (
+          {product?.ratings?.count && product.ratings.count > 0 ? (
+            <div className="mb-6">
+              <div className="flex items-center mb-2">
+                <div className="mr-2 bg-blue-50 px-3 py-2 rounded-md">
+                  <span className="text-2xl font-bold text-blue-600">{product.ratings.average.toFixed(1)}</span>
+                  <span className="text-blue-600">/5</span>
+                </div>
+                <div>
+                  <div className="flex text-yellow-400 mb-1">
+                    {[1, 2, 3, 4, 5].map((star) => (
+                      <span key={star}>
+                        {star <= Math.round(product.ratings?.average || 0) ? <FaStar /> : <FaRegStar />}
+                      </span>
+                    ))}
+                  </div>
+                  <p className="text-sm text-gray-500">
+                    {product.ratings?.count || 0} {(product.ratings?.count || 0) === 1 ? 'recenzie' : 'recenzii'}
+                  </p>
+                </div>
+              </div>
+            </div>
+          ) : (
+            <p className="text-gray-500 mb-6">Acest produs nu are încă recenzii.</p>
+          )}
+          
+          {product?.ratings?.userRatings && product.ratings.userRatings.length > 0 && (
             <div className="space-y-6">
-              {reviews.map(review => (
-                <div key={review.id} className="bg-gray-50 rounded-lg p-4">
+              {product.ratings.userRatings.map((review, index) => (
+                <div key={index} className="bg-gray-50 rounded-lg p-4">
                   <div className="flex items-center mb-2">
-                    <div className="flex">
+                    <div className="flex text-yellow-400">
                       {[...Array(5)].map((_, i) => (
-                        <svg key={i} className={`w-5 h-5 ${i < review.rating ? 'text-yellow-400' : 'text-gray-300'}`} fill="currentColor" viewBox="0 0 20 20">
-                          <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118l-2.8-2.034c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-                        </svg>
+                        <span key={i} className={i < review.rating ? 'text-yellow-400' : 'text-gray-300'}>
+                          <FaStar />
+                        </span>
                       ))}
                     </div>
-                    <span className="ml-2 text-gray-600 text-sm">de {review.userName}</span>
+                    <span className="ml-2 text-gray-600 text-sm">
+                      {new Date(review.date).toLocaleDateString('ro-RO')}
+                    </span>
+                    <span className="verified-purchase ml-auto">
+                      <FaCheck /> Achiziție verificată
+                    </span>
                   </div>
-                  <p className="text-gray-700">{review.comment}</p>
+                  {review.comment && <p className="text-gray-700">{review.comment}</p>}
                 </div>
               ))}
             </div>
-          ) : (
-            <p className="text-gray-500">Acest produs nu are încă recenzii.</p>
           )}
           
           {currentUser ? (
-            <div className="mt-6">
-              <button className="text-blue-600 hover:underline">
-                Adaugă o recenzie
-              </button>
-            </div>
+            userHasOrdered ? (
+              <div className="mt-6 bg-blue-50 p-4 rounded-lg">
+                <h3 className="font-medium mb-2">Ai cumpărat acest produs</h3>
+                <p className="text-sm text-gray-600 mb-3">
+                  Poți evalua acest produs în pagina <a href="/dashboard" className="text-blue-600 hover:underline">comenzilor tale</a>.
+                </p>
+              </div>
+            ) : (
+              <div className="mt-6 bg-gray-50 p-4 rounded-lg">
+                <p className="text-gray-600">
+                  Doar clienții care au cumpărat acest produs pot lăsa o recenzie.
+                </p>
+              </div>
+            )
           ) : (
             <p className="mt-6 text-gray-500">
-              <Link to="/login" className="text-blue-600 hover:underline">Conectează-te</Link> pentru a putea adăuga o recenzie.
+              <Link to="/login" className="text-blue-600 hover:underline">Conectează-te</Link> pentru a putea adăuga o recenzie după ce achiziționezi produsul.
             </p>
           )}
         </div>
-      </div>
-      
-      {/* Related Products */}
-      {relatedProducts.length > 0 && (
-        <div className="mt-12">
-          <h2 className="text-2xl font-bold mb-6 text-center">S-ar putea să-ți placă și</h2>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {relatedProducts.map(product => (
-              <div key={product.id} className="bg-white rounded-lg shadow-md overflow-hidden transform transition hover:scale-105">
-                <div className="h-48 overflow-hidden">
-                  <img 
-                    src={product.image || 
-                      (product.id.includes('miere') ? '/images/AdobeStock_367103665.jpeg' : '/images/AdobeStock_370191089.jpeg')}
-                    alt={product.name}
-                    className="w-full h-full object-cover"
-                    onError={(e) => {
-                      const fallbackImage = product.id.includes('miere') ? 
-                        '/images/AdobeStock_367103665.jpeg' : 
-                        '/images/AdobeStock_370191089.jpeg';
-                      e.currentTarget.src = fallbackImage;
-                    }}
-                  />
+        
+        {/* Related Products */}
+        {relatedProducts.length > 0 && (
+          <div className="mt-12">
+            <h2 className="text-2xl font-bold mb-6 text-center">S-ar putea să-ți placă și</h2>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              {relatedProducts.map(product => (
+                <div key={product.id} className="bg-white rounded-lg shadow-md overflow-hidden transform transition hover:scale-105">
+                  <div className="h-48 overflow-hidden">
+                    <img 
+                      src={product.image || 
+                        (product.id.includes('miere') ? '/images/AdobeStock_367103665.jpeg' : '/images/AdobeStock_370191089.jpeg')}
+                      alt={product.name}
+                      className="w-full h-full object-cover"
+                      onError={(e) => {
+                        const fallbackImage = product.id.includes('miere') ? 
+                          '/images/AdobeStock_367103665.jpeg' : 
+                          '/images/AdobeStock_370191089.jpeg';
+                        e.currentTarget.src = fallbackImage;
+                      }}
+                    />
+                  </div>
+                  <div className="p-4">
+                    <h3 className="font-bold text-gray-800">{product.name}</h3>
+                    <p className="text-blue-600 font-bold mt-2">{formatCurrency(product.price)}</p>
+                    <button className="mt-3 w-full py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors">
+                      Vezi detalii
+                    </button>
+                  </div>
                 </div>
-                <div className="p-4">
-                  <h3 className="font-bold text-gray-800">{product.name}</h3>
-                  <p className="text-blue-600 font-bold mt-2">{formatCurrency(product.price)}</p>
-                  <button className="mt-3 w-full py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors">
-                    Vezi detalii
-                  </button>
-                </div>
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
-        </div>
-      )}
+        )}
+      </div>
     </div>
   );
 };

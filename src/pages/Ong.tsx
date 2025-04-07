@@ -2,7 +2,7 @@ import React from 'react';
 
 const Ong: React.FC = () => {
   return (
-    <div className="container mx-auto px-4 py-16">
+    <div className="container mx-auto px-4 py-16 ong-section">
       <h1 className="text-3xl font-bold mb-6 text-center">Făuritorii de destin</h1>
       <p className="text-center text-lg mb-10">Acel destin pe care îl merită fiecare copil</p>
       

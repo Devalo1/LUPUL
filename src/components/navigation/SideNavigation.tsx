@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import '../../styles/SideNavigation.css';
 
@@ -8,12 +8,36 @@ interface SideNavigationProps {
 }
 
 const SideNavigation: React.FC<SideNavigationProps> = ({ isOpen, onClose }) => {
+  // Adăugăm un efect pentru a dezactiva scroll-ul corpului când meniul este deschis
+  useEffect(() => {
+    if (isOpen) {
+      // Dezactivăm scroll-ul când meniul este deschis
+      document.body.style.overflow = 'hidden';
+    } else {
+      // Reactivăm scroll-ul când meniul este închis
+      document.body.style.overflow = 'auto';
+    }
+    
+    // Cleanup funcția când componenta se demontează
+    return () => {
+      document.body.style.overflow = 'auto';
+    };
+  }, [isOpen]);
+
+  // Prevenim propagarea evenimentelor de la menu la overlay
+  const handleMenuClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+  };
+
   return (
     <>
       {/* Overlay to capture clicks outside the menu */}
       {isOpen && <div className="side-nav-overlay" onClick={onClose}></div>}
       
-      <div className={`side-navigation ${isOpen ? 'open' : ''}`}>
+      <div 
+        className={`side-navigation ${isOpen ? 'open' : ''}`}
+        onClick={handleMenuClick}
+      >
         <div className="side-nav-header">
           <h2>Paginile Principale</h2>
           <button className="close-btn" onClick={onClose}>
@@ -43,7 +67,7 @@ const SideNavigation: React.FC<SideNavigationProps> = ({ isOpen, onClose }) => {
         </nav>
         
         <div className="side-nav-footer">
-          <p>Lupul și Corbul © 2023</p>
+          <p>Lupul și Corbul © {new Date().getFullYear()}</p>
         </div>
       </div>
     </>

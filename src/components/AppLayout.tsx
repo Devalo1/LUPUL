@@ -16,11 +16,14 @@ import Products from '../pages/Products'; // Adaug importul pentru pagina de pro
 import ProductDetails from '../pages/ProductDetails'; // Adaug importul pentru pagina de detalii a produsului
 import AddProduct from '../pages/AddProduct'; // Import pentru pagina AddProduct
 import Ong from '../pages/Ong'; // Import pentru pagina ONG
+import Checkout from '../pages/Checkout'; // Import pentru pagina Checkout
+import CheckoutSuccess from '../pages/CheckoutSuccess'; // Import pentru pagina CheckoutSuccess
 import ProtectedRoute from './ProtectedRoute';
 import NotFound from '../pages/NotFound';
 import { useAuth } from '../contexts/AuthContext'; // Fix the import path to match main.tsx
 import { CartProvider } from '../contexts/CartContext'; // Adaug importul pentru CartProvider
 import Cart from '../pages/Cart'; // Adaug componenta Cart la importuri
+import Admin from '../pages/Admin'; // Add import for Admin page
 
 const AppLayout = () => {
     const { isAuthenticated, loading } = useAuth();
@@ -92,10 +95,18 @@ const AppLayout = () => {
                         <Route path="/events/:id" element={<EventDetails />} />
                         {/* Adaug ruta pentru panoul de administrare */}
                         <Route
-                            path="/admin"
+                            path="/admin-panel"
                             element={
                                 <ProtectedRoute>
                                     <AdminPanel />
+                                </ProtectedRoute>
+                            }
+                        />
+                        <Route
+                            path="/admin"
+                            element={
+                                <ProtectedRoute>
+                                    <Admin />
                                 </ProtectedRoute>
                             }
                         />
@@ -114,6 +125,9 @@ const AppLayout = () => {
                         <Route path="/add-product" element={<AddProduct />} />
                         {/* Adaug ruta pentru coșul de cumpărături */}
                         <Route path="/cart" element={<Cart />} />
+                        {/* Adaug rutele pentru procesul de checkout */}
+                        <Route path="/checkout" element={<Checkout />} />
+                        <Route path="/checkout-success" element={<CheckoutSuccess />} />
                         <Route path="*" element={<NotFound />} />
                     </Routes>
                 </Layout>

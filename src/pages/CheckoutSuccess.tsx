@@ -52,7 +52,7 @@ const CheckoutSuccess: React.FC = () => {
         <div className="mt-6 border-t border-gray-200 pt-6">
           <p className="text-sm text-gray-500 text-center">
             Dacă ai întrebări despre comanda ta, ne poți contacta la 
-            <a href="mailto:contact@lupulcorbul.ro" className="text-blue-600 hover:underline"> contact@lupulcorbul.ro</a>
+            <a href="mailto:lupulsicorbul@gmail.com" className="text-blue-600 hover:underline"> lupulsicorbul@gmail.com</a>
           </p>
         </div>
       </div>

@@ -20,7 +20,7 @@ import {
   connectFirestoreEmulator 
 } from 'firebase/firestore';
 import { getStorage, connectStorageEmulator } from 'firebase/storage';
-import { getFunctions, connectFunctionsEmulator } from 'firebase/functions';
+import { getFunctions, connectFunctionsEmulator, httpsCallable } from 'firebase/functions';
 import { getAnalytics } from 'firebase/analytics';
 
 // Firebase configuration
@@ -28,7 +28,7 @@ const firebaseConfig = {
   apiKey: "AIzaSyCZEWoZn-c7NSH1AGbetWEbtxwEz-iaMR4",
   authDomain: "lupulcorbul.firebaseapp.com",
   projectId: "lupulcorbul",
-  storageBucket: "lupulcorbul.appspot.com", // Changed to correct domain
+  storageBucket: "lupulcorbul.appspot.com",
   messagingSenderId: "312943074536",
   appId: "1:312943074536:web:13fc0660014bc58c5c7d5d",
   measurementId: "G-38YSZKVXDC"
@@ -202,6 +202,9 @@ export const subscribeToDocument = (
     callback(snapshot.exists() ? { id: snapshot.id, ...snapshot.data() } : null);
   });
 };
+
+// Callable function for sending order email
+export const sendOrderEmail = httpsCallable(functions, 'sendOrderEmail');
 
 // Export the app as default export
 export default app;

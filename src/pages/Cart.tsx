@@ -57,6 +57,9 @@ const Cart: React.FC = () => {
             >
               Finalizează comanda
             </button>
+            <p className="text-xs text-gray-500 mt-2">
+              La finalizarea comenzii, vei fi contactat pentru confirmare.
+            </p>
           </div>
         </div>
       </div>

@@ -205,6 +205,8 @@ export const subscribeToDocument = (
 
 // Callable function for sending order email
 export const sendOrderEmail = httpsCallable(functions, 'sendOrderEmail');
+// Callable function for sending event registration email
+export const sendEventRegistrationEmail = httpsCallable(functions, 'sendEventRegistrationEmail');
 
 // Export the app as default export
 export default app;

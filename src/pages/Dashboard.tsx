@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useAuth } from '../contexts/AuthContext';
-import { Navigate, useNavigate } from 'react-router-dom';
+import { Navigate, useNavigate, Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { collection, query, where, getDocs, doc, updateDoc, getDoc } from 'firebase/firestore';
 import { db } from '../firebase';
@@ -15,11 +15,23 @@ interface ExtendedUser {
   };
 }
 
+// Definim interfața pentru eveniment pentru a evita erorile de tip
+interface EventItem {
+  id: string;
+  title: string;
+  date: string;
+  time?: string;
+  location?: string;
+  imageUrl?: string;
+  registeredUsers?: string[];
+  [key: string]: any; // Pentru alte proprietăți potențiale
+}
+
 const Dashboard: React.FC = () => {
   const { currentUser, loading } = useAuth();
   const navigate = useNavigate();
   const [greeting, setGreeting] = useState('');
-  const [events, setEvents] = useState<any[]>([]);
+  const [events, setEvents] = useState<EventItem[]>([]);
   const [eventsLoading, setEventsLoading] = useState(true);
   const [eventsError, setEventsError] = useState<string | null>(null);
   const [orders, setOrders] = useState<any[]>([]);
@@ -49,7 +61,19 @@ const Dashboard: React.FC = () => {
         const userEvents = querySnapshot.docs.map((doc) => ({
           id: doc.id,
           ...doc.data(),
-        }));
+        } as EventItem));
+
+        // Sortează evenimentele după dată (cele mai recente primul)
+        userEvents.sort((a, b) => {
+          // Verificăm dacă ambele obiecte au proprietatea date
+          if (!a.date && !b.date) return 0;
+          if (!a.date) return 1;
+          if (!b.date) return -1;
+          
+          const dateA = new Date(a.date);
+          const dateB = new Date(b.date);
+          return dateB.getTime() - dateA.getTime();
+        });
 
         setEvents(userEvents);
       } catch (err) {
@@ -172,6 +196,22 @@ const Dashboard: React.FC = () => {
       alert('A apărut o eroare la trimiterea recenziei.');
     } finally {
       setRatingSubmitting({ ...ratingSubmitting, [productId]: false });
+    }
+  };
+
+  // Funcție pentru formatarea datei
+  const formatEventDate = (dateString: string) => {
+    if (!dateString) return 'Data necunoscută';
+    
+    try {
+      const options: Intl.DateTimeFormatOptions = {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric'
+      };
+      return new Date(dateString).toLocaleDateString('ro-RO', options);
+    } catch (e) {
+      return dateString;
     }
   };
 
@@ -448,23 +488,54 @@ const Dashboard: React.FC = () => {
       </section>
 
       <section className="mt-8">
-        <h2 className="text-2xl font-bold mb-4">Participările Tale Viitoare</h2>
+        <h2 className="text-2xl font-bold mb-4">Participările Tale la Evenimente</h2>
         <div className="bg-white rounded-lg shadow-md p-6">
           {eventsLoading ? (
-            <div className="text-center">Se încarcă evenimentele...</div>
+            <div className="text-center py-4">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
+              <p className="mt-2 text-gray-600">Se încarcă evenimentele...</p>
+            </div>
           ) : eventsError ? (
-            <div className="text-center text-red-600">{eventsError}</div>
+            <div className="text-center text-red-600 py-4">{eventsError}</div>
           ) : events.length === 0 ? (
-            <p className="text-gray-600">Nu ești înscris la niciun eveniment viitor.</p>
+            <div className="text-center py-6">
+              <p className="text-gray-600">Nu ești înscris la niciun eveniment.</p>
+              <Link 
+                to="/events" 
+                className="mt-4 inline-block px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
+              >
+                Descoperă Evenimente
+              </Link>
+            </div>
           ) : (
-            <ul className="space-y-4">
+            <div className="space-y-4">
               {events.map((event) => (
-                <li key={event.id} className="bg-white p-4 rounded-md shadow-md">
-                  <h3 className="text-lg font-bold">{event.title}</h3>
-                  <p className="text-gray-600">{event.date}</p>
-                </li>
+                <div key={event.id} className="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow">
+                  <div className="flex flex-col md:flex-row md:items-center gap-4">
+                    <div className="w-full md:w-24 h-24 overflow-hidden rounded-lg">
+                      <img 
+                        src={event.imageUrl || '/images/event-placeholder.jpg'} 
+                        alt={event.title}
+                        className="w-full h-full object-cover"
+                      />
+                    </div>
+                    <div className="flex-1">
+                      <h3 className="text-lg font-bold">{event.title}</h3>
+                      <p className="text-gray-600 text-sm">{formatEventDate(event.date)}</p>
+                      <p className="text-gray-600 text-sm">{event.location || 'Locație nedefinită'}</p>
+                    </div>
+                    <div>
+                      <Link
+                        to={`/events/${event.id}`}
+                        className="inline-block px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors text-sm"
+                      >
+                        Vezi detalii
+                      </Link>
+                    </div>
+                  </div>
+                </div>
               ))}
-            </ul>
+            </div>
           )}
         </div>
       </section>

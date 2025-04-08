@@ -6,3 +6,88 @@
   background-color: var(--primary); /* Fundal la derulare */
   box-shadow: var(--shadow-lg); /* Adâncime suplimentară */
 }
+
+/* Improved link animations */
+.nav-link {
+  position: relative;
+  transition: transform 0.3s ease, color 0.3s ease;
+  color: white !important; /* Ensure text is white as requested */
+}
+
+.nav-link:hover {
+  transform: translateY(-2px);
+  color: white !important; /* Keep white on hover */
+}
+
+.nav-link:after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  width: 0;
+  height: 2px;
+  background: var(--ro-yellow); /* Using softer yellow from variables */
+  transition: width 0.3s ease, left 0.3s ease;
+}
+
+.nav-link:hover:after {
+  width: 70%;
+  left: 15%;
+}
+
+/* Logo animation */
+.logo img {
+  transition: transform 0.5s ease;
+}
+
+.logo:hover img {
+  transform: scale(1.05) rotate(2deg);
+}
+
+/* Animated hamburger button */
+.menu-button svg {
+  transition: transform 0.3s ease;
+  color: white !important; /* Ensure icon is white */
+}
+
+.menu-button:hover svg {
+  transform: scale(1.1);
+}
+
+/* Cart indicator animation */
+.nav-link svg {
+  transition: transform 0.3s ease;
+  color: white !important; /* Ensure icon is white */
+}
+
+.nav-link:hover svg {
+  transform: scale(1.1);
+}
+
+/* Badge pulse animation */
+@keyframes badgePulse {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.1);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+.nav-link .absolute {
+  animation: badgePulse 2s infinite;
+}
+
+/* Ensure specific navbar items have white text */
+.nav-link[href="/"],
+.nav-link[href="/products"],
+.nav-link[href="/events"],
+.nav-link[href="/admin"],
+.nav-link[href="/dashboard"],
+button.nav-link,
+.auth-button {
+  color: white !important;
+}

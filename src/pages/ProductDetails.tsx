@@ -203,18 +203,40 @@ const ProductDetails: React.FC = () => {
           </div>
           
           {/* Product information */}
-          <div className="md:w-1/2 p-8">
-            <h1 className="text-3xl font-bold text-gray-800 mb-2 font-handwriting">{product.name}</h1>
+          <div className="md:w-1/2 p-8 product-text-container">
+            <h1 className="text-3xl font-bold text-gray-800 mb-2 font-handwriting product-name">{product.name}</h1>
+            
+            {/* Rating display - Always visible */}
+            <div className="mb-4 flex items-center">
+              <div className="flex product-rating-stars">
+                {Array.from({ length: 5 }).map((_, index) => (
+                  <span key={index} style={{ display: 'inline-block', fontSize: '1.25rem', marginRight: '2px' }}>
+                    {index < Math.round(product.ratings?.average || 0) ? (
+                      <FaStar style={{ color: '#FFB900' }} />
+                    ) : (
+                      <FaRegStar style={{ color: '#d1d5db' }} />
+                    )}
+                  </span>
+                ))}
+              </div>
+              <span className="ml-2 text-gray-600 text-sm">
+                {product.ratings?.count ? 
+                  `(${product.ratings.average.toFixed(1)}) ${product.ratings.count} ${product.ratings.count === 1 ? 'recenzie' : 'recenzii'}` : 
+                  'Fără recenzii încă'
+                }
+              </span>
+            </div>
             
             {/* Price section */}
-            <div className="text-2xl font-bold text-blue-600 mb-4">
-              {formatCurrency(product.price)}
+            <div className="mb-4">
+              <span className="product-price text-2xl">
+                {formatCurrency(product.price)}
+              </span>
             </div>
             
             {/* Description */}
-            <div className="mb-6">
-              <p className="text-gray-700 leading-relaxed">
-                {/* Updated placeholder text for product description */}
+            <div className="mb-6 product-description">
+              <p className="leading-relaxed">
                 {product.description || "Momentan nu există o descriere disponibilă pentru acest produs."}
               </p>
             </div>
@@ -276,10 +298,10 @@ const ProductDetails: React.FC = () => {
           {/* Ingredients */}
           {product.ingredients && product.ingredients.length > 0 && (
             <div className="mb-8">
-              <h2 className="text-xl font-bold mb-4 text-gray-800">Ingrediente</h2>
-              <ul className="list-disc pl-5 space-y-1">
+              <h2 className="section-heading text-xl font-bold">Ingrediente</h2>
+              <ul className="list-disc pl-5 space-y-1 product-description">
                 {product.ingredients.map((ingredient, index) => (
-                  <li key={index} className="text-gray-700">{ingredient}</li>
+                  <li key={index}>{ingredient}</li>
                 ))}
               </ul>
             </div>
@@ -288,9 +310,9 @@ const ProductDetails: React.FC = () => {
           {/* The Story */}
           {product.story && (
             <div className="mb-8">
-              <h2 className="text-xl font-bold mb-4 text-gray-800">Povestea din spatele produsului</h2>
-              <div className="bg-amber-50 p-6 rounded-lg border-l-4 border-amber-200">
-                <p className="text-gray-700 italic">{product.story}</p>
+              <h2 className="section-heading text-xl font-bold">Povestea din spatele produsului</h2>
+              <div className="bg-amber-50 p-6 rounded-lg border-l-4 border-amber-200 product-description">
+                <p className="italic">{product.story}</p>
               </div>
             </div>
           )}
@@ -298,17 +320,17 @@ const ProductDetails: React.FC = () => {
           {/* Additional Details */}
           {product.details && (
             <div className="mb-8">
-              <h2 className="text-xl font-bold mb-4 text-gray-800">Detalii produs</h2>
-              <div className="bg-gray-50 p-6 rounded-lg whitespace-pre-line">
-                <p className="text-gray-700">{product.details}</p>
+              <h2 className="section-heading text-xl font-bold">Detalii produs</h2>
+              <div className="bg-gray-50 p-6 rounded-lg whitespace-pre-line product-description">
+                <p>{product.details}</p>
               </div>
             </div>
           )}
         </div>
         
-        {/* Reviews section - enhanced */}
+        {/* Reviews section - enhanced with fixed styling */}
         <div className="p-8 border-t border-gray-200">
-          <h2 className="text-xl font-bold mb-6 text-gray-800">Recenzii clienți</h2>
+          <h2 className="section-heading text-xl font-bold">Recenzii clienți</h2>
           
           {product?.ratings?.count && product.ratings.count > 0 ? (
             <div className="mb-6">
@@ -318,10 +340,14 @@ const ProductDetails: React.FC = () => {
                   <span className="text-blue-600">/5</span>
                 </div>
                 <div>
-                  <div className="flex text-yellow-400 mb-1">
-                    {[1, 2, 3, 4, 5].map((star) => (
-                      <span key={star}>
-                        {star <= Math.round(product.ratings?.average || 0) ? <FaStar /> : <FaRegStar />}
+                  <div className="flex product-rating-stars">
+                    {Array.from({ length: 5 }).map((_, index) => (
+                      <span key={index} style={{ display: 'inline-block' }}>
+                        {index < Math.round(product.ratings?.average || 0) ? (
+                          <FaStar style={{ color: '#FFB900' }} />
+                        ) : (
+                          <FaRegStar style={{ color: '#d1d5db' }} />
+                        )}
                       </span>
                     ))}
                   </div>
@@ -332,26 +358,48 @@ const ProductDetails: React.FC = () => {
               </div>
             </div>
           ) : (
-            <p className="text-gray-500 mb-6">Acest produs nu are încă recenzii.</p>
+            <div className="mb-6 bg-gray-50 p-6 rounded-lg border border-gray-200 flex items-center justify-between">
+              <div>
+                <p className="text-gray-700 font-medium mb-2">Acest produs nu are încă recenzii.</p>
+                <p className="text-sm text-gray-500">Fii primul care evaluează acest produs!</p>
+              </div>
+              <div className="flex">
+                {Array.from({ length: 5 }).map((_, i) => (
+                  <FaRegStar key={i} className="text-gray-300 text-xl mx-0.5" />
+                ))}
+              </div>
+            </div>
           )}
           
           {product?.ratings?.userRatings && product.ratings.userRatings.length > 0 && (
             <div className="space-y-6">
               {product.ratings.userRatings.map((review, index) => (
-                <div key={index} className="bg-gray-50 rounded-lg p-4">
+                <div key={index} className="bg-gray-50 rounded-lg p-4 border border-gray-100">
                   <div className="flex items-center mb-2">
-                    <div className="flex text-yellow-400">
-                      {[...Array(5)].map((_, i) => (
-                        <span key={i} className={i < review.rating ? 'text-yellow-400' : 'text-gray-300'}>
-                          <FaStar />
+                    <div className="flex product-rating-stars">
+                      {Array.from({ length: 5 }).map((_, i) => (
+                        <span key={i} style={{ display: 'inline-block' }}>
+                          {i < review.rating ? (
+                            <FaStar style={{ color: '#FFB900' }} />
+                          ) : (
+                            <FaRegStar style={{ color: '#d1d5db' }} />
+                          )}
                         </span>
                       ))}
                     </div>
                     <span className="ml-2 text-gray-600 text-sm">
                       {new Date(review.date).toLocaleDateString('ro-RO')}
                     </span>
-                    <span className="verified-purchase ml-auto">
-                      <FaCheck /> Achiziție verificată
+                    <span className="verified-purchase ml-auto" style={{
+                      display: 'inline-flex', 
+                      alignItems: 'center',
+                      backgroundColor: '#ecfdf5',
+                      color: '#059669',
+                      padding: '0.25rem 0.5rem',
+                      borderRadius: '9999px',
+                      fontSize: '0.75rem'
+                    }}>
+                      <FaCheck style={{marginRight: '0.25rem'}} /> Achiziție verificată
                     </span>
                   </div>
                   {review.comment && <p className="text-gray-700">{review.comment}</p>}

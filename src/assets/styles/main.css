@@ -18,10 +18,11 @@
   --accent: #f6ad55; /* Warm orange */
   --accent-dark: #dd6b20;
   
-  /* Text colors with proper contrast */
-  --text-primary: #1a202c; /* Dark for primary text */
-  --text-secondary: #4a5568; /* Medium for secondary text */
-  --text-light: #f7fafc; /* Light for dark backgrounds */
+  /* Improved text colors with better contrast */
+  --text-primary: #222832; /* Darkened for better contrast */
+  --text-secondary: #3d4a5c; /* Enhanced for better readability */
+  --text-light: #ffffff; /* Pure white for maximum contrast on dark backgrounds */
+  --text-muted: #718096; /* For less important text */
   
   /* Background colors with proper layering */
   --bg-light: #f7fafc; /* Very light blue-gray */
@@ -29,10 +30,10 @@
   --bg-overlay: rgba(255, 255, 255, 0.9); /* For content over images */
   --bg-card: rgba(255, 255, 255, 0.95);
   
-  /* Romanian flag colors - preserved but refined */
-  --ro-blue: #002B7F;
-  --ro-yellow: #FCD116;
-  --ro-red: #CE1126;
+  /* Softened Romanian flag colors - less harsh but still recognizable */
+  --ro-blue: #173a7e; /* Softer, slightly darker blue */
+  --ro-yellow: #f5d776; /* Less saturated, softer yellow */
+  --ro-red: #c73e4d; /* Less aggressive, more elegant red */
   
   /* Shadow variables for consistent depth */
   --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
@@ -140,9 +141,9 @@ p, li, a, button, input, textarea {
     margin-right: 0.5rem;
   }
 
-  /* Navigation link styling */
+  /* Navigation link styling - ensuring white text */
   .nav-link {
-    color: var(--text-primary) !important;
+    color: var(--text-light) !important; /* White text for navbar */
     font-weight: 600;
     text-transform: uppercase;
     transition: all 0.3s ease;
@@ -180,9 +181,9 @@ p, li, a, button, input, textarea {
     color: var(--primary) !important;
   }
   
-  /* Navbar active link fix */
+  /* Navbar active link fix - keep text white when active */
   .nav-link.active {
-    color: var(--primary) !important; /* Highlight active link */
+    color: var(--text-light) !important; /* Keep white when active */
     font-weight: bold;
     position: relative;
   }
@@ -212,7 +213,7 @@ p, li, a, button, input, textarea {
     box-shadow: var(--shadow-lg);
   }
   
-  /* Romanian flag navbar animation - refined */
+  /* Romanian flag navbar animation - refined with softer colors */
   .ro-flag-nav {
     @apply flex items-center justify-center gap-4;
     background-color: var(--bg-white);
@@ -281,12 +282,36 @@ p, li, a, button, input, textarea {
   /* ...existing code... */
 }
 
-/* Romanian Flag Styling - Refined */
+/* Romanian Flag Styling - Refined with softer colors */
 .ro-flag-animate {
   position: relative;
   overflow: hidden;
   border-radius: 0.5rem;
   box-shadow: var(--shadow-md);
+}
+
+.ro-flag-animate::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(to right,
+    var(--ro-blue) 0%, var(--ro-blue) 33.33%,
+    var(--ro-yellow) 33.33%, var(--ro-yellow) 66.66%,
+    var(--ro-red) 66.66%, var(--ro-red) 100%);
+  opacity: 0.85; /* Slightly transparent to soften */
+  animation: flag-wave 10s ease-in-out infinite;
+}
+
+@keyframes flag-wave {
+  0%, 100% {
+    transform: skewY(0deg);
+  }
+  50% {
+    transform: skewY(1deg);
+  }
 }
 
 /* Improved Buttons */

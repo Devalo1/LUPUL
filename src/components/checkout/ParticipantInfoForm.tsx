@@ -1,8 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 
 interface ParticipantInfo {
   fullName: string;
   expectations: string;
+  age: string; // Added age field
 }
 
 interface ParticipantInfoFormProps {
@@ -12,10 +13,20 @@ interface ParticipantInfoFormProps {
 
 const ParticipantInfoForm: React.FC<ParticipantInfoFormProps> = ({ 
   onInfoSubmit, 
-  initialValues = { fullName: '', expectations: '' } 
+  initialValues = { fullName: '', expectations: '', age: '' } 
 }) => {
   const [participantInfo, setParticipantInfo] = useState<ParticipantInfo>(initialValues);
-  const [errors, setErrors] = useState<{ fullName?: string; expectations?: string }>({});
+
+  // Ensure all fields have default values to avoid uncontrolled input warnings
+  useEffect(() => {
+    setParticipantInfo((prev) => ({
+      fullName: prev.fullName || '',
+      expectations: prev.expectations || '',
+      age: prev.age || ''
+    }));
+  }, []);
+
+  const [errors, setErrors] = useState<{ fullName?: string; expectations?: string; age?: string }>({});
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
@@ -34,7 +45,7 @@ const ParticipantInfoForm: React.FC<ParticipantInfoFormProps> = ({
   };
 
   const validateForm = (): boolean => {
-    const newErrors: { fullName?: string; expectations?: string } = {};
+    const newErrors: { fullName?: string; expectations?: string; age?: string } = {};
     
     if (!participantInfo.fullName.trim()) {
       newErrors.fullName = 'Numele participantului este obligatoriu';
@@ -44,6 +55,12 @@ const ParticipantInfoForm: React.FC<ParticipantInfoFormProps> = ({
       newErrors.expectations = 'Te rugăm să completezi așteptările tale';
     } else if (participantInfo.expectations.trim().length < 10) {
       newErrors.expectations = 'Te rugăm să oferi mai multe detalii despre așteptările tale';
+    }
+    
+    if (!participantInfo.age.trim()) {
+      newErrors.age = 'Vârsta participantului este obligatorie';
+    } else if (isNaN(Number(participantInfo.age)) || Number(participantInfo.age) <= 0) {
+      newErrors.age = 'Te rugăm să introduci o vârstă validă';
     }
     
     setErrors(newErrors);
@@ -100,6 +117,26 @@ const ParticipantInfoForm: React.FC<ParticipantInfoFormProps> = ({
           />
           {errors.expectations && (
             <p className="text-red-500 text-sm mt-1">{errors.expectations}</p>
+          )}
+        </div>
+
+        <div className="mb-4">
+          <label htmlFor="age" className="block text-gray-700 font-medium mb-2">
+            Vârsta participantului *
+          </label>
+          <input
+            type="text"
+            id="age"
+            name="age"
+            value={participantInfo.age}
+            onChange={handleChange}
+            className={`w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+              errors.age ? 'border-red-500' : 'border-gray-300'
+            }`}
+            placeholder="Introduceți vârsta"
+          />
+          {errors.age && (
+            <p className="text-red-500 text-sm mt-1">{errors.age}</p>
           )}
         </div>
         

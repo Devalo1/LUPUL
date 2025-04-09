@@ -8,6 +8,11 @@ interface EventParticipationProps {
   eventId: string;
 }
 
+interface ParticipantInfo {
+  age: string;
+  expectations: string;
+}
+
 const EventParticipation: React.FC<EventParticipationProps> = ({ eventId }) => {
   const { currentUser } = useAuth(); // Ensure currentUser is typed correctly
   const userUid = currentUser?.uid || '';
@@ -18,6 +23,18 @@ const EventParticipation: React.FC<EventParticipationProps> = ({ eventId }) => {
   const [success, setSuccess] = useState<string | null>(null);
   const [comment, setComment] = useState('');
   const [showCommentForm, setShowCommentForm] = useState(false);
+  const [participantInfo, setParticipantInfo] = useState<ParticipantInfo>({
+    age: '',
+    expectations: ''
+  });
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    const { name, value } = e.target;
+    setParticipantInfo((prev) => ({
+      ...prev,
+      [name]: value
+    }));
+  };
 
   // Check if user is already participating
   useEffect(() => {
@@ -54,20 +71,85 @@ const EventParticipation: React.FC<EventParticipationProps> = ({ eventId }) => {
       return;
     }
 
+    if (!participantInfo.age || !participantInfo.expectations) {
+      setError('Te rugăm să completezi toate câmpurile obligatorii');
+      return;
+    }
+
     setLoading(true);
     setError(null);
     setSuccess(null);
 
     try {
       const eventDoc = doc(db, 'events', eventId);
+      const eventSnapshot = await getDoc(eventDoc);
       
+      if (!eventSnapshot.exists()) {
+        throw new Error('Evenimentul nu a fost găsit');
+      }
+      
+      const eventData = eventSnapshot.data();
+      const eventTitle = eventData.title || 'Eveniment necunoscut';
+      
+      // Add the participant to the event
       await updateDoc(eventDoc, {
         participants: arrayUnion({
           userId: userUid,
           name: userName,
-          joinedAt: Timestamp.now()
+          joinedAt: Timestamp.now(),
+          age: participantInfo.age,
+          expectations: participantInfo.expectations
         })
       });
+      
+      // Calculate remaining seats
+      const currentParticipants = (eventData.participants || []).length + 1;
+      const totalCapacity = eventData.capacity || 100;
+      const remainingSeats = Math.max(0, totalCapacity - currentParticipants);
+      
+      // Send participant details email
+      try {
+        console.log('Sending participant details email:', {
+          eventTitle,
+          participant: {
+            fullName: userName || currentUser.displayName || 'Participant',
+            email: currentUser.email,
+            age: participantInfo.age,
+            expectations: participantInfo.expectations
+          },
+          remainingSeats
+        });
+        
+        // Apelează direct URL-ul funcției Firebase în loc de funcția callable
+        const response = await fetch('https://us-central1-lupulcorbul.cloudfunctions.net/sendParticipantDetailsEmail', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            eventTitle,
+            participant: {
+              fullName: userName || currentUser.displayName || 'Participant',
+              email: currentUser.email,
+              age: participantInfo.age,
+              expectations: participantInfo.expectations
+            },
+            remainingSeats
+          })
+        });
+
+        if (!response.ok) {
+          const errorText = await response.text();
+          console.error('Error response from server:', errorText);
+          throw new Error(`Server error: ${response.status} - ${errorText}`);
+        }
+
+        const result = await response.json();
+        console.log('Participant details email sent successfully:', result);
+      } catch (emailError) {
+        console.error('Error sending participant details email:', emailError);
+        // Continue execution even if email fails
+      }
       
       setIsParticipating(true);
       setSuccess('Te-ai înscris cu succes la acest eveniment!');
@@ -221,6 +303,38 @@ const EventParticipation: React.FC<EventParticipationProps> = ({ eventId }) => {
         <>
           <h3 className="font-medium mb-2">Participă la acest eveniment</h3>
           <p className="text-gray-600 mb-3">Înscrie-te pentru a participa și a primi actualizări</p>
+          
+          {/* Form for participant info */}
+          <div className="mb-4">
+            <label htmlFor="age" className="block text-gray-700 font-medium mb-2">
+              Vârsta participantului *
+            </label>
+            <input
+              type="text"
+              id="age"
+              name="age"
+              value={participantInfo.age}
+              onChange={handleInputChange}
+              className="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              placeholder="Introduceți vârsta"
+            />
+          </div>
+
+          <div className="mb-4">
+            <label htmlFor="expectations" className="block text-gray-700 font-medium mb-2">
+              Ce așteptări ai de la această experiență? *
+            </label>
+            <textarea
+              id="expectations"
+              name="expectations"
+              value={participantInfo.expectations}
+              onChange={handleInputChange}
+              rows={4}
+              className="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              placeholder="Descrieți așteptările dumneavoastră..."
+            />
+          </div>
+
           <Button
             variant="primary"
             onClick={handleParticipate}

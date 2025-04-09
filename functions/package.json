@@ -29,5 +29,12 @@
     "firebase-functions-test": "^3.1.0",
     "globals": "^16.0.0"
   },
-  "private": true
+  "private": true,
+  "netlify": {
+    "build": {
+      "base": "functions",
+      "command": "npm run build-netlify",
+      "publish": "dist"
+    }
+  }
 }

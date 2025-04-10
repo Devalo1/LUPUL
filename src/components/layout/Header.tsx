@@ -2,6 +2,7 @@ import React from 'react';
 import Navbar from './Navbar';
 import '../../styles/Header.css';
 import { useLocation } from 'react-router-dom';
+import SideNavigation from '../navigation/SideNavigation';
 
 // Header este acum doar un wrapper pentru Navbar
 const Header: React.FC = () => {
@@ -10,7 +11,8 @@ const Header: React.FC = () => {
   
   return (
     <header id="header-container" className={isHomePage ? 'bg-transparent' : ''}>
-      <Navbar onToggleSideNav={() => {}} />
+      <Navbar />
+      <SideNavigation />
     </header>
   );
 };

@@ -4,7 +4,9 @@ import { collection, getDocs } from 'firebase/firestore';
 import { Link } from 'react-router-dom';
 import { db } from '../firebase';
 import { FaStar, FaLeaf, FaAward, FaShoppingCart, FaRegStar } from 'react-icons/fa';
+import { ErrorMessage } from '../components'; // Importăm componenta ErrorMessage
 import '../styles/ProductsPage.css';
+import '../styles/PageHeaders.css'; // Importăm noile stiluri pentru headere
 
 interface Product {
   id: string;
@@ -128,9 +130,10 @@ const Products: React.FC = () => {
   if (error) {
     return (
       <div className="container mx-auto px-4 py-16">
-        <div className="text-center bg-red-100 text-red-700 p-4 rounded-lg mb-4">
-          {error}
-        </div>
+        <ErrorMessage 
+          message={error} 
+          onRetry={() => window.location.reload()} 
+        />
         <div className="text-center">
           <Link 
             to="/add-product" 
@@ -160,20 +163,24 @@ const Products: React.FC = () => {
         </div>
       )}
 
-      <div className="text-center mb-12">
-        <h1 className="text-3xl md:text-4xl font-bold mb-4 product-title">Produse Tradiționale</h1>
-        <p className="text-gray-600 max-w-2xl mx-auto">Descoperă selecția noastră de produse autentice, create cu ingrediente naturale și după rețete tradiționale transmise din generație în generație.</p>
+      {/* Headerul paginii cu noile clase */}
+      <div className="page-header-container">
+        <h1 className="page-header-title">Produse Tradiționale</h1>
+        <p className="page-header-description">
+          Descoperă selecția noastră de produse autentice, create cu ingrediente naturale 
+          și după rețete tradiționale transmise din generație în generație.
+        </p>
         
-        <div className="trust-badges">
-          <div className="trust-badge">
+        <div className="page-features-container">
+          <div className="page-feature-item">
             <FaLeaf />
             <span>100% Natural</span>
           </div>
-          <div className="trust-badge">
+          <div className="page-feature-item">
             <FaAward />
             <span>Calitate Premium</span>
           </div>
-          <div className="trust-badge">
+          <div className="page-feature-item">
             <FaStar />
             <span>Produse Autentice</span>
           </div>

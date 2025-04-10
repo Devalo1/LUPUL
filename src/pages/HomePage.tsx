@@ -1,16 +1,16 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import SideNavigation from '../components/navigation/SideNavigation';
 import '../styles/HomePage.css';
+import { useNavigation } from '../contexts/NavigationContext';
 
 // Import icons
 import { FaLeaf, FaHandHoldingHeart, FaBalanceScale, FaShieldAlt, FaAward, FaUsers } from 'react-icons/fa';
 
 const HomePage: React.FC = () => {
-  const [isSideNavOpen, setIsSideNavOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const navigate = useNavigate();
+  const { toggleSideNav } = useNavigation(); // Folosim hook-ul useNavigation pentru a controla meniul lateral
 
   // Handling scroll effects
   useEffect(() => {
@@ -31,10 +31,6 @@ const HomePage: React.FC = () => {
 
   const handleProductsClick = () => {
     navigate('/products');
-  };
-
-  const toggleSideNav = () => {
-    setIsSideNavOpen(!isSideNavOpen);
   };
 
   // Animation variants
@@ -230,8 +226,6 @@ const HomePage: React.FC = () => {
           </button>
         </div>
       </section>
-
-      <SideNavigation isOpen={isSideNavOpen} onClose={() => setIsSideNavOpen(false)} />
 
       {/* Enhanced Footer */}
       <footer className="homepage-footer">

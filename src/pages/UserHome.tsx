@@ -4,6 +4,7 @@ import { Navigate } from 'react-router-dom';
 import { FaEnvelope, FaEnvelopeOpen, FaArrowLeft, FaCalendarAlt, FaUser } from 'react-icons/fa';
 import { collection, getDocs, addDoc } from 'firebase/firestore';
 import { db } from '../firebase';
+import { ErrorMessage } from '../components/common';
 
 interface Article {
   id: string;
@@ -208,15 +209,7 @@ Echipa Lupul Corbul`,
         </div>
 
         {error && (
-          <div className="bg-red-100 border-l-4 border-red-500 text-red-700 p-4 mb-6 rounded">
-            <p>{error}</p>
-            <button 
-              className="text-red-600 underline mt-2"
-              onClick={() => window.location.reload()}
-            >
-              Reîncarcă pagina
-            </button>
-          </div>
+          <ErrorMessage message={error} onRetry={() => window.location.reload()} />
         )}
 
         <div className="bg-white rounded-lg shadow-md p-6">

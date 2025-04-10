@@ -8,10 +8,9 @@
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
   
   /* Fundal cu temă românească care umple tot header-ul - softened colors */
-  background: linear-gradient(rgba(23, 58, 126, 0.85), rgba(23, 58, 126, 0.85)), 
-              url('/images/romanian-pattern.png');
-  background-size: 200px;
-  background-position: center;
+  background: linear-gradient(270deg, #4A90E2, #5C6BC0, #4A90E2);
+  background-size: 400% 400%;
+  animation: animatedGradient 8s ease infinite;
   position: relative;
   background-color: transparent; /* Ensure the header container doesn't have a background by default */
   transition: transform 0.3s ease, background-color 0.3s ease, box-shadow 0.3s ease;
@@ -74,7 +73,7 @@
 /* Efectul la scroll - Enhanced with animations */
 .header-container.scrolled {
   background-color: rgba(17, 24, 39, 0.95) !important; /* slightly transparent dark background */
-  background: linear-gradient(rgba(0, 43, 127, 0.95), rgba(0, 43, 127, 0.95)), 
+  background: linear-gradient(rgba(74, 144, 226, 0.95), rgba(92, 107, 192, 0.95)), 
               url('/images/romanian-pattern.png');
   background-size: 200px;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
@@ -147,6 +146,17 @@
 .header-container a:hover::after,
 .header-container button:hover::after {
   width: 70%;
+}
+
+/* Efect de iluminare pe hover pentru link-uri */
+.header-container a {
+  position: relative;
+  transition: color 0.3s ease, text-shadow 0.3s ease;
+}
+
+.header-container a:hover {
+  color: #ffffff;
+  text-shadow: 0 0 8px rgba(255, 255, 255, 0.8);
 }
 
 /* Improved auth button styles - using softer colors */
@@ -229,6 +239,19 @@
   75% {
     transform: rotateX(-5deg) rotateY(2deg) rotateZ(0deg);
     background-position: 3% -2%;
+  }
+}
+
+/* Gradient animat pentru fundalul navbar-ului */
+@keyframes animatedGradient {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
   }
 }
 

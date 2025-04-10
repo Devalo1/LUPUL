@@ -4,6 +4,7 @@ import { collection, getDocs, query, orderBy, deleteDoc, doc } from 'firebase/fi
 import { db } from '../firebase';
 import { useAuth } from '../contexts/AuthContext';
 import { isUserAdmin } from '../utils/userRoles';
+import { ErrorMessage } from '../components'; // Importăm componenta ErrorMessage
 
 interface Event {
   id: string;
@@ -91,7 +92,7 @@ const Events: React.FC = () => {
   if (loading) {
     return (
       <div className="container mx-auto px-4 py-16">
-        <h1 className="text-3xl font-bold mb-8 text-center">Evenimente</h1>
+        <h1 className="text-4xl font-extrabold mb-8 text-center text-blue-800 drop-shadow-lg bg-blue-100 py-4 rounded-lg">Evenimente</h1>
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
           <p className="mt-4 text-gray-600">Se încarcă evenimentele...</p>
@@ -103,17 +104,18 @@ const Events: React.FC = () => {
   if (error) {
     return (
       <div className="container mx-auto px-4 py-16">
-        <h1 className="text-3xl font-bold mb-8 text-center">Evenimente</h1>
-        <div className="text-center bg-red-100 text-red-700 p-4 rounded-lg">
-          {error}
-        </div>
+        <h1 className="text-4xl font-extrabold mb-8 text-center text-blue-800 drop-shadow-lg bg-blue-100 py-4 rounded-lg">Evenimente</h1>
+        <ErrorMessage 
+          message={error} 
+          onRetry={() => window.location.reload()} 
+        />
       </div>
     );
   }
 
   return (
     <div className="container mx-auto px-4 py-16">
-      <h1 className="text-3xl font-bold mb-8 text-center">Evenimente</h1>
+      <h1 className="text-4xl font-extrabold mb-8 text-center text-blue-800 drop-shadow-lg bg-blue-100 py-4 rounded-lg">Evenimente</h1>
 
       {events.length === 0 ? (
         <div className="text-center text-gray-600">

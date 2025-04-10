@@ -3,8 +3,10 @@ import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import HomePage from './pages/HomePage';
 import { AuthProvider } from './contexts/AuthContext';
 import { ThemeProvider } from './contexts/ThemeContext';
+import { NavigationProvider } from './contexts/NavigationContext';
 import ErrorBoundary from './components/layout/ErrorBoundary';
 import LandingPage from './LandingPage';
+import SideNavigation from './components/navigation/SideNavigation';
 
 // Add custom styles to force transparency
 const appStyle = {
@@ -45,24 +47,27 @@ const App: React.FC = () => {
             <Router>
               <AuthProvider>
                 <ThemeProvider>
-                  <header className="navbar-romanian-flag">
-                    {/* Navbar content */}
-                  </header>
-                  <main>
-                    <div className="content-overlay">
-                      <h1>Your content here</h1>
+                  <NavigationProvider>
+                    <header className="navbar-romanian-flag">
+                      {/* Navbar content */}
+                    </header>
+                    <main>
+                      <div className="content-overlay">
+                        <h1>Your content here</h1>
+                      </div>
+                      <button className="btn-primary">Button Example</button>
+                    </main>
+                    <footer>
+                      {/* Footer content */}
+                    </footer>
+                    <div style={appStyle} className="app-container">
+                      <Routes>
+                        <Route path="/" element={<HomePage />} />
+                        {/* ...other routes */}
+                      </Routes>
                     </div>
-                    <button className="btn-primary">Button Example</button>
-                  </main>
-                  <footer>
-                    {/* Footer content */}
-                  </footer>
-                  <div style={appStyle} className="app-container">
-                    <Routes>
-                      <Route path="/" element={<HomePage />} />
-                      {/* ...other routes */}
-                    </Routes>
-                  </div>
+                    <SideNavigation />
+                  </NavigationProvider>
                 </ThemeProvider>
               </AuthProvider>
             </Router>

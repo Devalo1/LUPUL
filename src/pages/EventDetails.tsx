@@ -4,6 +4,7 @@ import { doc, getDoc, updateDoc, arrayUnion } from 'firebase/firestore';
 import { db, sendEventRegistrationEmail } from '../firebase';
 import { useAuth } from '../contexts/AuthContext';
 import ParticipantInfoForm from '../components/checkout/ParticipantInfoForm';
+import { ErrorMessage } from '../components'; // Importăm componenta ErrorMessage
 
 interface Event {
   id: string;
@@ -20,6 +21,7 @@ interface Event {
 interface ParticipantInfo {
   fullName: string;
   expectations: string;
+  age: string; // Added age property to match ParticipantInfoForm's interface
 }
 
 const EventDetails: React.FC = () => {
@@ -212,9 +214,10 @@ const EventDetails: React.FC = () => {
   if (error || !event) {
     return (
       <div className="container mx-auto px-4 py-16">
-        <div className="text-center bg-red-100 text-red-700 p-4 rounded-lg">
-          {error || 'A apărut o eroare la încărcarea evenimentului.'}
-        </div>
+        <ErrorMessage 
+          message={error || 'A apărut o eroare la încărcarea evenimentului.'} 
+          onRetry={() => window.location.reload()}
+        />
         <div className="mt-4 text-center">
           <Link to="/events" className="text-blue-600 hover:underline">
             Înapoi la evenimente
@@ -243,7 +246,8 @@ const EventDetails: React.FC = () => {
               onInfoSubmit={handleParticipantInfoSubmit} 
               initialValues={{
                 fullName: currentUser?.displayName || '',
-                expectations: ''
+                expectations: '',
+                age: '' // Added missing age property
               }}
             />
             <button
@@ -300,6 +304,14 @@ const EventDetails: React.FC = () => {
                 <div className="mb-4 p-4 bg-green-100 text-green-700 rounded-md">
                   {successMessage}
                 </div>
+              )}
+
+              {error && (
+                <ErrorMessage 
+                  message={error}
+                  type="warning"
+                  onRetry={() => setError(null)}
+                />
               )}
 
               <div className="border-t border-gray-200 pt-6 mt-6">

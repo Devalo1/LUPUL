@@ -3,25 +3,44 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Global theme variables */
+/* Global theme variables - Modified for a softer, more elegant look */
 :root {
-  --ro-blue: #002B7F;
-  --ro-yellow: #FCD116;
-  --ro-red: #CE1126;
+  /* Nuanțe mai calme ale culorilor României */
+  --ro-blue: #1a4b8c;
+  --ro-yellow: #f5d25a;
+  --ro-red: #b93645;
+
+  /* Culori generale pentru temă light */
+  --bg-primary: #f8f9fd;
+  --bg-secondary: #ffffff;
+  --bg-overlay: rgba(255, 255, 255, 0.9);
+  --text-primary: #333333;
+  --text-secondary: #555555;
+  --accent-color: #5d7fb9;
 
   font-family: 'Montserrat', sans-serif;
   line-height: 1.5;
   font-weight: 400;
 
   color-scheme: light dark;
-  color: rgba(0, 0, 0, 0.87);
-  background-color:rgb(139, 21, 21);
+  color: var(--text-primary);
+  background-color: var(--bg-primary);
 
   font-synthesis: none;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   -webkit-text-size-adjust: 100%;
+}
+
+/* Dark theme variables */
+.dark {
+  --bg-primary: #1f2937;
+  --bg-secondary: #111827;
+  --bg-overlay: rgba(17, 24, 39, 0.9);
+  --text-primary: #f3f4f6;
+  --text-secondary: #d1d5db;
+  --accent-color: #60a5fa;
 }
 
 /* Reset CSS */
@@ -31,7 +50,7 @@
   box-sizing: border-box;
 }
 
-/* Full page background setup - highest priority */
+/* Full page background setup - high quality but softer */
 body {
   margin: 0;
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
@@ -40,12 +59,13 @@ body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 
-  background-image: url('/images/background.jpeg') !important; /* Force background */
+  /* Un overlay mai subtil peste background care reduce intensitatea */
+  background-image: linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)), url('/images/background.jpeg') !important;
   background-size: cover !important;
   background-position: center !important;
   background-repeat: no-repeat !important;
   background-attachment: fixed !important;
-  color: white; /* Light text for dark background */
+  color: #f5f5f5; /* Text mai puțin strident */
   min-height: 100vh;
 }
 
@@ -64,24 +84,25 @@ body {
   flex-direction: column;
 }
 
-/* Content visibility control */
+/* Content visibility control - mai subtilă și mai plăcută */
 .content-container {
-  background-color: rgba(0, 0, 0, 0.6);
-  backdrop-filter: blur(3px);
-  border-radius: 8px;
-  padding: 1rem;
+  background-color: rgba(0, 0, 0, 0.45);
+  backdrop-filter: blur(8px);
+  border-radius: 12px;
+  padding: 1.25rem;
   margin: 1rem 0;
+  border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
-/* Clear content area for overlapping issues */
+/* Clear content area for overlapping issues - mai plăcută vizual */
 .content-area {
   position: relative;
   z-index: 1;
   background-color: var(--bg-overlay);
-  border-radius: 0.5rem;
+  border-radius: 0.75rem;
   padding: 1.5rem;
   margin-bottom: 1.5rem;
-  box-shadow: var(--shadow-md);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
 }
 
 /* Ensure primary elements are visible */
@@ -93,7 +114,7 @@ body {
   z-index: 50;
 }
 
-/* Style buttons to stand out */
+/* Style buttons to stand out - aspect mai elegant */
 .btn,
 .hero-button,
 .btn-primary-light,
@@ -101,11 +122,12 @@ body {
 .btn-tertiary-light {
   position: relative;
   z-index: 20;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
-  border: 2px solid rgba(255, 255, 255, 0.2);
-  backdrop-filter: blur(2px);
-  font-weight: bold;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  backdrop-filter: blur(4px);
+  font-weight: 600;
   transition: all 0.3s ease;
+  letter-spacing: 0.3px;
 }
 
 .btn:hover,
@@ -133,14 +155,15 @@ footer {
   z-index: 100;
 }
 
-/* Links */
+/* Links - culori mai plăcute */
 a {
   font-weight: 500;
-  color: #646cff;
+  color: #4c6ef5;
   text-decoration: inherit;
+  transition: color 0.2s ease;
 }
 a:hover {
-  color: #535bf2;
+  color: #3b5bdb;
 }
 
 /* Headings */
@@ -172,15 +195,15 @@ button:focus-visible {
 /* Button styles used in the Home component */
 @layer components {
   .btn-primary-light {
-    @apply bg-blue-500 text-white rounded-lg font-semibold hover:bg-blue-600 transition-colors;
+    @apply bg-blue-500 bg-opacity-90 text-white rounded-lg font-semibold hover:bg-blue-600 transition-colors;
   }
   
   .btn-secondary-light {
-    @apply bg-green-500 text-white rounded-lg font-semibold hover:bg-green-600 transition-colors;
+    @apply bg-green-600 bg-opacity-90 text-white rounded-lg font-semibold hover:bg-green-700 transition-colors;
   }
   
   .btn-tertiary-light {
-    @apply bg-purple-500 text-white rounded-lg font-semibold hover:bg-purple-600 transition-colors;
+    @apply bg-indigo-500 bg-opacity-90 text-white rounded-lg font-semibold hover:bg-indigo-600 transition-colors;
   }
 }
 
@@ -240,17 +263,17 @@ button:focus-visible {
   }
 }
 
-/* Dark mode */
+/* Dark mode - culori mai plăcute și mai puțin stridente */
 @media (prefers-color-scheme: dark) {
   :root {
-    color: rgba(6, 240, 84, 0.87);
-    background-color: #242424;
+    color: #e2e8f0;
+    background-color: #1a202c;
   }
   a:hover {
-    color: #747bff;
+    color: #90cdf4;
   }
   button {
-    background-color: #1a1a1a;
+    background-color: #2d3748;
   }
 }
 

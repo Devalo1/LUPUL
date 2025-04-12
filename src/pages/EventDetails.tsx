@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
-import { doc, getDoc, updateDoc, arrayUnion } from 'firebase/firestore';
+import { doc, getDoc, updateDoc, arrayUnion, arrayRemove } from 'firebase/firestore';
 import { db, sendEventRegistrationEmail } from '../firebase';
 import { useAuth } from '../contexts/AuthContext';
 import ParticipantInfoForm from '../components/checkout/ParticipantInfoForm';
@@ -152,6 +152,7 @@ const EventDetails: React.FC = () => {
 
   const handleCancelRegistration = async () => {
     if (!currentUser || !event) {
+      setError('Trebuie să fii autentificat pentru a anula înscrierea.');
       return;
     }
 
@@ -161,21 +162,23 @@ const EventDetails: React.FC = () => {
 
     try {
       setError(null);
+      setLoading(true); // Add loading state while processing
       const eventDoc = doc(db, 'events', id!);
       
-      // Eliminăm utilizatorul din lista de participanți
-      const updatedRegisteredUsers = event.registeredUsers?.filter(
-        userId => userId !== currentUser.uid
-      ) || [];
+      // Make sure the user is properly authenticated before attempting operation
+      if (!currentUser.uid) {
+        throw new Error('Sesiune de autentificare invalidă. Te rugăm să te reautentifici.');
+      }
       
+      // Using arrayRemove instead of filtering and replacing the entire array
       await updateDoc(eventDoc, {
-        registeredUsers: updatedRegisteredUsers
+        registeredUsers: arrayRemove(currentUser.uid)
       });
 
       // Actualizăm starea locală a evenimentului
       setEvent({
         ...event,
-        registeredUsers: updatedRegisteredUsers
+        registeredUsers: event.registeredUsers?.filter(userId => userId !== currentUser.uid) || []
       });
 
       setSuccessMessage('Înscrierea ta a fost anulată cu succes.');
@@ -185,9 +188,19 @@ const EventDetails: React.FC = () => {
         setSuccessMessage(null);
       }, 3000);
 
-    } catch (err) {
+    } catch (err: any) {
       console.error('Eroare la anularea înscrierii:', err);
-      setError('A apărut o eroare la anularea înscrierii. Te rugăm să încerci din nou.');
+      
+      // Handle specific Firebase permission errors
+      if (err.code === 'permission-denied') {
+        setError('Nu ai permisiunea să anulezi această înscriere. Te rugăm să contactezi administratorul.');
+      } else if (err.message && err.message.includes('permissions')) {
+        setError('Problemă de permisiuni. Te rugăm să te reautentifici și să încerci din nou.');
+      } else {
+        setError('A apărut o eroare la anularea înscrierii. Te rugăm să încerci din nou.');
+      }
+    } finally {
+      setLoading(false);
     }
   };
 

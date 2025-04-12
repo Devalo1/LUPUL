@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { doc, getDoc, updateDoc, arrayUnion, Timestamp } from 'firebase/firestore';
+import { doc, getDoc, updateDoc, arrayUnion, arrayRemove, Timestamp } from 'firebase/firestore';
 import { db } from '../../firebase'; // Import only the Firestore database instance
 import { useAuth } from '../../contexts/AuthContext';
 import Button from '../common/Button';
@@ -163,31 +163,99 @@ const EventParticipation: React.FC<EventParticipationProps> = ({ eventId }) => {
 
   // Handle cancel participation
   const handleCancelParticipation = async () => {
-    if (!currentUser) return;
+    if (!currentUser) {
+      setError('Trebuie să fii autentificat pentru a anula participarea.');
+      return;
+    }
+
+    // Confirm before canceling
+    if (!window.confirm('Ești sigur că vrei să anulezi participarea la acest eveniment?')) {
+      return;
+    }
 
     setLoading(true);
     setError(null);
     setSuccess(null);
 
     try {
+      // Check if user is properly authenticated
+      if (!userUid) {
+        throw new Error('Sesiune de autentificare invalidă');
+      }
+
+      console.log('Attempting to cancel participation for user:', userUid);
       const eventDoc = doc(db, 'events', eventId);
+      
+      // First, get the participant object to remove
       const eventSnapshot = await getDoc(eventDoc);
       
       if (eventSnapshot.exists()) {
         const eventData = eventSnapshot.data();
-        const updatedParticipants = (eventData.participants || [])
-          .filter((p: { userId: string }) => p.userId !== userUid);
+        const participants = eventData.participants || [];
+        console.log('Current participants:', participants.length);
         
-        await updateDoc(eventDoc, {
-          participants: updatedParticipants
-        });
-        
-        setIsParticipating(false);
-        setSuccess('Participarea ta a fost anulată');
+        try {
+          // First attempt: Try removing from registeredUsers array (simpler)
+          if (eventData.registeredUsers && eventData.registeredUsers.includes(userUid)) {
+            console.log('Removing user from registeredUsers array');
+            await updateDoc(eventDoc, {
+              registeredUsers: arrayRemove(userUid)
+            });
+            setIsParticipating(false);
+            setSuccess('Înscrierea ta a fost anulată cu succes');
+            return; // Exit early if successful
+          }
+          
+          // Second attempt: Try to find and remove participant object
+          console.log('Looking for participant object to remove');
+          let participantToRemove = participants.find((p: { userId: string }) => p.userId === userUid);
+          
+          if (participantToRemove) {
+            console.log('Found participant to remove, using arrayRemove');
+            await updateDoc(eventDoc, {
+              participants: arrayRemove(participantToRemove)
+            });
+            setIsParticipating(false);
+            setSuccess('Participarea ta a fost anulată cu succes');
+          } else {
+            // Try a different approach - replace the entire array
+            console.log('Participant not found with direct match, trying array replacement');
+            const updatedParticipants = participants.filter((p: { userId: string }) => p.userId !== userUid);
+            
+            if (updatedParticipants.length < participants.length) {
+              // Only update if we actually filtered something out
+              await updateDoc(eventDoc, {
+                participants: updatedParticipants
+              });
+              setIsParticipating(false);
+              setSuccess('Participarea ta a fost anulată cu succes');
+            } else {
+              throw new Error('Nu am putut găsi înregistrarea ta în eveniment');
+            }
+          }
+        } catch (updateErr: any) {
+          console.error('Error during Firestore update:', updateErr);
+          
+          if (updateErr.code === 'permission-denied') {
+            throw new Error('Nu ai permisiunea necesară pentru această operație');
+          } else {
+            throw updateErr; // Re-throw for outer catch
+          }
+        }
+      } else {
+        setError('Evenimentul nu a fost găsit în baza de date');
       }
-    } catch (err) {
+    } catch (err: any) {
       console.error('Error canceling participation:', err);
-      setError('A apărut o eroare la anularea participării');
+      
+      // Handle specific firebase errors
+      if (err.code === 'permission-denied') {
+        setError('Nu ai permisiunea să anulezi această participare. Te rugăm să contactezi administratorul.');
+      } else if (err.message && err.message.includes('permissions')) {
+        setError('Problemă de permisiuni. Te rugăm să te reautentifici și să încerci din nou.');
+      } else {
+        setError('A apărut o eroare la anularea înscrierii. Te rugăm să încerci din nou.');
+      }
     } finally {
       setLoading(false);
     }

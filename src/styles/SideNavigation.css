@@ -184,6 +184,28 @@
 /* Mobile adjustments */
 @media (max-width: 640px) {
   .side-navigation {
-    width: 280px;
+    width: 85%; /* Wider on small screens */
+    right: -85%;
+    z-index: 9999;
+  }
+  
+  .side-nav-overlay {
+    z-index: 9998;
+  }
+}
+
+/* Fix for extra-small screens */
+@media (max-width: 380px) {
+  .side-navigation {
+    width: 90%;
+    right: -90%;
+  }
+  
+  .side-nav-header {
+    padding: 1rem;
+  }
+  
+  .nav-item {
+    padding: 0.75rem 0.75rem;
   }
 }

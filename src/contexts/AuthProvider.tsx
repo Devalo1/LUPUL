@@ -41,8 +41,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   useEffect(() => {
     console.log('AuthProvider mounted');
 
-    // Example log for session state
-    const authState = getAuthState();
+    // Eliminat apelul către getAuthState
+    const authState = null; // Inițializare cu null sau altă valoare implicită
     console.log('Restored auth state:', authState);
 
     // Additional log for user authentication state

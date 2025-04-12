@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { Routes, Route, Navigate, useNavigate, useLocation } from 'react-router-dom';
 import Layout from './layout/Layout';
 import HomePage from '../pages/HomePage'; // Fix the import path to point to src/pages folder
@@ -31,6 +31,7 @@ const AppLayout = () => {
     const { isAuthenticated, loading } = useAuth();
     const navigate = useNavigate();
     const location = useLocation();
+    const [loadingTimeout, setLoadingTimeout] = useState(false);
 
     // Log pentru debugging
     useEffect(() => {
@@ -48,11 +49,25 @@ const AppLayout = () => {
         }
     }, [isAuthenticated, loading, navigate]);
 
+    // Set a loading timeout to avoid infinite spinner
+    useEffect(() => {
+        if (loading) {
+            setLoadingTimeout(true);
+            const timer = setTimeout(() => {
+                setLoadingTimeout(false);
+            }, 5000); // Force loading to end after 5 seconds
+            return () => clearTimeout(timer);
+        } else {
+            setLoadingTimeout(false);
+        }
+    }, [loading]);
+
     // Afișăm un indicator de încărcare până când starea de autentificare este determinată
-    if (loading) {
+    if (loading && loadingTimeout) {
         return (
-            <div className="flex items-center justify-center min-h-screen">
-                <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
+            <div className="flex items-center justify-center min-h-screen bg-white">
+                <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500" 
+                     style={{transform: 'translateZ(0)', willChange: 'transform'}}></div>
             </div>
         );
     }

@@ -207,6 +207,41 @@ button:focus-visible {
   }
 }
 
+/* Add the fade-out animation for loaders */
+@keyframes fadeOut {
+  from { opacity: 1; }
+  to { opacity: 0; }
+}
+
+.fade-out {
+  animation: fadeOut 0.5s forwards;
+}
+
+/* Optimize animation on low-end devices */
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+  
+  .animate-spin {
+    animation-duration: 1s !important;
+  }
+}
+
+/* Mobile performance optimizations */
+@media screen and (max-width: 768px) {
+  /* Force hardware acceleration for animations */
+  .animate-spin, .loading-spinner-container, .loading-spinner-inner {
+    transform: translateZ(0);
+    will-change: transform;
+    backface-visibility: hidden;
+    perspective: 1000px;
+  }
+}
+
 /* Apply consistent text and background colors */
 .text-content {
   color: var(--text-primary);

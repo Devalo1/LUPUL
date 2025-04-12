@@ -120,6 +120,30 @@ if (process.env.NODE_ENV === 'development' && useEmulators) {
   })();
 }
 
+// Utility functions for session state management
+const saveSessionState = (key: string, value: any) => {
+  try {
+    sessionStorage.setItem(key, JSON.stringify(value));
+  } catch (e) {
+    console.warn('SessionStorage inaccessible, falling back to localStorage');
+    localStorage.setItem(key, JSON.stringify(value));
+  }
+};
+
+const restoreSessionState = (key: string): any => {
+  try {
+    const value = sessionStorage.getItem(key) || localStorage.getItem(key);
+    return value ? JSON.parse(value) : null;
+  } catch (e) {
+    console.error('Error restoring session state:', e);
+    return null;
+  }
+};
+
+// Example usage for saving and restoring state during authentication
+export const saveAuthState = (state: any) => saveSessionState('authState', state);
+export const getAuthState = () => restoreSessionState('authState');
+
 // Explicit exports with clear names to avoid conflicts
 export const auth = authService;
 export const firestore = firestoreService;

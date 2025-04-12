@@ -39,7 +39,15 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [isAdmin, setIsAdmin] = useState(false);
 
   useEffect(() => {
+    console.log('AuthProvider mounted');
+
+    // Example log for session state
+    const authState = getAuthState();
+    console.log('Restored auth state:', authState);
+
+    // Additional log for user authentication state
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
+      console.log('Auth state changed. Current user:', user);
       setCurrentUser(user);
       setIsAuthenticated(!!user);
 
@@ -54,7 +62,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       setLoading(false);
     });
 
-    return unsubscribe;
+    return () => {
+      console.log('AuthProvider unmounted');
+      unsubscribe();
+    };
   }, []);
 
   // Login cu email și parolă

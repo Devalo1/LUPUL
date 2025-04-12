@@ -31,10 +31,10 @@ service cloud.firestore {
       );
     }
 
-    // Restricționez accesul la colecția products
+    // Modificat pentru a permite acces public la colecția products
     match /products/{productId} {
-      allow read: if request.auth != null; // Doar utilizatorii autentificați pot citi
-      allow write: if request.auth != null && request.auth.token.admin == true; // Doar adminii pot scrie
+      allow read: if true; // Allow public read access
+      allow write: if request.auth != null && request.auth.token.admin == true; // Only admins can write
     }
 
     // Restricționez accesul la colecția users

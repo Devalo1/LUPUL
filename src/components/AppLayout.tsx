@@ -73,6 +73,9 @@ const AppLayout = () => {
         );
     }
 
+    // Verifică dacă suntem pe pagina de politică de confidențialitate pentru a o gestiona special
+    const isPrivacyPage = location.pathname === '/privacy-policy';
+
     return (
         <NavigationProvider>
             <CartProvider>
@@ -82,6 +85,11 @@ const AppLayout = () => {
                 {location.pathname === '/' ? (
                     // Render HomePage directly without Layout
                     <HomePage />
+                ) : isPrivacyPage ? (
+                    // Render Privacy Policy with regular Layout
+                    <Layout>
+                        <PrivacyPolicy />
+                    </Layout>
                 ) : (
                     // Render Layout for all other routes
                     <Layout>
@@ -150,6 +158,7 @@ const AppLayout = () => {
                             {/* Adaug rutele pentru procesul de checkout */}
                             <Route path="/checkout" element={<Checkout />} />
                             <Route path="/checkout-success" element={<CheckoutSuccess />} />
+                            {/* Politica de confidențialitate */}
                             <Route path="/privacy-policy" element={<PrivacyPolicy />} />
                             <Route path="*" element={<NotFound />} />
                         </Routes>

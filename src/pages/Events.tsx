@@ -117,6 +117,23 @@ const Events: React.FC = () => {
     <div className="container mx-auto px-4 py-16">
       <h1 className="text-4xl font-extrabold mb-8 text-center text-blue-800 drop-shadow-lg bg-blue-100 py-4 rounded-lg">Evenimente</h1>
 
+      <script type="application/ld+json">
+        {JSON.stringify({
+          "@context": "https://schema.org",
+          "@type": "Event",
+          "name": "Eveniment 1",
+          "startDate": "2025-05-01T19:00",
+          "endDate": "2025-05-01T22:00",
+          "location": {
+            "@type": "Place",
+            "name": "Locație 1",
+            "address": "Strada Exemplu, București, România"
+          },
+          "image": "https://example.com/images/event1.jpg",
+          "description": "Descrierea evenimentului 1."
+        })}
+      </script>
+
       {events.length === 0 ? (
         <div className="text-center text-gray-600">
           Nu există evenimente programate în acest moment.

@@ -187,6 +187,19 @@ const Products: React.FC = () => {
         </div>
       </div>
 
+      <script type="application/ld+json">
+        {JSON.stringify({
+          "@context": "https://schema.org",
+          "@type": "ItemList",
+          "itemListElement": products.map((product, index) => ({
+            "@type": "ListItem",
+            "position": index + 1,
+            "url": `https://example.com/products/${product.id}`,
+            "name": product.name
+          }))
+        })}
+      </script>
+
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
         {products.map((product) => (
           <div 

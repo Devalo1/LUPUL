@@ -209,6 +209,37 @@ const Footer: React.FC = () => {
           <p>&copy; {currentYear} Lupul și Corbul. Toate drepturile rezervate.</p>
         </div>
       </div>
+
+      {/* Structured Data */}
+      <script type="application/ld+json">
+        {`
+        {
+          "@context": "https://schema.org",
+          "@type": "Organization",
+          "name": "Lupul și Corbul",
+          "url": "https://example.com",
+          "logo": "https://example.com/images/LC.png",
+          "sameAs": [
+            "https://www.facebook.com/lupulsicorbul",
+            "https://www.instagram.com/lupulsicorbul"
+          ]
+        }
+        `}
+      </script>
+      <script type="application/ld+json">
+        {`
+        {
+          "@context": "https://schema.org",
+          "@type": "WebSite",
+          "url": "https://example.com",
+          "potentialAction": {
+            "@type": "SearchAction",
+            "target": "https://example.com/search?q={search_term_string}",
+            "query-input": "required name=search_term_string"
+          }
+        }
+        `}
+      </script>
     </footer>
   );
 };

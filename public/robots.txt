@@ -1,1 +1,4 @@
-   npm create vite@latest my-vite-app -- --template vue-ts
+User-agent: *
+Disallow:
+
+Sitemap: /sitemap.xml

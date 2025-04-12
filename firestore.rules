@@ -2,35 +2,27 @@ rules_version = '2';
 
 service cloud.firestore {
   match /databases/{database}/documents {
-    // Permitem accesul la colecția events pentru citire de către toți utilizatorii
+    // Restricționez accesul la colecția events
     match /events/{eventId} {
-      allow read: if true;
-      // Permitem scrierea pentru toți utilizatorii autentificați (temporar pentru testare)
-      allow write: if request.auth != null;
+      allow read: if request.auth != null; // Doar utilizatorii autentificați pot citi
+      allow write: if request.auth != null && request.auth.token.admin == true; // Doar adminii pot scrie
     }
-    
-    // Permitem accesul la colecția products pentru citire de către toți utilizatorii
-    // Permitem scrierea doar pentru utilizatorii autentificați
+
+    // Restricționez accesul la colecția products
     match /products/{productId} {
-      allow read: if true;
-      allow write: if request.auth != null;
+      allow read: if request.auth != null; // Doar utilizatorii autentificați pot citi
+      allow write: if request.auth != null && request.auth.token.admin == true; // Doar adminii pot scrie
     }
-    
-    // Permitem accesul la colecția admins pentru utilizatorii autentificați (temporar pentru testare)
-    match /admins/{document=**} {
-      allow read, write: if request.auth != null;
-    }
-    
-    // Permitem accesul la colecția users pentru utilizatorii proprii
+
+    // Restricționez accesul la colecția users
     match /users/{userId} {
-      allow read: if request.auth != null && request.auth.uid == userId;
-      allow write: if request.auth != null && request.auth.uid == userId;
+      allow read, write: if request.auth != null && request.auth.uid == userId; // Utilizatorii pot accesa doar propriile date
     }
-    
-    // Permitem accesul la colecția articles
+
+    // Restricționez accesul la colecția articles
     match /articles/{articleId} {
-      allow read: if request.auth != null; // Permite citirea pentru utilizatorii autentificați
-      allow write: if request.auth.token.admin == true; // Permite scrierea doar pentru admini
+      allow read: if request.auth != null; // Doar utilizatorii autentificați pot citi
+      allow write: if request.auth.token.admin == true; // Doar adminii pot scrie
     }
   }
 }

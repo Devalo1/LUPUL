@@ -4,10 +4,10 @@ import cors from "cors";
 
 // Configure CORS with proper options
 const corsMiddleware = cors({
-  origin: true, // Allow requests from any origin (or specify your domains)
+  origin: 'https://lupulsicorbul.com', // Permite cereri doar din domeniul tău
   methods: ['GET', 'POST', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization'],
-  credentials: true // Allow cookies to be sent
+  credentials: true // Permite trimiterea cookie-urilor
 });
 
 // Configurare Nodemailer cu Gmail

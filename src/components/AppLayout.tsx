@@ -20,6 +20,7 @@ import Checkout from '../pages/Checkout'; // Import pentru pagina Checkout
 import CheckoutSuccess from '../pages/CheckoutSuccess'; // Import pentru pagina CheckoutSuccess
 import ProtectedRoute from './ProtectedRoute';
 import NotFound from '../pages/NotFound';
+import PrivacyPolicy from '../pages/PrivacyPolicy'; // Import pentru pagina Privacy Policy
 import { useAuth } from '../contexts/AuthContext'; // Fix the import path to match main.tsx
 import { CartProvider } from '../contexts/CartContext'; // Adaug importul pentru CartProvider
 import { NavigationProvider } from '../contexts/NavigationContext';
@@ -149,6 +150,7 @@ const AppLayout = () => {
                             {/* Adaug rutele pentru procesul de checkout */}
                             <Route path="/checkout" element={<Checkout />} />
                             <Route path="/checkout-success" element={<CheckoutSuccess />} />
+                            <Route path="/privacy-policy" element={<PrivacyPolicy />} />
                             <Route path="*" element={<NotFound />} />
                         </Routes>
                     </Layout>

@@ -74,6 +74,7 @@ const Footer: React.FC = () => {
               <li><Link to="/products">Produse</Link></li>
               <li><Link to="/events">Evenimente</Link></li>
               <li><Link to="/cart">Coș de cumpărături</Link></li>
+              <li><Link to="/privacy-policy" className="font-medium">Politica de Confidențialitate</Link></li>
             </ul>
           </div>
           
@@ -217,8 +218,8 @@ const Footer: React.FC = () => {
           "@context": "https://schema.org",
           "@type": "Organization",
           "name": "Lupul și Corbul",
-          "url": "https://example.com",
-          "logo": "https://example.com/images/LC.png",
+          "url": "https://lupulsicorbul.com",
+          "logo": "https://lupulsicorbul.com/images/LC.png",
           "sameAs": [
             "https://www.facebook.com/lupulsicorbul",
             "https://www.instagram.com/lupulsicorbul"
@@ -231,10 +232,10 @@ const Footer: React.FC = () => {
         {
           "@context": "https://schema.org",
           "@type": "WebSite",
-          "url": "https://example.com",
+          "url": "https://lupulsicorbul.com",
           "potentialAction": {
             "@type": "SearchAction",
-            "target": "https://example.com/search?q={search_term_string}",
+            "target": "https://lupulsicorbul.com/search?q={search_term_string}",
             "query-input": "required name=search_term_string"
           }
         }

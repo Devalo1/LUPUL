@@ -16,11 +16,15 @@ export const useEventParticipation = ({ eventId, userId, userName }: UseEventPar
   useEffect(() => {
     const checkParticipation = async () => {
       try {
+        console.log('Checking participation for event:', eventId, 'and user:', userId);
         const eventDoc = doc(db, 'events', eventId);
         const eventSnapshot = await getDoc(eventDoc);
         if (eventSnapshot.exists()) {
           const participants = eventSnapshot.data().participants || [];
+          console.log('Participants in event:', participants);
           setIsParticipating(participants.some((p: { userId: string }) => p.userId === userId));
+        } else {
+          console.warn('Event document does not exist:', eventId);
         }
       } catch (err) {
         console.error('Error checking participation:', err);
@@ -35,10 +39,12 @@ export const useEventParticipation = ({ eventId, userId, userName }: UseEventPar
     setLoading(true);
     setError(null);
     try {
+      console.log('Attempting to participate in event:', eventId, 'with user:', { userId, userName });
       const eventDoc = doc(db, 'events', eventId);
       await updateDoc(eventDoc, {
         participants: arrayUnion({ userId, name: userName, joinedAt: Timestamp.now() }),
       });
+      console.log('Successfully participated in event:', eventId);
       setIsParticipating(true);
     } catch (err) {
       console.error('Error participating in event:', err);
@@ -52,13 +58,15 @@ export const useEventParticipation = ({ eventId, userId, userName }: UseEventPar
     setLoading(true);
     setError(null);
     try {
+      console.log('Attempting to cancel participation in event:', eventId, 'for user:', { userId, userName });
       const eventDoc = doc(db, 'events', eventId);
       await updateDoc(eventDoc, {
         participants: arrayRemove({ userId, name: userName }),
       });
+      console.log('Successfully canceled participation in event:', eventId);
       setIsParticipating(false);
     } catch (err) {
-      console.error('Error canceling participation:', err);
+      console.error('Error canceling participation in event:', err);
       setError('A apărut o eroare la anularea participării.');
     } finally {
       setLoading(false);

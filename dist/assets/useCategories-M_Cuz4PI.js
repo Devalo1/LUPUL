@@ -1,0 +1,1 @@
+import{b as r}from"./vendor-BbhD7xee.js";import{c as o}from"./index-wFNFqtXh.js";const e=()=>{const e=r.useContext(o);if(void 0===e)throw new Error("useCategories must be used within a CategoryProvider");return e};export{e as u};

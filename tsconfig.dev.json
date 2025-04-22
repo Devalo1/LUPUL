@@ -1,0 +1,15 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "noEmit": true,
+    "skipLibCheck": true,
+    "strict": false,
+    "noUnusedLocals": false,
+    "noUnusedParameters": false,
+    "noImplicitAny": false,
+    "allowJs": true,
+    "isolatedModules": false,
+    "noFallthroughCasesInSwitch": false
+  },
+  "include": ["src"]
+}

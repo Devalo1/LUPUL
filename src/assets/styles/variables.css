@@ -1,0 +1,59 @@
+/* Variables CSS pentru gestionarea centralizată a culorilor, z-index-urilor și altor valori constante */
+
+:root {
+  /* Z-Index Layers - Straturile de adâncime pentru elemente suprapuse */
+  --z-negative: -1;        /* Pentru elemente care trebuie să fie în spatele conținutului */
+  --z-base: 0;             /* Layer de bază pentru majoritatea elementelor */
+  --z-content: 10;         /* Conținut standard care necesită un z-index peste elemente de bază */
+  --z-dropdown: 50;        /* Dropdown-uri și liste care apar peste conținut */
+  --z-sticky: 80;          /* Elemente sticky sau fixate (de ex. header-uri) */
+  --z-nav: 100;            /* Bara de navigație */
+  --z-overlay: 150;        /* Overlayuri semi-transparente peste conținut */
+  --z-modal: 200;          /* Ferestre modale peste overlay */
+  --z-tooltip: 300;        /* Tooltips peste orice alt conținut */
+  --z-toast: 400;          /* Notificări toast care apar deasupra oricărui alt element */
+  --z-max: 9999;           /* Valoare maximă pentru cazuri extreme */
+  
+  /* Color Palette - Paleta de culori */
+  --color-primary: #3b82f6;           /* Albastru - culoarea principală */
+  --color-primary-dark: #2563eb;      /* Albastru închis pentru hover */
+  --color-primary-light: #60a5fa;     /* Albastru deschis pentru accente */
+  --color-secondary: #10b981;         /* Verde - culoarea secundară */
+  --color-secondary-dark: #059669;    /* Verde închis pentru hover */
+  --color-secondary-light: #34d399;   /* Verde deschis pentru accente */
+  --color-neutral: #6b7280;           /* Gri neutru */
+  --color-neutral-dark: #4b5563;      /* Gri închis */
+  --color-neutral-light: #9ca3af;     /* Gri deschis */
+  --color-background: #f9fafb;        /* Fundal site */
+  --color-surface: #ffffff;           /* Suprafață componente */
+  --color-error: #ef4444;             /* Roșu - erori */
+  --color-success: #10b981;           /* Verde - succes */
+  --color-warning: #f59e0b;           /* Galben - avertismente */
+  --color-info: #3b82f6;              /* Albastru - informații */
+  
+  /* Spacing - Spațiere */
+  --spacing-xs: 0.25rem;    /* 4px */
+  --spacing-sm: 0.5rem;     /* 8px */
+  --spacing-md: 1rem;       /* 16px */
+  --spacing-lg: 1.5rem;     /* 24px */
+  --spacing-xl: 2rem;       /* 32px */
+  --spacing-xxl: 3rem;      /* 48px */
+  
+  /* Border Radius - Rotunjimi colțuri */
+  --border-radius-sm: 0.125rem;   /* 2px */
+  --border-radius-md: 0.25rem;    /* 4px */
+  --border-radius-lg: 0.5rem;     /* 8px */
+  --border-radius-xl: 1rem;       /* 16px */
+  --border-radius-full: 9999px;   /* Complet rotund */
+  
+  /* Transitions - Tranziții */
+  --transition-fast: 150ms;
+  --transition-normal: 300ms;
+  --transition-slow: 500ms;
+  
+  /* Shadows - Umbre */
+  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+}

@@ -1,0 +1,13 @@
+jest.config.ts
+module.exports = {
+    preset: 'ts-jest',
+    testEnvironment: 'node',
+    testMatch: ['**/src/**/*.test.ts'],
+};
+
+src/hello.test.ts
+import { sum } from './sum'; // Assuming you have a sum function to test
+
+test('hello world!', () => {
+    expect(sum(1, 1)).toBe(2);
+});

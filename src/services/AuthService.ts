@@ -1,0 +1,322 @@
+import { 
+  auth, 
+  firestore, 
+  ensureAdminRights, 
+  ADMIN_EMAILS
+} from "../firebase";
+import { 
+  signInWithEmailAndPassword, 
+  createUserWithEmailAndPassword, 
+  sendPasswordResetEmail,
+  signOut,
+  UserCredential,
+  GoogleAuthProvider,
+  signInWithPopup
+} from "firebase/auth";
+import { doc, setDoc, getDoc, collection, query, where, getDocs, addDoc } from "firebase/firestore";
+import logger from "../utils/logger";
+import { handleUnknownError } from "../utils/errorTypes";
+
+// Create service-specific logger
+const authLogger = logger.createLogger("AuthService");
+
+// Define interface for Google login result to replace 'any'
+interface GoogleAuthResult {
+  success: boolean;
+  user?: import("firebase/auth").User;
+  isAdmin?: boolean;
+  redirectPath?: string;
+  error?: string;
+}
+
+export class AuthService {
+  /**
+   * Autentifică un utilizator cu email și parolă
+   */
+  async login(email: string, password: string): Promise<UserCredential> {
+    try {
+      const result = await signInWithEmailAndPassword(auth, email, password);
+      
+      // Verificăm dacă este contul special de admin
+      if (email === "dani_popa21@yahoo.ro" || ADMIN_EMAILS.includes(email)) {
+        await ensureAdminRights(result.user.uid, email);
+      } else {
+        // Pentru utilizatori non-admin, actualizăm doar timestamp-ul de login
+        const userRef = doc(firestore, "users", result.user.uid);
+        
+        // Verificăm dacă utilizatorul există deja în Firestore
+        const userDoc = await getDoc(userRef);
+        
+        if (userDoc.exists()) {
+          // Actualizăm doar timestamp-ul de login pentru utilizatorii existenți
+          await setDoc(userRef, {
+            lastLogin: new Date(),
+            updatedAt: new Date()
+          }, { merge: true });
+        } else {
+          // Creăm un document nou pentru utilizatorii care nu există încă în Firestore
+          await setDoc(userRef, {
+            email: result.user.email,
+            displayName: result.user.displayName || email.split("@")[0],
+            photoURL: result.user.photoURL,
+            createdAt: new Date(),
+            lastLogin: new Date(),
+            updatedAt: new Date(),
+            isAdmin: false,
+            role: "user"
+          });
+        }
+      }
+      
+      return result;
+    } catch (error) {
+      authLogger.error("Eroare la autentificare:", error);
+      throw error;
+    }
+  }
+  
+  /**
+   * Înregistrează un utilizator nou cu email și parolă
+   */
+  async signUp(email: string, password: string): Promise<UserCredential> {
+    try {
+      const result = await createUserWithEmailAndPassword(auth, email, password);
+      
+      // Creăm un document pentru utilizator în Firestore
+      await setDoc(doc(firestore, "users", result.user.uid), {
+        email: result.user.email,
+        displayName: result.user.displayName || email.split("@")[0],
+        photoURL: result.user.photoURL,
+        createdAt: new Date(),
+        lastLogin: new Date(),
+        updatedAt: new Date(),
+        isAdmin: false,
+        role: "user"
+      });
+      
+      return result;
+    } catch (error) {
+      authLogger.error("Eroare la înregistrare:", error);
+      throw error;
+    }
+  }
+  
+  /**
+   * Trimite un email pentru resetarea parolei
+   */
+  async resetPassword(email: string): Promise<void> {
+    try {
+      authLogger.info(`Încercare de trimitere email de resetare parolă către: ${email}`);
+      
+      // Adăugăm opțiuni suplimentare pentru configurarea corectă a emailului de resetare
+      await sendPasswordResetEmail(auth, email, {
+        url: `${window.location.origin}/login`, // URL-ul de redirecționare după resetarea parolei
+        handleCodeInApp: false // Setăm la false pentru a gestiona pe pagina de Firebase
+      });
+      
+      authLogger.info(`Email de resetare parolă trimis cu succes către: ${email}`);
+    } catch (error: unknown) {
+      const err = handleUnknownError(error);
+      authLogger.error("Eroare detaliată la trimiterea emailului de resetare:", err);
+      
+      // Gestionăm mai specific erorile pentru a oferi un feedback mai bun
+      if (err.code === "auth/user-not-found") {
+        throw new Error("Nu există niciun cont asociat cu acest email.");
+      } else if (err.code === "auth/invalid-email") {
+        throw new Error("Adresa de email nu este validă.");
+      } else if (err.code === "auth/too-many-requests") {
+        throw new Error("Prea multe încercări. Vă rugăm să încercați din nou mai târziu.");
+      } else {
+        throw new Error(`Eroare la trimiterea emailului de resetare: ${err.message || "Eroare necunoscută"}`);
+      }
+    }
+  }
+  
+  /**
+   * Deconectează utilizatorul curent
+   */
+  async logout(): Promise<void> {
+    try {
+      await signOut(auth);
+    } catch (error) {
+      authLogger.error("Eroare la deconectare:", error);
+      throw error;
+    }
+  }
+  
+  /**
+   * Autentificare cu Google folosind POPUP în loc de redirect
+   * pentru a evita problemele de redirecționare și sesiune
+   */
+  async loginWithGoogle(redirectPath?: string): Promise<GoogleAuthResult> {
+    try {
+      authLogger.info("Începe procesul de autentificare cu Google Popup, redirectPath:", redirectPath);
+      
+      // Configurăm provider-ul pentru Google
+      const provider = new GoogleAuthProvider();
+      provider.addScope("profile");
+      provider.addScope("email");
+      
+      // Setăm parametri pentru a minimiza problemele Cross-Origin-Opener-Policy
+      provider.setCustomParameters({
+        prompt: "select_account",
+        // Următorii parametri ajută să evităm problemele COOP
+        "disableWebSignIn": "true",
+        "login_hint": ""
+      });
+      
+      try {
+        // Folosim popup în loc de redirect
+        const result = await signInWithPopup(auth, provider);
+        
+        if (result && result.user) {
+          authLogger.info("Autentificare Google reușită pentru:", result.user.email);
+          
+          // Verificăm dacă utilizatorul este admin - folosim lista hardcodată pentru a evita erori
+          let isAdmin = false;
+          if (result.user.email) {
+            isAdmin = result.user.email === "dani_popa21@yahoo.ro" || ADMIN_EMAILS.includes(result.user.email);
+          }
+          
+          // Actualizăm sau creăm un document pentru utilizator în Firestore
+          try {
+            const userRef = doc(firestore, "users", result.user.uid);
+            
+            // Verificăm dacă utilizatorul există deja
+            const userDoc = await getDoc(userRef);
+            
+            const userData = {
+              email: result.user.email,
+              displayName: result.user.displayName || "Utilizator",
+              photoURL: result.user.photoURL,
+              lastLogin: new Date(),
+              updatedAt: new Date(),
+              isAdmin: isAdmin,
+              role: isAdmin ? "admin" : "user"
+            };
+            
+            // Dacă utilizatorul există deja, păstrăm data creării
+            if (userDoc.exists()) {
+              const existingData = userDoc.data();
+              await setDoc(userRef, {
+                ...userData,
+                createdAt: existingData.createdAt?.toDate() || new Date()
+              }, { merge: true });
+            } else {
+              // Utilizator nou
+              await setDoc(userRef, {
+                ...userData,
+                createdAt: new Date()
+              });
+            }
+            
+            authLogger.info("Date utilizator salvate cu succes în Firestore");
+          } catch (dbError) {
+            authLogger.error("Eroare la salvarea datelor utilizatorului:", dbError);
+            // Continuăm procesul de autentificare chiar dacă salvarea datelor eșuează
+          }
+          
+          // Redirecționăm utilizatorul către pagina corectă
+          const targetPath = isAdmin ? "/admin/dashboard" : (redirectPath || "/user-home");
+          
+          // Returnăm rezultatul pentru a permite redirecționarea în componenta care a apelat această metodă
+          return { 
+            success: true, 
+            user: result.user,
+            isAdmin,
+            redirectPath: targetPath
+          };
+        }
+        
+        return { success: false, error: "Autentificare eșuată" };
+      } catch (popupError: unknown) {
+        // Dacă popup-ul eșuează, înregistrăm eroarea și încercăm o abordare alternativă
+        const err = handleUnknownError(popupError);
+        authLogger.error("Eroare la popup Google, încercăm altă metodă:", err);
+        
+        return {
+          success: false,
+          error: "Autentificarea cu Google a eșuat. Vă rugăm încercați din nou sau folosiți email/parolă."
+        };
+      }
+    } catch (error: unknown) {
+      const err = handleUnknownError(error);
+      authLogger.error("Eroare la autentificarea cu Google:", err);
+      
+      return {
+        success: false,
+        error: err.message || "A apărut o eroare la autentificarea cu Google"
+      };
+    }
+  }
+}
+
+/**
+ * Verifică și repară rolurile de admin pentru utilizatorii care ar trebui să fie admin
+ * dar nu au setarea corectă în baza de date.
+ */
+export const verificaSiRepararaRoluriAdmin = async (): Promise<void> => {
+  try {
+    authLogger.info("Verificare și reparare roluri admin");
+    
+    // Verificăm dacă utilizatorii din lista ADMIN_EMAILS au drepturi de admin
+    for (const email of ADMIN_EMAILS) {
+      try {
+        // Căutăm utilizatorul în Firestore după email
+        const usersCollection = collection(firestore, "users");
+        const q = query(usersCollection, where("email", "==", email));
+        const userSnapshot = await getDocs(q);
+        
+        if (userSnapshot.empty) {
+          authLogger.info(`Utilizatorul admin ${email} nu există încă în Firestore, se va configura la prima autentificare`);
+          continue;
+        }
+        
+        // Actualizăm fiecare utilizator găsit
+        for (const doc of userSnapshot.docs) {
+          const userData = doc.data();
+          const userId = doc.id;
+          
+          // Verificăm dacă utilizatorul nu are deja rol de admin
+          if (!userData.isAdmin && userData.role !== "admin") {
+            authLogger.info(`Reparăm rolul pentru utilizatorul ${email} (${userId})`);
+            
+            await setDoc(doc.ref, {
+              isAdmin: true,
+              role: "admin",
+              updatedAt: new Date()
+            }, { merge: true });
+            
+            // Verificăm și în colecția admins
+            const adminsCollection = collection(firestore, "admins");
+            const adminQuery = query(adminsCollection, where("email", "==", email));
+            const adminSnapshot = await getDocs(adminQuery);
+            
+            if (adminSnapshot.empty) {
+              await addDoc(adminsCollection, {
+                userId,
+                email,
+                createdAt: new Date()
+              });
+              authLogger.info(`Utilizatorul ${email} adăugat în colecția admins`);
+            }
+          } else {
+            authLogger.info(`Utilizatorul ${email} are deja rolul de admin configurat corect`);
+          }
+        }
+      } catch (err) {
+        authLogger.error(`Eroare la verificarea/repararea rolului pentru ${email}:`, err);
+        // Continuăm cu următorul email din listă
+      }
+    }
+    
+    authLogger.info("Verificare și reparare roluri admin finalizată");
+  } catch (error) {
+    authLogger.error("Eroare generală la verificarea/repararea rolurilor admin:", error);
+    // Nu aruncăm eroarea mai departe pentru a nu întrerupe fluxul aplicației
+  }
+};
+
+// Exportăm o instanță a serviciului pentru a fi folosită în aplicație
+const authService = new AuthService();
+export default authService;

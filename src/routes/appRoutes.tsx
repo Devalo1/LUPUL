@@ -27,6 +27,7 @@ const UserHome = lazyLoad(() => import("../pages/UserHome"));
 const Profile = lazyLoad(() => import("../pages/Profile"));
 const Checkout = lazyLoad(() => import("../pages/Checkout"));
 const CheckoutSuccess = lazyLoad(() => import("../pages/CheckoutSuccess"));
+const Appointments = lazyLoad(() => import("../pages/Appointments"));
 
 // Import lazy pentru paginile administrative
 const AdminPanel = lazyLoad(() => import("../pages/AdminPanel"));
@@ -36,6 +37,14 @@ const AdminCategories = lazyLoad(() => import("../pages/AdminCategories"));
 const AddProduct = lazyLoad(() => import("../pages/AddProduct"));
 const EditProduct = lazyLoad(() => import("../pages/EditProduct"));
 const AddEvent = lazyLoad(() => import("../pages/AddEvent"));
+const AdminAppointments = lazyLoad(() => import("../pages/AdminAppointments"));
+// Import pentru noile pagini admin create
+const AdminEvents = lazyLoad(() => import("../pages/AdminEvents"));
+const AdminArticles = lazyLoad(() => import("../pages/AdminArticles"));
+const ArticleEdit = lazyLoad(() => import("../pages/ArticleEdit")); // Adăugăm componenta ArticleEdit
+const AdminSettings = lazyLoad(() => import("../pages/AdminSettings"));
+// Import pentru pagina de administrare comenzi
+const AdminOrders = lazyLoad(() => import("../pages/AdminOrders"));
 
 /**
  * Componenta principală pentru definirea rutelor aplicației
@@ -101,7 +110,24 @@ const AppRoutes: React.FC = () => {
         </ProtectedRoute>
       } />
       
+      {/* Rută pentru programări */}
+      <Route path="/appointments" element={
+        <ProtectedRoute>
+          <LazyComponent component={<Appointments />} />
+        </ProtectedRoute>
+      } />
+      <Route path="/programari" element={
+        <ProtectedRoute>
+          <LazyComponent component={<Appointments />} />
+        </ProtectedRoute>
+      } />
+      
       {/* Rute administrative (necesită rol de admin) */}
+      <Route path="/admin" element={
+        <AdminRoute>
+          <LazyComponent component={<AdminPanel />} />
+        </AdminRoute>
+      } />
       <Route path="/admin/dashboard" element={
         <AdminRoute>
           <LazyComponent component={<AdminPanel />} />
@@ -137,12 +163,6 @@ const AppRoutes: React.FC = () => {
           <LazyComponent component={<AddEvent />} />
         </AdminRoute>
       } />
-      {/* Rută pentru admin dashboard */}
-      <Route path="/admin" element={
-        <AdminRoute>
-          <LazyComponent component={<AdminPanel />} />
-        </AdminRoute>
-      } />
       
       {/* Rută alternativă pentru adăugarea produselor */}
       <Route path="/admin/add-product" element={
@@ -154,7 +174,7 @@ const AppRoutes: React.FC = () => {
       {/* Rută pentru programări admin */}
       <Route path="/admin/appointments" element={
         <AdminRoute>
-          <LazyComponent component={<AdminPanel />} />
+          <LazyComponent component={<AdminAppointments />} />
         </AdminRoute>
       } />
       
@@ -162,6 +182,43 @@ const AppRoutes: React.FC = () => {
       <Route path="/admin/add-event" element={
         <AdminRoute>
           <LazyComponent component={<AddEvent />} />
+        </AdminRoute>
+      } />
+      
+      {/* Rută pentru comenzi admin */}
+      <Route path="/admin/orders" element={
+        <AdminRoute>
+          <LazyComponent component={<AdminOrders />} />
+        </AdminRoute>
+      } />
+      
+      {/* Rute pentru noile pagini admin create */}
+      <Route path="/admin/events" element={
+        <AdminRoute>
+          <LazyComponent component={<AdminEvents />} />
+        </AdminRoute>
+      } />
+      <Route path="/admin/articles" element={
+        <AdminRoute>
+          <LazyComponent component={<AdminArticles />} />
+        </AdminRoute>
+      } />
+      
+      {/* Adăugăm rutele pentru adăugarea și editarea articolelor */}
+      <Route path="/admin/articles/add" element={
+        <AdminRoute>
+          <LazyComponent component={<ArticleEdit />} />
+        </AdminRoute>
+      } />
+      <Route path="/admin/articles/edit/:id" element={
+        <AdminRoute>
+          <LazyComponent component={<ArticleEdit />} />
+        </AdminRoute>
+      } />
+      
+      <Route path="/admin/settings" element={
+        <AdminRoute>
+          <LazyComponent component={<AdminSettings />} />
         </AdminRoute>
       } />
       

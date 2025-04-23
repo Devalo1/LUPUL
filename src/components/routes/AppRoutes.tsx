@@ -4,6 +4,9 @@ import { Routes, Route, Navigate } from "react-router-dom";
 import ProtectedRoute from "./ProtectedRoute";
 import AdminRoute from "./AdminRoute";
 
+// Import rute admin centralizate
+import adminRoutes from "../../routes/adminRoutes";
+
 // Pagini publice
 import HomePage from "../../pages/HomePage";
 import AboutUs from "../../pages/AboutUs";
@@ -34,18 +37,6 @@ import CheckoutSuccess from "../../pages/CheckoutSuccess";
 import Orders from "../../pages/Orders";
 import Account from "../../pages/Account";
 import Appointments from "../../pages/Appointments";
-
-// Pagini admin
-import AdminPanel from "../../pages/AdminPanel";
-import Admin from "../../pages/Admin";
-import AdminUsers from "../../pages/AdminUsers";
-import AdminInventory from "../../pages/AdminInventory";
-import AdminCategories from "../../pages/AdminCategories";
-import AdminAppointments from "../../pages/AdminAppointments";
-import AddProduct from "../../pages/AddProduct";
-import EditProduct from "../../pages/EditProduct";
-import AddEvent from "../../pages/AddEvent";
-import MakeAdmin from "../../pages/MakeAdmin";
 
 const AppRoutes = () => {
   return (
@@ -80,17 +71,14 @@ const AppRoutes = () => {
       <Route path="/account" element={<ProtectedRoute><Account /></ProtectedRoute>} />
       <Route path="/appointments" element={<ProtectedRoute><Appointments /></ProtectedRoute>} />
       
-      {/* Rute admin */}
-      <Route path="/admin" element={<AdminRoute><AdminPanel /></AdminRoute>} />
-      <Route path="/admin/dashboard" element={<AdminRoute><Admin /></AdminRoute>} />
-      <Route path="/admin/users" element={<AdminRoute><AdminUsers /></AdminRoute>} />
-      <Route path="/admin/inventory" element={<AdminRoute><AdminInventory /></AdminRoute>} />
-      <Route path="/admin/categories" element={<AdminRoute><AdminCategories /></AdminRoute>} />
-      <Route path="/admin/appointments" element={<AdminRoute><AdminAppointments /></AdminRoute>} />
-      <Route path="/admin/add-product" element={<AdminRoute><AddProduct /></AdminRoute>} />
-      <Route path="/admin/edit-product/:id" element={<AdminRoute><EditProduct /></AdminRoute>} />
-      <Route path="/admin/add-event" element={<AdminRoute><AddEvent /></AdminRoute>} />
-      <Route path="/admin/make-admin" element={<AdminRoute><MakeAdmin /></AdminRoute>} />
+      {/* Rute admin - folosind configurația centralizată din adminRoutes.tsx */}
+      {adminRoutes.map((route) => (
+        <Route 
+          key={route.path} 
+          path={route.path} 
+          element={<AdminRoute>{route.element}</AdminRoute>} 
+        />
+      ))}
       
       {/* Redirecționări pentru compatibilitate */}
       <Route path="/admin/panel" element={<Navigate to="/admin" replace />} />

@@ -131,22 +131,22 @@ export const sendEventRegistrationEmail = async (data: EventRegistrationData) =>
     
     // Înregistrăm informațiile de participare în Firestore
     try {
-      const participationRef = doc(collection(firestore, "event_participations"));
-      await setDoc(participationRef, {
+      const eventRegistrationData = {
         eventId: data.eventId,
         eventTitle: data.eventTitle,
-        eventDate: data.eventDate,
-        eventLocation: data.eventLocation,
         userId: data.user.id,
         userEmail: data.user.email,
-        userDisplayName: data.user.displayName,
-        fullName: data.participant.fullName,
-        expectations: data.participant.expectations,
-        age: data.participant.age,
-        timestamp: new Date(),
-        status: "registered",
-        emailSent: false
-      });
+        name: data.participant.fullName,
+        email: data.user.email,
+        phone: "", // Nu avem această informație, dar o adăugăm pentru compatibilitate
+        additionalInfo: data.participant.expectations,
+        createdAt: new Date(),
+        status: "pending"
+      };
+      
+      // Adăugăm înregistrarea în colecția eventRegistrations pentru compatibilitate cu panoul admin
+      const registrationRef = doc(collection(firestore, "eventRegistrations"));
+      await setDoc(registrationRef, eventRegistrationData);
       
       logger.info("Datele de participare salvate în Firestore");
     } catch (firestoreError: unknown) {
@@ -156,38 +156,9 @@ export const sendEventRegistrationEmail = async (data: EventRegistrationData) =>
     
     // Folosim o funcție Cloud Functions pentru email
     const sendEmailFunction = httpsCallable(functions, "sendEventRegistrationEmail");
-    const result = await sendEmailFunction({ 
-      event: {
-        id: data.eventId,
-        title: data.eventTitle,
-        date: data.eventDate,
-        location: data.eventLocation
-      },
-      user: data.user,
-      participant: data.participant,
-      timestamp: new Date().toISOString()
-    });
+    const result = await sendEmailFunction(data);
     
     logger.debug("Rezultat funcție email:", result);
-    
-    // Actualizăm flag-ul pentru email trimis
-    if (data.eventId) {
-      try {
-        const participationsRef = collection(firestore, "event_participations");
-        const querySnapshot = await getDocs(query(
-          participationsRef, 
-          where("eventId", "==", data.eventId),
-          where("userId", "==", data.user.id)
-        ));
-        
-        if (!querySnapshot.empty) {
-          const docRef = doc(firestore, "event_participations", querySnapshot.docs[0].id);
-          await setDoc(docRef, { emailSent: true }, { merge: true });
-        }
-      } catch (err: unknown) {
-        logger.error("Eroare la actualizarea stării de trimitere a email-ului", err);
-      }
-    }
     
     return { success: true, data: result.data };
   } catch (error: unknown) {

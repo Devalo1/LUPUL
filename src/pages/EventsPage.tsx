@@ -6,6 +6,7 @@ import { motion } from "framer-motion";
 import { collection, getDocs, query, orderBy } from "firebase/firestore";
 import { db } from "../firebase";
 import { ErrorMessage } from "../components";
+import { useAuth } from "../contexts"; // Importăm contextul de autentificare
 
 // Define Event type
 interface Event {
@@ -82,12 +83,21 @@ const EventsPage: React.FC = () => {
     return (saved as "all" | "upcoming" | "past") || "all";
   };
 
+  const { currentUser } = useAuth(); // Obținem utilizatorul curent din contextul de autentificare
   const [filter, setFilter] = useState<"all" | "upcoming" | "past">(getSavedFilter);
   const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
   const [events, setEvents] = useState<Event[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isMobile, setIsMobile] = useState(false);
+
+  // Verifică dacă utilizatorul este înregistrat la un eveniment
+  const isUserRegistered = (event: Event): boolean => {
+    if (!currentUser || !event.registeredUsers) {
+      return false;
+    }
+    return event.registeredUsers.includes(currentUser.uid);
+  };
 
   useEffect(() => {
     localStorage.setItem("eventsFilter", filter);
@@ -301,9 +311,17 @@ const EventsPage: React.FC = () => {
                     <Link
                       to={`/events/${event.id}`}
                       className={`px-4 py-2 rounded-md transition-colors text-sm 
-                        ${isEventPast(event.date) ? "bg-gray-600 hover:bg-gray-700 text-white" : "bg-blue-600 hover:bg-blue-700 text-white"}`}
+                        ${isEventPast(event.date) 
+                          ? "bg-gray-600 hover:bg-gray-700 text-white" 
+                          : isUserRegistered(event)
+                            ? "bg-green-600 hover:bg-green-700 text-white" 
+                            : "bg-blue-600 hover:bg-blue-700 text-white"}`}
                     >
-                      {isEventPast(event.date) ? "Vezi detalii" : "Înscrie-te acum"}
+                      {isEventPast(event.date) 
+                        ? "Vezi detalii" 
+                        : isUserRegistered(event)
+                          ? "Ești înscris"
+                          : "Înscrie-te acum"}
                     </Link>
                   </div>
                 </div>

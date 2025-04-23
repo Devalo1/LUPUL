@@ -376,8 +376,11 @@ export const sendOrderEmail = functions.https.onRequest((req, res) => {
 
 // Funcție pentru trimiterea notificărilor de înscriere la evenimente
 export const sendEventRegistrationEmail = functions.https.onRequest((req, res) => {
-  // Aplicăm middleware-ul CORS
   return corsMiddleware(req, res, async () => {
+    // Check if we have data from a callable function or direct HTTP request
+    const requestData = req.body.data || req.body;
+    const { eventId, eventTitle, eventDate, eventLocation, participantCount, user, participant } = requestData;
+
     console.log('Event Registration function invoked with method:', req.method);
     console.log('Headers:', JSON.stringify(req.headers));
     
@@ -396,13 +399,7 @@ export const sendEventRegistrationEmail = functions.https.onRequest((req, res) =
       return res.status(405).send("Method Not Allowed");
     }
 
-    // Extrage datele - fie direct, fie din obiectul data (cum este trimis de callable functions)
-    const requestData = req.body.data || req.body;
-    console.log('Extracted request data:', requestData);
-
     // Verificăm câmpurile obligatorii
-    const { eventId, eventTitle, eventDate, eventLocation, participantCount, user, participant } = requestData;
-
     if (!eventId || !eventTitle || !user) {
       console.error('Missing fields in request data');
       console.error('eventId:', eventId);

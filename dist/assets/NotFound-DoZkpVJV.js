@@ -1,1 +1,0 @@
-import{j as e}from"./index-wFNFqtXh.js";import"./vendor-BbhD7xee.js";import"./firebase-Bc5mL6iy.js";const s=()=>e.jsxs("div",{className:"page-container",children:[e.jsx("h1",{className:"section-title",children:"404 - Page Not Found"}),e.jsx("p",{className:"section-subtitle",children:"The page you are looking for does not exist."})]});export{s as default};

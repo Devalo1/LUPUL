@@ -73,6 +73,7 @@ const HomePage: React.FC = () => {
           initial="hidden"
           animate="visible"
           variants={fadeIn}
+          style={{ paddingTop: "60px" }} // Add padding to prevent content from being hidden behind navbar
         >
           <div className="brand-logo">
             <img src="/images/LC.png" alt="Lupul și Corbul Logo" className="logo-image" />
@@ -253,30 +254,12 @@ const HomePage: React.FC = () => {
         </div>
       </section>
 
-      {/* Enhanced Footer */}
+      {/* Enhanced Footer - Simplified to avoid duplication */}
       <footer className="homepage-footer">
-        <div className="footer-content">
-          <div className="footer-logo">
-            <h3>Lupul și Corbul</h3>
-            <p>Empatie · Conexiune · Echilibru</p>
-          </div>
-          
-          <div className="footer-links">
-            <a href="/about">Despre noi</a>
-            <a href="/products">Produse</a>
-            <a href="/contact">Contact</a>
-            <a href="/terms">Termeni și condiții</a>
-          </div>
-          
-          <div className="footer-social">
-            <a href="#" aria-label="Facebook"><i className="fab fa-facebook-f"></i></a>
-            <a href="#" aria-label="Instagram"><i className="fab fa-instagram"></i></a>
-            <a href="#" aria-label="Twitter"><i className="fab fa-twitter"></i></a>
-          </div>
-        </div>
-        
-        <div className="footer-bottom">
-          <p>Lupul și Corbul © {new Date().getFullYear()}. Toate drepturile rezervate.</p>
+        <div className="footer-social">
+          <a href="#" aria-label="Facebook"><i className="fab fa-facebook-f"></i></a>
+          <a href="#" aria-label="Instagram"><i className="fab fa-instagram"></i></a>
+          <a href="#" aria-label="Twitter"><i className="fab fa-twitter"></i></a>
         </div>
       </footer>
     </div>

@@ -31,6 +31,7 @@ interface EventData {
   createdBy?: string;
   updatedAt?: Timestamp;
   updatedBy?: string;
+  registeredUsers?: string[];
 }
 
 const EventForm: React.FC<EventFormProps> = ({ onEventAdded, onCancel, editEventId }) => {
@@ -218,14 +219,27 @@ const EventForm: React.FC<EventFormProps> = ({ onEventAdded, onCancel, editEvent
       };
       
       if (editEventId) {
-        // Actualizăm evenimentul existent
+        // Verificăm dacă există înregistrări pentru acest eveniment înainte de actualizare
         const eventRef = doc(db, "events", editEventId);
+        const eventDoc = await getDoc(eventRef);
+        
+        if (eventDoc.exists()) {
+          const currentEventData = eventDoc.data();
+          
+          // Păstrăm lista de participanți dacă există
+          if (currentEventData.registeredUsers && !eventPayload.registeredUsers) {
+            eventPayload.registeredUsers = currentEventData.registeredUsers;
+          }
+        }
+        
+        // Actualizăm evenimentul existent
         await updateDoc(eventRef, eventPayload);
         console.log("Eveniment actualizat cu succes:", editEventId);
       } else {
         // Adăugăm un eveniment nou
         eventPayload.createdAt = Timestamp.now();
         eventPayload.createdBy = currentUser?.uid || "unknown";
+        eventPayload.registeredUsers = eventPayload.registeredUsers || []; // Inițializăm array-ul gol pentru participanți
         
         const docRef = await addDoc(collection(db, "events"), eventPayload);
         console.log("Eveniment adăugat cu succes:", docRef.id);

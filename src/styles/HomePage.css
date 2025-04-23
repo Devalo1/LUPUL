@@ -14,6 +14,7 @@ html, body {
   flex-direction: column;
   overflow-x: hidden;
   touch-action: pan-y; /* Permite doar scrollul vertical, nu și gesturile laterale */
+  margin-top: 60px; /* Adjust this value based on your navbar height */
 }
 
 /* Hero Section */
@@ -26,6 +27,7 @@ html, body {
   text-align: center;
   padding: 1rem;
   overflow: hidden;
+  padding-top: 80px; /* Adjust this value based on your navbar height */
 }
 
 .background-parallax {
@@ -557,4 +559,15 @@ html, body {
     grid-template-columns: 1fr;
     text-align: center;
   }
+}
+
+/* Add this to your existing CSS */
+.page-header, 
+.section-header {
+  padding-top: 80px; /* Adjust this value based on your navbar height */
+}
+
+main, 
+.page-content {
+  margin-top: 60px; /* Adjust this value based on your navbar height */
 }

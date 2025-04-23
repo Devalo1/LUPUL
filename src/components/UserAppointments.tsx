@@ -201,7 +201,7 @@ const UserAppointments: React.FC = () => {
         <div className="bg-gray-50 rounded-lg p-6 text-center">
           <p className="text-gray-600">Nu aveți programări active.</p>
           <button
-            onClick={() => window.location.href = "/programari"}
+            onClick={() => window.location.href = "/appointments"}
             className="mt-3 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
           >
             Faceți o programare

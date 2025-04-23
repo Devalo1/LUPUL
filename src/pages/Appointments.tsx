@@ -1,6 +1,6 @@
-import React, { useState } from "react";
-import { useAuth } from "../contexts";
-import { addDoc, collection, Timestamp } from "firebase/firestore";
+import React, { useState, useEffect } from "react";
+import { useAuth } from "../contexts/AuthContext";
+import { addDoc, collection, Timestamp, getDocs } from "firebase/firestore";
 import { db } from "../firebase";
 import UserAppointments from "../components/UserAppointments";
 
@@ -24,65 +24,85 @@ interface Specialist {
   role: string;
   imageUrl: string;
   description: string;
+  schedule?: {
+    dayOfWeek: number;
+    startTime: string;
+    endTime: string;
+    available: boolean;
+  }[];
+  email?: string;
+  phone?: string;
 }
 
 const Appointments: React.FC = () => {
-  const { currentUser } = useAuth(); // Ensure currentUser is defined in AuthContextType
+  const { currentUser } = useAuth();
   const [step, setStep] = useState(1);
   const [selectedSpecialist, setSelectedSpecialist] = useState<string | null>(null);
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
   const [selectedTime, setSelectedTime] = useState<string | null>(null);
   const [appointmentType, setAppointmentType] = useState<string>("individual");
   const [appointmentNote, setAppointmentNote] = useState<string>("");
+  const [loading, setLoading] = useState<boolean>(false);
+  const [error, setError] = useState<string | null>(null);
+  const [specialists, setSpecialists] = useState<Specialist[]>([]);
 
-  // Simulare specialiști
-  const specialists: Specialist[] = [
-    {
-      id: "1",
-      name: "Dr. Ana Popescu",
-      role: "Psihoterapeut",
-      imageUrl: "https://images.unsplash.com/photo-1559839734-2b71ea197ec2?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
-      description: "Specializată în terapie cognitiv-comportamentală cu peste 10 ani de experiență",
-    },
-    {
-      id: "2",
-      name: "Dr. Mihai Ionescu",
-      role: "Psihoterapeut",
-      imageUrl: "https://images.unsplash.com/photo-1553867745-6e038d085e86?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
-      description: "Expert în abordări centrate pe persoană și mindfulness pentru anxietate și depresie",
-    },
-    {
-      id: "3",
-      name: "Cristina Dumitrescu",
-      role: "Consilier",
-      imageUrl: "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
-      description: "Specializată în consiliere pentru dezvoltare personală și managementul stresului",
-    },
-  ];
+  // Fetch real specialists from Firestore
+  useEffect(() => {
+    const fetchSpecialists = async () => {
+      try {
+        setLoading(true);
+        const specialistsRef = collection(db, "specialists");
+        const snapshot = await getDocs(specialistsRef);
 
-  // Generează zile disponibile
+        if (snapshot.empty) {
+          console.log("No specialists found, using default data");
+          return;
+        }
+
+        const specialistsList = snapshot.docs.map(doc => ({
+          id: doc.id,
+          ...doc.data()
+        })) as Specialist[];
+
+        setSpecialists(specialistsList);
+      } catch (error) {
+        console.error("Error fetching specialists:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchSpecialists();
+  }, []);
+
+  // Generate available days based on specialist schedule
   const generateDays = (): Day[] => {
     const days: Day[] = [];
     const today = new Date();
 
+    const selectedSpecialistObj = specialists.find(s => s.id === selectedSpecialist);
+    const specialistSchedule = selectedSpecialistObj?.schedule || [];
+
     for (let i = 1; i <= 14; i++) {
       const date = new Date(today);
       date.setDate(today.getDate() + i);
+      const dayOfWeek = date.getDay();
 
-      // Nu include zilele de weekend
-      if (date.getDay() !== 0 && date.getDay() !== 6) {
+      const scheduleForDay = specialistSchedule.find(s => s.dayOfWeek === dayOfWeek && s.available);
+
+      if (scheduleForDay) {
         const formattedDate = date.toISOString().split("T")[0];
 
-        // Generează intervale orare disponibile
         const slots: TimeSlot[] = [];
-        for (let hour = 9; hour <= 16; hour++) {
-          if (hour !== 12) { // Exclude ora de prânz
-            slots.push({
-              id: `${formattedDate}-${hour}`,
-              time: `${hour}:00`,
-              available: Math.random() > 0.3 // Simulează disponibilitatea aleatorie
-            });
-          }
+        const startHour = parseInt(scheduleForDay.startTime.split(":")[0]);
+        const endHour = parseInt(scheduleForDay.endTime.split(":")[0]);
+
+        for (let hour = startHour; hour < endHour; hour++) {
+          slots.push({
+            id: `${formattedDate}-${hour}`,
+            time: `${hour.toString().padStart(2, "0")}:00`,
+            available: Math.random() > 0.3
+          });
         }
 
         days.push({
@@ -101,28 +121,29 @@ const Appointments: React.FC = () => {
     return days;
   };
 
-  const days = generateDays();
+  const days = selectedSpecialist ? generateDays() : [];
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setError(null);
+    setLoading(true);
 
     try {
-      // Determine the selected specialist name
+      if (!currentUser) {
+        setError("Trebuie să fiți autentificat pentru a face o programare.");
+        return;
+      }
+
       const specialist = specialists.find(s => s.id === selectedSpecialist);
-
-      // Convert the date string to a Date object for Firestore
       const dateObj = new Date(`${selectedDate}T${selectedTime}`);
-
-      // Calculate end time based on appointment type
       const endTimeDate = new Date(dateObj);
-      const duration = appointmentType === "individual" ? 60 : 
-                      appointmentType === "couple" ? 90 : 120; // in minutes
+      const duration = appointmentType === "individual" ? 60 :
+        appointmentType === "couple" ? 90 : 120;
       endTimeDate.setMinutes(endTimeDate.getMinutes() + duration);
 
       const endTime = `${endTimeDate.getHours().toString().padStart(2, "0")}:${
         endTimeDate.getMinutes().toString().padStart(2, "0")}`;
 
-      // Prepare the appointment data
       const appointmentData = {
         userId: currentUser?.uid,
         userName: currentUser?.displayName || "Utilizator",
@@ -130,26 +151,29 @@ const Appointments: React.FC = () => {
         specialistId: selectedSpecialist,
         specialistName: specialist?.name,
         serviceType: specialist?.role,
-        serviceName: appointmentType === "individual" ? "Ședință individuală" : 
-                   appointmentType === "couple" ? "Terapie de cuplu" : "Terapie de grup",
+        serviceName: appointmentType === "individual" ? "Ședință individuală" :
+          appointmentType === "couple" ? "Terapie de cuplu" : "Terapie de grup",
         date: Timestamp.fromDate(dateObj),
         startTime: selectedTime,
         endTime: endTime,
         status: "scheduled",
         notes: appointmentNote,
-        createdAt: Timestamp.now()
+        createdAt: Timestamp.now(),
+        userPhone: currentUser?.phoneNumber || "",
+        price: appointmentType === "individual" ? 150 :
+          appointmentType === "couple" ? 200 : 180
       };
 
-      // Save to Firestore
       await addDoc(collection(db, "appointments"), appointmentData);
 
       console.log("Programare salvată:", appointmentData);
 
-      // Show success message
       setStep(4);
     } catch (error) {
       console.error("Eroare la salvarea programării:", error);
-      alert("A apărut o eroare la salvarea programării. Vă rugăm încercați din nou.");
+      setError("A apărut o eroare la salvarea programării. Vă rugăm încercați din nou.");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -158,30 +182,34 @@ const Appointments: React.FC = () => {
       <div className="mb-8">
         <h2 className="text-xl font-bold mb-4">Alege un specialist</h2>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          {specialists.map((specialist) => (
-            <div
-              key={specialist.id}
-              className={`border rounded-lg p-4 cursor-pointer transition ${
-                selectedSpecialist === specialist.id 
-                  ? "border-blue-500 bg-blue-50" 
-                  : "border-gray-200 hover:border-blue-300"
-              }`}
-              onClick={() => setSelectedSpecialist(specialist.id)}
-            >
-              <div className="flex items-center mb-3">
-                <img 
-                  src={specialist.imageUrl} 
-                  alt={specialist.name}
-                  className="w-12 h-12 rounded-full object-cover mr-3"
-                />
-                <div>
-                  <h3 className="font-medium">{specialist.name}</h3>
-                  <p className="text-sm text-gray-600">{specialist.role}</p>
+          {specialists.length > 0 ? (
+            specialists.map((specialist) => (
+              <div
+                key={specialist.id}
+                className={`border rounded-lg p-4 cursor-pointer transition ${
+                  selectedSpecialist === specialist.id
+                    ? "border-blue-500 bg-blue-50"
+                    : "border-gray-200 hover:border-blue-300"
+                }`}
+                onClick={() => setSelectedSpecialist(specialist.id)}
+              >
+                <div className="flex items-center mb-3">
+                  <img
+                    src={specialist.imageUrl}
+                    alt={specialist.name}
+                    className="w-12 h-12 rounded-full object-cover mr-3"
+                  />
+                  <div>
+                    <h3 className="font-medium">{specialist.name}</h3>
+                    <p className="text-sm text-gray-600">{specialist.role}</p>
+                  </div>
                 </div>
+                <p className="text-sm text-gray-700">{specialist.description}</p>
               </div>
-              <p className="text-sm text-gray-700">{specialist.description}</p>
-            </div>
-          ))}
+            ))
+          ) : (
+            <p className="text-gray-600">Nu există specialiști disponibili.</p>
+          )}
         </div>
       </div>
     );
@@ -196,8 +224,8 @@ const Appointments: React.FC = () => {
             <button
               key={day.date}
               className={`border p-3 rounded-lg text-left transition ${
-                selectedDate === day.date 
-                  ? "border-blue-500 bg-blue-50" 
+                selectedDate === day.date
+                  ? "border-blue-500 bg-blue-50"
                   : "border-gray-200 hover:border-blue-300"
               }`}
               onClick={() => setSelectedDate(day.date)}
@@ -216,9 +244,9 @@ const Appointments: React.FC = () => {
 
   const renderTimeSelection = () => {
     const selectedDay = days.find(day => day.date === selectedDate);
-    
+
     if (!selectedDay) return null;
-    
+
     return (
       <div className="mb-8">
         <h2 className="text-xl font-bold mb-4">Alege o oră</h2>
@@ -228,8 +256,8 @@ const Appointments: React.FC = () => {
               key={slot.id}
               disabled={!slot.available}
               className={`p-3 rounded-lg text-center transition ${
-                !slot.available 
-                  ? "bg-gray-100 text-gray-400 cursor-not-allowed" 
+                !slot.available
+                  ? "bg-gray-100 text-gray-400 cursor-not-allowed"
                   : selectedTime === slot.time
                     ? "bg-blue-500 text-white"
                     : "border border-gray-200 hover:border-blue-300"
@@ -248,7 +276,7 @@ const Appointments: React.FC = () => {
     return (
       <div className="mb-8">
         <h2 className="text-xl font-bold mb-4">Detalii programare</h2>
-        
+
         <div className="space-y-4">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -331,6 +359,10 @@ const Appointments: React.FC = () => {
             <span className="font-medium w-32">Tip sesiune:</span>
             <span>{appointmentType === "individual" ? "Individuală" : appointmentType === "couple" ? "Cuplu" : "Grup"}</span>
           </div>
+          <div className="flex">
+            <span className="font-medium w-32">Preț:</span>
+            <span>{appointmentType === "individual" ? "150 RON" : appointmentType === "couple" ? "200 RON" : "180 RON"}</span>
+          </div>
           {appointmentNote && (
             <div className="flex">
               <span className="font-medium w-32">Observații:</span>
@@ -354,7 +386,6 @@ const Appointments: React.FC = () => {
         <p className="text-gray-600 mb-6">Am trimis detaliile programării pe email-ul tău.</p>
         <button
           onClick={() => {
-            // Reset la starea inițială
             setStep(1);
             setSelectedSpecialist(null);
             setSelectedDate(null);
@@ -431,14 +462,22 @@ const Appointments: React.FC = () => {
               </button>
               <button
                 onClick={handleSubmit}
-                disabled={!selectedTime}
+                disabled={!selectedTime || loading}
                 className={`px-6 py-2 rounded transition ${
-                  selectedTime
+                  selectedTime && !loading
                     ? "bg-blue-600 text-white hover:bg-blue-700"
                     : "bg-gray-200 text-gray-500 cursor-not-allowed"
                 }`}
               >
-                Confirmă programare
+                {loading ? (
+                  <span className="flex items-center">
+                    <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    Se procesează...
+                  </span>
+                ) : "Confirmă programare"}
               </button>
             </div>
           </>
@@ -456,16 +495,31 @@ const Appointments: React.FC = () => {
         <div className="bg-white rounded-xl shadow-lg p-8 mb-8">
           <h1 className="text-3xl font-bold mb-2 text-gray-800">Programează o Ședință</h1>
           <p className="text-gray-600 mb-8 border-b pb-4">Completează formularul pentru a programa o ședință cu unul din specialiștii noștri.</p>
-          
+
+          {error && (
+            <div className="bg-red-50 border-l-4 border-red-500 p-4 mb-6">
+              <div className="flex">
+                <div className="flex-shrink-0">
+                  <svg className="h-5 w-5 text-red-500" viewBox="0 0 20 20" fill="currentColor">
+                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+                  </svg>
+                </div>
+                <div className="ml-3">
+                  <p className="text-sm text-red-700">{error}</p>
+                </div>
+              </div>
+            </div>
+          )}
+
           <div className="bg-white rounded-lg">
             {renderStepContent()}
           </div>
         </div>
-        
+
         {currentUser && step !== 4 && (
           <UserAppointments />
         )}
-        
+
         <div className="mt-12 bg-white rounded-xl shadow-lg p-6">
           <h2 className="text-xl font-bold mb-4 text-gray-800">De ce să programezi o ședință cu noi</h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -478,7 +532,7 @@ const Appointments: React.FC = () => {
               <h3 className="font-bold mb-2 text-gray-800">Specialiști Certificați</h3>
               <p className="text-gray-600 text-sm">Echipa noastră este formată din specialiști cu experiență vastă în domeniul lor.</p>
             </div>
-            
+
             <div className="flex flex-col items-center text-center p-4 rounded-lg bg-green-50 shadow-sm">
               <div className="rounded-full bg-green-100 p-4 mb-4">
                 <svg className="w-8 h-8 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -488,7 +542,7 @@ const Appointments: React.FC = () => {
               <h3 className="font-bold mb-2 text-gray-800">Programare Rapidă</h3>
               <p className="text-gray-600 text-sm">Procesul de programare este simplu și rapid, cu confirmare instantă.</p>
             </div>
-            
+
             <div className="flex flex-col items-center text-center p-4 rounded-lg bg-purple-50 shadow-sm">
               <div className="rounded-full bg-purple-100 p-4 mb-4">
                 <svg className="w-8 h-8 text-purple-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -500,7 +554,7 @@ const Appointments: React.FC = () => {
             </div>
           </div>
         </div>
-        
+
         <div className="mt-8 text-center text-sm text-gray-500">
           <p>Ai nevoie de ajutor? Contactează-ne la <span className="text-blue-600">support@example.com</span> sau sună la <span className="text-blue-600">0712 345 678</span></p>
         </div>

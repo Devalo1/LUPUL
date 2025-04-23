@@ -42,5 +42,6 @@
     "esModuleInterop": true
   },
   "include": ["src"],
-  "references": [{ "path": "./tsconfig.node.json" }]
+  "references": [{ "path": "./tsconfig.node.json" }],
+  "supportedExtensions": [".ts", ".tsx", ".d.ts"]
 }

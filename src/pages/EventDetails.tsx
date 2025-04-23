@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
-import { doc, getDoc, updateDoc, arrayUnion, arrayRemove } from "firebase/firestore";
+import { doc, getDoc, updateDoc, arrayUnion, arrayRemove, collection, addDoc, query, where, getDocs, writeBatch } from "firebase/firestore";
 import { db, sendEventRegistrationEmail } from "../firebase";
 import { useAuth } from "../contexts";
 import ParticipantInfoForm from "../components/checkout/ParticipantInfoForm";
@@ -75,7 +75,12 @@ const EventDetails: React.FC = () => {
   }, [id, navigate]);
 
   // Verifică dacă utilizatorul curent este înscris la eveniment
-  const isUserRegistered = currentUser && event?.registeredUsers?.includes(currentUser.uid);
+  const isUserRegistered = (): boolean => {
+    if (!currentUser || !event?.registeredUsers) {
+      return false;
+    }
+    return event.registeredUsers.includes(currentUser.uid);
+  };
 
   const handleRegisterClick = () => {
     if (!currentUser) {
@@ -95,7 +100,7 @@ const EventDetails: React.FC = () => {
     }
 
     // Verifică dacă utilizatorul este deja înregistrat
-    if (event.registeredUsers?.includes(currentUser.uid)) {
+    if (isUserRegistered()) {
       setError("Ești deja înscris la acest eveniment.");
       return;
     }
@@ -126,7 +131,7 @@ const EventDetails: React.FC = () => {
       setError(null);
       const eventDoc = doc(db, "events", id!);
       
-      // Adaugă utilizatorul la lista de participanți
+      // Adaugă utilizatorul la lista de participanți în documentul evenimentului
       await updateDoc(eventDoc, {
         registeredUsers: arrayUnion(currentUser.uid),
       });
@@ -136,8 +141,31 @@ const EventDetails: React.FC = () => {
       const updatedEvent = updatedEventSnap.data();
       const participantCount = updatedEvent?.registeredUsers?.length || 1;
 
+      // Adaugă înregistrarea în colecția eventRegistrations pentru vizualizare în panoul admin
+      const eventRegistrationData = {
+        eventId: id,
+        eventTitle: event.title,
+        userId: currentUser.uid,
+        userEmail: currentUser.email || "",
+        name: participantDetails.fullName,
+        email: currentUser.email || "",
+        phone: "",  // Nu avem această informație, dar o adăugăm pentru compatibilitate
+        additionalInfo: participantDetails.expectations,
+        createdAt: new Date(),
+        status: "confirmed"
+      };
+
       try {
-        // Trimite notificare prin email
+        // Adaugă înregistrarea direct în colecția eventRegistrations
+        const registrationRef = collection(db, "eventRegistrations");
+        await addDoc(registrationRef, eventRegistrationData);
+        console.log("Înregistrare adăugată în colecția eventRegistrations");
+      } catch (registrationError) {
+        console.error("Eroare la înregistrare în colecția eventRegistrations:", registrationError);
+      }
+
+      try {
+        // Trimite notificare prin email folosind funcția din firebase.ts
         await sendEventRegistrationEmail({
           eventId: id,
           eventTitle: event.title,
@@ -149,7 +177,11 @@ const EventDetails: React.FC = () => {
             email: currentUser.email || "fara email",
             displayName: currentUser.displayName || "Utilizator nedenumit"
           },
-          participant: participantDetails // Include participant details
+          participant: {
+            fullName: participantDetails.fullName,
+            expectations: participantDetails.expectations || "",
+            age: participantDetails.age || ""
+          }
         });
       } catch (emailError) {
         console.error("Eroare la trimiterea emailului:", emailError);
@@ -159,14 +191,26 @@ const EventDetails: React.FC = () => {
       setSuccessMessage("Te-ai înscris cu succes la acest eveniment!");
       
       // Actualizează starea evenimentului în interfață
-      setEvent({
-        ...event,
-        registeredUsers: [...(event.registeredUsers || []), currentUser.uid]
+      setEvent(prevEvent => {
+        if (!prevEvent) return null;
+        
+        return {
+          ...prevEvent,
+          registeredUsers: [...(prevEvent.registeredUsers || []), currentUser.uid]
+        };
       });
       
     } catch (err) {
-      console.error("Eroare la înscrierea la eveniment:", err);
-      setError("A apărut o eroare la înscrierea la eveniment. Te rugăm să încerci din nou.");
+      console.error("Registration error:", err);
+      
+      // Provide more specific error messages based on error type
+      if (err instanceof Error) {
+        setError(`Eroare la înscrierea la eveniment: ${err.message}`);
+      } else if (typeof err === "string") {
+        setError(`Eroare la înscrierea la eveniment: ${err}`);
+      } else {
+        setError("A apărut o eroare la înscrierea la eveniment. Te rugăm să încerci din nou.");
+      }
     }
   };
 
@@ -194,6 +238,33 @@ const EventDetails: React.FC = () => {
       await updateDoc(eventDoc, {
         registeredUsers: arrayRemove(currentUser.uid)
       });
+
+      // Șterge înregistrarea din colecția eventRegistrations
+      try {
+        // Găsim înregistrarea asociată cu acest utilizator și eveniment
+        const registrationsRef = collection(db, "eventRegistrations");
+        const q = query(
+          registrationsRef,
+          where("eventId", "==", id),
+          where("userId", "==", currentUser.uid)
+        );
+        
+        const snapshot = await getDocs(q);
+        
+        if (!snapshot.empty) {
+          // Șterge toate înregistrările găsite (ar trebui să fie doar una)
+          const batch = writeBatch(db);
+          snapshot.docs.forEach(doc => {
+            batch.delete(doc.ref);
+          });
+          
+          await batch.commit();
+          console.log("Înregistrare ștearsă din colecția eventRegistrations");
+        }
+      } catch (deleteError) {
+        console.error("Eroare la ștergerea înregistrării din eventRegistrations:", deleteError);
+        // Continuă execuția - utilizatorul este eliminat din eveniment, dar înregistrarea poate rămâne în colecție
+      }
 
       // Actualizăm starea locală a evenimentului
       setEvent({
@@ -361,7 +432,7 @@ const EventDetails: React.FC = () => {
                     )}
                   </div>
 
-                  {isUserRegistered ? (
+                  {isUserRegistered() ? (
                     <button
                       onClick={handleCancelRegistration}
                       className="py-2 px-6 bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors"

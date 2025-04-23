@@ -9,6 +9,7 @@ const SideNavigation: React.FC = () => {
   const { isSideNavOpen, closeSideNav } = useNavigation();
   const { user, loading, logout } = useAuth();
   const [isShopExpanded, setIsShopExpanded] = useState(false);
+  const [isAdminExpanded, setIsAdminExpanded] = useState(false); // State pentru meniul admin
   const [isAdmin, setIsAdmin] = useState(false); // Add state to track admin status
   const navigate = useNavigate();
 
@@ -200,12 +201,72 @@ const SideNavigation: React.FC = () => {
                 <span>Contul Meu</span>
               </Link>
               
-              {/* Admin panel link for users with admin privileges */}
+              {/* Admin panel section with detailed submenu */}
               {isAdmin && (
-                <Link to="/admin" onClick={closeSideNav} className="nav-item">
-                  <span className="nav-icon">⚙️</span>
-                  <span>Admin Panel</span>
-                </Link>
+                <div className="nav-dropdown">
+                  <button 
+                    className="nav-item flex justify-between w-full admin-link"
+                    onClick={() => setIsAdminExpanded(!isAdminExpanded)}
+                  >
+                    <div className="flex items-center">
+                      <span className="nav-icon">⚙️</span>
+                      <span>Admin Panel</span>
+                    </div>
+                    <svg 
+                      className={`w-5 h-5 ml-1 transition-transform ${isAdminExpanded ? "rotate-180" : ""}`} 
+                      fill="none" 
+                      viewBox="0 0 24 24" 
+                      stroke="currentColor"
+                    >
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                    </svg>
+                  </button>
+                  
+                  {isAdminExpanded && (
+                    <div className="nav-submenu">
+                      <Link to="/admin" onClick={closeSideNav} className="nav-subitem">
+                        <span className="nav-subitem-icon">📊</span>
+                        <span>Dashboard</span>
+                      </Link>
+                      <Link to="/admin/add-product" onClick={closeSideNav} className="nav-subitem">
+                        <span className="nav-subitem-icon">📦</span>
+                        <span>Adaugă Produs</span>
+                      </Link>
+                      <Link to="/admin/categories" onClick={closeSideNav} className="nav-subitem">
+                        <span className="nav-subitem-icon">🏷️</span>
+                        <span>Categorii</span>
+                      </Link>
+                      <Link to="/admin/inventory" onClick={closeSideNav} className="nav-subitem">
+                        <span className="nav-subitem-icon">📋</span>
+                        <span>Stocuri</span>
+                      </Link>
+                      <Link to="/admin/add-event" onClick={closeSideNav} className="nav-subitem">
+                        <span className="nav-subitem-icon">🌟</span>
+                        <span>Adaugă Eveniment</span>
+                      </Link>
+                      <Link to="/admin/appointments" onClick={closeSideNav} className="nav-subitem">
+                        <span className="nav-subitem-icon">📆</span>
+                        <span>Programări</span>
+                      </Link>
+                      <Link to="/admin/users" onClick={closeSideNav} className="nav-subitem">
+                        <span className="nav-subitem-icon">👥</span>
+                        <span>Utilizatori</span>
+                      </Link>
+                      <Link to="/admin/orders" onClick={closeSideNav} className="nav-subitem">
+                        <span className="nav-subitem-icon">📝</span>
+                        <span>Comenzi</span>
+                      </Link>
+                      <Link to="/admin/articles" onClick={closeSideNav} className="nav-subitem">
+                        <span className="nav-subitem-icon">📄</span>
+                        <span>Articole</span>
+                      </Link>
+                      <Link to="/admin/settings" onClick={closeSideNav} className="nav-subitem">
+                        <span className="nav-subitem-icon">🔧</span>
+                        <span>Setări</span>
+                      </Link>
+                    </div>
+                  )}
+                </div>
               )}
               
               <button

@@ -1,4 +1,4 @@
-import { User } from "../types/auth";
+import { User as BaseUser } from "../types/auth";
 import { 
   collection, 
   query, 
@@ -44,6 +44,13 @@ export const AUTH_ERRORS = {
   "auth/weak-password": "Parola trebuie să aibă minim 6 caractere.",
   "auth/invalid-email": "Adresa de email nu este validă."
 };
+
+// Move constants, types, and helper functions here
+export const AUTH_STORAGE_KEY = "auth_user";
+
+export interface User extends BaseUser {
+  // Additional properties
+}
 
 /**
  * Verifică dacă un utilizator are rol de administrator

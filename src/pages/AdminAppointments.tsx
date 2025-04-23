@@ -8,10 +8,10 @@ import {
   orderBy, 
   deleteDoc,
   Timestamp,
-  addDoc
+  addDoc,
+  where
 } from "firebase/firestore";
 import { db } from "../firebase";
-import AdminNavigation from "../components/AdminNavigation";
 
 interface Appointment {
   id: string;
@@ -36,6 +36,22 @@ interface Service {
   category: string;
   duration: number; // în minute
   price: number;
+}
+
+interface Specialist {
+  id: string;
+  name: string;
+  role: string;
+  imageUrl: string;
+  description: string;
+  schedule?: {
+    dayOfWeek: number; // 0-6, where 0 is Sunday
+    startTime: string;
+    endTime: string;
+    available: boolean;
+  }[];
+  email?: string;
+  phone?: string;
 }
 
 // Componenta pentru inițializarea datelor
@@ -191,13 +207,30 @@ const InitializeData: React.FC = () => {
 
 const AdminAppointments: React.FC = () => {
   const [appointments, setAppointments] = useState<Appointment[]>([]);
-  // State users este definit dar neutilizat - l-am comentat pentru a elimina avertismentele
-  // const [users, setUsers] = useState<User[]>([]);
   const [services, setServices] = useState<Service[]>([]);
+  const [specialists, setSpecialists] = useState<Specialist[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedAppointment, setSelectedAppointment] = useState<Appointment | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [showSpecialistForm, setShowSpecialistForm] = useState(false);
+  const [editingSpecialist, setEditingSpecialist] = useState<Specialist | null>(null);
+  const [specialistData, setSpecialistData] = useState<Specialist>({
+    id: "",
+    name: "",
+    role: "",
+    imageUrl: "",
+    description: "",
+    email: "",
+    phone: "",
+    schedule: [
+      { dayOfWeek: 1, startTime: "09:00", endTime: "17:00", available: true },
+      { dayOfWeek: 2, startTime: "09:00", endTime: "17:00", available: true },
+      { dayOfWeek: 3, startTime: "09:00", endTime: "17:00", available: true },
+      { dayOfWeek: 4, startTime: "09:00", endTime: "17:00", available: true },
+      { dayOfWeek: 5, startTime: "09:00", endTime: "17:00", available: true },
+    ]
+  });
   
   // Filtre și sortare
   const [searchTerm, setSearchTerm] = useState("");
@@ -221,8 +254,8 @@ const AdminAppointments: React.FC = () => {
 
   useEffect(() => {
     fetchAppointments();
-    // fetchUsers(); // Nu avem nevoie să încărcăm userii deoarece nu folosim această stare
     fetchServices();
+    fetchSpecialists();
   }, []);
 
   const fetchAppointments = async () => {
@@ -292,31 +325,6 @@ const AdminAppointments: React.FC = () => {
     }
   };
 
-  // Funcția fetchUsers este inutilă acum deoarece nu folosim starea users
-  /*
-  const fetchUsers = async () => {
-    try {
-      // Obține toți utilizatorii pentru a putea asocia ID-urile cu numele
-      const usersQuery = query(collection(db, 'users'));
-      const usersSnapshot = await getDocs(usersQuery);
-      
-      const usersList = usersSnapshot.docs.map(doc => {
-        const data = doc.data();
-        return {
-          id: doc.id,
-          email: data.email || '',
-          displayName: data.displayName || '',
-          phoneNumber: data.phoneNumber || ''
-        };
-      });
-      
-      setUsers(usersList);
-    } catch (error) {
-      console.error('Error fetching users:', error);
-    }
-  };
-  */
-
   const fetchServices = async () => {
     try {
       // Obține toate serviciile disponibile
@@ -337,6 +345,26 @@ const AdminAppointments: React.FC = () => {
       setServices(servicesList);
     } catch (error) {
       console.error("Error fetching services:", error);
+    }
+  };
+
+  const fetchSpecialists = async () => {
+    try {
+      setLoading(true);
+      const specialistsRef = collection(db, "specialists");
+      const specialistsSnapshot = await getDocs(specialistsRef);
+      
+      const specialistsList = specialistsSnapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data()
+      })) as Specialist[];
+      
+      setSpecialists(specialistsList);
+    } catch (error) {
+      console.error("Error fetching specialists:", error);
+      alert("Eroare la încărcarea specialiștilor. Vă rugăm încercați din nou.");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -444,6 +472,162 @@ const AdminAppointments: React.FC = () => {
     }
   };
 
+  const handleAddSpecialist = async () => {
+    try {
+      setLoading(true);
+      
+      // Validate required fields
+      if (!specialistData.name || !specialistData.role) {
+        alert("Numele și rolul specialistului sunt obligatorii.");
+        return;
+      }
+      
+      const specialistsRef = collection(db, "specialists");
+      const newSpecialistRef = await addDoc(specialistsRef, {
+        name: specialistData.name,
+        role: specialistData.role,
+        imageUrl: specialistData.imageUrl || "https://via.placeholder.com/150",
+        description: specialistData.description || "",
+        email: specialistData.email || "",
+        phone: specialistData.phone || "",
+        schedule: specialistData.schedule || [],
+        createdAt: Timestamp.now()
+      });
+      
+      const newSpecialist = {
+        ...specialistData,
+        id: newSpecialistRef.id
+      };
+      
+      setSpecialists([...specialists, newSpecialist]);
+      alert("Specialist adăugat cu succes!");
+      setShowSpecialistForm(false);
+      resetSpecialistForm();
+    } catch (error) {
+      console.error("Error adding specialist:", error);
+      alert("Eroare la adăugarea specialistului. Vă rugăm încercați din nou.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleUpdateSpecialist = async () => {
+    if (!editingSpecialist) return;
+    
+    try {
+      setLoading(true);
+      
+      // Validate required fields
+      if (!specialistData.name || !specialistData.role) {
+        alert("Numele și rolul specialistului sunt obligatorii.");
+        return;
+      }
+      
+      const specialistRef = doc(db, "specialists", editingSpecialist.id);
+      await updateDoc(specialistRef, {
+        name: specialistData.name,
+        role: specialistData.role,
+        imageUrl: specialistData.imageUrl,
+        description: specialistData.description,
+        email: specialistData.email,
+        phone: specialistData.phone,
+        schedule: specialistData.schedule,
+        updatedAt: Timestamp.now()
+      });
+      
+      // Update local state
+      setSpecialists(specialists.map(spec => 
+        spec.id === editingSpecialist.id ? { ...specialistData, id: editingSpecialist.id } : spec
+      ));
+      
+      alert("Specialist actualizat cu succes!");
+      setShowSpecialistForm(false);
+      setEditingSpecialist(null);
+      resetSpecialistForm();
+    } catch (error) {
+      console.error("Error updating specialist:", error);
+      alert("Eroare la actualizarea specialistului. Vă rugăm încercați din nou.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleDeleteSpecialist = async (specialistId: string) => {
+    if (!window.confirm("Ești sigur că vrei să ștergi acest specialist?")) {
+      return;
+    }
+    
+    try {
+      setLoading(true);
+      
+      // Check if specialist has any appointments
+      const appointmentsRef = collection(db, "appointments");
+      const q = query(appointmentsRef, where("specialistId", "==", specialistId));
+      const appointmentsSnapshot = await getDocs(q);
+      
+      if (!appointmentsSnapshot.empty) {
+        if (!window.confirm("Acest specialist are programări. Ștergerea sa va afecta programările existente. Continuați?")) {
+          return;
+        }
+      }
+      
+      await deleteDoc(doc(db, "specialists", specialistId));
+      
+      // Update local state
+      setSpecialists(specialists.filter(spec => spec.id !== specialistId));
+      alert("Specialist șters cu succes!");
+    } catch (error) {
+      console.error("Error deleting specialist:", error);
+      alert("Eroare la ștergerea specialistului. Vă rugăm încercați din nou.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleEditSpecialist = (specialist: Specialist) => {
+    setEditingSpecialist(specialist);
+    setSpecialistData({
+      ...specialist
+    });
+    setShowSpecialistForm(true);
+  };
+
+  const resetSpecialistForm = () => {
+    setSpecialistData({
+      id: "",
+      name: "",
+      role: "",
+      imageUrl: "",
+      description: "",
+      email: "",
+      phone: "",
+      schedule: [
+        { dayOfWeek: 1, startTime: "09:00", endTime: "17:00", available: true },
+        { dayOfWeek: 2, startTime: "09:00", endTime: "17:00", available: true },
+        { dayOfWeek: 3, startTime: "09:00", endTime: "17:00", available: true },
+        { dayOfWeek: 4, startTime: "09:00", endTime: "17:00", available: true },
+        { dayOfWeek: 5, startTime: "09:00", endTime: "17:00", available: true },
+      ]
+    });
+  };
+
+  const updateScheduleDay = (index: number, field: string, value: any) => {
+    const updatedSchedule = [...(specialistData.schedule || [])];
+    updatedSchedule[index] = {
+      ...updatedSchedule[index],
+      [field]: value
+    };
+    setSpecialistData({
+      ...specialistData,
+      schedule: updatedSchedule
+    });
+  };
+
+  const getDayName = (dayOfWeek: number) => {
+    const days = ["Duminică", "Luni", "Marți", "Miercuri", "Joi", "Vineri", "Sâmbătă"];
+    return days[dayOfWeek];
+  };
+
   const handleOpenModal = (appointment: Appointment) => {
     setSelectedAppointment(appointment);
     
@@ -519,26 +703,6 @@ const AdminAppointments: React.FC = () => {
       return "Data invalidă";
     }
   };
-  
-  // Funcția formatDateTime este definită dar neutilizată
-  // Comentată pentru a elimina avertismentele
-  /* 
-  const formatDateTime = (timestamp: any) => {
-    if (!timestamp) return 'Necunoscut';
-    try {
-      const date = new Date(timestamp.seconds * 1000);
-      return date.toLocaleDateString('ro-RO', {
-        year: 'numeric',
-        month: 'long',
-        day: 'numeric',
-        hour: '2-digit',
-        minute: '2-digit'
-      });
-    } catch (e) {
-      return 'Data invalidă';
-    }
-  };
-  */
   
   const formatTime = (timeString: string) => {
     return timeString || "Necunoscută";
@@ -617,8 +781,6 @@ const AdminAppointments: React.FC = () => {
 
   return (
     <div className="container mx-auto px-4 py-8">
-      <AdminNavigation />
-      
       <div className="bg-white rounded-lg shadow-md p-6 mb-8">
         <h2 className="text-xl font-bold mb-6">Gestionare Programări</h2>
         
@@ -819,6 +981,275 @@ const AdminAppointments: React.FC = () => {
             </table>
           </div>
         )}
+        
+        {/* Specialists Management Section */}
+        <div className="mt-8">
+          <div className="flex justify-between items-center mb-4">
+            <h2 className="text-xl font-bold">Specialiști</h2>
+            <button
+              onClick={() => {
+                setEditingSpecialist(null);
+                setShowSpecialistForm(true);
+                resetSpecialistForm();
+              }}
+              className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+            >
+              Adaugă specialist
+            </button>
+          </div>
+
+          {showSpecialistForm && (
+            <div className="bg-white rounded-lg shadow-md p-6 mb-6">
+              <h3 className="text-lg font-bold mb-4">
+                {editingSpecialist ? "Editează Specialist" : "Adaugă Specialist Nou"}
+              </h3>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Nume <span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    value={specialistData.name}
+                    onChange={(e) => setSpecialistData({...specialistData, name: e.target.value})}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                    placeholder="Ex: Dr. Ana Popescu"
+                  />
+                </div>
+                
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Rol <span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    value={specialistData.role}
+                    onChange={(e) => setSpecialistData({...specialistData, role: e.target.value})}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                    placeholder="Ex: Psihoterapeut"
+                  />
+                </div>
+                
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Email
+                  </label>
+                  <input
+                    type="email"
+                    value={specialistData.email}
+                    onChange={(e) => setSpecialistData({...specialistData, email: e.target.value})}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                    placeholder="email@example.com"
+                  />
+                </div>
+                
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Telefon
+                  </label>
+                  <input
+                    type="text"
+                    value={specialistData.phone}
+                    onChange={(e) => setSpecialistData({...specialistData, phone: e.target.value})}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                    placeholder="Ex: 0712345678"
+                  />
+                </div>
+                
+                <div className="md:col-span-2">
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    URL Imagine
+                  </label>
+                  <input
+                    type="text"
+                    value={specialistData.imageUrl}
+                    onChange={(e) => setSpecialistData({...specialistData, imageUrl: e.target.value})}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                    placeholder="https://example.com/image.jpg"
+                  />
+                </div>
+                
+                <div className="md:col-span-2">
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Descriere
+                  </label>
+                  <textarea
+                    value={specialistData.description}
+                    onChange={(e) => setSpecialistData({...specialistData, description: e.target.value})}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                    rows={3}
+                    placeholder="Descriere a experienței și specializărilor"
+                  ></textarea>
+                </div>
+              </div>
+              
+              <div className="mb-4">
+                <h4 className="font-medium mb-2">Program Săptămânal</h4>
+                <div className="border rounded-md overflow-hidden">
+                  <table className="min-w-full divide-y divide-gray-200">
+                    <thead className="bg-gray-50">
+                      <tr>
+                        <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          Zi
+                        </th>
+                        <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          Ora început
+                        </th>
+                        <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          Ora sfârșit
+                        </th>
+                        <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          Disponibil
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody className="bg-white divide-y divide-gray-200">
+                      {(specialistData.schedule || []).map((day, index) => (
+                        <tr key={index}>
+                          <td className="px-4 py-2 whitespace-nowrap">
+                            {getDayName(day.dayOfWeek)}
+                          </td>
+                          <td className="px-4 py-2 whitespace-nowrap">
+                            <input
+                              type="time"
+                              value={day.startTime}
+                              onChange={(e) => updateScheduleDay(index, "startTime", e.target.value)}
+                              className="border border-gray-300 rounded-md px-2 py-1"
+                              disabled={!day.available}
+                            />
+                          </td>
+                          <td className="px-4 py-2 whitespace-nowrap">
+                            <input
+                              type="time"
+                              value={day.endTime}
+                              onChange={(e) => updateScheduleDay(index, "endTime", e.target.value)}
+                              className="border border-gray-300 rounded-md px-2 py-1"
+                              disabled={!day.available}
+                            />
+                          </td>
+                          <td className="px-4 py-2 whitespace-nowrap">
+                            <input
+                              type="checkbox"
+                              checked={day.available}
+                              onChange={(e) => updateScheduleDay(index, "available", e.target.checked)}
+                              className="form-checkbox h-5 w-5 text-blue-600"
+                            />
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+              
+              <div className="flex space-x-3">
+                <button
+                  onClick={editingSpecialist ? handleUpdateSpecialist : handleAddSpecialist}
+                  disabled={loading}
+                  className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50"
+                >
+                  {loading ? "Se procesează..." : editingSpecialist ? "Actualizează" : "Adaugă"}
+                </button>
+                <button
+                  onClick={() => setShowSpecialistForm(false)}
+                  className="px-4 py-2 bg-gray-200 text-gray-800 rounded-md hover:bg-gray-300"
+                >
+                  Anulează
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* Specialists List */}
+          <div className="overflow-x-auto">
+            <table className="min-w-full divide-y divide-gray-200">
+              <thead className="bg-gray-50">
+                <tr>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Specialist
+                  </th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Rol
+                  </th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Contact
+                  </th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Program
+                  </th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Acțiuni
+                  </th>
+                </tr>
+              </thead>
+              <tbody className="bg-white divide-y divide-gray-200">
+                {specialists.length > 0 ? (
+                  specialists.map((specialist) => (
+                    <tr key={specialist.id}>
+                      <td className="px-4 py-4 whitespace-nowrap">
+                        <div className="flex items-center">
+                          <div className="h-10 w-10 flex-shrink-0">
+                            <img
+                              className="h-10 w-10 rounded-full object-cover"
+                              src={specialist.imageUrl || "https://via.placeholder.com/150"}
+                              alt={specialist.name}
+                            />
+                          </div>
+                          <div className="ml-4">
+                            <div className="text-sm font-medium text-gray-900">
+                              {specialist.name}
+                            </div>
+                          </div>
+                        </div>
+                      </td>
+                      <td className="px-4 py-4 whitespace-nowrap">
+                        <div className="text-sm text-gray-900">{specialist.role}</div>
+                      </td>
+                      <td className="px-4 py-4 whitespace-nowrap">
+                        {specialist.email && (
+                          <div className="text-sm text-gray-500">{specialist.email}</div>
+                        )}
+                        {specialist.phone && (
+                          <div className="text-sm text-gray-500">{specialist.phone}</div>
+                        )}
+                      </td>
+                      <td className="px-4 py-4">
+                        <div className="text-sm text-gray-500">
+                          {specialist.schedule?.filter(day => day.available).map((day, idx) => (
+                            <div key={idx}>
+                              {getDayName(day.dayOfWeek)}: {day.startTime} - {day.endTime}
+                            </div>
+                          ))}
+                        </div>
+                      </td>
+                      <td className="px-4 py-4 whitespace-nowrap text-sm">
+                        <button
+                          onClick={() => handleEditSpecialist(specialist)}
+                          className="text-indigo-600 hover:text-indigo-900 mr-3"
+                        >
+                          Editează
+                        </button>
+                        <button
+                          onClick={() => handleDeleteSpecialist(specialist.id)}
+                          className="text-red-600 hover:text-red-900"
+                        >
+                          Șterge
+                        </button>
+                      </td>
+                    </tr>
+                  ))
+                ) : (
+                  <tr>
+                    <td colSpan={5} className="px-4 py-4 text-center text-gray-500">
+                      Nu există specialiști înregistrați.
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
+        </div>
       </div>
       
       {/* Modal editare programare */}

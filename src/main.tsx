@@ -6,6 +6,16 @@ import "./assets/styles/main.css"; // Stiluri principale
 import { initializeFirebase } from "./firebase"; // Inițializare Firebase
 import { reportWebVitals } from "./utils/webVitals"; // Importăm utilitar pentru Web Vitals
 
+// Add this declaration for the window property to avoid TypeScript errors
+declare global {
+  interface Window {
+    __FORCE_VENDOR_CHUNK_LOAD__?: boolean;
+  }
+}
+
+// Add this line to force the JavaScript engine to evaluate the vendor bundle first
+window.__FORCE_VENDOR_CHUNK_LOAD__ = true;
+
 // Implementăm un handler global pentru erori pentru a prinde erorile de inițializare
 const handleInitializationErrors = () => {
   window.addEventListener("error", (event) => {

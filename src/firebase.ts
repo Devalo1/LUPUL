@@ -1,5 +1,11 @@
-import { initializeApp } from "firebase/app";
-import { getAuth, connectAuthEmulator, GoogleAuthProvider, signInWithRedirect } from "firebase/auth";
+import { initializeApp, FirebaseApp } from "firebase/app";
+import { 
+  getAuth, 
+  connectAuthEmulator, 
+  GoogleAuthProvider, 
+  signInWithRedirect,
+  Auth 
+} from "firebase/auth";
 import { 
   getFirestore, 
   connectFirestoreEmulator, 
@@ -10,11 +16,21 @@ import {
   getDocs, 
   query, 
   where,
-  writeBatch
+  writeBatch,
+  Firestore
 } from "firebase/firestore";
-import { getStorage, connectStorageEmulator } from "firebase/storage";
-import { getFunctions, connectFunctionsEmulator, httpsCallable } from "firebase/functions";
-import { getAnalytics, isSupported } from "firebase/analytics";
+import { 
+  getStorage, 
+  connectStorageEmulator,
+  FirebaseStorage 
+} from "firebase/storage";
+import { 
+  getFunctions, 
+  connectFunctionsEmulator, 
+  httpsCallable,
+  Functions 
+} from "firebase/functions";
+import { getAnalytics, isSupported, Analytics } from "firebase/analytics";
 import { useEmulators, getEmulatorConfig, isProd } from "./utils/environment";
 import logger from "./utils/logger";
 
@@ -35,74 +51,97 @@ const firebaseConfig = {
   measurementId: "G-38YSZKVXDC"
 };
 
-// Inițializăm Firebase
-const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
-const firestore = getFirestore(app);
-const storage = getStorage(app);
-const functions = getFunctions(app);
-export const isInitialized = true;
+// Declarăm variabilele cu tipuri corecte
+let app: FirebaseApp;
+let auth: Auth;
+let firestore: Firestore;
+let storage: FirebaseStorage;
+let functions: Functions;
+let analytics: Analytics | null = null;
+export let isInitialized = false;
+export let db: Firestore;
 
-// Inițializare Analytics doar în mediul de producție și doar dacă este suportat
-let analytics = null;
-if (isProd) {
-  isSupported().then(supported => {
-    if (supported) {
-      analytics = getAnalytics(app);
-      logger.info("Firebase Analytics inițializat");
-    } else {
-      logger.warn("Firebase Analytics nu este suportat în acest browser/mediu");
-    }
-  }).catch(error => {
-    logger.error("Eroare la inițializarea Firebase Analytics", error);
-  });
-}
-
-// Conectarea la emulatori dacă este necesar
-if (useEmulators()) {
-  logger.info("Conectare la emulatorii Firebase...");
-  
-  const emulatorConfig = getEmulatorConfig();
-  if (emulatorConfig) {
-    // Conectăm emulatorii doar dacă avem configurații valide
-    if (emulatorConfig.auth) {
-      connectAuthEmulator(
-        auth, 
-        `http://${emulatorConfig.auth.host}:${emulatorConfig.auth.port}`, 
-        { disableWarnings: true }
-      );
-    }
-    
-    if (emulatorConfig.firestore) {
-      connectFirestoreEmulator(
-        firestore, 
-        emulatorConfig.firestore.host, 
-        emulatorConfig.firestore.port
-      );
-    }
-    
-    if (emulatorConfig.storage) {
-      connectStorageEmulator(
-        storage, 
-        emulatorConfig.storage.host, 
-        emulatorConfig.storage.port
-      );
-    }
-    
-    if (emulatorConfig.functions) {
-      connectFunctionsEmulator(
-        functions, 
-        emulatorConfig.functions.host, 
-        emulatorConfig.functions.port
-      );
-    }
-  }
-}
-
-// Inițializare Firebase - păstrat pentru compatibilitate
+// Inițializare Firebase - acesta este acum singurul punct de inițializare
 export const initializeFirebase = () => {
-  logger.info("Firebase already initialized");
-  return { app, auth, firestore, storage, functions };
+  // Verificăm dacă Firebase a fost deja inițializat pentru a evita reinițializarea
+  if (isInitialized) {
+    logger.info("Firebase already initialized");
+    return { app, auth, firestore, storage, functions };
+  }
+
+  try {
+    logger.info("Initializing Firebase...");
+    
+    // Inițializăm Firebase
+    app = initializeApp(firebaseConfig);
+    auth = getAuth(app);
+    firestore = getFirestore(app);
+    storage = getStorage(app);
+    functions = getFunctions(app);
+    db = firestore; // Setăm variabila db pentru compatibilitate
+    isInitialized = true;
+    
+    // Inițializare Analytics doar în mediul de producție și doar dacă este suportat
+    if (isProd) {
+      isSupported().then(supported => {
+        if (supported) {
+          analytics = getAnalytics(app);
+          logger.info("Firebase Analytics inițializat");
+        } else {
+          logger.warn("Firebase Analytics nu este suportat în acest browser/mediu");
+        }
+      }).catch(error => {
+        logger.error("Eroare la inițializarea Firebase Analytics", error);
+      });
+    }
+    
+    // Conectarea la emulatori dacă este necesar
+    if (useEmulators()) {
+      logger.info("Conectare la emulatorii Firebase...");
+      
+      const emulatorConfig = getEmulatorConfig();
+      if (emulatorConfig) {
+        // Conectăm emulatorii doar dacă avem configurații valide
+        if (emulatorConfig.auth) {
+          connectAuthEmulator(
+            auth, 
+            `http://${emulatorConfig.auth.host}:${emulatorConfig.auth.port}`, 
+            { disableWarnings: true }
+          );
+        }
+        
+        if (emulatorConfig.firestore) {
+          connectFirestoreEmulator(
+            firestore, 
+            emulatorConfig.firestore.host, 
+            emulatorConfig.firestore.port
+          );
+        }
+        
+        if (emulatorConfig.storage) {
+          connectStorageEmulator(
+            storage, 
+            emulatorConfig.storage.host, 
+            emulatorConfig.storage.port
+          );
+        }
+        
+        if (emulatorConfig.functions) {
+          connectFunctionsEmulator(
+            functions, 
+            emulatorConfig.functions.host, 
+            emulatorConfig.functions.port
+          );
+        }
+      }
+    }
+    
+    logger.info("Firebase initialization successful");
+    return { app, auth, firestore, storage, functions };
+  } catch (error) {
+    logger.error("Error initializing Firebase:", error);
+    throw error;
+  }
 };
 
 // Interfața pentru datele de înregistrare la evenimente
@@ -126,6 +165,10 @@ interface EventRegistrationData {
 
 // Trimitere email de înregistrare la eveniment
 export const sendEventRegistrationEmail = async (data: EventRegistrationData) => {
+  if (!isInitialized) {
+    initializeFirebase();
+  }
+  
   try {    
     logger.info("Trimitere email de înregistrare la eveniment", data);
     
@@ -185,6 +228,10 @@ export const sendEventRegistrationEmail = async (data: EventRegistrationData) =>
 
 // Verifică dacă un utilizator este admin
 export const isAdmin = async (uid: string): Promise<boolean> => {
+  if (!isInitialized) {
+    initializeFirebase();
+  }
+  
   try {
     // Verificăm în baza de date
     const userRef = doc(firestore, "users", uid);
@@ -213,6 +260,10 @@ export const isAdminByEmail = (email: string): boolean => {
 
 // Asigură drepturile de administrator în baza de date
 export const ensureAdminRights = async (uid: string, email: string): Promise<boolean> => {
+  if (!isInitialized) {
+    initializeFirebase();
+  }
+  
   try {
     // Căutăm în colecția cu lista de administratori autorizați
     const adminsListRef = collection(firestore, "admin_emails");
@@ -249,6 +300,10 @@ export const ensureAdminRights = async (uid: string, email: string): Promise<boo
 
 // Adaugă un nou administrator în baza de date
 export const addAdminUser = async (email: string, adminName?: string): Promise<boolean> => {
+  if (!isInitialized) {
+    initializeFirebase();
+  }
+  
   try {
     // Verificăm dacă email-ul este deja în colecția admin_emails
     const adminsListRef = collection(firestore, "admin_emails");
@@ -316,6 +371,10 @@ export const getAllAdmins = async (): Promise<Array<{
   role?: string;
   [key: string]: unknown;
 }>> => {
+  if (!isInitialized) {
+    initializeFirebase();
+  }
+  
   try {
     const adminsList: Array<{
       id?: string;
@@ -388,6 +447,10 @@ export const getAllAdmins = async (): Promise<Array<{
 
 // Revocă drepturile de administrator pentru un utilizator
 export const revokeAdminRights = async (email: string): Promise<boolean> => {
+  if (!isInitialized) {
+    initializeFirebase();
+  }
+  
   try {
     let modified = false;
     
@@ -446,6 +509,10 @@ export const updateUserData = async (userData: {
   role?: string;
   [key: string]: unknown;
 }): Promise<boolean> => {
+  if (!isInitialized) {
+    initializeFirebase();
+  }
+  
   try {
     // Filter out undefined values to prevent Firestore errors
     const cleanedData: Record<string, unknown> = Object.entries(userData).reduce((acc, [key, value]) => {
@@ -479,6 +546,10 @@ export const clearAuthState = (): void => {
 
 // Login cu Google prin redirect
 export const loginWithGoogleRedirect = (redirectPath?: string): void => {
+  if (!isInitialized) {
+    initializeFirebase();
+  }
+  
   // Salvăm informațiile de redirecționare în sessionStorage
   logger.info("Începere redirecționare login Google cu path:", redirectPath);
   sessionStorage.setItem("googleAuthRedirect", "true");
@@ -511,5 +582,4 @@ export const handleGoogleAuthRedirects = (): boolean => {
 };
 
 // Export pentru a utiliza în aplicație
-export const db = firestore;
 export { app, auth, firestore, storage, functions, analytics };

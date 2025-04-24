@@ -1,7 +1,12 @@
 [build]
-  command = "npm run build"
+  command = "VITE_LEGACY_BUILD=true npm run build"
   publish = "dist"
   functions = "functions"
+
+[build.environment]
+  GENERATE_SOURCEMAP = "false"
+  NODE_OPTIONS = "--max-old-space-size=4096"
+  VITE_LEGACY_BUILD = "true"
 
 [dev]
   command = "npm run dev"
@@ -26,10 +31,6 @@
   for = "/*.html"
   [headers.values]
     Cache-Control = "public, max-age=0, must-revalidate"
-
-# Setări pentru SPA
-[build.environment]
-  GENERATE_SOURCEMAP = "false"
 
 # Activăm comprimarea Brotli și GZIP
 [build.processing]

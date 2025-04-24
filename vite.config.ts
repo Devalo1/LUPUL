@@ -8,6 +8,7 @@ export default defineConfig(({ mode }) => {
     // Încărcăm variabilele de mediu bazate pe modul curent (dev/prod)
     const env = loadEnv(mode, process.cwd());
     const isProd = mode === "production";
+    const isLegacyBuild = env.VITE_LEGACY_BUILD === "true";
     
     return {
         plugins: [
@@ -71,10 +72,13 @@ export default defineConfig(({ mode }) => {
             // Opțiuni pentru terser (minificare)
             terserOptions: isProd ? {
                 compress: {
-                    drop_console: true,     // Elimină console.log
-                    drop_debugger: true,    // Elimină debugger
-                    pure_funcs: ["console.log", "console.info", "console.debug"],
-                    passes: 2,              // Multipasuri pentru o minificare mai bună
+                    drop_console: !isLegacyBuild,     // Păstrăm console în legacy build pentru debugging
+                    drop_debugger: true,              // Elimină debugger
+                    pure_funcs: isLegacyBuild ? [] : ["console.log", "console.info", "console.debug"],
+                    passes: 2,                        // Multipasuri pentru o minificare mai bună
+                    // Setări speciale pentru a preveni TDZ errors
+                    sequences: isLegacyBuild ? false : true,
+                    inline: isLegacyBuild ? 0 : 1,
                 },
                 output: {
                     comments: false,        // Elimină comentariile
@@ -83,15 +87,31 @@ export default defineConfig(({ mode }) => {
                     safari10: true,         // Compatibilitate Safari 10
                 },
                 // Optimizare pentru TDZ issues
-                ecma: 2020,
-                module: true,
+                ecma: isLegacyBuild ? 5 : 2020,  // ES5 pentru legacy browser support
+                module: !isLegacyBuild,  // Dezactivăm module processing pentru legacy build
+                ie8: isLegacyBuild,      // Activăm compatibilitate IE8 pentru legacy build
             } : undefined,
             
             // Divizăm bundle-ul pentru a optimiza încărcarea
             rollupOptions: {
                 output: {
                     manualChunks: (id) => {
-                        // Strategia de chunking îmbunătățită
+                        if (isLegacyBuild) {
+                            // Pentru legacy build, folosim o strategie foarte simplificată
+                            // pentru a evita TDZ errors
+                            if (id.includes("node_modules")) {
+                                if (id.includes("react") || id.includes("firebase")) {
+                                    return "vendor";
+                                }
+                                return "vendor-others";
+                            }
+                            if (id.includes(".css")) {
+                                return "styles";
+                            }
+                            return null;
+                        }
+                        
+                        // Strategia normală, mai granulară
                         if (id.includes("node_modules")) {
                             // Separam React, ReactDOM și react-router ca un chunk major
                             if (id.includes("react/") || id.includes("react-dom") || id.includes("react-router")) {
@@ -142,8 +162,10 @@ export default defineConfig(({ mode }) => {
             
             // Opțiuni pentru commonjs
             commonjsOptions: {
-                esmExternals: true,
+                esmExternals: !isLegacyBuild,
                 transformMixedEsModules: true,  // Optimizare pentru module mixte
+                // Adăugăm opțiuni de transformare pentru a rezolva TDZ issues în modulele CJS
+                strictRequires: isLegacyBuild ? 'debug' : undefined,
             },
             
             // Setări pentru divizarea chunk-urilor
@@ -185,7 +207,7 @@ export default defineConfig(({ mode }) => {
             ],
             // Activăm optimizări de esbuild
             esbuildOptions: {
-                target: "es2020",           // Targetăm ES2020 pentru browser moderni
+                target: isLegacyBuild ? "es2015" : "es2020", // ES2015 pentru compatibilitate extinsă
                 treeShaking: true,          // Activăm treeShaking pentru a elimina codul nefolosit
                 legalComments: "none",      // Eliminăm comentariile legale
             },
@@ -199,6 +221,8 @@ export default defineConfig(({ mode }) => {
             __APP_VERSION__: JSON.stringify(env.VITE_APP_VERSION || "1.0.0"),
             __BUILD_DATE__: JSON.stringify(new Date().toISOString()),
             __DEV__: mode !== "production",
+            // Adăugăm flag pentru legacy build
+            __LEGACY_BUILD__: isLegacyBuild,
         },
         
         // Optimizare imagini

@@ -1,5 +1,5 @@
-import React, { useState, useEffect, memo } from 'react';
-import { performanceUtil } from '../utils/performance';
+import React, { useState, useEffect, memo } from "react";
+import { performanceUtil } from "../utils/performance";
 
 interface OptimizedImageProps {
   src: string;
@@ -9,7 +9,7 @@ interface OptimizedImageProps {
   className?: string;
   quality?: number;
   lazy?: boolean;
-  objectFit?: 'contain' | 'cover' | 'fill' | 'none' | 'scale-down';
+  objectFit?: "contain" | "cover" | "fill" | "none" | "scale-down";
   placeholderColor?: string;
   onLoad?: () => void;
   onError?: () => void;
@@ -24,11 +24,11 @@ const OptimizedImage: React.FC<OptimizedImageProps> = ({
   alt,
   width = 800,
   height,
-  className = '',
+  className = "",
   quality = 80,
   lazy = true,
-  objectFit = 'cover',
-  placeholderColor = 'lightgray',
+  objectFit = "cover",
+  placeholderColor = "lightgray",
   onLoad,
   onError,
 }) => {
@@ -47,7 +47,7 @@ const OptimizedImage: React.FC<OptimizedImageProps> = ({
 
   // Creem un tracker pentru performanță
   useEffect(() => {
-    const imageName = src.split('/').pop() || src;
+    const imageName = src.split("/").pop() || src;
     performanceUtil.mark(`image-load-start-${imageName}`);
     
     return () => {
@@ -76,10 +76,10 @@ const OptimizedImage: React.FC<OptimizedImageProps> = ({
     <div 
       className={`optimized-image-container ${className}`}
       style={{ 
-        position: 'relative',
-        overflow: 'hidden',
-        width: width ? `${width}px` : '100%',
-        height: height ? `${height}px` : 'auto',
+        position: "relative",
+        overflow: "hidden",
+        width: width ? `${width}px` : "100%",
+        height: height ? `${height}px` : "auto",
         backgroundColor: placeholderColor,
       }}
     >
@@ -87,14 +87,14 @@ const OptimizedImage: React.FC<OptimizedImageProps> = ({
         <div 
           className="optimized-image-placeholder"
           style={{
-            position: 'absolute',
+            position: "absolute",
             top: 0,
             left: 0,
-            width: '100%',
-            height: '100%',
+            width: "100%",
+            height: "100%",
             backgroundImage: `url(${placeholder})`,
-            backgroundSize: 'cover',
-            backgroundPosition: 'center',
+            backgroundSize: "cover",
+            backgroundPosition: "center",
             zIndex: 1,
           }}
         />
@@ -105,15 +105,15 @@ const OptimizedImage: React.FC<OptimizedImageProps> = ({
         alt={alt}
         width={width}
         height={height}
-        loading={lazy ? 'lazy' : 'eager'}
+        loading={lazy ? "lazy" : "eager"}
         onLoad={handleLoad}
         onError={handleError}
         style={{
-          display: loaded ? 'block' : 'none',
-          width: '100%',
-          height: '100%',
+          display: loaded ? "block" : "none",
+          width: "100%",
+          height: "100%",
           objectFit,
-          position: 'relative',
+          position: "relative",
           zIndex: 2,
         }}
       />
@@ -122,16 +122,16 @@ const OptimizedImage: React.FC<OptimizedImageProps> = ({
         <div 
           className="optimized-image-error"
           style={{
-            position: 'absolute',
+            position: "absolute",
             top: 0,
             left: 0,
-            width: '100%',
-            height: '100%',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            backgroundColor: '#f8f8f8',
-            color: '#666',
+            width: "100%",
+            height: "100%",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            backgroundColor: "#f8f8f8",
+            color: "#666",
             zIndex: 3,
           }}
         >

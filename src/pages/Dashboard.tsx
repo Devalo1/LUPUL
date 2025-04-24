@@ -4,7 +4,14 @@ import { useNavigate, Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { collection, query, where, getDocs, doc, updateDoc, getDoc } from "firebase/firestore";
 import { db } from "../firebase";
-import { FaStar, FaRegStar, FaCheck } from "react-icons/fa";
+import { FaStar, FaRegStar, FaCheck, FaUserCog, FaUserMd, FaUser } from "react-icons/fa";
+import { 
+  isUserAdmin, 
+  isUserSpecialist, 
+  UserRole, 
+  requestRoleChange,
+  checkPendingRoleRequests
+} from "../utils/userRoles";
 
 // Define custom user type extending Firebase User
 interface ExtendedUser {
@@ -28,6 +35,8 @@ interface EventItem {
 }
 
 const Dashboard: React.FC = () => {
+  const [userRole, setUserRole] = useState<UserRole | null>(null);
+  const [checkingRole, setCheckingRole] = useState<boolean>(true);
   const { user, loading } = useAuth();
   const navigate = useNavigate();
   const hasRedirected = useRef(false);
@@ -41,6 +50,14 @@ const Dashboard: React.FC = () => {
   const [userRatings, setUserRatings] = useState<{ [productId: string]: number }>({});
   const [ratingSubmitting, setRatingSubmitting] = useState<{ [productId: string]: boolean }>({});
   const [ratingSuccess, setRatingSuccess] = useState<{ [productId: string]: boolean }>({});
+  
+  // State pentru cererea de rol de specialist
+  const [roleChangeReason, setRoleChangeReason] = useState("");
+  const [specialization, setSpecialization] = useState("");
+  const [roleChangeModalOpen, setRoleChangeModalOpen] = useState(false);
+  const [requestingRoleChange, setRequestingRoleChange] = useState(false);
+  const [roleChangeRequestStatus, setRoleChangeRequestStatus] = useState<"none" | "success" | "error" | "existing">("none");
+  const [hasPendingRoleRequest, setHasPendingRoleRequest] = useState(false);
 
   // Redirect if not authenticated
   useEffect(() => {
@@ -50,17 +67,59 @@ const Dashboard: React.FC = () => {
     }
   }, [user, loading, navigate]);
 
+  // Adăugare efect pentru a verifica rolul utilizatorului
   useEffect(() => {
-    const hour = new Date().getHours();
-    if (hour < 12) setGreeting("Bună dimineața");
-    else if (hour < 18) setGreeting("Bună ziua");
-    else setGreeting("Bună seara");
-  }, []);
+    const fetchUserRole = async () => {
+      if (!user?.email) return;
+      
+      setCheckingRole(true);
+      try {
+        // Verificăm dacă utilizatorul este admin
+        const isAdmin = await isUserAdmin(user.email);
+        if (isAdmin) {
+          setUserRole(UserRole.ADMIN);
+          return;
+        }
+        
+        // Verificăm dacă utilizatorul este specialist
+        const isSpecialist = await isUserSpecialist(user.email);
+        if (isSpecialist) {
+          setUserRole(UserRole.SPECIALIST);
+          return;
+        }
+        
+        // Dacă nu are niciun rol special, este utilizator normal
+        setUserRole(UserRole.USER);
+      } catch (error) {
+        console.error("Eroare la verificarea rolului utilizatorului:", error);
+        setUserRole(UserRole.USER); // Implicit utilizator normal
+      } finally {
+        setCheckingRole(false);
+      }
+    };
+    
+    const checkIfUserHasPendingRequest = async () => {
+      if (!user?.uid) return;
+      try {
+        const hasPending = await checkPendingRoleRequests(user.uid);
+        setHasPendingRoleRequest(hasPending);
+      } catch (error) {
+        console.error("Eroare la verificarea cererilor de rol în așteptare:", error);
+      }
+    };
+    
+    if (user) {
+      fetchUserRole();
+      checkIfUserHasPendingRequest();
+    } else {
+      setUserRole(null);
+    }
+  }, [user]);
 
   useEffect(() => {
     const fetchUserEvents = async () => {
       if (!user) return;
-
+      
       try {
         setEventsLoading(true);
         const eventsRef = collection(db, "events");
@@ -143,6 +202,13 @@ const Dashboard: React.FC = () => {
     fetchUserOrders();
   }, [user]);
 
+  useEffect(() => {
+    const hour = new Date().getHours();
+    if (hour < 12) setGreeting("Bună dimineața");
+    else if (hour < 18) setGreeting("Bună ziua");
+    else setGreeting("Bună seara");
+  }, []);
+
   const handleRateProduct = async (productId: string, rating: number) => {
     if (!user) return;
 
@@ -205,6 +271,46 @@ const Dashboard: React.FC = () => {
       alert("A apărut o eroare la trimiterea recenziei.");
     } finally {
       setRatingSubmitting({ ...ratingSubmitting, [productId]: false });
+    }
+  };
+
+  const handleRequestRoleChange = async () => {
+    if (!user) return;
+    
+    try {
+      setRequestingRoleChange(true);
+      
+      const result = await requestRoleChange(
+        user.uid,
+        user.email || "",
+        user.displayName || "",
+        UserRole.SPECIALIST,
+        userRole || UserRole.USER,
+        roleChangeReason,
+        specialization
+      );
+      
+      if (result === "existing") {
+        setRoleChangeRequestStatus("existing");
+      } else {
+        setRoleChangeRequestStatus("success");
+        setHasPendingRoleRequest(true);
+      }
+      
+      // Închide modal-ul după 3 secunde în caz de succes
+      if (result !== "existing") {
+        setTimeout(() => {
+          setRoleChangeModalOpen(false);
+          setRoleChangeReason("");
+          setSpecialization("");
+          setRoleChangeRequestStatus("none");
+        }, 3000);
+      }
+    } catch (error) {
+      console.error("Eroare la trimiterea cererii de schimbare a rolului:", error);
+      setRoleChangeRequestStatus("error");
+    } finally {
+      setRequestingRoleChange(false);
     }
   };
 
@@ -273,6 +379,36 @@ const Dashboard: React.FC = () => {
                 {user?.displayName || "Utilizator"}
               </h2>
               <p className="text-gray-500 text-sm">{user?.email}</p>
+              
+              {/* Badge pentru rolul utilizatorului */}
+              {!checkingRole && userRole && (
+                <div className={`mt-2 inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold ${
+                  userRole === UserRole.ADMIN 
+                    ? "bg-red-100 text-red-800" 
+                    : userRole === UserRole.SPECIALIST 
+                    ? "bg-green-100 text-green-800" 
+                    : "bg-blue-100 text-blue-800"
+                }`}>
+                  {userRole === UserRole.ADMIN && (
+                    <>
+                      <FaUserCog className="mr-1" />
+                      Administrator
+                    </>
+                  )}
+                  {userRole === UserRole.SPECIALIST && (
+                    <>
+                      <FaUserMd className="mr-1" />
+                      Specialist
+                    </>
+                  )}
+                  {userRole === UserRole.USER && (
+                    <>
+                      <FaUser className="mr-1" />
+                      Utilizator
+                    </>
+                  )}
+                </div>
+              )}
             </div>
           </div>
           <div className="mt-2 space-y-1">
@@ -420,6 +556,7 @@ const Dashboard: React.FC = () => {
                   Vezi detalii
                 </button>
               </div>
+
             </div>
 
             <button 
@@ -640,8 +777,161 @@ const Dashboard: React.FC = () => {
           )}
         </div>
       </section>
+
+      <section className="mt-8">
+        <h2 className="text-2xl font-bold mb-4">Opțiuni cont</h2>
+        <div className="bg-white rounded-lg shadow-md p-6">
+          {userRole === UserRole.USER && (
+            <div className="mb-4">
+              <h3 className="font-semibold mb-2">Devino specialist</h3>
+              <p className="text-sm text-gray-600 mb-3">
+                Dacă ai calificările necesare, poți solicita rolul de specialist pentru a oferi servicii și consultanță.
+              </p>
+              
+              {hasPendingRoleRequest ? (
+                <div className="p-3 bg-blue-50 border border-blue-200 rounded-md">
+                  <p className="text-sm text-blue-800 flex items-center">
+                    <svg className="w-5 h-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    Ai o cerere de schimbare a rolului în așteptare. Te vom anunța când va fi procesată.
+                  </p>
+                </div>
+              ) : (
+                <button
+                  onClick={() => setRoleChangeModalOpen(true)}
+                  className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
+                >
+                  Solicită rolul de specialist
+                </button>
+              )}
+            </div>
+          )}
+          
+          {/* Alte opțiuni de cont ar putea fi adăugate aici */}
+        </div>
+      </section>
+      
+      {/* Modal pentru cererea de schimbare a rolului */}
+      {roleChangeModalOpen && (
+        <div className="fixed inset-0 z-50 overflow-y-auto">
+          <div className="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+            <div className="fixed inset-0 transition-opacity" aria-hidden="true">
+              <div className="absolute inset-0 bg-gray-500 opacity-75"></div>
+            </div>
+            
+            <span className="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
+            
+            <div className="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
+              <div className="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+                <div className="sm:flex sm:items-start">
+                  <div className="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left w-full">
+                    <h3 className="text-lg leading-6 font-medium text-gray-900" id="modal-title">
+                      Solicită rolul de specialist
+                    </h3>
+                    <div className="mt-4">
+                      <p className="text-sm text-gray-500 mb-4">
+                        Te rugăm să ne explici calificările și experiența ta care te recomandă pentru rolul de specialist.
+                      </p>
+                      
+                      {roleChangeRequestStatus === "success" ? (
+                        <div className="p-4 bg-green-50 text-green-800 rounded-md">
+                          <p className="flex items-center">
+                            <svg className="w-5 h-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                            </svg>
+                            Cererea ta a fost trimisă cu succes! Te vom notifica când va fi procesată.
+                          </p>
+                        </div>
+                      ) : roleChangeRequestStatus === "error" ? (
+                        <div className="p-4 bg-red-50 text-red-800 rounded-md">
+                          <p className="flex items-center">
+                            <svg className="w-5 h-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                            </svg>
+                            A apărut o eroare la trimiterea cererii. Te rugăm să încerci din nou.
+                          </p>
+                        </div>
+                      ) : roleChangeRequestStatus === "existing" ? (
+                        <div className="p-4 bg-yellow-50 text-yellow-800 rounded-md">
+                          <p className="flex items-center">
+                            <svg className="w-5 h-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                            </svg>
+                            Ai deja o cerere de schimbare a rolului în așteptare.
+                          </p>
+                        </div>
+                      ) : (
+                        <>
+                          <div className="mb-4">
+                            <label htmlFor="specialization" className="block text-sm font-medium text-gray-700 mb-1">
+                              Specializarea
+                            </label>
+                            <input
+                              type="text"
+                              id="specialization"
+                              name="specialization"
+                              className="w-full px-3 py-2 text-gray-700 border rounded-lg focus:outline-none focus:border-blue-500"
+                              placeholder="Ex: Nutriție, Psihoterapie, Masaj"
+                              value={specialization}
+                              onChange={(e) => setSpecialization(e.target.value)}
+                              disabled={requestingRoleChange}
+                            />
+                          </div>
+                          
+                          <div>
+                            <label htmlFor="roleChangeReason" className="block text-sm font-medium text-gray-700 mb-1">
+                              Calificări și experiență
+                            </label>
+                            <textarea
+                              id="roleChangeReason"
+                              className="w-full px-3 py-2 text-gray-700 border rounded-lg focus:outline-none focus:border-blue-500"
+                              rows={5}
+                              placeholder="Descrie experiența, calificările și motivul pentru care dorești să devii specialist..."
+                              value={roleChangeReason}
+                              onChange={(e) => setRoleChangeReason(e.target.value)}
+                              disabled={requestingRoleChange}
+                            ></textarea>
+                          </div>
+                        </>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div className="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
+                {roleChangeRequestStatus === "none" && (
+                  <button
+                    type="button"
+                    className={`w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-blue-600 text-base font-medium text-white hover:bg-blue-700 focus:outline-none sm:ml-3 sm:w-auto sm:text-sm ${
+                      requestingRoleChange || !roleChangeReason.trim() || !specialization.trim() ? "opacity-50 cursor-not-allowed" : ""
+                    }`}
+                    onClick={handleRequestRoleChange}
+                    disabled={requestingRoleChange || !roleChangeReason.trim() || !specialization.trim()}
+                  >
+                    {requestingRoleChange ? "Se trimite..." : "Trimite cererea"}
+                  </button>
+                )}
+                <button
+                  type="button"
+                  className="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm"
+                  onClick={() => {
+                    setRoleChangeModalOpen(false);
+                    setRoleChangeReason("");
+                    if (roleChangeRequestStatus !== "existing") {
+                      setRoleChangeRequestStatus("none");
+                    }
+                  }}
+                >
+                  {roleChangeRequestStatus === "success" ? "Închide" : "Anulează"}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
-};
+}
 
 export default Dashboard;

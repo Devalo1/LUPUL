@@ -2,6 +2,7 @@ import React from "react";
 import { Routes, Route, Navigate } from "react-router-dom";
 import { ProtectedRoute, AdminRoute } from "../components";
 import { lazyLoad, LazyComponent } from "../utils/lazyLoad";
+import SpecialistRoute from "../components/routes/SpecialistRoute";
 
 // Import lazy pentru paginile publice
 const HomePage = lazyLoad(() => import("../pages/HomePage"));
@@ -45,6 +46,9 @@ const ArticleEdit = lazyLoad(() => import("../pages/ArticleEdit")); // Adăugăm
 const AdminSettings = lazyLoad(() => import("../pages/AdminSettings"));
 // Import pentru pagina de administrare comenzi
 const AdminOrders = lazyLoad(() => import("../pages/AdminOrders"));
+
+// Import pentru panoul de specialist
+const SpecialistPanel = lazyLoad(() => import("../pages/SpecialistPanel"));
 
 /**
  * Componenta principală pentru definirea rutelor aplicației
@@ -120,6 +124,18 @@ const AppRoutes: React.FC = () => {
         <ProtectedRoute>
           <LazyComponent component={<Appointments />} />
         </ProtectedRoute>
+      } />
+      
+      {/* Rută pentru panoul de specialist */}
+      <Route path="/specialist" element={
+        <SpecialistRoute>
+          <LazyComponent component={<SpecialistPanel />} />
+        </SpecialistRoute>
+      } />
+      <Route path="/specialist/dashboard" element={
+        <SpecialistRoute>
+          <LazyComponent component={<SpecialistPanel />} />
+        </SpecialistRoute>
       } />
       
       {/* Rute administrative (necesită rol de admin) */}

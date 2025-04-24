@@ -10,6 +10,7 @@ import {
   setDoc
 } from "firebase/firestore";
 import { db } from "../firebase";
+import { makeUserSpecialist, removeSpecialistRole } from "../utils/userRoles";
 
 interface User {
   id: string;
@@ -19,6 +20,7 @@ interface User {
   createdAt: any; // Timestamp
   role?: string;
   isAdmin?: boolean;
+  isSpecialist?: boolean;
   lastLogin?: any; // Timestamp
   orders?: number;
   appointments?: number;
@@ -28,7 +30,7 @@ const AdminUsers: React.FC = () => {
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
-  const [filter, setFilter] = useState("all"); // 'all', 'admin', 'regular'
+  const [filter, setFilter] = useState("all"); // 'all', 'admin', 'regular', 'specialist'
   const [sortBy, setSortBy] = useState("lastLogin");
   const [sortOrder, setSortOrder] = useState("desc");
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
@@ -42,14 +44,17 @@ const AdminUsers: React.FC = () => {
     try {
       setLoading(true);
       
-      // Obține toți utilizatorii
-      const usersQuery = query(collection(db, "users"), orderBy("createdAt", "desc"));
+      // Obține toți utilizatorii din colecția 'users'
+      const usersRef = collection(db, "users");
+      const usersQuery = query(usersRef, orderBy("createdAt", "desc"));
       const usersSnapshot = await getDocs(usersQuery);
       
-      // Obține toate comenzile pentru a calcula numărul de comenzi per utilizator
-      const ordersQuery = query(collection(db, "orders"));
-      const ordersSnapshot = await getDocs(ordersQuery);
+      // Pregătește un obiect pentru a ține evidența comenzilor pe utilizator
       const ordersByUser: { [key: string]: number } = {};
+      
+      // Obține comenzile pentru a număra câte are fiecare utilizator
+      const ordersRef = collection(db, "orders");
+      const ordersSnapshot = await getDocs(ordersRef);
       
       ordersSnapshot.docs.forEach(orderDoc => {
         const userId = orderDoc.data().userId;
@@ -58,10 +63,10 @@ const AdminUsers: React.FC = () => {
         }
       });
       
-      // Obține toate programările pentru a calcula numărul de programări per utilizator
-      const appointmentsQuery = query(collection(db, "appointments"));
-      const appointmentsSnapshot = await getDocs(appointmentsQuery);
+      // Obține programările pentru a număra câte are fiecare utilizator
       const appointmentsByUser: { [key: string]: number } = {};
+      const appointmentsRef = collection(db, "appointments");
+      const appointmentsSnapshot = await getDocs(appointmentsRef);
       
       appointmentsSnapshot.docs.forEach(appointmentDoc => {
         const userId = appointmentDoc.data().userId;
@@ -92,6 +97,10 @@ const AdminUsers: React.FC = () => {
           console.error("Error checking admin status:", error);
         }
         
+        // Determină rolul utilizatorului, inclusiv specialist
+        const role = userData.role || (isAdmin ? "admin" : "user");
+        const isSpecialist = role === "specialist";
+        
         return {
           id: userDoc.id,
           email: userData.email || "",
@@ -99,8 +108,9 @@ const AdminUsers: React.FC = () => {
           phoneNumber: userData.phoneNumber || "",
           createdAt: userData.createdAt || null,
           lastLogin: userData.lastLoginAt || null,
-          role: rolesMap[userDoc.id] || (isAdmin ? "admin" : "user"),
+          role: role,
           isAdmin,
+          isSpecialist,
           orders: ordersByUser[userDoc.id] || 0,
           appointments: appointmentsByUser[userDoc.id] || 0
         };
@@ -125,7 +135,7 @@ const AdminUsers: React.FC = () => {
       
       // Actualizează lista locală
       setUsers(users.map(user => 
-        user.id === userId ? { ...user, isAdmin: true, role: "admin" } : user
+        user.id === userId ? { ...user, isAdmin: true, role: "admin", isSpecialist: false } : user
       ));
       
       alert("Utilizatorul a fost promovat la rolul de Admin.");
@@ -149,6 +159,41 @@ const AdminUsers: React.FC = () => {
     } catch (error) {
       console.error("Error removing admin status:", error);
       alert("Eroare la revocarea rolului de admin. Vă rugăm încercați din nou.");
+    }
+  };
+
+  // Funcții pentru rol de specialist
+  const makeSpecialist = async (userId: string) => {
+    try {
+      // Adaugă utilizatorul ca specialist
+      await makeUserSpecialist(userId);
+      
+      // Actualizează lista locală
+      setUsers(users.map(user => 
+        user.id === userId ? { ...user, isSpecialist: true, role: "specialist", isAdmin: false } : user
+      ));
+      
+      alert("Utilizatorul a fost setat ca Specialist.");
+    } catch (error) {
+      console.error("Error making user specialist:", error);
+      alert("Eroare la adăugarea utilizatorului ca specialist. Vă rugăm încercați din nou.");
+    }
+  };
+  
+  const removeSpecialist = async (userId: string) => {
+    try {
+      // Revocă rolul de specialist
+      await removeSpecialistRole(userId);
+      
+      // Actualizează lista locală
+      setUsers(users.map(user => 
+        user.id === userId ? { ...user, isSpecialist: false, role: "user" } : user
+      ));
+      
+      alert("Rolul de specialist a fost revocat pentru acest utilizator.");
+    } catch (error) {
+      console.error("Error removing specialist status:", error);
+      alert("Eroare la revocarea rolului de specialist. Vă rugăm încercați din nou.");
     }
   };
 
@@ -176,100 +221,75 @@ const AdminUsers: React.FC = () => {
         case "admin":
           return matchesSearch && user.isAdmin;
         case "regular":
-          return matchesSearch && !user.isAdmin;
+          return matchesSearch && !user.isAdmin && !user.isSpecialist;
+        case "specialist":
+          return matchesSearch && user.isSpecialist;
         default:
           return matchesSearch;
       }
     })
     .sort((a, b) => {
-      // Sortare
-      let compareValue = 0;
+      // Implementare simplă pentru sortare
+      const aValue = a[sortBy as keyof User];
+      const bValue = b[sortBy as keyof User];
       
-      switch (sortBy) {
-        case "email":
-          compareValue = a.email.localeCompare(b.email);
-          break;
-        case "name":
-          compareValue = (a.displayName || "").localeCompare(b.displayName || "");
-          break;
-        case "createdAt":
-          compareValue = a.createdAt && b.createdAt 
-            ? a.createdAt.seconds - b.createdAt.seconds 
-            : 0;
-          break;
-        case "lastLogin":
-          compareValue = a.lastLogin && b.lastLogin 
-            ? a.lastLogin.seconds - b.lastLogin.seconds 
-            : 0;
-          break;
-        case "orders":
-          compareValue = (a.orders || 0) - (b.orders || 0);
-          break;
-        case "appointments":
-          compareValue = (a.appointments || 0) - (b.appointments || 0);
-          break;
-        default:
-          compareValue = 0;
+      if (aValue === null || aValue === undefined) return sortOrder === "asc" ? -1 : 1;
+      if (bValue === null || bValue === undefined) return sortOrder === "asc" ? 1 : -1;
+      
+      // Sortare pentru valori de tip Timestamp sau obiecte cu seconds
+      if (aValue && bValue && typeof aValue === "object" && "seconds" in aValue && typeof bValue === "object" && "seconds" in bValue) {
+        return sortOrder === "asc" 
+          ? (aValue as any).seconds - (bValue as any).seconds 
+          : (bValue as any).seconds - (aValue as any).seconds;
       }
       
-      return sortOrder === "asc" ? compareValue : -compareValue;
+      // Sortare pentru string-uri
+      if (typeof aValue === "string" && typeof bValue === "string") {
+        return sortOrder === "asc" 
+          ? aValue.localeCompare(bValue) 
+          : bValue.localeCompare(aValue);
+      }
+      
+      // Sortare pentru numere și alte valori
+      return sortOrder === "asc" 
+        ? (aValue as any) - (bValue as any) 
+        : (bValue as any) - (aValue as any);
     });
-
-  // Formatarea datelor pentru afișare
+  
+  // Formatare dată pentru afișare
   const formatDate = (timestamp: any) => {
-    if (!timestamp) return "Necunoscut";
-    try {
+    if (!timestamp) return "N/A";
+    if (timestamp.seconds) {
       const date = new Date(timestamp.seconds * 1000);
       return date.toLocaleDateString("ro-RO", {
         year: "numeric",
-        month: "long",
+        month: "short",
         day: "numeric",
         hour: "2-digit",
         minute: "2-digit"
       });
-    } catch (e) {
-      return "Data invalidă";
     }
+    if (timestamp instanceof Date) {
+      return timestamp.toLocaleDateString("ro-RO", {
+        year: "numeric",
+        month: "short",
+        day: "numeric",
+        hour: "2-digit",
+        minute: "2-digit"
+      });
+    }
+    return "Format invalid";
   };
-
-  // Statistici pentru dashboard
-  const getAdminCount = () => users.filter(user => user.isAdmin).length;
-  const getRegularCount = () => users.filter(user => !user.isAdmin).length;
-  const getActiveCount = () => users.filter(user => user.lastLogin && Date.now() - (user.lastLogin.seconds * 1000) < 30 * 24 * 60 * 60 * 1000).length;
 
   return (
     <div className="container mx-auto px-4 py-8">
+      <h1 className="text-2xl font-bold mb-6">Gestionare Utilizatori</h1>
       
-      <div className="bg-white rounded-lg shadow-md p-6 mb-8">
-        <h2 className="text-xl font-bold mb-4">Gestionare Utilizatori</h2>
-        
-        {/* Dashboard sumar */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-          <div className="bg-blue-50 rounded-lg p-4 flex flex-col">
-            <span className="text-sm text-blue-600 font-medium">Total utilizatori</span>
-            <span className="text-2xl font-bold">{users.length}</span>
-          </div>
-          
-          <div className="bg-green-50 rounded-lg p-4 flex flex-col">
-            <span className="text-sm text-green-600 font-medium">Activi (ultima lună)</span>
-            <span className="text-2xl font-bold">{getActiveCount()}</span>
-          </div>
-          
-          <div className="bg-purple-50 rounded-lg p-4 flex flex-col">
-            <span className="text-sm text-purple-600 font-medium">Administratori</span>
-            <span className="text-2xl font-bold">{getAdminCount()}</span>
-          </div>
-          
-          <div className="bg-yellow-50 rounded-lg p-4 flex flex-col">
-            <span className="text-sm text-yellow-600 font-medium">Utilizatori regulari</span>
-            <span className="text-2xl font-bold">{getRegularCount()}</span>
-          </div>
-        </div>
-        
-        {/* Filtre și sortare */}
-        <div className="flex flex-col md:flex-row gap-4 mb-6">
-          <div className="flex-1">
-            <label htmlFor="search" className="block text-sm font-medium text-gray-700 mb-1">Caută utilizator</label>
+      <div className="bg-white rounded-lg shadow-md p-6">
+        {/* Filtre și opțiuni de sortare */}
+        <div className="flex flex-col md:flex-row space-y-4 md:space-y-0 gap-4 mb-6">
+          <div className="w-full md:w-1/3">
+            <label htmlFor="search" className="block text-sm font-medium text-gray-700 mb-1">Căutare</label>
             <input
               type="text"
               id="search"
@@ -290,6 +310,7 @@ const AdminUsers: React.FC = () => {
             >
               <option value="all">Toți utilizatorii</option>
               <option value="admin">Doar administratori</option>
+              <option value="specialist">Doar specialiști</option>
               <option value="regular">Doar utilizatori regulari</option>
             </select>
           </div>
@@ -327,12 +348,12 @@ const AdminUsers: React.FC = () => {
         
         {/* Tabel utilizatori */}
         {loading ? (
-          <div className="flex justify-center items-center h-48">
+          <div className="flex justify-center items-center h-64">
             <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
           </div>
         ) : (
           <div className="overflow-x-auto">
-            <table className="min-w-full bg-white border border-gray-200">
+            <table className="min-w-full divide-y divide-gray-200">
               <thead className="bg-gray-50">
                 <tr>
                   <th className="py-3 px-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-b">
@@ -378,8 +399,18 @@ const AdminUsers: React.FC = () => {
                         <div className="text-sm text-gray-900">{formatDate(user.lastLogin)}</div>
                       </td>
                       <td className="py-4 px-4 whitespace-nowrap">
-                        <span className={`px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${user.isAdmin ? "bg-purple-100 text-purple-800" : "bg-blue-100 text-blue-800"}`}>
-                          {user.isAdmin ? "Administrator" : "Utilizator"}
+                        <span className={`px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${
+                          user.isAdmin 
+                            ? "bg-purple-100 text-purple-800" 
+                            : user.isSpecialist
+                              ? "bg-green-100 text-green-800"
+                              : "bg-blue-100 text-blue-800"
+                        }`}>
+                          {user.isAdmin 
+                            ? "Administrator" 
+                            : user.isSpecialist
+                              ? "Specialist"
+                              : "Utilizator"}
                         </span>
                       </td>
                       <td className="py-4 px-4 whitespace-nowrap">
@@ -395,14 +426,22 @@ const AdminUsers: React.FC = () => {
                         >
                           Detalii
                         </button>
-                        {!user.isAdmin ? (
-                          <button 
-                            className="text-purple-600 hover:text-purple-900"
-                            onClick={() => makeAdmin(user.id)}
-                          >
-                            Adaugă ca Admin
-                          </button>
-                        ) : (
+                        {!user.isAdmin && !user.isSpecialist ? (
+                          <div className="space-x-2">
+                            <button 
+                              className="text-purple-600 hover:text-purple-900"
+                              onClick={() => makeAdmin(user.id)}
+                            >
+                              Adaugă ca Admin
+                            </button>
+                            <button 
+                              className="text-green-600 hover:text-green-900"
+                              onClick={() => makeSpecialist(user.id)}
+                            >
+                              Adaugă ca Specialist
+                            </button>
+                          </div>
+                        ) : user.isAdmin ? (
                           <button 
                             className="text-red-600 hover:text-red-900"
                             onClick={() => {
@@ -412,6 +451,17 @@ const AdminUsers: React.FC = () => {
                             }}
                           >
                             Revocă Admin
+                          </button>
+                        ) : (
+                          <button 
+                            className="text-red-600 hover:text-red-900"
+                            onClick={() => {
+                              if(confirm("Sunteți sigur că doriți să revocați rolul de specialist pentru acest utilizator?")) {
+                                removeSpecialist(user.id);
+                              }
+                            }}
+                          >
+                            Revocă Specialist
                           </button>
                         )}
                       </td>
@@ -457,8 +507,18 @@ const AdminUsers: React.FC = () => {
                 </div>
                 <h4 className="text-lg font-medium">{selectedUser.displayName || "Utilizator necunoscut"}</h4>
                 <p className="text-sm text-gray-500">{selectedUser.email}</p>
-                <div className={`inline-block mt-1 px-2 py-1 text-xs leading-5 font-semibold rounded-full ${selectedUser.isAdmin ? "bg-purple-100 text-purple-800" : "bg-blue-100 text-blue-800"}`}>
-                  {selectedUser.isAdmin ? "Administrator" : "Utilizator"}
+                <div className={`inline-block mt-1 px-2 py-1 text-xs leading-5 font-semibold rounded-full ${
+                  selectedUser.isAdmin 
+                    ? "bg-purple-100 text-purple-800" 
+                    : selectedUser.isSpecialist
+                      ? "bg-green-100 text-green-800"
+                      : "bg-blue-100 text-blue-800"
+                }`}>
+                  {selectedUser.isAdmin 
+                    ? "Administrator" 
+                    : selectedUser.isSpecialist
+                      ? "Specialist"
+                      : "Utilizator"}
                 </div>
               </div>
 
@@ -498,17 +558,28 @@ const AdminUsers: React.FC = () => {
               
               <div className="pt-4 border-t border-gray-200">
                 <h5 className="text-sm font-medium text-gray-500 mb-2">Acțiuni</h5>
-                {!selectedUser.isAdmin ? (
-                  <button 
-                    onClick={() => {
-                      makeAdmin(selectedUser.id);
-                      handleCloseModal();
-                    }}
-                    className="w-full px-4 py-2 bg-purple-600 text-white rounded-md hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-purple-500"
-                  >
-                    Adaugă ca Administrator
-                  </button>
-                ) : (
+                {!selectedUser.isAdmin && !selectedUser.isSpecialist ? (
+                  <div className="space-y-2">
+                    <button 
+                      onClick={() => {
+                        makeAdmin(selectedUser.id);
+                        handleCloseModal();
+                      }}
+                      className="w-full px-4 py-2 bg-purple-600 text-white rounded-md hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-purple-500"
+                    >
+                      Adaugă ca Administrator
+                    </button>
+                    <button 
+                      onClick={() => {
+                        makeSpecialist(selectedUser.id);
+                        handleCloseModal();
+                      }}
+                      className="w-full px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500"
+                    >
+                      Adaugă ca Specialist
+                    </button>
+                  </div>
+                ) : selectedUser.isAdmin ? (
                   <button 
                     onClick={() => {
                       if(confirm("Sunteți sigur că doriți să revocați rolul de administrator pentru acest utilizator?")) {
@@ -519,6 +590,18 @@ const AdminUsers: React.FC = () => {
                     className="w-full px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500"
                   >
                     Revocă drepturi de Administrator
+                  </button>
+                ) : (
+                  <button 
+                    onClick={() => {
+                      if(confirm("Sunteți sigur că doriți să revocați rolul de specialist pentru acest utilizator?")) {
+                        removeSpecialist(selectedUser.id);
+                        handleCloseModal();
+                      }
+                    }}
+                    className="w-full px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500"
+                  >
+                    Revocă drepturi de Specialist
                   </button>
                 )}
               </div>

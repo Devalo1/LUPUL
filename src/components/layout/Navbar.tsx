@@ -3,7 +3,7 @@ import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../../hooks/useAuth"; // Correct import
 import { useNavigation } from "../../hooks/useNavigation"; // Correct import
 import "../../styles/Header.css";
-import { isUserAdmin, MAIN_ADMIN_EMAIL } from "../../utils/userRoles";
+import { isUserAdmin, isUserSpecialist, MAIN_ADMIN_EMAIL } from "../../utils/userRoles";
 import { useCart } from "../../contexts/CartContext";
 
 const Navbar: React.FC = () => {
@@ -14,6 +14,7 @@ const Navbar: React.FC = () => {
   const isHomePage = location.pathname === "/";
   const [scrolled, setScrolled] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false); // State to track admin status
+  const [isSpecialist, setIsSpecialist] = useState(false); // State to track specialist status
   const { totalItems } = useCart();
   const [shopMenuOpen, setShopMenuOpen] = useState(false);
   const shopMenuRef = useRef<HTMLDivElement>(null);
@@ -53,8 +54,20 @@ const Navbar: React.FC = () => {
       }
     };
 
+    const checkSpecialist = async () => {
+      if (user?.email) {
+        // Verificăm dacă utilizatorul are rol de specialist
+        const specialistStatus = await isUserSpecialist(user.email);
+        setIsSpecialist(specialistStatus);
+      }
+    };
+
     if (user) {
       checkAdmin();
+      checkSpecialist(); // Verificăm și rolul de specialist
+    } else {
+      setIsAdmin(false);
+      setIsSpecialist(false);
     }
   }, [user]);
 
@@ -225,6 +238,11 @@ const Navbar: React.FC = () => {
             {isAdmin && (
               <Link to="/admin" className="nav-link text-white hover:text-gray-200 px-3 py-2 rounded-md transition duration-300">
                 Admin Panel
+              </Link>
+            )}
+            {isSpecialist && (
+              <Link to="/specialist" className="nav-link text-white hover:text-gray-200 px-3 py-2 rounded-md transition duration-300">
+                Panou Specialist
               </Link>
             )}
             <button 

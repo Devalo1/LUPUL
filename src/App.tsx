@@ -24,8 +24,8 @@ const App: React.FC = () => {
     // Preîncărcăm resursele critice pentru îmbunătățirea performanței
     prefetchCriticalResources([
       // Adăugăm rutele importante care vor fi accesate probabil
-      '/programari',
-      '/assets/images/background.jpeg', // Exemplu de imagine importantă
+      "/programari",
+      "/assets/images/background.jpeg", // Exemplu de imagine importantă
     ]);
   }, []);
 

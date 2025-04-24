@@ -23,6 +23,7 @@ export { default as Login } from "./auth/Login";
 export { default as GoogleLoginButton } from "./auth/GoogleLoginButton";
 export { default as ProtectedRoute } from "./routes/ProtectedRoute";
 export { default as AdminRoute } from "./routes/AdminRoute";
+export { default as SpecialistRoute } from "./routes/SpecialistRoute";
 
 // Other exports
 export { default as AdminNavigation } from "./AdminNavigation";

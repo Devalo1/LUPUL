@@ -1,4 +1,4 @@
-import { doc, setDoc, collection, query, where, getDocs, addDoc } from "firebase/firestore";
+import { doc, setDoc, collection, query, where, getDocs, addDoc, updateDoc, getDoc } from "firebase/firestore";
 import { firestore, db } from "../firebase"; // Direct import from the central firebase.ts
 import logger from "./logger"; // Import the logger utility
 
@@ -13,6 +13,13 @@ export const ADMIN_EMAILS = [
   MAIN_ADMIN_EMAIL,
   // Add other admin emails here
 ];
+
+// Define user roles
+export enum UserRole {
+  USER = "user",
+  ADMIN = "admin",
+  SPECIALIST = "specialist"
+}
 
 /**
  * Checks if a user with the given email has admin privileges
@@ -35,7 +42,7 @@ export const isUserAdmin = async (userEmail: string): Promise<boolean> => {
     
     if (!userSnapshot.empty) {
       const userData = userSnapshot.docs[0].data();
-      if (userData.isAdmin === true || userData.role === "admin") {
+      if (userData.isAdmin === true || userData.role === UserRole.ADMIN) {
         userRolesLogger.info(`User ${userEmail} has admin flag in user document`);
         return true;
       }
@@ -46,6 +53,32 @@ export const isUserAdmin = async (userEmail: string): Promise<boolean> => {
     userRolesLogger.error("Error checking admin status:", error);
     // Fallback pentru email-ul principal de admin
     return ADMIN_EMAILS.includes(userEmail);
+  }
+};
+
+/**
+ * Checks if a user with the given email has specialist privileges
+ */
+export const isUserSpecialist = async (userEmail: string): Promise<boolean> => {
+  if (!userEmail) return false;
+  
+  try {
+    const usersCollection = collection(firestore, "users");
+    const userQuery = query(usersCollection, where("email", "==", userEmail));
+    const userSnapshot = await getDocs(userQuery);
+    
+    if (!userSnapshot.empty) {
+      const userData = userSnapshot.docs[0].data();
+      if (userData.role === UserRole.SPECIALIST) {
+        userRolesLogger.info(`User ${userEmail} has specialist role`);
+        return true;
+      }
+    }
+    
+    return false;
+  } catch (error) {
+    userRolesLogger.error("Error checking specialist status:", error);
+    return false;
   }
 };
 
@@ -76,7 +109,7 @@ export const makeUserAdmin = async (userEmail: string): Promise<boolean> => {
         const userDoc = userSnapshot.docs[0];
         await setDoc(doc(firestore, "users", userDoc.id), {
           isAdmin: true,
-          role: "admin",
+          role: UserRole.ADMIN,
           updatedAt: new Date()
         }, { merge: true });
       }
@@ -114,11 +147,232 @@ export const ensureAdminInCollection = async (userEmail: string): Promise<void> 
   }
 };
 
+/**
+ * Assigns a specific role to a user
+ */
 export const assignRoleToUser = async (userId: string, role: string): Promise<void> => {
   try {
     const userRoleRef = doc(db, "userRoles", userId);
     await setDoc(userRoleRef, { role, updatedAt: new Date() }, { merge: true });
+    
+    // Update the user document as well
+    const userRef = doc(db, "users", userId);
+    await setDoc(userRef, { 
+      role,
+      updatedAt: new Date() 
+    }, { merge: true });
+    
+    userRolesLogger.info(`Role ${role} assigned to user ${userId}`);
   } catch (error) {
     userRolesLogger.error("Error assigning role to user:", error);
+    throw error;
+  }
+};
+
+/**
+ * Makes a user a specialist
+ */
+export const makeUserSpecialist = async (userId: string, specialization?: string): Promise<boolean> => {
+  try {
+    const userRef = doc(firestore, "users", userId);
+    
+    const updateData: any = {
+      role: UserRole.SPECIALIST,
+      updatedAt: new Date()
+    };
+    
+    if (specialization) {
+      updateData.specialization = specialization;
+    }
+    
+    await setDoc(userRef, updateData, { merge: true });
+    
+    userRolesLogger.info(`User ${userId} has been set as a specialist`);
+    return true;
+  } catch (error) {
+    userRolesLogger.error(`Failed to make user ${userId} a specialist`, error);
+    return false;
+  }
+};
+
+/**
+ * Removes specialist role from user
+ */
+export const removeSpecialistRole = async (userId: string): Promise<boolean> => {
+  try {
+    const userRef = doc(firestore, "users", userId);
+    
+    await setDoc(userRef, {
+      role: UserRole.USER,
+      updatedAt: new Date()
+    }, { merge: true });
+    
+    userRolesLogger.info(`Specialist role removed from user ${userId}`);
+    return true;
+  } catch (error) {
+    userRolesLogger.error(`Failed to remove specialist role from user ${userId}`, error);
+    return false;
+  }
+};
+
+/**
+ * Interfața pentru cererile de schimbare a rolului
+ */
+export interface RoleChangeRequest {
+  id?: string;
+  userId: string;
+  userEmail: string;
+  userName?: string;
+  requestedRole: UserRole;
+  currentRole: UserRole;
+  status: "pending" | "approved" | "rejected";
+  reason?: string;
+  specialization?: string;
+  createdAt: Date;
+  updatedAt?: Date;
+  processedBy?: string;
+}
+
+/**
+ * Trimite o cerere pentru schimbarea rolului utilizatorului
+ */
+export const requestRoleChange = async (
+  userId: string,
+  userEmail: string,
+  userName: string,
+  requestedRole: UserRole,
+  currentRole: UserRole,
+  reason?: string,
+  specialization?: string
+): Promise<string> => {
+  try {
+    // Verificăm dacă utilizatorul are deja o cerere activă
+    const requestsRef = collection(firestore, "roleChangeRequests");
+    const q = query(
+      requestsRef, 
+      where("userId", "==", userId),
+      where("status", "==", "pending")
+    );
+    const existingRequests = await getDocs(q);
+    
+    if (!existingRequests.empty) {
+      return "existing";
+    }
+    
+    // Creăm cererea nouă
+    const requestData: RoleChangeRequest = {
+      userId,
+      userEmail,
+      userName,
+      requestedRole,
+      currentRole,
+      status: "pending",
+      reason,
+      specialization,
+      createdAt: new Date()
+    };
+    
+    const newRequest = await addDoc(collection(firestore, "roleChangeRequests"), requestData);
+    userRolesLogger.info(`Cerere de schimbare rol creată pentru ${userEmail}: ${requestedRole}`);
+    return newRequest.id;
+  } catch (error) {
+    userRolesLogger.error("Eroare la crearea cererii de schimbare a rolului:", error);
+    throw error;
+  }
+};
+
+/**
+ * Obține toate cererile de schimbare a rolului
+ */
+export const getRoleChangeRequests = async (statusFilter?: "pending" | "approved" | "rejected"): Promise<RoleChangeRequest[]> => {
+  try {
+    const requestsRef = collection(firestore, "roleChangeRequests");
+    let q = query(requestsRef);
+    
+    if (statusFilter) {
+      q = query(requestsRef, where("status", "==", statusFilter));
+    }
+    
+    const querySnapshot = await getDocs(q);
+    
+    const requests: RoleChangeRequest[] = [];
+    querySnapshot.forEach((doc) => {
+      const data = doc.data() as RoleChangeRequest;
+      requests.push({
+        ...data,
+        id: doc.id,
+        // Handle Firestore timestamps correctly by checking if they're Firestore timestamps or regular Dates
+        createdAt: data.createdAt && "toDate" in data.createdAt && typeof data.createdAt.toDate === "function" 
+          ? data.createdAt.toDate() 
+          : data.createdAt instanceof Date ? data.createdAt : new Date(),
+        updatedAt: data.updatedAt && "toDate" in data.updatedAt && typeof data.updatedAt.toDate === "function"
+          ? data.updatedAt.toDate()
+          : data.updatedAt instanceof Date ? data.updatedAt : undefined
+      });
+    });
+    
+    // Sortare după data creării (cele mai recente mai întâi)
+    return requests.sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
+  } catch (error) {
+    userRolesLogger.error("Eroare la obținerea cererilor de schimbare a rolului:", error);
+    throw error;
+  }
+};
+
+/**
+ * Procesează o cerere de schimbare a rolului (aprobă sau respinge)
+ */
+export const processRoleChangeRequest = async (
+  requestId: string, 
+  status: "approved" | "rejected",
+  adminEmail?: string
+): Promise<boolean> => {
+  try {
+    const requestRef = doc(firestore, "roleChangeRequests", requestId);
+    const requestDoc = await getDoc(requestRef);
+    
+    if (!requestDoc.exists()) {
+      throw new Error("Cererea nu a fost găsită");
+    }
+    
+    const requestData = requestDoc.data() as RoleChangeRequest;
+    
+    // Actualizăm cererea
+    await updateDoc(requestRef, {
+      status,
+      updatedAt: new Date(),
+      processedBy: adminEmail
+    });
+    
+    // Dacă cererea a fost aprobată, actualizăm rolul utilizatorului
+    if (status === "approved" && requestData.requestedRole === UserRole.SPECIALIST) {
+      await makeUserSpecialist(requestData.userId, requestData.specialization);
+    }
+    
+    userRolesLogger.info(`Cerere de schimbare rol ${requestId} a fost ${status === "approved" ? "aprobată" : "respinsă"}`);
+    return true;
+  } catch (error) {
+    userRolesLogger.error("Eroare la procesarea cererii de schimbare a rolului:", error);
+    return false;
+  }
+};
+
+/**
+ * Verifică dacă un utilizator are cereri de schimbare a rolului în așteptare
+ */
+export const checkPendingRoleRequests = async (userId: string): Promise<boolean> => {
+  try {
+    const requestsRef = collection(firestore, "roleChangeRequests");
+    const q = query(
+      requestsRef, 
+      where("userId", "==", userId),
+      where("status", "==", "pending")
+    );
+    const querySnapshot = await getDocs(q);
+    
+    return !querySnapshot.empty;
+  } catch (error) {
+    userRolesLogger.error("Eroare la verificarea cererilor de schimbare a rolului:", error);
+    return false;
   }
 };

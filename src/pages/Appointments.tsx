@@ -556,7 +556,7 @@ const Appointments: React.FC = () => {
         </div>
 
         <div className="mt-8 text-center text-sm text-gray-500">
-          <p>Ai nevoie de ajutor? Contactează-ne la <span className="text-blue-600">support@example.com</span> sau sună la <span className="text-blue-600">0712 345 678</span></p>
+          <p>Ai nevoie de ajutor? Contactează-ne la <span className="text-blue-600">lupulsicorbul@gmail.com</span> sau sună la <span className="text-blue-600">0734 931 703</span></p>
         </div>
       </div>
     </div>

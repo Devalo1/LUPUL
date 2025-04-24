@@ -57,7 +57,7 @@ export const performanceUtil = {
   // Optimizarea imaginilor
   optimizeImageUrl: (url: string, width: number, quality: number = 80): string => {
     // Dacă URL-ul este extern sau nu este o imagine, îl returnăm direct
-    if (!url || url.startsWith('http') || !url.match(/\.(jpe?g|png|webp|avif)$/i)) {
+    if (!url || url.startsWith("http") || !url.match(/\.(jpe?g|png|webp|avif)$/i)) {
       return url;
     }
     
@@ -66,16 +66,16 @@ export const performanceUtil = {
     
     // Adăugăm parametrii pentru CDN sau pentru servicii de optimizare a imaginilor
     // Aceasta este o simulare - în producție, ați putea folosi Cloudinary, Imgix, etc.
-    imgUrl.searchParams.set('w', width.toString());
-    imgUrl.searchParams.set('q', quality.toString());
-    imgUrl.searchParams.set('auto', 'format');
+    imgUrl.searchParams.set("w", width.toString());
+    imgUrl.searchParams.set("q", quality.toString());
+    imgUrl.searchParams.set("auto", "format");
     
     return imgUrl.toString();
   },
   
   // Funcție pentru a genera un placeholder pentru imagini
-  generatePlaceholder: (width: number, height: number, color: string = 'lightgray'): string => {
-    return `data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 ${width} ${height}'%3E%3Crect width='${width}' height='${height}' fill='${color.replace('#', '%23')}'/%3E%3C/svg%3E`;
+  generatePlaceholder: (width: number, height: number, color: string = "lightgray"): string => {
+    return `data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 ${width} ${height}'%3E%3Crect width='${width}' height='${height}' fill='${color.replace("#", "%23")}'/%3E%3C/svg%3E`;
   },
   
   // Funcție pentru a colecta toate metricile de performanță disponibile
@@ -93,15 +93,15 @@ export const performanceUtil = {
     }
     
     // Paint metrics
-    const paintEntries = window.performance.getEntriesByType('paint');
-    const fpEntry = paintEntries.find(entry => entry.name === 'first-paint');
-    const fcpEntry = paintEntries.find(entry => entry.name === 'first-contentful-paint');
+    const paintEntries = window.performance.getEntriesByType("paint");
+    const fpEntry = paintEntries.find(entry => entry.name === "first-paint");
+    const fcpEntry = paintEntries.find(entry => entry.name === "first-contentful-paint");
     
     if (fpEntry) metrics.firstPaint = fpEntry.startTime;
     if (fcpEntry) metrics.firstContentfulPaint = fcpEntry.startTime;
     
     // Web Vitals if available
-    if ('PerformanceObserver' in window) {
+    if ("PerformanceObserver" in window) {
       // Let's collect what we already have
     }
     
@@ -110,9 +110,9 @@ export const performanceUtil = {
   
   // Reducer Bundle Sizes - verifică dimensiunea bundle-urilor JS
   analyzeJsBundles: () => {
-    const resources = window.performance.getEntriesByType('resource');
+    const resources = window.performance.getEntriesByType("resource");
     const jsBundles = resources.filter(resource => 
-      resource.name.endsWith('.js') && resource.initiatorType === 'script'
+      resource.name.endsWith(".js") && resource.initiatorType === "script"
     );
     
     // Sortăm după dimensiune și logăm primele 5 bundle-uri ca cele mai mari
@@ -121,44 +121,44 @@ export const performanceUtil = {
       .slice(0, 5);
     
     const bundleInfos: BundleInfo[] = largestBundles.map(bundle => ({
-      name: bundle.name.split('/').pop(),
+      name: bundle.name.split("/").pop(),
       size: `${(bundle.encodedBodySize / 1024).toFixed(2)} KB`,
       transferSize: `${(bundle.transferSize / 1024).toFixed(2)} KB`,
       compressionRatio: bundle.transferSize > 0 
         ? (bundle.encodedBodySize / bundle.transferSize).toFixed(2) 
-        : 'N/A'
+        : "N/A"
     }));
     
-    logger.info('Top 5 largest JS bundles:', { bundles: bundleInfos });
+    logger.info("Top 5 largest JS bundles:", { bundles: bundleInfos });
     
     return largestBundles;
   }
 };
 
 // Detectare Firefox pentru prefetch
-const isFirefox = typeof navigator !== 'undefined' && navigator.userAgent.indexOf('Firefox') > -1;
+const isFirefox = typeof navigator !== "undefined" && navigator.userAgent.indexOf("Firefox") > -1;
 
 // Implementare prefetch pentru resurse critice
 export const prefetchCriticalResources = (urls: string[]): void => {
-  if (typeof document === 'undefined') return;
+  if (typeof document === "undefined") return;
   
   // Nu folosim prefetch în Firefox din cauza unei probleme de performanță
-  const linkRel = isFirefox ? 'preload' : 'prefetch';
+  const linkRel = isFirefox ? "preload" : "prefetch";
   
   urls.forEach(url => {
-    const link = document.createElement('link');
+    const link = document.createElement("link");
     link.rel = linkRel;
     link.href = url;
     
     // Determinăm tipul resursei bazat pe extensie
-    const fileExtension = url.split('.').pop()?.toLowerCase();
+    const fileExtension = url.split(".").pop()?.toLowerCase();
     if (fileExtension) {
-      if (['js'].includes(fileExtension)) {
-        link.as = 'script';
-      } else if (['css'].includes(fileExtension)) {
-        link.as = 'style';
-      } else if (['jpg', 'jpeg', 'png', 'gif', 'webp', 'avif'].includes(fileExtension)) {
-        link.as = 'image';
+      if (["js"].includes(fileExtension)) {
+        link.as = "script";
+      } else if (["css"].includes(fileExtension)) {
+        link.as = "style";
+      } else if (["jpg", "jpeg", "png", "gif", "webp", "avif"].includes(fileExtension)) {
+        link.as = "image";
       }
     }
     
@@ -172,15 +172,15 @@ export const initPerformanceMonitoring = (): void => {
   if (typeof window === "undefined") return;
   
   // Marker pentru începutul aplicației
-  performanceUtil.mark('app-init-start');
+  performanceUtil.mark("app-init-start");
   
   window.addEventListener("load", () => {
-    performanceUtil.mark('app-loaded');
-    performanceUtil.measure('app-load-time', 'app-init-start', 'app-loaded');
+    performanceUtil.mark("app-loaded");
+    performanceUtil.measure("app-load-time", "app-init-start", "app-loaded");
     
     // Colectăm și logăm toate metricile
     const metrics = performanceUtil.collectPerformanceMetrics();
-    logger.info('Performance metrics:', { metrics });
+    logger.info("Performance metrics:", { metrics });
     
     // Analizăm bundle-urile JS
     setTimeout(() => {

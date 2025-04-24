@@ -1,5 +1,0 @@
-<!-- Un SVG simplu cu motive tradiționale românești -->
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
-  <path fill="#FCD116" d="M50,10 L60,30 L80,30 L65,45 L70,65 L50,55 L30,65 L35,45 L20,30 L40,30 Z"/>
-  <circle fill="#CE1126" cx="50" cy="40" r="5"/>
-</svg>

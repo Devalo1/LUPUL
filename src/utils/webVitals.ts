@@ -1,16 +1,10 @@
 // Utilitar pentru măsurarea și raportarea Web Vitals (metrici de performanță)
 import { ReportHandler } from "web-vitals";
+import analyticsService from "../services/analytics";
+import logger from "./logger";
+import { isProd } from "./environment";
 
-// Obține URL-ul endpoint-ului pentru a trimite metricile
-// În producție, ar trebui să trimiteți la un serviciu analitic sau un backend propriu
-const getAnalyticsEndpoint = () => {
-  const isProd = import.meta.env.PROD || import.meta.env.VITE_ENVIRONMENT === "production";
-  return isProd
-    ? import.meta.env.VITE_ANALYTICS_ENDPOINT || "https://lupulsicorbul.com/api/analytics"
-    : "/api/analytics-dev"; // Endpoint local pentru dezvoltare
-};
-
-// Funcție pentru a trimite metricile la un endpoint
+// Funcție pentru a trimite metricile la serviciul de analytics
 const sendToAnalytics = async ({ name, delta, id, value }: {
   name: string;
   delta: number;
@@ -18,34 +12,28 @@ const sendToAnalytics = async ({ name, delta, id, value }: {
   value: number;
 }) => {
   try {
-    // Adăugăm informații despre utilizator și sesiune
-    const body = {
-      name,            // Numele metricii (CLS, FID, LCP, etc.)
-      delta,           // Delta față de ultima măsurătoare
-      id,              // ID unic pentru această măsurătoare
-      value,           // Valoarea actuală a metricii
+    // Adăugăm informații despre metrică și contextul utilizatorului
+    const webVitalData = {
+      type: "web-vital",
+      metric: name,      // Numele metricii (CLS, FID, LCP, etc.)
+      delta,             // Delta față de ultima măsurătoare
+      id,                // ID unic pentru această măsurătoare
+      value,             // Valoarea actuală a metricii
       path: window.location.pathname, // Calea curentă
       userAgent: navigator.userAgent,  // User agent pentru diagnostic
       timestamp: Date.now()           // Timestamp
     };
 
-    // În producție, trimitem datele la endpoint-ul de analiză
-    if (import.meta.env.PROD) {
-      const analyticsEndpoint = getAnalyticsEndpoint();
-      
-      await fetch(analyticsEndpoint, {
-        method: "POST",
-        body: JSON.stringify(body),
-        headers: { "Content-Type": "application/json" },
-        keepalive: true // Asigură trimiterea datelor chiar dacă pagina se închide
-      });
-    } else {
-      // În dev, doar logăm în consolă pentru debugging
-      console.log("Web Vitals:", body);
+    // Trimitem datele folosind serviciul de analytics care gestionează CORS
+    await analyticsService.trackEvent("web_vitals", webVitalData);
+    
+    if (!isProd) {
+      // În dev, logăm în consolă pentru debugging
+      logger.debug("Web Vitals:", webVitalData);
     }
   } catch (error) {
     // În caz de eroare, doar logăm, nu întrerupem experiența utilizatorului
-    console.error("Error sending web-vitals:", error);
+    logger.error("Eroare la trimiterea metricilor web-vitals:", error);
   }
 };
 

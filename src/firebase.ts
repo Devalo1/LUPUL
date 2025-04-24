@@ -1,148 +1,44 @@
-import { initializeApp, FirebaseApp } from "firebase/app";
-import { 
-  getAuth, 
-  connectAuthEmulator, 
-  GoogleAuthProvider, 
-  signInWithRedirect,
-  Auth 
-} from "firebase/auth";
-import { 
-  getFirestore, 
-  connectFirestoreEmulator, 
-  doc, 
-  setDoc, 
-  collection, 
-  getDoc, 
-  getDocs, 
-  query, 
-  where,
-  writeBatch,
-  Firestore
-} from "firebase/firestore";
-import { 
-  getStorage, 
-  connectStorageEmulator,
-  FirebaseStorage 
-} from "firebase/storage";
-import { 
-  getFunctions, 
-  connectFunctionsEmulator, 
-  httpsCallable,
-  Functions 
-} from "firebase/functions";
-import { getAnalytics, isSupported, Analytics } from "firebase/analytics";
-import { useEmulators, getEmulatorConfig, isProd } from "./utils/environment";
+// Re-exportăm tot din firebase-core pentru compatibilitate cu codul existent
+import {
+  app, 
+  auth,
+  firestore,
+  db,
+  storage,
+  functions,
+  isInitialized,
+  authAPI,
+  firestoreAPI,
+  functionsAPI,
+  initializeFirebase
+} from "./firebase-core";
+
+import { isProd } from "./utils/environment";
 import logger from "./utils/logger";
+
+// Import tipuri necesare pentru Firebase
+import { 
+  DocumentData, 
+  QueryDocumentSnapshot 
+} from "firebase/firestore";
+
+// Reexportăm toate serviciile Firebase pentru compatibilitate cu codul existent
+export {
+  app,
+  auth,
+  firestore,
+  db,
+  storage,
+  functions,
+  isInitialized,
+  initializeFirebase
+};
 
 // Lista de adrese email cu drepturi de administrator
 export const ADMIN_EMAILS = [
   "dani_popa21@yahoo.ro",
   // Adaugă alte adrese de email cu drepturi de admin aici
 ];
-
-// Configurație Firebase
-const firebaseConfig = {
-  apiKey: "AIzaSyCZEWoZn-c7NSH1AGbetWEbtxwEz-iaMR4",
-  authDomain: "lupulcorbul.firebaseapp.com",
-  projectId: "lupulcorbul",
-  storageBucket: "lupulcorbul.firebasestorage.app",
-  messagingSenderId: "312943074536",
-  appId: "1:312943074536:web:13fc0660014bc58c5c7d5d",
-  measurementId: "G-38YSZKVXDC"
-};
-
-// Declarăm variabilele cu tipuri corecte
-let app: FirebaseApp;
-let auth: Auth;
-let firestore: Firestore;
-let storage: FirebaseStorage;
-let functions: Functions;
-let analytics: Analytics | null = null;
-export let isInitialized = false;
-export let db: Firestore;
-
-// Inițializare Firebase - acesta este acum singurul punct de inițializare
-export const initializeFirebase = () => {
-  // Verificăm dacă Firebase a fost deja inițializat pentru a evita reinițializarea
-  if (isInitialized) {
-    logger.info("Firebase already initialized");
-    return { app, auth, firestore, storage, functions };
-  }
-
-  try {
-    logger.info("Initializing Firebase...");
-    
-    // Inițializăm Firebase
-    app = initializeApp(firebaseConfig);
-    auth = getAuth(app);
-    firestore = getFirestore(app);
-    storage = getStorage(app);
-    functions = getFunctions(app);
-    db = firestore; // Setăm variabila db pentru compatibilitate
-    isInitialized = true;
-    
-    // Inițializare Analytics doar în mediul de producție și doar dacă este suportat
-    if (isProd) {
-      isSupported().then(supported => {
-        if (supported) {
-          analytics = getAnalytics(app);
-          logger.info("Firebase Analytics inițializat");
-        } else {
-          logger.warn("Firebase Analytics nu este suportat în acest browser/mediu");
-        }
-      }).catch(error => {
-        logger.error("Eroare la inițializarea Firebase Analytics", error);
-      });
-    }
-    
-    // Conectarea la emulatori dacă este necesar
-    if (useEmulators()) {
-      logger.info("Conectare la emulatorii Firebase...");
-      
-      const emulatorConfig = getEmulatorConfig();
-      if (emulatorConfig) {
-        // Conectăm emulatorii doar dacă avem configurații valide
-        if (emulatorConfig.auth) {
-          connectAuthEmulator(
-            auth, 
-            `http://${emulatorConfig.auth.host}:${emulatorConfig.auth.port}`, 
-            { disableWarnings: true }
-          );
-        }
-        
-        if (emulatorConfig.firestore) {
-          connectFirestoreEmulator(
-            firestore, 
-            emulatorConfig.firestore.host, 
-            emulatorConfig.firestore.port
-          );
-        }
-        
-        if (emulatorConfig.storage) {
-          connectStorageEmulator(
-            storage, 
-            emulatorConfig.storage.host, 
-            emulatorConfig.storage.port
-          );
-        }
-        
-        if (emulatorConfig.functions) {
-          connectFunctionsEmulator(
-            functions, 
-            emulatorConfig.functions.host, 
-            emulatorConfig.functions.port
-          );
-        }
-      }
-    }
-    
-    logger.info("Firebase initialization successful");
-    return { app, auth, firestore, storage, functions };
-  } catch (error) {
-    logger.error("Error initializing Firebase:", error);
-    throw error;
-  }
-};
 
 // Interfața pentru datele de înregistrare la evenimente
 interface EventRegistrationData {
@@ -165,10 +61,6 @@ interface EventRegistrationData {
 
 // Trimitere email de înregistrare la eveniment
 export const sendEventRegistrationEmail = async (data: EventRegistrationData) => {
-  if (!isInitialized) {
-    initializeFirebase();
-  }
-  
   try {    
     logger.info("Trimitere email de înregistrare la eveniment", data);
     
@@ -188,8 +80,9 @@ export const sendEventRegistrationEmail = async (data: EventRegistrationData) =>
       };
       
       // Adăugăm înregistrarea în colecția eventRegistrations pentru compatibilitate cu panoul admin
-      const registrationRef = doc(collection(firestore, "eventRegistrations"));
-      await setDoc(registrationRef, eventRegistrationData);
+      // Corectăm apelul doc pentru a include firestore și calea
+      const registrationRef = firestoreAPI.doc(firestore, "eventRegistrations", firestoreAPI.serverTimestamp().toString());
+      await firestoreAPI.setDoc(registrationRef, eventRegistrationData, { merge: false });
       
       logger.info("Datele de participare salvate în Firestore");
     } catch (firestoreError: unknown) {
@@ -198,7 +91,7 @@ export const sendEventRegistrationEmail = async (data: EventRegistrationData) =>
     }
     
     // Folosim o funcție Cloud Functions pentru email
-    const sendEmailFunction = httpsCallable(functions, "sendEventRegistrationEmail");
+    const sendEmailFunction = functionsAPI.httpsCallable(functions, "sendEventRegistrationEmail");
     const result = await sendEmailFunction(data);
     
     logger.debug("Rezultat funcție email:", result);
@@ -228,14 +121,10 @@ export const sendEventRegistrationEmail = async (data: EventRegistrationData) =>
 
 // Verifică dacă un utilizator este admin
 export const isAdmin = async (uid: string): Promise<boolean> => {
-  if (!isInitialized) {
-    initializeFirebase();
-  }
-  
   try {
     // Verificăm în baza de date
-    const userRef = doc(firestore, "users", uid);
-    const userDoc = await getDoc(userRef);
+    const userRef = firestoreAPI.doc(firestore, "users", uid);
+    const userDoc = await firestoreAPI.getDoc(userRef);
     
     if (userDoc.exists()) {
       const userData = userDoc.data();
@@ -243,8 +132,8 @@ export const isAdmin = async (uid: string): Promise<boolean> => {
     }
     
     // Verificăm în colecția de administratori pentru compatibilitate
-    const adminRef = doc(firestore, "admins", uid);
-    const adminDoc = await getDoc(adminRef);
+    const adminRef = firestoreAPI.doc(firestore, "admins", uid);
+    const adminDoc = await firestoreAPI.getDoc(adminRef);
     
     return adminDoc.exists();
   } catch (error: unknown) {
@@ -260,15 +149,11 @@ export const isAdminByEmail = (email: string): boolean => {
 
 // Asigură drepturile de administrator în baza de date
 export const ensureAdminRights = async (uid: string, email: string): Promise<boolean> => {
-  if (!isInitialized) {
-    initializeFirebase();
-  }
-  
   try {
     // Căutăm în colecția cu lista de administratori autorizați
-    const adminsListRef = collection(firestore, "admin_emails");
-    const q = query(adminsListRef, where("email", "==", email));
-    const querySnapshot = await getDocs(q);
+    const adminsListRef = firestoreAPI.collection(firestore, "admin_emails");
+    const q = firestoreAPI.query(adminsListRef, firestoreAPI.where("email", "==", email));
+    const querySnapshot = await firestoreAPI.getDocs(q);
     
     if (querySnapshot.empty) {
       logger.warn(`Utilizatorul ${email} nu este în lista de administratori autorizați`);
@@ -276,20 +161,20 @@ export const ensureAdminRights = async (uid: string, email: string): Promise<boo
     }
     
     // Setăm drepturile de administrator în baza de date
-    const userRef = doc(firestore, "users", uid);
-    await setDoc(userRef, {
+    const userRef = firestoreAPI.doc(firestore, "users", uid);
+    await firestoreAPI.setDoc(userRef, {
       isAdmin: true,
       role: "admin",
       updatedAt: new Date()
     }, { merge: true });
     
     // Adăugăm și în colecția de administratori pentru compatibilitate
-    const adminRef = doc(firestore, "admins", uid);
-    await setDoc(adminRef, {
+    const adminRef = firestoreAPI.doc(firestore, "admins", uid);
+    await firestoreAPI.setDoc(adminRef, {
       email,
       uid,
       createdAt: new Date()
-    });
+    }, { merge: true });
     
     return true;
   } catch (error: unknown) {
@@ -300,15 +185,11 @@ export const ensureAdminRights = async (uid: string, email: string): Promise<boo
 
 // Adaugă un nou administrator în baza de date
 export const addAdminUser = async (email: string, adminName?: string): Promise<boolean> => {
-  if (!isInitialized) {
-    initializeFirebase();
-  }
-  
   try {
     // Verificăm dacă email-ul este deja în colecția admin_emails
-    const adminsListRef = collection(firestore, "admin_emails");
-    const q = query(adminsListRef, where("email", "==", email));
-    const querySnapshot = await getDocs(q);
+    const adminsListRef = firestoreAPI.collection(firestore, "admin_emails");
+    const q = firestoreAPI.query(adminsListRef, firestoreAPI.where("email", "==", email));
+    const querySnapshot = await firestoreAPI.getDocs(q);
     
     if (!querySnapshot.empty) {
       logger.info(`Utilizatorul ${email} este deja în lista de administratori`);
@@ -316,35 +197,36 @@ export const addAdminUser = async (email: string, adminName?: string): Promise<b
     }
     
     // Adăugăm email-ul în colecția admin_emails
-    const adminEmailRef = doc(collection(firestore, "admin_emails"));
-    await setDoc(adminEmailRef, {
+    // Corectăm apelul doc pentru a include firestore și calea
+    const adminEmailRef = firestoreAPI.doc(firestore, "admin_emails", Date.now().toString());
+    await firestoreAPI.setDoc(adminEmailRef, {
       email,
       name: adminName || email.split("@")[0],
       addedAt: new Date(),
       active: true
-    });
+    }, { merge: false });
     
     logger.info(`Administrator nou adăugat: ${email}`);
     
     // Verificăm dacă există deja un cont de utilizator cu acest email
     // și îi actualizăm drepturile dacă există
-    const usersRef = collection(firestore, "users");
-    const userQuery = query(usersRef, where("email", "==", email));
-    const userSnapshot = await getDocs(userQuery);
+    const usersRef = firestoreAPI.collection(firestore, "users");
+    const userQuery = firestoreAPI.query(usersRef, firestoreAPI.where("email", "==", email));
+    const userSnapshot = await firestoreAPI.getDocs(userQuery);
     
     if (!userSnapshot.empty) {
       // Utilizatorul există, actualizăm drepturile
       const userDoc = userSnapshot.docs[0];
       const userId = userDoc.id;
       
-      await setDoc(doc(firestore, "users", userId), {
+      await firestoreAPI.setDoc(firestoreAPI.doc(firestore, "users", userId), {
         isAdmin: true,
         role: "admin",
         updatedAt: new Date()
       }, { merge: true });
       
       // Adăugăm și în colecția de administratori pentru compatibilitate
-      await setDoc(doc(firestore, "admins", userId), {
+      await firestoreAPI.setDoc(firestoreAPI.doc(firestore, "admins", userId), {
         email,
         uid: userId,
         createdAt: new Date()
@@ -360,8 +242,8 @@ export const addAdminUser = async (email: string, adminName?: string): Promise<b
   }
 };
 
-// Obține lista tuturor administratorilor din sistem
-export const getAllAdmins = async (): Promise<Array<{
+// Definim o interfață pentru un administrator
+interface Admin {
   id?: string;
   email: string;
   source: string;
@@ -370,29 +252,19 @@ export const getAllAdmins = async (): Promise<Array<{
   name?: string;
   role?: string;
   [key: string]: unknown;
-}>> => {
-  if (!isInitialized) {
-    initializeFirebase();
-  }
-  
+}
+
+// Obține lista tuturor administratorilor din sistem
+export const getAllAdmins = async (): Promise<Admin[]> => {
   try {
-    const adminsList: Array<{
-      id?: string;
-      email: string;
-      source: string;
-      addedAt: Date | null;
-      active: boolean;
-      name?: string;
-      role?: string;
-      [key: string]: unknown;
-    }> = [];
+    const adminsList: Admin[] = [];
     
     // Obținem lista din colecția admin_emails
-    const adminsListRef = collection(firestore, "admin_emails");
-    const emailsSnapshot = await getDocs(adminsListRef);
+    const adminsListRef = firestoreAPI.collection(firestore, "admin_emails");
+    const emailsSnapshot = await firestoreAPI.getDocs(adminsListRef);
     
     // Transformăm datele și le adăugăm în lista rezultat
-    emailsSnapshot.forEach(doc => {
+    emailsSnapshot.forEach((doc: QueryDocumentSnapshot<DocumentData>) => {
       const data = doc.data();
       adminsList.push({
         id: doc.id,
@@ -418,12 +290,12 @@ export const getAllAdmins = async (): Promise<Array<{
     }
     
     // Obținem și utilizatorii cu rol de admin din colecția users
-    const usersRef = collection(firestore, "users");
-    const usersQuery = query(usersRef, where("role", "==", "admin"));
-    const usersSnapshot = await getDocs(usersQuery);
+    const usersRef = firestoreAPI.collection(firestore, "users");
+    const usersQuery = firestoreAPI.query(usersRef, firestoreAPI.where("role", "==", "admin"));
+    const usersSnapshot = await firestoreAPI.getDocs(usersQuery);
     
     // Adăugăm și utilizatorii admin care nu sunt deja incluși
-    usersSnapshot.forEach(doc => {
+    usersSnapshot.forEach((doc: QueryDocumentSnapshot<DocumentData>) => {
       const userData = doc.data();
       if (!adminsList.some(admin => admin.email === userData.email)) {
         adminsList.push({
@@ -447,21 +319,17 @@ export const getAllAdmins = async (): Promise<Array<{
 
 // Revocă drepturile de administrator pentru un utilizator
 export const revokeAdminRights = async (email: string): Promise<boolean> => {
-  if (!isInitialized) {
-    initializeFirebase();
-  }
-  
   try {
     let modified = false;
     
     // Ștergem din colecția admin_emails
-    const adminsListRef = collection(firestore, "admin_emails");
-    const q = query(adminsListRef, where("email", "==", email));
-    const querySnapshot = await getDocs(q);
+    const adminsListRef = firestoreAPI.collection(firestore, "admin_emails");
+    const q = firestoreAPI.query(adminsListRef, firestoreAPI.where("email", "==", email));
+    const querySnapshot = await firestoreAPI.getDocs(q);
     
     if (!querySnapshot.empty) {
-      const batch = writeBatch(firestore);
-      querySnapshot.forEach(doc => {
+      const batch = firestoreAPI.writeBatch(firestore);
+      querySnapshot.forEach((doc: QueryDocumentSnapshot<DocumentData>) => {
         batch.delete(doc.ref);
       });
       await batch.commit();
@@ -470,13 +338,13 @@ export const revokeAdminRights = async (email: string): Promise<boolean> => {
     }
     
     // Actualizăm utilizatorul în colecția users
-    const usersRef = collection(firestore, "users");
-    const userQuery = query(usersRef, where("email", "==", email));
-    const userSnapshot = await getDocs(userQuery);
+    const usersRef = firestoreAPI.collection(firestore, "users");
+    const userQuery = firestoreAPI.query(usersRef, firestoreAPI.where("email", "==", email));
+    const userSnapshot = await firestoreAPI.getDocs(userQuery);
     
     if (!userSnapshot.empty) {
-      const batch = writeBatch(firestore);
-      userSnapshot.forEach(docSnapshot => {
+      const batch = firestoreAPI.writeBatch(firestore);
+      userSnapshot.forEach((docSnapshot: QueryDocumentSnapshot<DocumentData>) => {
         batch.update(docSnapshot.ref, {
           isAdmin: false,
           role: "user",
@@ -484,7 +352,7 @@ export const revokeAdminRights = async (email: string): Promise<boolean> => {
         });
         
         // Ștergem și din colecția admins dacă există
-        const adminRef = doc(firestore, "admins", docSnapshot.id);
+        const adminRef = firestoreAPI.doc(firestore, "admins", docSnapshot.id);
         batch.delete(adminRef);
       });
       await batch.commit();
@@ -509,10 +377,6 @@ export const updateUserData = async (userData: {
   role?: string;
   [key: string]: unknown;
 }): Promise<boolean> => {
-  if (!isInitialized) {
-    initializeFirebase();
-  }
-  
   try {
     // Filter out undefined values to prevent Firestore errors
     const cleanedData: Record<string, unknown> = Object.entries(userData).reduce((acc, [key, value]) => {
@@ -526,8 +390,8 @@ export const updateUserData = async (userData: {
     cleanedData.updatedAt = new Date();
     
     // Actualizăm datele în baza de date
-    const userRef = doc(firestore, "users", userData.uid);
-    await setDoc(userRef, cleanedData, { merge: true });
+    const userRef = firestoreAPI.doc(firestore, "users", userData.uid);
+    await firestoreAPI.setDoc(userRef, cleanedData, { merge: true });
     
     return true;
   } catch (error: unknown) {
@@ -546,21 +410,17 @@ export const clearAuthState = (): void => {
 
 // Login cu Google prin redirect
 export const loginWithGoogleRedirect = (redirectPath?: string): void => {
-  if (!isInitialized) {
-    initializeFirebase();
-  }
-  
   // Salvăm informațiile de redirecționare în sessionStorage
   logger.info("Începere redirecționare login Google cu path:", redirectPath);
   sessionStorage.setItem("googleAuthRedirect", "true");
   sessionStorage.setItem("afterLoginRedirect", redirectPath || "/dashboard");
   
   // Inițializăm Google Auth Provider
-  const googleProvider = new GoogleAuthProvider();
+  const googleProvider = new authAPI.GoogleAuthProvider();
   googleProvider.setCustomParameters({ prompt: "select_account" });
   
   // Executăm redirecționarea
-  signInWithRedirect(auth, googleProvider)
+  authAPI.signInWithRedirect(auth, googleProvider)
     .catch((error: unknown) => {
       logger.error("Eroare în timpul redirecționării către Google", error);
       clearAuthState();
@@ -580,6 +440,3 @@ export const handleGoogleAuthRedirects = (): boolean => {
   
   return isRedirecting;
 };
-
-// Export pentru a utiliza în aplicație
-export { app, auth, firestore, storage, functions, analytics };

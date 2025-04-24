@@ -3,17 +3,52 @@ import react from "@vitejs/plugin-react";
 import path from "path";
 import { visualizer } from "rollup-plugin-visualizer";
 import compression from "vite-plugin-compression";
+import type { ProxyOptions } from "vite";
 
 export default defineConfig(({ mode }) => {
-    // Încărcăm variabilele de mediu bazate pe modul curent (dev/prod)
     const env = loadEnv(mode, process.cwd());
     const isProd = mode === "production";
     const isLegacyBuild = env.VITE_LEGACY_BUILD === "true";
     
+    // Dezactivăm consolele în proxy doar în producție
+    const shouldLogProxy = !isProd;
+    
+    // Configurația proxy comună
+    const analyticsProxyConfig: ProxyOptions = {
+        target: "https://lupulsicorbul.com",
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/api\/analytics-proxy/, "/api/analytics"),
+        configure: (proxy, _options) => {
+            proxy.on("error", (err, _req, _res) => {
+                // eslint-disable-next-line no-console
+                shouldLogProxy && console.log("Proxy error:", err);
+            });
+            proxy.on("proxyReq", (proxyReq, req, _res) => {
+                // eslint-disable-next-line no-console
+                shouldLogProxy && console.log("Sending Request to the Target:", req.method, req.url);
+            });
+            proxy.on("proxyRes", (proxyRes, req, _res) => {
+                // eslint-disable-next-line no-console
+                shouldLogProxy && console.log("Received Response from the Target:", proxyRes.statusCode, req.url);
+            });
+        },
+        bypass: (req, res) => {
+            if (req.method === "OPTIONS") {
+                res.statusCode = 200;
+                res.setHeader("Access-Control-Allow-Origin", "*");
+                res.setHeader("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
+                res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization");
+                res.setHeader("Access-Control-Max-Age", "86400");
+                res.end();
+                return false; // Schimbat din true în false pentru a corecta eroarea de tip
+            }
+            return undefined; // Explicit returnăm undefined pentru alte cazuri
+        }
+    };
+    
     return {
         plugins: [
             react({
-                // Activăm optimizările pentru componente în producție
                 babel: {
                     plugins: [
                         isProd && [
@@ -22,16 +57,13 @@ export default defineConfig(({ mode }) => {
                         ]
                     ].filter(Boolean)
                 }
-                // Am eliminat opțiunea fastRefresh care nu era compatibilă
             }),
-            // Adăugăm plugin-ul de vizualizare a analizei dimensiunii bundle-ului
             visualizer({
                 filename: "./dist/stats.html",
-                open: true,
+                open: false,
                 gzipSize: true,
                 brotliSize: true,
             }),
-            // Adăugăm compresie GZIP și Brotli pentru producție
             isProd && compression({
                 algorithm: "gzip",
                 ext: ".gz",
@@ -49,106 +81,107 @@ export default defineConfig(({ mode }) => {
         },
         
         server: {
-            port: 5173,
+            port: 3000,
             host: true,
             open: true,
             hmr: {
                 overlay: false,
             },
+            proxy: {
+                "/api/analytics-proxy": analyticsProxyConfig
+            },
         },
         
         preview: {
-            port: 5173,
+            port: 5174,
+            proxy: {
+                "/api/analytics-proxy": analyticsProxyConfig
+            },
         },
         
-        // Optimizări pentru build
         build: {
-            // Generarea de sourcemaps doar în modul dev
-            sourcemap: !isProd,
-            
-            // Activăm minificarea CSS-ului și a JS-ului
+            outDir: "dist",
+            sourcemap: true,
             minify: isProd ? "terser" : false,
-            
-            // Opțiuni pentru terser (minificare)
             terserOptions: isProd ? {
                 compress: {
-                    drop_console: !isLegacyBuild,     // Păstrăm console în legacy build pentru debugging
-                    drop_debugger: true,              // Elimină debugger
+                    drop_console: !isLegacyBuild,
+                    drop_debugger: true,
                     pure_funcs: isLegacyBuild ? [] : ["console.log", "console.info", "console.debug"],
-                    passes: 2,                        // Multipasuri pentru o minificare mai bună
-                    // Setări speciale pentru a preveni TDZ errors
-                    sequences: isLegacyBuild ? false : true,
-                    inline: isLegacyBuild ? 0 : 1,
+                    passes: 2,
+                    // Îmbunătățim terser pentru a evita erorile TDZ
+                    sequences: false,       // Evităm combinarea expresiilor, care poate cauza erori TDZ
+                    inline: 0,
+                    collapse_vars: false,
+                    reduce_vars: false,
+                    unsafe: false,
+                    unsafe_arrows: false,
+                    unsafe_comps: false,
+                    unsafe_Function: false,
+                    unsafe_math: false,
+                    unsafe_methods: false,
+                    unsafe_proto: false,
+                    unsafe_regexp: false,
+                    unsafe_undefined: false,
                 },
                 output: {
-                    comments: false,        // Elimină comentariile
+                    comments: false,
                 },
                 mangle: {
-                    safari10: true,         // Compatibilitate Safari 10
+                    safari10: true,
+                    reserved: ["app", "firebaseApp", "auth", "authModule", "firestore", "firestoreModule", 
+                               "storage", "storageModule", "functions", "functionsModule", "analytics", "analyticsModule"],
                 },
-                // Optimizare pentru TDZ issues
-                ecma: isLegacyBuild ? 5 : 2020,  // ES5 pentru legacy browser support
-                module: !isLegacyBuild,  // Dezactivăm module processing pentru legacy build
-                ie8: isLegacyBuild,      // Activăm compatibilitate IE8 pentru legacy build
+                ecma: 2020,
+                keep_classnames: true,
+                keep_fnames: true,
+                module: true,
             } : undefined,
-            
-            // Divizăm bundle-ul pentru a optimiza încărcarea
             rollupOptions: {
                 output: {
+                    entryFileNames: "assets/[name].[hash].js",
+                    chunkFileNames: "assets/[name].[hash].js",
+                    assetFileNames: "assets/[name].[hash].[ext]",
                     manualChunks: (id) => {
-                        if (isLegacyBuild) {
-                            // Pentru legacy build, folosim o strategie foarte simplificată
-                            // pentru a evita TDZ errors
-                            if (id.includes("node_modules")) {
-                                if (id.includes("react") || id.includes("firebase")) {
-                                    return "vendor";
-                                }
-                                return "vendor-others";
-                            }
-                            if (id.includes(".css")) {
-                                return "styles";
-                            }
-                            return null;
-                        }
-                        
-                        // Strategia normală, mai granulară
                         if (id.includes("node_modules")) {
-                            // Separam React, ReactDOM și react-router ca un chunk major
-                            if (id.includes("react/") || id.includes("react-dom") || id.includes("react-router")) {
+                            if (id.includes("react") || id.includes("react-dom") || id.includes("react-router")) {
                                 return "vendor-react";
                             }
-                            
-                            // Firebase într-un chunk separat
                             if (id.includes("firebase/")) {
-                                return "vendor-firebase";
+                                return "vendor-firebase-core";
                             }
-                            
-                            // Separăm modulele problematice în chunk-uri individuale
-                            // pentru a preveni TDZ issues
                             if (id.includes("@emotion/") || id.includes("@mui/")) {
                                 return "vendor-ui-libs";
                             }
-                            
                             if (id.includes("@reduxjs/") || id.includes("react-redux")) {
                                 return "vendor-redux";
                             }
-                            
-                            // Adăugăm mai multă granularitate pentru a evita TDZ issues
                             if (id.includes("framer-motion")) {
                                 return "vendor-motion";
                             }
-                            
-                            // Alte librării third-party
+                            if (id.includes("lodash") || id.includes("date-fns")) {
+                                return "vendor-utils";
+                            }
+                            // Adaugă un chunk suplimentar pentru TDZ prevention
+                            if (id.includes("src/utils/tdz-prevention")) {
+                                return "vendor-tdz-prevention";
+                            }
                             return "vendor-others";
                         }
-                        
-                        // Separam CSS-urile
                         if (id.includes(".css")) {
                             return "styles";
                         }
                     },
+                    // Adăugăm inițializare TDZ înainte de conținutul chunk-urilor
+                    intro: `
+                        // TDZ prevention
+                        var __tdz_e;
+                        var __tdz_handlers = [];
+                        var __tdz_cache = new Map();
+                        var __tdz_load_promises = {};
+                        // End TDZ prevention
+                    `
                 },
-                // Excludem modulele server-side din build
                 external: [
                     "express",
                     "cors",
@@ -159,25 +192,16 @@ export default defineConfig(({ mode }) => {
                     "safe-buffer"
                 ],
             },
-            
-            // Opțiuni pentru commonjs
             commonjsOptions: {
-                esmExternals: !isLegacyBuild,
-                transformMixedEsModules: true,  // Optimizare pentru module mixte
-                // Adăugăm opțiuni de transformare pentru a rezolva TDZ issues în modulele CJS
-                strictRequires: isLegacyBuild ? 'debug' : undefined,
+                esmExternals: true,
+                transformMixedEsModules: true,
+                strictRequires: false,
             },
-            
-            // Setări pentru divizarea chunk-urilor
-            chunkSizeWarningLimit: 1000, // Limita de avertizare la 1MB
-            
-            // Activăm comprimarea pentru deployment
-            assetsInlineLimit: 4096, // Limite pentru inlining (în bytes)
+            chunkSizeWarningLimit: 1000,
+            assetsInlineLimit: 4096,
         },
         
-        // Optimizarea dependențelor
         optimizeDeps: {
-            // Excludem aceste module din optimizarea dependențelor
             exclude: [
                 "express",
                 "cors",
@@ -187,7 +211,6 @@ export default defineConfig(({ mode }) => {
                 "mongoose",
                 "safe-buffer"
             ],
-            // Includem aceste module în optimizarea dependențelor
             include: [
                 "react", 
                 "react-dom",
@@ -195,7 +218,9 @@ export default defineConfig(({ mode }) => {
                 "firebase/app",
                 "firebase/auth",
                 "firebase/firestore",
-                // Adăugăm dependențe problematice pentru pre-bundling
+                "firebase/analytics",
+                "firebase/storage",
+                "firebase/functions",
                 "@emotion/react",
                 "@emotion/styled",
                 "@mui/material",
@@ -205,27 +230,26 @@ export default defineConfig(({ mode }) => {
                 "framer-motion",
                 "react-toastify"
             ],
-            // Activăm optimizări de esbuild
             esbuildOptions: {
-                target: isLegacyBuild ? "es2015" : "es2020", // ES2015 pentru compatibilitate extinsă
-                treeShaking: true,          // Activăm treeShaking pentru a elimina codul nefolosit
-                legalComments: "none",      // Eliminăm comentariile legale
+                target: "es2020",
+                treeShaking: true,
+                legalComments: "none",
+                minify: isProd,
+                minifyIdentifiers: false,
+                minifySyntax: isProd,
+                minifyWhitespace: isProd,
             },
         },
         
-        // Configurare pentru variabile de mediu
         define: {
-            // Asigurăm că process.env este disponibil
             "process.env": env,
-            // Adăugăm informații despre build
             __APP_VERSION__: JSON.stringify(env.VITE_APP_VERSION || "1.0.0"),
             __BUILD_DATE__: JSON.stringify(new Date().toISOString()),
             __DEV__: mode !== "production",
-            // Adăugăm flag pentru legacy build
             __LEGACY_BUILD__: isLegacyBuild,
+            __PREVENT_TDZ__: true,
         },
         
-        // Optimizare imagini
         assetsInclude: ["**/*.png", "**/*.jpg", "**/*.jpeg", "**/*.gif", "**/*.svg"],
     };
 });

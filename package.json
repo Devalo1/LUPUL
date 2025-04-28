@@ -1,0 +1,123 @@
+{
+  "name": "my-typescript-app",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "dependencies": {
+    "@emotion/react": "^11.14.0",
+    "@emotion/styled": "^11.14.0",
+    "@mui/icons-material": "^7.0.2",
+    "@mui/material": "^7.0.2",
+    "@reduxjs/toolkit": "^2.7.0",
+    "@types/mongoose": "^5.11.97",
+    "axios": "^1.8.4",
+    "cors": "^2.8.5",
+    "date-fns": "^4.1.0",
+    "express": "^5.1.0",
+    "firebase": "^11.6.0",
+    "firebase-functions": "^6.3.2",
+    "framer-motion": "^10.18.0",
+    "mongoose": "^7.8.6",
+    "mongoose-delete": "^1.0.2",
+    "nodemailer": "^6.10.0",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "react-firebase-hooks": "^5.1.1",
+    "react-icons": "^5.5.0",
+    "react-redux": "^9.2.0",
+    "react-router-dom": "^7.5.2",
+    "react-toastify": "^11.0.5",
+    "safe-buffer": "^5.2.1",
+    "web-vitals": "^3.5.2"
+  },
+  "devDependencies": {
+    "@google-cloud/storage": "^7.16.0",
+    "@tailwindcss/aspect-ratio": "^0.4.2",
+    "@tailwindcss/forms": "^0.5.7",
+    "@tailwindcss/typography": "^0.5.10",
+    "@testing-library/jest-dom": "^6.6.3",
+    "@testing-library/react": "^16.3.0",
+    "@testing-library/user-event": "^14.6.1",
+    "@types/connect": "^3.4.38",
+    "@types/http-errors": "^2.0.4",
+    "@types/jest": "^29.5.14",
+    "@types/node": "^20.10.0",
+    "@types/react": "^18.2.39",
+    "@types/react-dom": "^18.2.17",
+    "@typescript-eslint/eslint-plugin": "^6.21.0",
+    "@typescript-eslint/parser": "^6.21.0",
+    "@vitejs/plugin-react": "^4.2.0",
+    "autoprefixer": "^10.4.16",
+    "babel-plugin-transform-react-remove-prop-types": "^0.4.24",
+    "concurrently": "^9.1.2",
+    "eslint": "^8.57.1",
+    "eslint-plugin-react-hooks": "^4.6.0",
+    "eslint-plugin-react-refresh": "^0.4.4",
+    "firebase-admin": "^13.3.0",
+    "identity-obj-proxy": "^3.0.0",
+    "jest": "^29.7.0",
+    "jest-environment-jsdom": "^29.7.0",
+    "postcss": "^8.4.31",
+    "prettier": "^3.1.0",
+    "rollup-plugin-node-polyfills": "^0.2.1",
+    "rollup-plugin-visualizer": "^5.14.0",
+    "tailwindcss": "^3.3.5",
+    "terser": "^5.39.0",
+    "ts-jest": "^29.3.2",
+    "typescript": "^5.3.3",
+    "vite": "^6.2.5",
+    "vite-plugin-compression": "^0.5.1"
+  },
+  "scripts": {
+    "start": "vite",
+    "build": "tsc && vite build",
+    "build-netlify": "npm run build",
+    "test": "vitest",
+    "lint": "eslint .",
+    "preview": "vite preview",
+    "security-fix": "node scripts/security-fix.js",
+    "fix-dependencies": "node scripts/fix-dependencies.js",
+    "check-deps": "node scripts/check-dependencies.js",
+    "clean": "rimraf node_modules dist",
+    "dev": "vite",
+    "serve": "vite preview",
+    "emulators": "firebase emulators:start",
+    "emulators:optimized": "node scripts/start-optimized-emulators.js",
+    "dev:all": "concurrently \"npm run dev\" \"npm run emulators\"",
+    "dev:optimized": "concurrently \"npm run dev\" \"npm run emulators:optimized\"",
+    "check-emulators": "node scripts/check-emulators.js",
+    "toggle-firebase": "node scripts/toggle-firebase-mode.js"
+  },
+  "eslintConfig": {
+    "extends": [
+      "react-app",
+      "react-app/jest"
+    ]
+  },
+  "browserslist": {
+    "production": [
+      ">0.2%",
+      "not dead",
+      "not op_mini all"
+    ],
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ]
+  },
+  "firebaseAuth": {
+    "import": [
+      "import { getAuth, onAuthStateChanged } from 'firebase/auth';"
+    ],
+    "authLogic": [
+      "const auth = getAuth();",
+      "onAuthStateChanged(auth, (user) => { if (user) { console.log('User is signed in:', user); } else { console.log('No user is signed in.'); } });"
+    ]
+  },
+  "build": {
+    "base": "functions",
+    "command": "npm run build-netlify",
+    "publish": "dist"
+  }
+}

@@ -1,0 +1,592 @@
+@import './styles/variables.css';
+@import './assets/styles/main.css';
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Global theme variables - Modified for a softer, more elegant look */
+:root {
+  /* Nuanțe mai calme ale culorilor României */
+  --ro-blue: #1a4b8c;
+  --ro-yellow: #f5d25a;
+  --ro-red: #b93645;
+
+  /* Culori generale pentru temă light */
+  --bg-primary: #f8f9fd;
+  --bg-secondary: #ffffff;
+  --bg-overlay: rgba(255, 255, 255, 0.9);
+  --text-primary: #333333;
+  --text-secondary: #555555;
+  --accent-color: #5d7fb9;
+
+  font-family: 'Montserrat', sans-serif;
+  line-height: 1.5;
+  font-weight: 400;
+
+  color-scheme: light dark;
+  color: var(--text-primary);
+  background-color: var(--bg-primary);
+
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  -webkit-text-size-adjust: 100%;
+
+  /* Z-index variables */
+  --z-content: 1;
+  --z-dropdown: 50;
+  --z-fixed: 100;
+}
+
+/* Dark theme variables */
+.dark {
+  --bg-primary: #1f2937;
+  --bg-secondary: #111827;
+  --bg-overlay: rgba(17, 24, 39, 0.9);
+  --text-primary: #f3f4f6;
+  --text-secondary: #d1d5db;
+  --accent-color: #60a5fa;
+}
+
+/* Reset CSS */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+/* Full page background setup - high quality but softer */
+body {
+  margin: 0;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+    sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+
+  /* Un overlay mai subtil peste background care reduce intensitatea */
+  background-image: linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)), url('/images/background.jpeg') !important;
+  background-size: cover !important;
+  background-position: center !important;
+  background-repeat: no-repeat !important;
+  background-attachment: fixed !important;
+  color: #f5f5f5; /* Text mai puțin strident */
+  min-height: 100vh;
+}
+
+/* Make the root container full height */
+#root {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Homepage specific container */
+.home-container {
+  width: 100%;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Content visibility control - mai subtilă și mai plăcută */
+.content-container {
+  background-color: rgba(0, 0, 0, 0.45);
+  backdrop-filter: blur(8px);
+  border-radius: 12px;
+  padding: 1.25rem;
+  margin: 1rem 0;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* Clear content area for overlapping issues - mai plăcută vizual */
+.content-area {
+  position: relative;
+  z-index: var(--z-content);
+  background-color: var(--bg-overlay);
+  border-radius: 0.75rem;
+  padding: 1.5rem;
+  margin-bottom: 1.5rem;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+}
+
+/* Ensure primary elements are visible */
+.navbar-container, 
+.footer-container, 
+.button-container,
+.home-buttons {
+  position: relative;
+  z-index: var(--z-dropdown);
+}
+
+/* Style buttons to stand out - aspect mai elegant */
+.btn,
+.hero-button,
+.btn-primary-light,
+.btn-secondary-light,
+.btn-tertiary-light {
+  position: relative;
+  z-index: var(--z-content);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  backdrop-filter: blur(4px);
+  font-weight: 600;
+  transition: all 0.3s ease;
+  letter-spacing: 0.3px;
+}
+
+.btn:hover,
+.hero-button:hover,
+.btn-primary-light:hover,
+.btn-secondary-light:hover,
+.btn-tertiary-light:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.4);
+}
+
+/* Fixed header/navbar */
+header, .navbar-romanian-flag {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  z-index: var(--z-fixed);
+}
+
+/* Footer positioning */
+footer {
+  margin-top: auto;
+  position: relative;
+  z-index: var(--z-fixed);
+}
+
+/* Links - culori mai plăcute */
+a {
+  font-weight: 500;
+  color: #4c6ef5;
+  text-decoration: inherit;
+  transition: color 0.2s ease;
+}
+a:hover {
+  color: #3b5bdb;
+}
+
+/* Headings */
+h1 {
+  font-size: 3.2em;
+  line-height: 1.1;
+}
+
+/* Buttons */
+button {
+  border-radius: 8px;
+  border: 1px solid transparent;
+  padding: 0.6em 1.2em;
+  font-size: 1em;
+  font-weight: 500;
+  font-family: inherit;
+  background-color: #1a1a1a;
+  cursor: pointer;
+  transition: border-color 0.25s;
+}
+button:hover {
+  border-color: #646cff;
+}
+button:focus,
+button:focus-visible {
+  outline: 4px auto -webkit-focus-ring-color;
+}
+
+/* Button styles used in the Home component */
+@layer components {
+  .btn-primary-light {
+    @apply bg-blue-500 bg-opacity-90 text-white rounded-lg font-semibold hover:bg-blue-600 transition-colors;
+  }
+  
+  .btn-secondary-light {
+    @apply bg-green-600 bg-opacity-90 text-white rounded-lg font-semibold hover:bg-green-700 transition-colors;
+  }
+  
+  .btn-tertiary-light {
+    @apply bg-indigo-500 bg-opacity-90 text-white rounded-lg font-semibold hover:bg-indigo-600 transition-colors;
+  }
+}
+
+/* Add the fade-out animation for loaders */
+@keyframes fadeOut {
+  from { opacity: 1; }
+  to { opacity: 0; }
+}
+
+.fade-out {
+  animation: fadeOut 0.5s forwards;
+}
+
+/* Optimize animation on low-end devices */
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+  
+  .animate-spin {
+    animation-duration: 1s !important;
+  }
+}
+
+/* Mobile viewport optimization - prevent scaling issues */
+@viewport {
+  width: device-width;
+  initial-scale: 1;
+  maximum-scale: 5;
+  user-scalable: yes;
+}
+
+/* Mobile performance optimizations */
+@media screen and (max-width: 768px) {
+  /* Force hardware acceleration for animations */
+  .animate-spin, 
+  .loading-spinner-container, 
+  .loading-spinner-inner,
+  .hero-content,
+  .nav-item,
+  .nav-link,
+  .btn,
+  .hero-button,
+  .menu-button,
+  .trust-badge {
+    transform: translateZ(0);
+    will-change: transform;
+    backface-visibility: hidden;
+    perspective: 1000px;
+  }
+  
+  /* Better touch targets for mobile */
+  button, 
+  .btn,
+  .nav-link,
+  a[role="button"],
+  input[type="button"],
+  input[type="submit"] {
+    min-height: 44px;
+    min-width: 44px;
+    padding: 0.6rem 1rem;
+    touch-action: manipulation;
+  }
+  
+  /* Optimizații specifice pentru dispozitive mai mici (ca Realme 5 Pro) */
+  @media screen and (max-width: 380px) {
+    .hero-content {
+      padding: 1rem 0.5rem;
+    }
+    
+    .btn, .hero-button {
+      padding: 0.5rem 0.75rem;
+      font-size: 0.9rem;
+    }
+    
+    h1 { font-size: 1.8rem; }
+    h2 { font-size: 1.5rem; }
+    h3 { font-size: 1.3rem; }
+    
+    .section-title {
+      font-size: 1.5rem;
+    }
+    
+    /* Prevent text overflow */
+    p, span, div {
+      word-wrap: break-word;
+      overflow-wrap: break-word;
+      hyphens: auto;
+    }
+  }
+  
+  /* Brave browser specific fixes */
+  @supports (-webkit-touch-callout: none) and (not (translate: none)) {
+    /* Îmbunătățește performanța pentru animații pe Brave/WebKit */
+    * {
+      transform: translateZ(0);
+    }
+    
+    /* Fix pentru probleme de poziționare fixă pe Brave */
+    .side-navigation.open {
+      transform: none !important;
+      right: 0 !important;
+      visibility: visible !important;
+      display: flex !important;
+    }
+    
+    /* Fix pentru focus pe elemente interactive */
+    a:focus, button:focus, input:focus, select:focus, textarea:focus {
+      outline: 2px solid rgba(59, 130, 246, 0.5) !important;
+    }
+  }
+}
+
+/* Mobile performance optimizations */
+@media screen and (max-width: 768px) {
+  /* Force hardware acceleration for animations */
+  .animate-spin, .loading-spinner-container, .loading-spinner-inner {
+    transform: translateZ(0);
+    will-change: transform;
+    backface-visibility: hidden;
+    perspective: 1000px;
+  }
+}
+
+/* Apply consistent text and background colors */
+.text-content {
+  color: var(--text-primary);
+}
+
+.bg-gradient-subtle {
+  background: linear-gradient(135deg, 
+    rgba(255, 255, 255, 0.8) 0%, 
+    rgba(247, 250, 252, 0.9) 100%);
+}
+
+/* Additional responsive utilities */
+.flex-responsive {
+  display: flex;
+  flex-direction: column;
+}
+
+@media (min-width: 768px) {
+  .flex-responsive {
+    flex-direction: row;
+  }
+}
+
+.gap-responsive {
+  gap: 1rem;
+}
+
+@media (min-width: 640px) {
+  .gap-responsive {
+    gap: 1.5rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  .gap-responsive {
+    gap: 2rem;
+  }
+}
+
+/* Responsive padding and margins */
+.p-responsive {
+  padding: 1rem;
+}
+
+@media (min-width: 640px) {
+  .p-responsive {
+    padding: 1.5rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  .p-responsive {
+    padding: 2rem;
+  }
+}
+
+/* Dark mode - culori mai plăcute și mai puțin stridente */
+@media (prefers-color-scheme: dark) {
+  :root {
+    color: #e2e8f0;
+    background-color: #1a202c;
+  }
+  a:hover {
+    color: #90cdf4;
+  }
+  button {
+    background-color: #2d3748;
+  }
+}
+
+/* Debug styles */
+.debug-info {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  background-color: rgba(0, 0, 0, 0.8);
+  color: #33ff33;
+  font-family: monospace;
+  padding: 10px;
+  max-width: 100%;
+  max-height: 200px;
+  overflow: auto;
+  z-index: 9999;
+  font-size: 12px;
+}
+
+/* Stiluri pentru pagina de login */
+.login-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 80vh;
+  padding: 2rem;
+}
+
+/* Stiluri pentru formularele de administrare - Corectare contrast */
+.admin-form input,
+.admin-form textarea,
+.admin-form select,
+input[type="text"],
+input[type="number"],
+input[type="email"],
+input[type="password"],
+input[type="url"],
+textarea,
+select {
+  color: #333333 !important;
+  background-color: #ffffff !important;
+  border: 1px solid #d1d5db !important;
+}
+
+.admin-form label,
+label {
+  color: #ffffff !important;
+  margin-bottom: 0.5rem;
+  display: block;
+  font-weight: 500;
+}
+
+/* Stiluri pentru butoane de formular din admin */
+.admin-form button,
+.admin-form .btn,
+.admin-form button[type="submit"] {
+  background-color: #2563eb !important;
+  color: white !important;
+  border: none !important;
+  padding: 0.5rem 1rem;
+  border-radius: 0.375rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.admin-form button:hover,
+.admin-form .btn:hover,
+.admin-form button[type="submit"]:hover {
+  background-color: #1d4ed8 !important;
+}
+
+.login-form-wrapper {
+  background-color: var(--bg-secondary);
+  border-radius: 1rem;
+  padding: 2rem;
+  width: 100%;
+  max-width: 450px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  backdrop-filter: blur(10px);
+}
+
+.login-form-wrapper h1 {
+  color: var(--text-primary);
+  font-size: 2rem;
+  text-align: center;
+  margin-bottom: 1.5rem;
+  font-weight: 600;
+}
+
+.form-group {
+  margin-bottom: 1.5rem;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 0.5rem;
+  font-weight: 500;
+  color: var(--text-primary);
+}
+
+.form-control {
+  width: 100%;
+  padding: 0.75rem;
+  border: 1px solid #e2e8f0;
+  border-radius: 0.5rem;
+  font-size: 1rem;
+  background-color: white;
+  color: #333;
+  transition: border-color 0.2s ease;
+}
+
+.form-control:focus {
+  border-color: var(--accent-color);
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(93, 127, 185, 0.2);
+}
+
+.btn-block {
+  display: block;
+  width: 100%;
+  margin-top: 0.5rem;
+  padding: 0.75rem 1rem;
+}
+
+.btn-primary {
+  background-color: var(--accent-color);
+  color: white;
+  border: none;
+  border-radius: 0.5rem;
+  font-weight: 600;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background-color 0.2s ease, transform 0.2s ease;
+}
+
+.btn-primary:hover {
+  background-color: #4b69a8;
+  transform: translateY(-2px);
+}
+
+.btn-outline-secondary {
+  background-color: transparent;
+  color: var(--text-primary);
+  border: 1px solid #e2e8f0;
+  border-radius: 0.5rem;
+  font-weight: 600;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background-color 0.2s ease, transform 0.2s ease;
+  margin-top: 1rem;
+}
+
+.btn-outline-secondary:hover {
+  background-color: #f1f5f9;
+  transform: translateY(-2px);
+}
+
+.login-alternatives {
+  margin-top: 2rem;
+  text-align: center;
+}
+
+.alert {
+  padding: 0.75rem 1rem;
+  margin-bottom: 1rem;
+  border-radius: 0.5rem;
+  color: white;
+}
+
+.alert-danger {
+  background-color: #f44336;
+}
+
+.mt-2 {
+  margin-top: 0.5rem;
+}
+
+.mt-3 {
+  margin-top: 0.75rem;
+}
+
+.text-center {
+  text-align: center;
+}

@@ -1,0 +1,146 @@
+/* NUCLEAR OPTION - Background override that must work */
+
+/* Reset and force the background image on multiple elements */
+html body,
+html body:before,
+html body:after,
+html body::before,
+html body::after {
+  background-color: transparent !important;
+}
+
+/* Force background with multiple techniques */
+html:not(#fake) body:not(#fake) {
+  background-image: url('/images/background.jpeg') !important;
+  background-size: cover !important;
+  background-position: center center !important;
+  background-repeat: no-repeat !important;
+  background-attachment: fixed !important;
+  color: white !important;
+}
+
+/* Alternative technique with pseudo-element */
+html body:not(#nonexistent)::before {
+  content: "" !important;
+  position: fixed !important;
+  top: 0 !important;
+  left: 0 !important;
+  width: 100% !important;
+  height: 100% !important;
+  z-index: -99999 !important;
+  background-image: url('/images/background.jpeg') !important;
+  background-size: cover !important;
+  background-position: center center !important;
+  background-repeat: no-repeat !important;
+  pointer-events: none !important;
+}
+
+/* Force-remove all backgrounds from containers */
+#root,
+#root > div,
+#root > div > div,
+.app-container,
+.fullscreen-bg,
+.layout-background,
+.home-container,
+main,
+section,
+article,
+aside,
+div[class*="container"] {
+  background: transparent !important;
+  background-color: transparent !important;
+  background-image: none !important;
+}
+
+/* Remove any additional background pseudo-elements */
+.app-container::before,
+.app-container::after,
+.fullscreen-bg::before,
+.fullscreen-bg::after,
+div[class*="container"]::before,
+div[class*="container"]::after {
+  display: none !important;
+}
+
+/* Apply semi-transparent background to content sections */
+main > :not(nav):not(header):not(footer):not([class*="btn"]):not([class*="button"]),
+.content-section {
+  background-color: rgba(0, 0, 0, 0.75) !important;
+  backdrop-filter: blur(5px) !important;
+  border-radius: 8px !important;
+  padding: 1.5rem !important;
+  margin: 1rem 0 !important;
+  color: white !important;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.6) !important;
+}
+
+/* Ensure navbar visibility */
+header,
+nav,
+.navbar-romanian-flag,
+[class*="navbar"],
+[class*="header"] {
+  position: relative !important;
+  z-index: 9990 !important;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.6) !important;
+}
+
+/* Ensure footer visibility */
+footer,
+[class*="footer"] {
+  position: relative !important;
+  z-index: 9980 !important;
+  margin-top: auto !important;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.6) !important;
+}
+
+/* Ultra specific button styling to ensure visibility */
+button:not([disabled]),
+.btn:not([disabled]), 
+[class*="btn-"]:not([disabled]),
+.hero-button:not([disabled]),
+a[role="button"]:not([disabled]),
+input[type="button"]:not([disabled]),
+input[type="submit"]:not([disabled]) {
+  position: relative !important;
+  z-index: 9970 !important;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5) !important;
+  text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.7) !important;
+  color: white !important;
+  font-weight: bold !important;
+  border: 2px solid rgba(255, 255, 255, 0.3) !important;
+  transition: all 0.3s ease !important;
+}
+
+/* Button hover effects */
+button:not([disabled]):hover,
+.btn:not([disabled]):hover,
+[class*="btn-"]:not([disabled]):hover,
+.hero-button:not([disabled]):hover,
+a[role="button"]:not([disabled]):hover,
+input[type="button"]:not([disabled]):hover,
+input[type="submit"]:not([disabled]):hover {
+  transform: translateY(-2px) !important;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.6) !important;
+}
+
+/* Visible content helper class */
+.visible-content {
+  background-color: rgba(0, 0, 0, 0.75) !important;
+  backdrop-filter: blur(8px) !important;
+  border-radius: 12px !important;
+  padding: 1.5rem !important;
+  margin: 1rem 0 !important;
+  color: white !important;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.6) !important;
+  border: 1px solid rgba(255, 255, 255, 0.15) !important;
+  position: relative !important;
+  z-index: 50 !important;
+}
+
+/* Improve text visibility */
+h1, h2, h3, h4, h5, h6, p, span, label, a {
+  color: white !important;
+  text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.7) !important;
+}

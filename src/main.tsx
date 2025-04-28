@@ -3,6 +3,7 @@ import { ensureFirebaseInitialized } from "./firebase-init";
 import { isProd } from "./utils/environment";
 import { preventTDZ, preloadVendorChunks } from "./utils/tdz-prevention";
 import { initPreviewHelper } from "./utils/preview-helper";
+import './utils/tdz-prevention';
 // Importăm middleware-ul pentru Firebase Storage
 import "./firebase/storageMiddleware";
 

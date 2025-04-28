@@ -25,7 +25,16 @@ export function preventTDZ(): void {
     if (!globals.__tdz_load_promises) globals.__tdz_load_promises = {};
     
     console.info("[TDZ Prevention] Initialized TDZ prevention utilities");
+
+    // Prevent Temporal Dead Zone issues with Emotion
+    window.__emotion_insertion_point__ = '';
   }
+}
+
+// Prevent Temporal Dead Zone issues with Emotion
+if (typeof window !== "undefined") {
+  // Force initialization order
+  window.__emotion_insertion_point__ = "";
 }
 
 /**

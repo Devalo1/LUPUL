@@ -6,6 +6,14 @@
  * când variabilele sunt declarate și inițializate folosind let/const
  */
 
+// Declarația de tip pentru proprietatea __emotion_insertion_point__
+declare global {
+  interface Window {
+    __emotion_insertion_point__?: string;
+    __TDZ_PREVENTION_EXECUTED__?: boolean;
+  }
+}
+
 /**
  * Pre-inițializează variabile pentru a preveni erori TDZ
  */

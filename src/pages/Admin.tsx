@@ -215,6 +215,15 @@ const Admin: React.FC = () => {
                 <Link to="/admin/make-admin" className="text-purple-600 hover:underline text-sm">🔑 Permisiuni admin</Link>
               </div>
             </div>
+            
+            <div className="bg-amber-50 border border-amber-200 rounded-lg p-5 hover:shadow-md transition-shadow">
+              <h3 className="font-bold text-amber-800 mb-2">Conținut</h3>
+              <p className="text-sm mb-4">Gestionează articolele și conținutul site-ului.</p>
+              <div className="flex flex-col space-y-2">
+                <Link to="/admin/articles" className="text-amber-600 hover:underline text-sm">📝 Gestionează articole</Link>
+                <Link to="/admin/articles/add" className="text-amber-600 hover:underline text-sm">➕ Adaugă articol nou</Link>
+              </div>
+            </div>
           </div>
           
           <AdminTools />

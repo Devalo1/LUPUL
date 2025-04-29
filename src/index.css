@@ -1,3 +1,4 @@
+@import './styles/optimizations/image-optimizations.css';
 @import './styles/variables.css';
 @import './assets/styles/main.css';
 @tailwind base;

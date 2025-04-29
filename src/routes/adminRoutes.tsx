@@ -136,6 +136,13 @@ export const adminRoutes: AdminRoute[] = [
     icon: "articles"
   },
   {
+    path: "/admin/articles/add",
+    element: <ArticleEdit />,
+    title: "Adaugă Articol",
+    description: "Adaugă un articol nou",
+    icon: "add-article"
+  },
+  {
     path: "/admin/edit-article/:id",
     element: <ArticleEdit />,
     title: "Editează Articol",

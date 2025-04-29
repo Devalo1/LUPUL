@@ -75,7 +75,7 @@ const AdminArticles: React.FC = () => {
   };
 
   const handleEditArticle = (articleId: string) => {
-    navigate(`/admin/articles/edit/${articleId}`);
+    navigate(`/admin/edit-article/${articleId}`);
   };
 
   const handleDeleteArticle = async (articleId: string) => {
@@ -358,10 +358,10 @@ const AdminArticles: React.FC = () => {
                           
                           <button
                             onClick={() => handleEditArticle(article.id)}
-                            className="text-indigo-600 hover:text-indigo-900"
+                            className="bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-1 rounded flex items-center text-sm"
                             title="Editează articol"
                           >
-                            <FaEdit />
+                            <FaEdit className="mr-1" /> Editează
                           </button>
                           <button
                             onClick={() => handleDeleteArticle(article.id)}

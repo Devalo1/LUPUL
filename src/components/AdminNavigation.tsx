@@ -282,6 +282,39 @@ const AdminNavigation: React.FC = () => {
           </svg>
           Comenzi
         </Link>
+
+        {/* Secțiunea Articole */}
+        <div className="relative group">
+          <Link
+            to="/admin/articles"
+            className={`py-4 px-4 font-medium transition-colors flex items-center ${
+              isCategoryActive(["/admin/articles", "/admin/articles/add", "/admin/edit-article"])
+                ? "border-b-2 border-blue-600 text-blue-600" 
+                : "text-gray-500 hover:text-gray-700"
+            }`}
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-1.5" viewBox="0 0 20 20" fill="currentColor">
+              <path fillRule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4zm2 6a1 1 0 011-1h6a1 1 0 110 2H7a1 1 0 01-1-1zm1 3a1 1 0 100 2h6a1 1 0 100-2H7z" clipRule="evenodd" />
+            </svg>
+            Articole
+          </Link>
+          <div className="hidden group-hover:block absolute left-0 mt-1 w-56 bg-white rounded-md shadow-lg border border-gray-100 z-10">
+            <div className="py-1">
+              <Link 
+                to="/admin/articles" 
+                className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+              >
+                Toate articolele
+              </Link>
+              <Link 
+                to="/admin/articles/add" 
+                className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+              >
+                Adaugă articol nou
+              </Link>
+            </div>
+          </div>
+        </div>
       </nav>
 
       {/* Mobile menu - visible when toggled */}
@@ -341,6 +374,14 @@ const AdminNavigation: React.FC = () => {
             onClick={() => setMobileMenuOpen(false)}
           >
             Comenzi
+          </Link>
+
+          <Link
+            to="/admin/articles"
+            className={`block py-2 px-4 ${isActive("/admin/articles") ? "bg-blue-50 text-blue-600" : "text-gray-600"}`}
+            onClick={() => setMobileMenuOpen(false)}
+          >
+            Articole
           </Link>
         </nav>
       )}

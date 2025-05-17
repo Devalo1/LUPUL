@@ -1,4 +1,15 @@
-// filepath: d:\LUPUL\my-typescript-app\src\firebase-core.ts
+// Fix for Firebase core.ts file
+import { promises as fs } from 'fs';
+import { fileURLToPath } from 'url';
+import { dirname, join } from 'path';
+
+// Get the directory name using ESM pattern
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
+
+const coreFilePath = join(__dirname, '..', 'src', 'firebase-core.ts');
+
+const newCoreContent = `// filepath: d:\\LUPUL\\my-typescript-app\\src\\firebase-core.ts
 // Import from our redirected Firebase modules
 import { initializeApp } from "./firebase/app";
 import { 
@@ -146,7 +157,7 @@ const emulatorConfig: EmulatorConfig = {
   auth: {
     host: import.meta.env.VITE_FIREBASE_AUTH_EMULATOR_HOST || "localhost",
     port: parseInt(import.meta.env.VITE_FIREBASE_AUTH_EMULATOR_PORT || "9099"),
-    url: `http://${import.meta.env.VITE_FIREBASE_AUTH_EMULATOR_HOST || "localhost"}:${import.meta.env.VITE_FIREBASE_AUTH_EMULATOR_PORT || "9099"}`
+    url: \`http://\${import.meta.env.VITE_FIREBASE_AUTH_EMULATOR_HOST || "localhost"}:\${import.meta.env.VITE_FIREBASE_AUTH_EMULATOR_PORT || "9099"}\`
   },
   firestore: {
     host: import.meta.env.VITE_FIREBASE_FIRESTORE_EMULATOR_HOST || "localhost",
@@ -174,7 +185,7 @@ if (useEmulators()) {
         emulatorConfig.auth.url,
         { disableWarnings: false } // Enable warnings for debugging
       );
-      logger.info(`Emulator Auth conectat: ${emulatorConfig.auth.url}`);
+      logger.info(\`Emulator Auth conectat: \${emulatorConfig.auth.url}\`);
     } catch (error) {
       logger.error("Eroare la conectarea la emulatorul de autentificare:", error);
       // Don't block initialization of other emulators in case of an error
@@ -189,7 +200,7 @@ if (useEmulators()) {
         emulatorConfig.firestore.host, 
         emulatorConfig.firestore.port
       );
-      logger.info(`Emulator Firestore conectat: ${emulatorConfig.firestore.host}:${emulatorConfig.firestore.port}`);
+      logger.info(\`Emulator Firestore conectat: \${emulatorConfig.firestore.host}:\${emulatorConfig.firestore.port}\`);
     } catch (error) {
       logger.error("Eroare la conectarea la emulatorul Firestore:", error);
     }
@@ -203,7 +214,7 @@ if (useEmulators()) {
         emulatorConfig.storage.host, 
         emulatorConfig.storage.port
       );
-      logger.info(`Emulator Storage conectat: ${emulatorConfig.storage.host}:${emulatorConfig.storage.port}`);
+      logger.info(\`Emulator Storage conectat: \${emulatorConfig.storage.host}:\${emulatorConfig.storage.port}\`);
     } catch (error) {
       logger.error("Eroare la conectarea la emulatorul Storage:", error);
     }
@@ -217,7 +228,7 @@ if (useEmulators()) {
         emulatorConfig.functions.host, 
         emulatorConfig.functions.port
       );
-      logger.info(`Emulator Functions conectat: ${emulatorConfig.functions.host}:${emulatorConfig.functions.port}`);
+      logger.info(\`Emulator Functions conectat: \${emulatorConfig.functions.host}:\${emulatorConfig.functions.port}\`);
     } catch (error) {
       logger.error("Eroare la conectarea la emulatorul Functions:", error);
     }
@@ -277,3 +288,15 @@ export {
   // Export Analytics functions
   logEvent
 };
+`;
+
+async function updateCoreFile() {
+  try {
+    await fs.writeFile(coreFilePath, newCoreContent, { encoding: 'utf8' });
+    console.log('Successfully updated firebase-core.ts file.');
+  } catch (error) {
+    console.error('Error updating firebase-core.ts file:', error);
+  }
+}
+
+updateCoreFile();

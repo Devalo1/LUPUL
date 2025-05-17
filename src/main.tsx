@@ -3,9 +3,15 @@ import { ensureFirebaseInitialized } from "./firebase-init";
 import { isProd } from "./utils/environment";
 import { preventTDZ, preloadVendorChunks } from "./utils/tdz-prevention";
 import { initPreviewHelper } from "./utils/preview-helper";
-import './utils/tdz-prevention';
+import "./utils/tdz-prevention";
 // Importăm middleware-ul pentru Firebase Storage
 import "./firebase/storageMiddleware";
+
+// Importăm fix-ul pentru react-icons
+import initializeReactIcons from "./fixes/react-icons-fix";
+
+// Inițializăm fix-ul pentru react-icons
+initializeReactIcons();
 
 // Activăm prevenirea TDZ - foarte important să fie apelat înaintea oricărui alt cod
 preventTDZ();

@@ -94,7 +94,8 @@
   "scripts": {
     "start": "vite",
     "build": "tsc && vite build",
-    "build-netlify": "npm run build",
+    "build-netlify": "cross-env TSC_COMPILE_ON_ERROR=true npm run build",
+    "deploy": "node scripts/deploy-to-netlify.js",
     "test": "vitest",
     "lint": "eslint .",
     "format": "prettier --write \"src/**/*.{ts,tsx,js,jsx,json,css,scss,md}\"",

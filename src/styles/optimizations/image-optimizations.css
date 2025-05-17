@@ -1,0 +1,167 @@
+/* image-optimizations.css */
+/* Optimizări pentru încărcarea și afișarea imaginilor */
+
+/* Placeholder pentru imaginile care sunt în curs de încărcare */
+.img-loading-placeholder {
+  background-color: #f3f4f6;
+  animation: pulse 1.5s infinite;
+}
+
+@keyframes pulse {
+  0% { opacity: 0.6; }
+  50% { opacity: 1; }
+  100% { opacity: 0.6; }
+}
+
+/* Activează hardware acceleration pentru imagini */
+img {
+  transform: translateZ(0);
+  backface-visibility: hidden;
+  -webkit-font-smoothing: subpixel-antialiased;
+  will-change: transform, opacity;
+}
+
+/* Stil pentru poze care folosesc lazy-loading */
+img.lazy-load {
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+
+img.lazy-load.loaded {
+  opacity: 1;
+}
+
+/* Previne layout shift pentru imagini */
+.img-container {
+  position: relative;
+  overflow: hidden;
+}
+
+/* Clase pentru aspect ratio - folosite pentru a rezerva spațiu */
+.aspect-ratio-1x1 {
+  aspect-ratio: 1/1;
+}
+
+.aspect-ratio-4x3 {
+  aspect-ratio: 4/3;
+}
+
+.aspect-ratio-16x9 {
+  aspect-ratio: 16/9;
+}
+
+.aspect-ratio-3x4 {
+  aspect-ratio: 3/4;
+}
+
+/* Optimizare pentru afișarea imaginilor în cadrul articolelor */
+.article-image {
+  width: 100%;
+  height: auto;
+  object-fit: cover;
+  transition: transform 0.4s ease-in-out;
+}
+
+.article-image-container:hover .article-image {
+  transform: scale(1.05);
+}
+
+/* Ajustări pentru imagini în cardul articolelor */
+.article-card-image {
+  height: 200px;
+  object-fit: cover;
+  width: 100%;
+  background-color: #f3f4f6;
+}
+
+/* Optimizare pentru imagini de produse */
+.product-image {
+  object-fit: contain;
+  background-color: #fff;
+}
+
+/* Optimizări pentru imagini mici (thumbnail) */
+.thumbnail {
+  width: 50px;
+  height: 50px;
+  object-fit: cover;
+}
+
+/* Imagini de profil rotunde */
+.profile-image {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+/* Optimizează imaginile pentru dispozitive cu densitate ridicată de pixeli */
+@media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
+  .optimize-for-retina {
+    image-rendering: -webkit-optimize-contrast;
+    image-rendering: crisp-edges;
+  }
+}
+
+/* Reduce calitatea imaginilor pe dispozitive cu conexiune slabă */
+@media (prefers-reduced-data: reduce) {
+  img:not(.essential-image) {
+    filter: blur(0.5px);
+    image-rendering: optimizeSpeed;
+  }
+}
+
+/* Suport pentru formatul WebP și AVIF */
+.webp .webp-bg {
+  background-image: var(--webp-url);
+}
+
+.avif .avif-bg {
+  background-image: var(--avif-url);
+}
+
+/* Suport pentru degradări treptate */
+.blur-up {
+  filter: blur(5px);
+  transition: filter 0.3s;
+}
+
+.blur-up.lazyloaded {
+  filter: blur(0);
+}
+
+/* Optimizări pentru Chrome */
+@supports (-webkit-appearance:none) {
+  img {
+    content-visibility: auto;
+  }
+}
+
+/* Clase utilitare pentru diferite dimensiuni de imagine */
+.img-xs { width: 50px; height: 50px; }
+.img-sm { width: 100px; height: 100px; }
+.img-md { width: 200px; height: 200px; }
+.img-lg { width: 300px; height: 300px; }
+.img-xl { width: 400px; height: 400px; }
+
+/* Imagini responsive cu dimensiuni definite pentru diferite breakpoint-uri */
+@media (max-width: 640px) {
+  .img-responsive {
+    max-width: 100%;
+    height: auto;
+  }
+}
+
+@media (min-width: 641px) and (max-width: 1024px) {
+  .img-responsive {
+    max-width: 90%;
+    height: auto;
+  }
+}
+
+@media (min-width: 1025px) {
+  .img-responsive {
+    max-width: 80%;
+    height: auto;
+  }
+}

@@ -1,0 +1,9 @@
+{
+  "projects": {
+    "default": "lupulcorbul",
+    "LUPUL": "lupulcorbul",
+    "lupul": "lupulcorbul"
+  },
+  "targets": {},
+  "etags": {}
+}

@@ -1,0 +1,16 @@
+jest.config.ts:
+import type { Config } from '@jest/types';
+
+const config: Config.InitialOptions = {
+  preset: 'ts-jest',
+  testEnvironment: 'node',
+};
+
+export default config;
+
+src/hello.test.ts:
+import { sum } from './sum'; // Assuming you have a sum function to test
+
+test('hello world!', () => {
+  expect(sum(1, 1)).toBe(2);
+});

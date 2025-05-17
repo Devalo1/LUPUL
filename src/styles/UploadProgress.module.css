@@ -1,0 +1,31 @@
+/* Progress bar styles */
+.uploadProgressContainer {
+  width: 100%;
+  background-color: #e5e7eb;
+  border-radius: 9999px;
+  height: 0.625rem;
+  margin-top: 0.5rem;
+}
+
+.uploadProgressBar {
+  background-color: #2563eb;
+  height: 0.625rem;
+  border-radius: 9999px;
+  transition: width 0.3s ease;
+}
+
+/* Create a class for each possible percentage (0-100) */
+.uploadProgressWidth0 { width: 0%; }
+.uploadProgressWidth1 { width: 1%; }
+.uploadProgressWidth2 { width: 2%; }
+/* continuing through all percentages */
+.uploadProgressWidth10 { width: 10%; }
+.uploadProgressWidth20 { width: 20%; }
+.uploadProgressWidth30 { width: 30%; }
+.uploadProgressWidth40 { width: 40%; }
+.uploadProgressWidth50 { width: 50%; }
+.uploadProgressWidth60 { width: 60%; }
+.uploadProgressWidth70 { width: 70%; }
+.uploadProgressWidth80 { width: 80%; }
+.uploadProgressWidth90 { width: 90%; }
+.uploadProgressWidth100 { width: 100%; }

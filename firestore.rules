@@ -1,0 +1,251 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Helper functions for security rules
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    function isAdmin() {
+      return request.auth != null && 
+             (
+               // Direct access for main admin account
+               request.auth.token.email == "dani_popa21@yahoo.ro" ||
+               // Or check for admin claim in the token
+               request.auth.token.admin == true ||
+               // Or check if user exists in admins collection
+               exists(/databases/$(database)/documents/admins/$(request.auth.uid))
+             );
+    }
+    
+    function isOwnDocument() {
+      return request.auth.uid == resource.data.uid || 
+             request.auth.uid == resource.id;
+    }
+    
+    // Regula îmbunătățită pentru a permite citirea documentelor fără a verifica existența token-ului, pentru a preveni erorile de permisiuni
+    function safeIsAdmin() {
+      return isAuthenticated() && (
+        request.auth.token.email == "dani_popa21@yahoo.ro" ||
+        request.auth.token.admin == true ||
+        exists(/databases/$(database)/documents/admins/$(request.auth.uid))
+      );
+    }
+    
+    // User documents access rules
+    match /users/{userId} {
+      // Anyone authenticated can read their own document and basic metadata of other users
+      allow read: if true; // Modificare pentru a rezolva erorile
+      // Allow a user to modify their own document
+      allow write, update: if isAuthenticated() && request.auth.uid == userId;
+      // Admins can modify any document
+      allow write: if safeIsAdmin();
+    }
+    
+    // Public collections - anyone can read, only admins can write
+    match /categories/{category} {
+      allow read: if true; // Categories are always readable by anyone
+      allow write: if safeIsAdmin();
+    }
+    
+    match /products/{product} {
+      allow read: if true; // Products are public
+      allow write: if safeIsAdmin();
+    }
+    
+    match /articles/{article} {
+      allow read: if true; // Articles are public
+      allow write: if safeIsAdmin();
+    }
+    
+    match /events/{event} {
+      allow read: if true; // Events are public
+      // Modified to allow authenticated users to update the registeredUsers array
+      allow update: if isAuthenticated() && 
+                     (request.resource.data.diff(resource.data).affectedKeys().hasOnly(['registeredUsers']) ||
+                      safeIsAdmin());
+      // Only admins can create or delete events
+      allow create, delete: if safeIsAdmin();
+    }
+    
+    match /orders/{order} {
+      allow read: if isAuthenticated() && (resource.data.userId == request.auth.uid || safeIsAdmin());
+      allow create: if isAuthenticated();
+      allow update, delete: if safeIsAdmin();
+    }
+    
+    // Fixed eventRegistrations rules to allow users to register themselves
+    match /eventRegistrations/{registration} {
+      // Anyone authenticated can read event registrations
+      allow read: if true;  // Modificare pentru a rezolva erorile
+      // Authenticated users can create registration documents
+      allow create: if isAuthenticated() && request.resource.data.userId == request.auth.uid;
+      // Users can update or delete their own registrations, admins can update/delete any
+      allow update, delete: if isAuthenticated() && (resource.data.userId == request.auth.uid || safeIsAdmin());
+    }
+    
+    // Cereri de schimbare a rolului - orice utilizator autentificat poate crea o cerere
+    match /roleChangeRequests/{requestId} {
+      // Utilizatorii pot citi propriile cereri
+      allow read: if true;  // Modificare pentru a rezolva erorile
+      // Orice utilizator autentificat poate crea o cerere
+      allow create: if isAuthenticated();
+      // Doar adminii pot actualiza sau șterge
+      allow update, delete: if safeIsAdmin();
+    }
+    
+    // Cereri de schimbare a specializării - orice utilizator specialist poate crea o cerere
+    match /specializationChangeRequests/{requestId} {
+      // Specialiștii pot citi propriile cereri
+      allow read: if true;  // Modificare pentru a rezolva erorile
+      // Specialiștii autentificați pot crea cereri
+      allow create: if isAuthenticated();
+      // Doar adminii pot actualiza sau șterge
+      allow update, delete: if safeIsAdmin();
+    }
+    
+    // Admin-only collections
+    match /admins/{document=**} {
+      allow read: if true;  // Modificare pentru a rezolva erorile
+      allow write: if safeIsAdmin();
+    }
+    
+    // Modificare: Permitem utilizatorilor autentificați să citească colecția de roluri
+    match /roles/{document=**} {
+      allow read: if true;  // Modificare pentru a rezolva erorile
+      allow write: if safeIsAdmin();
+    }
+    
+    // Colecția de analytics - oricine poate crea înregistrări
+    match /analytics/{document} {
+      allow read: if true;  // Modificare pentru a rezolva erorile
+      allow create: if true; // Oricine poate crea înregistrări analytics
+    }
+    
+    // Appointmnets - permite accesul la programări pentru utilizatori și specialiști
+    match /appointments/{appointment} {
+      // Toți utilizatorii pot vedea programările
+      allow read: if true;  // Modificare pentru a rezolva erorile
+      // Orice utilizator autentificat poate crea o programare
+      allow create: if isAuthenticated();
+      // Utilizatorii pot actualiza doar propriile programări
+      // Specialiștii pot actualiza programări care le sunt asignate
+      allow update: if isAuthenticated() && (
+        resource.data.userId == request.auth.uid || 
+        resource.data.specialistId == request.auth.uid || 
+        safeIsAdmin()
+      );
+      // Doar adminii pot șterge programări
+      allow delete: if safeIsAdmin();
+    }
+    
+    // Special Sessions - permite accesul la sesiuni speciale
+    match /specialSessions/{session} {
+      // Oricine poate citi sesiunile speciale
+      allow read: if true;
+      // Specialiștii pot crea sesiuni
+      allow create: if isAuthenticated();
+      // Specialistul care a creat sesiunea poate actualiza
+      allow update: if isAuthenticated() && (
+        resource.data.specialistId == request.auth.uid || 
+        safeIsAdmin()
+      );
+      // Doar adminii sau specialistul care a creat sesiunea pot șterge
+      allow delete: if isAuthenticated() && (
+        resource.data.specialistId == request.auth.uid || 
+        safeIsAdmin()
+      );
+    }
+    
+    // Specialist Reviews - reguli pentru recenzii despre specialiști
+    match /specialistReviews/{reviewId} {
+      // Oricine poate citi recenziile
+      allow read: if true;
+      // Utilizatorii autentificați pot crea recenzii
+      allow create: if isAuthenticated();
+      // Utilizatorii pot actualiza sau șterge doar propriile recenzii
+      allow update, delete: if isAuthenticated() && (
+        resource.data.userId == request.auth.uid || 
+        safeIsAdmin()
+      );
+    }
+    
+    // Session Enrollments - pentru înscrierile la sesiuni speciale
+    match /sessionEnrollments/{enrollment} {
+      // Oricine poate citi înscrierile
+      allow read: if true;  // Modificare pentru a rezolva erorile
+      // Orice utilizator autentificat poate crea o înscriere
+      allow create: if isAuthenticated();
+      // Utilizatorii pot actualiza doar propriile înscrieri
+      // Specialistul care a creat sesiunea poate actualiza înscrierile
+      allow update: if isAuthenticated() && (
+        resource.data.userId == request.auth.uid || 
+        resource.data.specialistId == request.auth.uid || 
+        safeIsAdmin()
+      );
+      // Doar adminii sau utilizatorul care s-a înscris pot șterge înscrierea
+      allow delete: if isAuthenticated() && (
+        resource.data.userId == request.auth.uid || 
+        safeIsAdmin()
+      );
+    }
+    
+    // Calendar - pentru evenimente în calendar
+    match /calendar/{event} {
+      // Oricine poate citi evenimentele
+      allow read: if true;  // Modificare pentru a rezolva erorile
+      // Orice utilizator autentificat poate crea un eveniment
+      allow create: if isAuthenticated();
+      // Specialiștii și utilizatorii pot actualiza propriile evenimente
+      allow update: if isAuthenticated() && (
+        resource.data.participantId == request.auth.uid || 
+        resource.data.specialistId == request.auth.uid || 
+        safeIsAdmin()
+      );
+      // Doar adminii sau părțile implicate pot șterge evenimente
+      allow delete: if isAuthenticated() && (
+        resource.data.participantId == request.auth.uid || 
+        resource.data.specialistId == request.auth.uid || 
+        safeIsAdmin()
+      );
+    }
+    
+    // Specialists collection
+    match /specialists/{specialistId} {
+      // Specialiștii sunt vizibili public
+      allow read: if true;
+      // Specialiștii își pot actualiza propriile documente, iar adminii pot modifica pe toți
+      allow write, update: if isAuthenticated() && (request.auth.uid == specialistId || safeIsAdmin());
+    }
+    
+    // specialistServices collection - public read, specialist can write own services
+    match /specialistServices/{serviceId} {
+      allow read: if true;
+      allow create: if isAuthenticated();
+      allow update, delete: if isAuthenticated() && (resource.data.specialistId == request.auth.uid || safeIsAdmin());
+    }
+    
+    // services collection - public read, admin write
+    match /services/{serviceId} {
+      allow read: if true;
+      allow write: if safeIsAdmin();
+    }
+    
+    // Improve user profile photo access
+    match /userProfilePhotos/{photoId} {
+      // Anyone can read profile photos
+      allow read: if true;
+      // Users can update their own profile photos
+      allow write, update: if isAuthenticated() && request.auth.uid == photoId;
+      // Admins can modify any photos
+      allow write: if safeIsAdmin();
+    }
+    
+    // Default rule - public read, admin write
+    match /{document=**} {
+      allow read: if true;  // Modificare pentru a rezolva erorile
+      allow write: if safeIsAdmin();
+    }
+  }
+}

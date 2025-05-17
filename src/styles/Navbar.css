@@ -1,0 +1,204 @@
+.nav-container {
+  transition: background-color 0.3s ease, box-shadow 0.3s ease;
+  z-index: 1000; /* Increased z-index to ensure navbar is above all content */
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  width: 100%;
+}
+
+.nav-container.scrolled {
+  background-color: var(--primary); /* Fundal la derulare */
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3); /* Umbră mai puternică pentru vizibilitate */
+}
+
+/* Improved link animations */
+.nav-link {
+  position: relative;
+  transition: transform 0.3s ease, color 0.3s ease;
+  color: white !important; /* Ensure text is white as requested */
+}
+
+.nav-link:hover {
+  transform: translateY(-2px);
+  color: white !important; /* Keep white on hover */
+}
+
+.nav-link:after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  width: 0;
+  height: 2px;
+  background: var(--ro-yellow); /* Using softer yellow from variables */
+  transition: width 0.3s ease, left 0.3s ease;
+}
+
+.nav-link:hover:after {
+  width: 70%;
+  left: 15%;
+}
+
+/* Logo animation */
+.logo img {
+  transition: transform 0.5s ease;
+}
+
+.logo:hover img {
+  transform: scale(1.05) rotate(2deg);
+}
+
+/* Animated hamburger button */
+.menu-button svg {
+  transition: transform 0.3s ease;
+  color: white !important; /* Ensure icon is white */
+}
+
+.menu-button:hover svg {
+  transform: scale(1.1);
+}
+
+/* Responsive layout adjustments */
+@media (max-width: 768px) {
+  .nav-container {
+    padding: 0.5rem 1rem;
+  }
+  
+  .logo span {
+    font-size: 1rem;
+  }
+}
+
+/* Desktop navigation spacing */
+@media (min-width: 768px) {
+  .nav-container .container {
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+  
+  .nav-link {
+    padding: 0.5rem 0.75rem;
+  }
+}
+
+/* Active link indication */
+.nav-link.active {
+  font-weight: 600;
+}
+
+.nav-link.active:after {
+  width: 70%;
+  left: 15%;
+}
+
+/* Cart indicator animation */
+.nav-link svg {
+  transition: transform 0.3s ease;
+  color: white !important; /* Ensure icon is white */
+}
+
+.nav-link:hover svg {
+  transform: scale(1.1);
+}
+
+/* Badge pulse animation */
+@keyframes badgePulse {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.1);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+.nav-link .absolute {
+  animation: badgePulse 2s infinite;
+}
+
+/* Icon-based menu styles */
+.nav-link.flex-col {
+  padding: 0.5rem;
+  border-radius: 0.25rem;
+  text-align: center;
+  width: 70px;
+}
+
+.nav-link.flex-col:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+/* Responsive adjustments for icon-based menu */
+@media (max-width: 1024px) {
+  .nav-link.flex-col {
+    width: 60px;
+  }
+}
+
+@media (max-width: 768px) {
+  .nav-link.flex-col .text-xs {
+    font-size: 0.65rem;
+  }
+}
+
+/* Ensure specific navbar items have white text */
+.nav-link[href="/"],
+.nav-link[href="/products"],
+.nav-link[href="/events"],
+.nav-link[href="/admin"],
+.nav-link[href="/dashboard"],
+.nav-link[href="/magazin"],
+.nav-link[href="/servicii"],
+.nav-link[href="/about"],
+.nav-link[href="/ong"],
+.nav-link[href="/accountant/panel"],
+button.nav-link,
+.auth-button {
+  color: white !important;
+}
+
+/* Make "magazin" text white on desktop */
+.nav-link[href="/products"],
+.nav-link[href="/magazin"],
+.nav-link[data-text="magazin"],
+.nav-link span:contains("magazin") {
+  color: white !important;
+}
+
+/* Ensure dropdown menu items for "magazin" are white on desktop */
+@media (min-width: 768px) {
+  .nav-link[data-dropdown="magazin"],
+  .dropdown-magazin .nav-link,
+  .dropdown-menu .nav-link[href*="/products"],
+  .dropdown-menu .nav-link[href*="/magazin"] {
+    color: white !important;
+  }
+}
+
+/* Dropdown menu styling for shop menu */
+.absolute .text-gray-700 {
+  color: white !important;
+}
+
+.absolute .hover\:bg-gray-100:hover {
+  background-color: rgba(255, 255, 255, 0.2) !important;
+}
+
+/* Style for the dropdown menu background to provide better contrast */
+.origin-top-left.bg-white {
+  background-color: rgba(60, 60, 60, 0.95) !important;
+}
+
+/* Ensure dropdown menu items have proper styling */
+.absolute button.text-gray-700 {
+  color: white !important;
+  transition: background-color 0.3s ease;
+}
+
+.absolute button.text-gray-700:hover {
+  background-color: rgba(255, 255, 255, 0.2) !important;
+}

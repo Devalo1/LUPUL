@@ -1,0 +1,174 @@
+/* Stiluri pentru layout-ul principal */
+.main-container {
+  width: 100%;
+  margin: 0 auto;
+  padding: 0 1rem;
+  background: none !important; /* Transparent background */
+  position: relative;
+  z-index: 1;
+  animation: fadeIn 0.6s ease-out;
+}
+
+.main-background {
+  position: relative;
+  background: linear-gradient(135deg, #f5f7fa 0%, #e4e7ec 100%);
+  overflow: hidden;
+}
+
+/* Animated background pattern */
+.main-background:before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-image: url('/images/romanian-pattern.png');
+  background-size: 300px;
+  opacity: 0.05;
+  z-index: 0;
+  animation: subtle-float 60s infinite linear;
+}
+
+@keyframes subtle-float {
+  0% {
+    background-position: 0 0;
+  }
+  100% {
+    background-position: 300px 300px;
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Centrarea și limitarea lățimii pe ecrane mari */
+@media (min-width: 640px) {
+  .main-container {
+    padding: 0 2rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  .main-container {
+    padding: 0 4rem;
+    max-width: 1200px;
+  }
+}
+
+@media (min-width: 1536px) {
+  .main-container {
+    max-width: 1400px;
+  }
+}
+
+/* Conținutul paginilor */
+.page-content {
+  padding: 2rem;
+  background: none !important; /* Transparent background */
+  position: relative;
+  z-index: 2;
+  transition: all 0.3s ease-in-out;
+}
+
+.page-content:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
+}
+
+@media (min-width: 1024px) {
+  .page-content {
+    padding: 3rem;
+  }
+}
+
+/* Stilizare pentru carduri și containere */
+.content-card {
+  background: rgba(255, 255, 255, 0.95) !important;
+  border-radius: 1rem;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08), 0 15px 35px rgba(0, 0, 0, 0.04);
+  overflow: hidden;
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(255, 255, 255, 0.7);
+}
+
+@media (min-width: 1024px) {
+  .content-card {
+    margin: 2rem auto;
+    max-width: 85%;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+  }
+}
+
+@media (min-width: 1536px) {
+  .content-card {
+    max-width: 70%;
+  }
+}
+
+/* Trust indicators */
+.trust-indicators {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 1rem;
+}
+
+.security-badge {
+  display: inline-flex;
+  align-items: center;
+  background-color: rgba(0, 128, 0, 0.1);
+  color: rgb(0, 100, 0);
+  padding: 0.4rem 0.8rem;
+  border-radius: 50px;
+  font-size: 0.8rem;
+  font-weight: bold;
+  box-shadow: 0 2px 5px rgba(0, 100, 0, 0.1);
+  transition: all 0.3s ease;
+}
+
+.security-badge:hover {
+  background-color: rgba(0, 128, 0, 0.15);
+  transform: translateY(-1px);
+}
+
+.security-badge .icon {
+  margin-right: 0.3rem;
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0% {
+    opacity: 0.8;
+  }
+  50% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0.8;
+  }
+}
+
+/* Enhanced animations for page transitions */
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Entrance animation for content elements */
+.animate-entrance {
+  animation: slideUp 0.5s ease-out forwards;
+}

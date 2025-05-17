@@ -7,11 +7,18 @@ import "./utils/tdz-prevention";
 // Importăm middleware-ul pentru Firebase Storage
 import "./firebase/storageMiddleware";
 
-// Importăm fix-ul pentru react-icons
+// Importăm ambele fix-uri pentru react-icons
 import initializeReactIcons from "./fixes/react-icons-fix";
+// Importăm fix-ul pentru IconContext pentru a-l expune global
+import "./fixes/icon-context-fix.jsx";
+// Importăm colecția centralizată de iconuri pentru pre-încărcare
+import "./utils/icons.js";
 
 // Inițializăm fix-ul pentru react-icons
-initializeReactIcons();
+if (isProd) {
+  console.log("Initializing React Icons in production mode");
+  initializeReactIcons();
+}
 
 // Activăm prevenirea TDZ - foarte important să fie apelat înaintea oricărui alt cod
 preventTDZ();

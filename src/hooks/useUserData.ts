@@ -39,13 +39,12 @@ export function useUserData(userId?: string): UseUserDataResult {
     try {
       const userDocRef = doc(firestore, "users", targetUserId);
       const userDoc = await getDoc(userDocRef);
-
       if (userDoc.exists()) {
-        const data = userDoc.data() as Omit<UserDocument, "id">;
-        setUserData({ 
-          id: userDoc.id, 
-          ...(data as UserDocument) 
-        });
+        const data = userDoc.data();
+        setUserData({
+          ...data,
+          id: userDoc.id,
+        } as UserDocument);
       } else {
         setUserData(null);
       }
@@ -65,7 +64,7 @@ export function useUserData(userId?: string): UseUserDataResult {
     userData,
     loading,
     error,
-    refreshUserData: fetchUserData
+    refreshUserData: fetchUserData,
   };
 }
 
@@ -124,6 +123,6 @@ export function useFirestoreDocument<T>(
     document,
     loading,
     error,
-    refreshDocument: fetchDocument
+    refreshDocument: fetchDocument,
   };
 }

@@ -36,7 +36,10 @@ const EditSessionPage: React.FC = () => {
 
   const [loading, setLoading] = useState<boolean>(true);
   const [session, setSession] = useState<SpecialSession | null>(null);
-  const [alertMessage, setAlertMessage] = useState<{type: "success" | "error", message: string} | null>(null);
+  const [alertMessage, setAlertMessage] = useState<{
+    type: "success" | "error";
+    message: string;
+  } | null>(null);
   const [savingSession, setSavingSession] = useState(false);
   const [_profileData, setProfileData] = useState<any>(null);
 
@@ -63,12 +66,14 @@ const EditSessionPage: React.FC = () => {
 
       try {
         setLoading(true);
-        const sessionDoc = await getDoc(doc(firestore, "specialSessions", sessionId));
-        
+        const sessionDoc = await getDoc(
+          doc(firestore, "specialSessions", sessionId)
+        );
+
         if (!sessionDoc.exists()) {
           setAlertMessage({
             type: "error",
-            message: "Sesiunea nu a fost găsită!"
+            message: "Sesiunea nu a fost găsită!",
           });
           navigate("/specialist");
           return;
@@ -79,7 +84,7 @@ const EditSessionPage: React.FC = () => {
         if (sessionData.specialistId !== user.uid) {
           setAlertMessage({
             type: "error",
-            message: "Nu aveți permisiunea de a edita această sesiune!"
+            message: "Nu aveți permisiunea de a edita această sesiune!",
           });
           navigate("/specialist");
           return;
@@ -89,20 +94,20 @@ const EditSessionPage: React.FC = () => {
           id: sessionDoc.id,
           ...sessionData,
           date: sessionData.date.toDate(),
-          createdAt: sessionData.createdAt.toDate()
+          createdAt: sessionData.createdAt.toDate(),
         } as SpecialSession;
 
         setSession(session);
-        
+
         // Populează formularul cu datele sesiunii
         setSessionTitle(session.title);
         setSessionDescription(session.description);
-        
+
         // Formatăm data pentru input type="date"
         const dateObj = session.date;
         const formattedDate = dateObj.toISOString().split("T")[0];
         setSessionDate(formattedDate);
-        
+
         setSessionStartTime(session.startTime);
         setSessionEndTime(session.endTime);
         setSessionLocation(session.location || "");
@@ -111,7 +116,7 @@ const EditSessionPage: React.FC = () => {
         setSessionPrice(session.price);
         setSessionCategories(session.categories || []);
         setSessionTags(session.tags ? session.tags.join(", ") : "");
-        
+
         // Setăm imaginea dacă există
         if (session.imageUrl) {
           setSessionImageUrl(session.imageUrl);
@@ -127,7 +132,8 @@ const EditSessionPage: React.FC = () => {
         console.error("Eroare la încărcarea sesiunii:", error);
         setAlertMessage({
           type: "error",
-          message: "A apărut o eroare la încărcarea sesiunii. Vă rugăm încercați din nou."
+          message:
+            "A apărut o eroare la încărcarea sesiunii. Vă rugăm încercați din nou.",
         });
       } finally {
         setLoading(false);
@@ -138,36 +144,41 @@ const EditSessionPage: React.FC = () => {
   }, [sessionId, user, navigate]);
 
   // Procesează imaginea și returnează URL-ul
-  const processSessionImage = async (file: File | null, existingUrl: string): Promise<string> => {
+  const processSessionImage = async (
+    file: File | null,
+    existingUrl: string
+  ): Promise<string> => {
     // Dacă nu există un fișier nou și avem un URL existent, îl păstrăm
     if (!file && existingUrl) {
       return existingUrl;
     }
-    
+
     // Dacă nu există un fișier nou și nu avem URL existent, folosim imaginea default
     if (!file) {
       return "/images/Events.jpeg";
     }
-    
+
     try {
       // Generăm un nume de fișier unic
       const timestamp = new Date().getTime();
       const fileExtension = file.name.split(".").pop();
       const fileName = `session_${timestamp}.${fileExtension}`;
-      
+
       // Încărcăm fișierul în Firebase Storage
       const storageRef = ref(storage, `specialSessions/${fileName}`);
       await uploadBytes(storageRef, file);
-      
+
       // Obținem URL-ul
       const downloadUrl = await getDownloadURL(storageRef);
-      
+
       console.log("Imaginea a fost încărcată cu succes: ", downloadUrl);
-      
+
       return downloadUrl;
     } catch (err) {
       console.error("Eroare la procesarea imaginii:", err);
-      throw new Error("Nu s-a putut procesa imaginea. Vă rugăm să încercați din nou.");
+      throw new Error(
+        "Nu s-a putut procesa imaginea. Vă rugăm să încercați din nou."
+      );
     }
   };
 
@@ -175,27 +186,28 @@ const EditSessionPage: React.FC = () => {
   const handleSessionImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    
+
     // Verifică dimensiunea fișierului (max 5MB)
     if (file.size > 5 * 1024 * 1024) {
       setAlertMessage({
         type: "error",
-        message: "Imaginea este prea mare. Mărimea maximă acceptată este de 5MB."
+        message:
+          "Imaginea este prea mare. Mărimea maximă acceptată este de 5MB.",
       });
       return;
     }
-    
+
     // Verifică tipul fișierului (doar imagini)
     if (!file.type.startsWith("image/")) {
       setAlertMessage({
         type: "error",
-        message: "Te rugăm să încarci doar fișiere de tip imagine."
+        message: "Te rugăm să încarci doar fișiere de tip imagine.",
       });
       return;
     }
-    
+
     setSessionImageFile(file);
-    
+
     // Creează un URL pentru previzualizare
     const reader = new FileReader();
     reader.onload = () => {
@@ -207,37 +219,38 @@ const EditSessionPage: React.FC = () => {
   // Salvează modificările sesiunii
   const handleSaveSession = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!user || !session) {
       setAlertMessage({
         type: "error",
-        message: "Nu există o sesiune de editat."
+        message: "Nu există o sesiune de editat.",
       });
       return;
     }
-    
+
     if (!sessionTitle || !sessionDescription || !sessionDate) {
       setAlertMessage({
         type: "error",
-        message: "Te rugăm să completezi toate câmpurile obligatorii."
+        message: "Te rugăm să completezi toate câmpurile obligatorii.",
       });
       return;
     }
-    
+
     try {
       setSavingSession(true);
-      
+
       // Procesăm imaginea
       const imageUrl = await processSessionImage(
-        sessionImageFile, 
+        sessionImageFile,
         sessionImageUrl
       );
-      
+
       // Pregătim datele sesiunii
-      const tagsArray = sessionTags.split(",")
-        .map(tag => tag.trim())
-        .filter(tag => tag.length > 0);
-      
+      const tagsArray = sessionTags
+        .split(",")
+        .map((tag) => tag.trim())
+        .filter((tag) => tag.length > 0);
+
       const sessionData = {
         title: sessionTitle,
         description: sessionDescription,
@@ -249,29 +262,33 @@ const EditSessionPage: React.FC = () => {
         capacity: sessionCapacity,
         price: sessionPrice,
         imageUrl: imageUrl,
-        categories: sessionCategories.length > 0 ? sessionCategories : ["general"],
+        categories:
+          sessionCategories.length > 0 ? sessionCategories : ["general"],
         tags: tagsArray,
-        lastUpdated: Timestamp.now()
+        lastUpdated: Timestamp.now(),
       };
-      
+
       // Actualizează sesiunea în Firestore
-      await updateDoc(doc(firestore, "specialSessions", sessionId!), sessionData);
-      
+      await updateDoc(
+        doc(firestore, "specialSessions", sessionId!),
+        sessionData
+      );
+
       setAlertMessage({
         type: "success",
-        message: "Sesiunea a fost actualizată cu succes!"
+        message: "Sesiunea a fost actualizată cu succes!",
       });
-      
+
       // Redirecționează înapoi la panoul de specialist după 2 secunde
       setTimeout(() => {
         navigate("/specialist");
       }, 2000);
-      
     } catch (err) {
       console.error("Eroare la salvarea sesiunii:", err);
       setAlertMessage({
         type: "error",
-        message: "A apărut o eroare la salvarea sesiunii. Vă rugăm să încercați din nou."
+        message:
+          "A apărut o eroare la salvarea sesiunii. Vă rugăm să încercați din nou.",
       });
     } finally {
       setSavingSession(false);
@@ -282,7 +299,9 @@ const EditSessionPage: React.FC = () => {
     return (
       <div className="flex justify-center items-center min-h-screen py-20">
         <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500 mx-auto"></div>
-        <span className="ml-3 text-lg text-gray-700">Se încarcă datele sesiunii...</span>
+        <span className="ml-3 text-lg text-gray-700">
+          Se încarcă datele sesiunii...
+        </span>
       </div>
     );
   }
@@ -293,9 +312,11 @@ const EditSessionPage: React.FC = () => {
         <div className="bg-white rounded-lg shadow-xl border border-gray-200 overflow-hidden">
           <div className="bg-gradient-to-r from-blue-700 to-blue-900 p-6 text-white flex justify-between items-center">
             <div className="flex items-center">
-              <button 
+              <button
                 onClick={() => navigate("/specialist")}
                 className="mr-4 p-2 bg-white/20 rounded-full hover:bg-white/30 transition-colors"
+                title="Înapoi la lista de specialiști"
+                aria-label="Înapoi la lista de specialiști"
               >
                 <FaArrowLeft />
               </button>
@@ -305,17 +326,20 @@ const EditSessionPage: React.FC = () => {
               ID: {sessionId?.substring(0, 8)}...
             </span>
           </div>
-          
+
           <div className="p-6">
             {alertMessage && (
-              <div className={`mb-6 p-4 rounded-md ${
-                alertMessage.type === "success" ? "bg-green-50 text-green-800 border border-green-200" : 
-                "bg-red-50 text-red-800 border border-red-200"
-              }`}>
+              <div
+                className={`mb-6 p-4 rounded-md ${
+                  alertMessage.type === "success"
+                    ? "bg-green-50 text-green-800 border border-green-200"
+                    : "bg-red-50 text-red-800 border border-red-200"
+                }`}
+              >
                 {alertMessage.message}
               </div>
             )}
-            
+
             <form onSubmit={handleSaveSession} className="space-y-6">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="md:col-span-2">
@@ -331,7 +355,7 @@ const EditSessionPage: React.FC = () => {
                     required
                   />
                 </div>
-                
+
                 <div className="md:col-span-2">
                   <label className="block text-sm font-medium text-gray-700 mb-1">
                     Descriere*
@@ -345,7 +369,7 @@ const EditSessionPage: React.FC = () => {
                     required
                   ></textarea>
                 </div>
-                
+
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
                     Data*
@@ -356,9 +380,12 @@ const EditSessionPage: React.FC = () => {
                     onChange={(e) => setSessionDate(e.target.value)}
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                     required
+                    placeholder="Alege data sesiunii"
+                    title="Data sesiunii"
+                    aria-label="Data sesiunii"
                   />
                 </div>
-                
+
                 <div className="grid grid-cols-2 gap-3">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -370,6 +397,9 @@ const EditSessionPage: React.FC = () => {
                       onChange={(e) => setSessionStartTime(e.target.value)}
                       className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                       required
+                      placeholder="Ora începerii"
+                      title="Ora începerii"
+                      aria-label="Ora începerii"
                     />
                   </div>
                   <div>
@@ -382,10 +412,13 @@ const EditSessionPage: React.FC = () => {
                       onChange={(e) => setSessionEndTime(e.target.value)}
                       className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                       required
+                      placeholder="Ora încheierii"
+                      title="Ora încheierii"
+                      aria-label="Ora încheierii"
                     />
                   </div>
                 </div>
-                
+
                 <div>
                   <div className="flex items-center mb-2">
                     <input
@@ -395,11 +428,14 @@ const EditSessionPage: React.FC = () => {
                       onChange={(e) => setSessionIsOnline(e.target.checked)}
                       className="h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
                     />
-                    <label htmlFor="isOnline" className="ml-2 text-sm font-medium text-gray-700">
+                    <label
+                      htmlFor="isOnline"
+                      className="ml-2 text-sm font-medium text-gray-700"
+                    >
                       Sesiune online
                     </label>
                   </div>
-                  
+
                   {!sessionIsOnline && (
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -415,7 +451,7 @@ const EditSessionPage: React.FC = () => {
                     </div>
                   )}
                 </div>
-                
+
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
                     Preț (RON)*
@@ -427,9 +463,12 @@ const EditSessionPage: React.FC = () => {
                     min="0"
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                     required
+                    placeholder="Preț sesiune (RON)"
+                    title="Preț sesiune (RON)"
+                    aria-label="Preț sesiune (RON)"
                   />
                 </div>
-                
+
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
                     Capacitate (număr de participanți)*
@@ -441,24 +480,42 @@ const EditSessionPage: React.FC = () => {
                     min="1"
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                     required
+                    placeholder="Număr participanți"
+                    title="Număr participanți"
+                    aria-label="Număr participanți"
                   />
                 </div>
-                
+
                 <div className="md:col-span-2">
                   <label className="block text-sm font-medium text-gray-700 mb-1">
                     Categorie
                   </label>
                   <div className="flex flex-wrap gap-2 mt-2">
-                    {["general", "terapie", "workshop", "conferință", "curs", "dezvoltare personală"].map(category => (
-                      <label key={category} className="inline-flex items-center">
+                    {[
+                      "general",
+                      "terapie",
+                      "workshop",
+                      "conferință",
+                      "curs",
+                      "dezvoltare personală",
+                    ].map((category) => (
+                      <label
+                        key={category}
+                        className="inline-flex items-center"
+                      >
                         <input
                           type="checkbox"
                           checked={sessionCategories.includes(category)}
                           onChange={(e) => {
                             if (e.target.checked) {
-                              setSessionCategories([...sessionCategories, category]);
+                              setSessionCategories([
+                                ...sessionCategories,
+                                category,
+                              ]);
                             } else {
-                              setSessionCategories(sessionCategories.filter(c => c !== category));
+                              setSessionCategories(
+                                sessionCategories.filter((c) => c !== category)
+                              );
                             }
                           }}
                           className="h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
@@ -470,7 +527,7 @@ const EditSessionPage: React.FC = () => {
                     ))}
                   </div>
                 </div>
-                
+
                 <div className="md:col-span-2">
                   <label className="block text-sm font-medium text-gray-700 mb-1">
                     Tag-uri (separate prin virgulă)
@@ -483,18 +540,18 @@ const EditSessionPage: React.FC = () => {
                     placeholder="Ex: psihologie, anxietate, terapie de grup"
                   />
                 </div>
-                
+
                 <div className="md:col-span-2">
                   <label className="block text-sm font-medium text-gray-700 mb-2">
                     Imagine de copertă
                   </label>
-                  
+
                   <div className="flex items-center space-x-6">
                     {sessionImagePreview && (
                       <div className="w-32 h-32 relative">
-                        <img 
-                          src={sessionImagePreview} 
-                          alt="Preview" 
+                        <img
+                          src={sessionImagePreview}
+                          alt="Preview"
                           className="w-full h-full object-cover rounded-md"
                         />
                         <button
@@ -502,22 +559,36 @@ const EditSessionPage: React.FC = () => {
                           onClick={() => {
                             setSessionImagePreview("");
                             setSessionImageFile(null);
-                            setSessionImageUrl("");
                           }}
+                          title="Șterge imaginea sesiunii"
+                          aria-label="Șterge imaginea sesiunii"
                           className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1"
                         >
                           <FaTimes className="h-4 w-4" />
                         </button>
                       </div>
                     )}
-                    
+
                     <div className="flex-1">
                       <div className="flex justify-center items-center border-2 border-dashed border-gray-300 rounded-md h-32 cursor-pointer hover:bg-gray-50">
                         <label className="cursor-pointer w-full h-full flex flex-col justify-center items-center">
-                          <svg xmlns="http://www.w3.org/2000/svg" className="h-10 w-10 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                          <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            className="h-10 w-10 text-gray-400"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            stroke="currentColor"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth={2}
+                              d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
+                            />
                           </svg>
-                          <span className="mt-2 text-sm text-gray-500">Adaugă o imagine</span>
+                          <span className="mt-2 text-sm text-gray-500">
+                            Adaugă o imagine
+                          </span>
                           <input
                             type="file"
                             className="hidden"
@@ -527,13 +598,14 @@ const EditSessionPage: React.FC = () => {
                         </label>
                       </div>
                       <p className="text-xs text-gray-500 mt-1">
-                        Recomandat: imagine de 16:9. Max 5MB. Formate acceptate: JPG, PNG, GIF.
+                        Recomandat: imagine de 16:9. Max 5MB. Formate acceptate:
+                        JPG, PNG, GIF.
                       </p>
                     </div>
                   </div>
                 </div>
               </div>
-              
+
               <div className="flex justify-between pt-6 border-t">
                 <button
                   type="button"
@@ -542,7 +614,7 @@ const EditSessionPage: React.FC = () => {
                 >
                   <FaArrowLeft className="mr-2" /> Înapoi la panou
                 </button>
-                
+
                 <button
                   type="submit"
                   className={`px-6 py-2 rounded-md bg-blue-600 text-white hover:bg-blue-700 flex items-center
@@ -551,9 +623,25 @@ const EditSessionPage: React.FC = () => {
                 >
                   {savingSession ? (
                     <>
-                      <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                      <svg
+                        className="animate-spin -ml-1 mr-2 h-4 w-4 text-white"
+                        xmlns="http://www.w3.org/2000/svg"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                      >
+                        <circle
+                          className="opacity-25"
+                          cx="12"
+                          cy="12"
+                          r="10"
+                          stroke="currentColor"
+                          strokeWidth="4"
+                        ></circle>
+                        <path
+                          className="opacity-75"
+                          fill="currentColor"
+                          d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                        ></path>
                       </svg>
                       Se salvează...
                     </>

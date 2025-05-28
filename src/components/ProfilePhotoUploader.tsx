@@ -23,20 +23,21 @@ interface FileUploadOptions {
 const useDropzone = (_options: FileUploadOptions) => ({
   getRootProps: () => ({}),
   getInputProps: () => ({}),
-  isDragActive: false
+  isDragActive: false,
 });
 
-import { Button, Box, CircularProgress, Typography, Avatar } from "@mui/material";
+import {
+  Button,
+  Box,
+  CircularProgress,
+  Typography,
+  Avatar,
+} from "@mui/material";
 import { styled } from "@mui/material/styles";
 import AddAPhotoIcon from "@mui/icons-material/AddAPhoto";
 import { ProfilePhotoService } from "../services/ProfilePhotoService";
 import { useAuth } from "../contexts/AuthContext";
 import logger from "../utils/logger";
-
-// Type for options
-type _UploadOptions = {
-  // define properties
-};
 
 // Stilizarea componentei
 const UploadContainer = styled(Box)(({ theme }) => ({
@@ -73,24 +74,18 @@ interface ProfilePhotoUploaderProps {
 const ProfilePhotoUploader: React.FC<ProfilePhotoUploaderProps> = ({
   currentPhotoUrl,
   onPhotoUploaded,
-  onPhotoError
+  onPhotoError,
 }) => {
   const { user } = useAuth();
   const [isUploading, setIsUploading] = useState(false);
   const [progress, setProgress] = useState(0);
-  const [previewUrl, setPreviewUrl] = useState<string | undefined>(currentPhotoUrl);
+  const [previewUrl, setPreviewUrl] = useState<string | undefined>(
+    currentPhotoUrl
+  );
   const [error, setError] = useState<string | null>(null);
-  
+
   // Referință la instanța serviciului pentru fotografii de profil
   const profilePhotoService = useRef(new ProfilePhotoService(null));
-
-  /**
-   * Gestionează progresul încărcării fișierului
-   */
-  const _handleProgress = (progress: number) => {
-    setProgress(Math.round(progress));
-  };
-
   /**
    * Gestionează încărcarea fișierului
    */
@@ -100,7 +95,7 @@ const ProfilePhotoUploader: React.FC<ProfilePhotoUploaderProps> = ({
     }
 
     const file = files[0];
-    
+
     // Validare fișier
     if (!file.type.startsWith("image/")) {
       setError("Vă rugăm să selectați o imagine (jpg, png, gif).");
@@ -119,7 +114,7 @@ const ProfilePhotoUploader: React.FC<ProfilePhotoUploaderProps> = ({
       setIsUploading(true);
       setProgress(0);
       setError(null);
-      
+
       // Creăm un URL de previzualizare temporar
       const tempPreviewUrl = URL.createObjectURL(file);
       setPreviewUrl(tempPreviewUrl);
@@ -129,17 +124,24 @@ const ProfilePhotoUploader: React.FC<ProfilePhotoUploaderProps> = ({
 
       // Revocăm URL-ul temporar pentru a elibera memoria
       URL.revokeObjectURL(tempPreviewUrl);
-      
+
       // Setăm URL-ul final și apelăm callback-ul
       setPreviewUrl(tempPreviewUrl);
       onPhotoUploaded?.(tempPreviewUrl);
-      
-      logger.info("Fotografia de profil a fost încărcată cu succes:", tempPreviewUrl);
+
+      logger.info(
+        "Fotografia de profil a fost încărcată cu succes:",
+        tempPreviewUrl
+      );
     } catch (error) {
       logger.error("Eroare la încărcarea fotografiei de profil:", error);
-      setError("A apărut o eroare la încărcarea fotografiei. Vă rugăm să încercați din nou.");
+      setError(
+        "A apărut o eroare la încărcarea fotografiei. Vă rugăm să încercați din nou."
+      );
       setPreviewUrl(currentPhotoUrl);
-      onPhotoError?.(error instanceof Error ? error : new Error("Eroare necunoscută"));
+      onPhotoError?.(
+        error instanceof Error ? error : new Error("Eroare necunoscută")
+      );
     } finally {
       setIsUploading(false);
     }
@@ -149,7 +151,7 @@ const ProfilePhotoUploader: React.FC<ProfilePhotoUploaderProps> = ({
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop: handleUpload,
     accept: {
-      "image/*": [".jpeg", ".jpg", ".png", ".gif"]
+      "image/*": [".jpeg", ".jpg", ".png", ".gif"],
     },
     maxFiles: 1,
     disabled: isUploading || !user,
@@ -163,18 +165,20 @@ const ProfilePhotoUploader: React.FC<ProfilePhotoUploaderProps> = ({
 
     try {
       setIsUploading(true);
-      
+
       // Ștergem fotografia folosind serviciul
       await profilePhotoService.current.removeProfilePhoto(user.uid);
-      
+
       setPreviewUrl(undefined);
       onPhotoUploaded?.("");
-      
+
       logger.info("Fotografia de profil a fost ștearsă cu succes");
     } catch (error) {
       logger.error("Eroare la ștergerea fotografiei de profil:", error);
       setError("A apărut o eroare la ștergerea fotografiei.");
-      onPhotoError?.(error instanceof Error ? error : new Error("Eroare necunoscută"));
+      onPhotoError?.(
+        error instanceof Error ? error : new Error("Eroare necunoscută")
+      );
     } finally {
       setIsUploading(false);
     }
@@ -192,29 +196,33 @@ const ProfilePhotoUploader: React.FC<ProfilePhotoUploaderProps> = ({
       </LargeAvatar>
 
       {/* Zona de încărcare (drag & drop) */}
-      <UploadContainer 
-        {...getRootProps()} 
-        sx={{ 
-          mt: 2, 
+      <UploadContainer
+        {...getRootProps()}
+        sx={{
+          mt: 2,
           opacity: isUploading ? 0.7 : 1,
-          pointerEvents: isUploading ? "none" : "auto" 
+          pointerEvents: isUploading ? "none" : "auto",
         }}
       >
         <input {...getInputProps()} />
-        
+
         {isDragActive ? (
           <Typography>Trageți fotografia aici...</Typography>
         ) : (
           <Typography>
-            {previewUrl 
-              ? "Trageți o altă fotografie aici sau faceți clic pentru a schimba" 
+            {previewUrl
+              ? "Trageți o altă fotografie aici sau faceți clic pentru a schimba"
               : "Trageți o fotografie aici sau faceți clic pentru a încărca"}
           </Typography>
         )}
-        
+
         {isUploading && (
           <Box sx={{ mt: 1 }}>
-            <CircularProgress size={24} variant="determinate" value={progress} />
+            <CircularProgress
+              size={24}
+              variant="determinate"
+              value={progress}
+            />
             <Typography variant="caption" sx={{ ml: 1 }}>
               {progress}%
             </Typography>

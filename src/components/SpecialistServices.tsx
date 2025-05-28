@@ -1,9 +1,31 @@
 import React, { useState, useEffect } from "react";
 import { useAuth } from "../contexts/AuthContext";
-import { collection, query, where, getDocs, addDoc, deleteDoc, doc, updateDoc, serverTimestamp, getDoc } from "firebase/firestore";
+import {
+  collection,
+  query,
+  where,
+  getDocs,
+  addDoc,
+  deleteDoc,
+  doc,
+  updateDoc,
+  serverTimestamp,
+  getDoc,
+} from "firebase/firestore";
 import { firestore } from "../firebase";
-import { FaPlus, FaTrash, FaEdit, FaSave, FaTimes, FaMoneyBillWave, FaClock } from "react-icons/fa";
-import { SpecializationCategories, getDefaultServicesForSpecialization } from "../utils/specializationCategories";
+import {
+  FaPlus,
+  FaTrash,
+  FaEdit,
+  FaSave,
+  FaTimes,
+  FaMoneyBillWave,
+  FaClock,
+} from "react-icons/fa";
+import {
+  SpecializationCategories,
+  getDefaultServicesForSpecialization,
+} from "../utils/specializationCategories";
 
 interface SpecialistService {
   id?: string;
@@ -29,72 +51,64 @@ interface SpecialistProfile {
   isActive?: boolean;
 }
 
-interface _ServiceData {
-  id: string;
-  name: string;
-  // other properties
-}
-
-interface ServiceItem {
-  id: string;
-  name: string;
-  price?: number;
-  description?: string;
-  duration?: number;
-  [key: string]: unknown;
-}
-
 const SpecialistServices: React.FC = () => {
   const { user } = useAuth();
   const [services, setServices] = useState<SpecialistService[]>([]);
   const [loading, setLoading] = useState(true);
-  const [newService, setNewService] = useState<Omit<SpecialistService, "id" | "specialistId" | "createdAt">>({
+  const [newService, setNewService] = useState<
+    Omit<SpecialistService, "id" | "specialistId" | "createdAt">
+  >({
     name: "",
     description: "",
     duration: 60,
     price: 150,
     isActive: true,
-    category: ""
+    category: "",
   });
   const [showAddForm, setShowAddForm] = useState(false);
   const [editing, setEditing] = useState<string | null>(null);
-  const [editedService, setEditedService] = useState<SpecialistService | null>(null);
+  const [editedService, setEditedService] = useState<SpecialistService | null>(
+    null
+  );
   const [saving, setSaving] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
-  const [specialistProfile, setSpecialistProfile] = useState<SpecialistProfile | null>(null);
+  const [specialistProfile, setSpecialistProfile] =
+    useState<SpecialistProfile | null>(null);
 
   // Fetch specialist services and profile
   useEffect(() => {
     const fetchServicesAndProfile = async () => {
       if (!user) return;
-      
+
       setLoading(true);
       try {
         // Get specialist profile first
         await fetchSpecialistProfile();
-        
+
         // Fetch services provided by this specialist
         const q = query(
           collection(firestore, "specialistServices"),
           where("specialistId", "==", user.uid)
         );
-        
+
         const querySnapshot = await getDocs(q);
         const servicesData: SpecialistService[] = [];
-        
+
         querySnapshot.forEach((doc) => {
           servicesData.push({
             id: doc.id,
-            ...(doc.data() as Omit<SpecialistService, "id">)
+            ...(doc.data() as Omit<SpecialistService, "id">),
           });
         });
-        
+
         setServices(servicesData);
-        
+
         // If we don't have any services yet, prepare suggestions based on specialization
         if (servicesData.length === 0 && specialistProfile?.specialization) {
-          const defaultServices = getDefaultServicesForSpecialization(specialistProfile.specialization);
+          const defaultServices = getDefaultServicesForSpecialization(
+            specialistProfile.specialization
+          );
           if (defaultServices.length > 0) {
             setNewService({
               ...newService,
@@ -102,18 +116,20 @@ const SpecialistServices: React.FC = () => {
               description: defaultServices[0].description,
               duration: defaultServices[0].duration,
               price: defaultServices[0].price,
-              category: specialistProfile.specialization
+              category: specialistProfile.specialization,
             });
           }
         }
       } catch (error) {
         console.error("Error fetching specialist services:", error);
-        setErrorMessage("Nu s-au putut încărca serviciile. Vă rugăm încercați din nou.");
+        setErrorMessage(
+          "Nu s-au putut încărca serviciile. Vă rugăm încercați din nou."
+        );
       } finally {
         setLoading(false);
       }
     };
-    
+
     if (user) {
       fetchServicesAndProfile();
     }
@@ -122,13 +138,13 @@ const SpecialistServices: React.FC = () => {
   // Fetch the specialist profile data
   const fetchSpecialistProfile = async () => {
     if (!user) return;
-    
+
     try {
       // Try to get from specialists collection first
       const specialistsRef = collection(firestore, "specialists");
       const q = query(specialistsRef, where("userId", "==", user.uid));
       const specialistsSnapshot = await getDocs(q);
-      
+
       if (!specialistsSnapshot.empty) {
         const data = specialistsSnapshot.docs[0].data();
         setSpecialistProfile({
@@ -136,18 +152,20 @@ const SpecialistServices: React.FC = () => {
           userId: user.uid,
           fullName: data.fullName || data.name || user.displayName || "",
           email: data.email || user.email || "",
-          specialization: data.specialization || data.specializationCategory || "",
-          specializationCategory: data.specializationCategory || data.specialization || "",
+          specialization:
+            data.specialization || data.specializationCategory || "",
+          specializationCategory:
+            data.specializationCategory || data.specialization || "",
           bio: data.bio || data.description || "",
-          isActive: data.isActive !== false
+          isActive: data.isActive !== false,
         });
         return;
       }
-      
+
       // Try direct document in specialists collection
       const directSpecialistRef = doc(firestore, "specialists", user.uid);
       const directSpecialistDoc = await getDoc(directSpecialistRef);
-      
+
       if (directSpecialistDoc.exists()) {
         const data = directSpecialistDoc.data();
         setSpecialistProfile({
@@ -155,17 +173,19 @@ const SpecialistServices: React.FC = () => {
           userId: user.uid,
           fullName: data.fullName || data.name || user.displayName || "",
           email: data.email || user.email || "",
-          specialization: data.specialization || data.specializationCategory || "",
-          specializationCategory: data.specializationCategory || data.specialization || "",
+          specialization:
+            data.specialization || data.specializationCategory || "",
+          specializationCategory:
+            data.specializationCategory || data.specialization || "",
           bio: data.bio || data.description || "",
-          isActive: data.isActive !== false
+          isActive: data.isActive !== false,
         });
         return;
       }
-      
+
       // Fall back to user data
       const userDoc = await getDoc(doc(firestore, "users", user.uid));
-      
+
       if (userDoc.exists()) {
         const data = userDoc.data();
         setSpecialistProfile({
@@ -175,7 +195,7 @@ const SpecialistServices: React.FC = () => {
           specialization: data.specialization || "",
           specializationCategory: data.specializationCategory || "",
           bio: data.bio || data.description || "",
-          isActive: data.isActive !== false
+          isActive: data.isActive !== false,
         });
       } else {
         // Create a minimal profile if we have nothing
@@ -183,7 +203,7 @@ const SpecialistServices: React.FC = () => {
           userId: user.uid,
           fullName: user.displayName || "",
           email: user.email || "",
-          isActive: true
+          isActive: true,
         });
       }
     } catch (error) {
@@ -194,15 +214,22 @@ const SpecialistServices: React.FC = () => {
   // Add a new service
   const handleAddService = async () => {
     if (!user) return;
-    
-    if (!newService.name || !newService.description || newService.duration <= 0 || newService.price < 0) {
-      setErrorMessage("Toate câmpurile sunt obligatorii. Durata trebuie să fie pozitivă și prețul nu poate fi negativ.");
+
+    if (
+      !newService.name ||
+      !newService.description ||
+      newService.duration <= 0 ||
+      newService.price < 0
+    ) {
+      setErrorMessage(
+        "Toate câmpurile sunt obligatorii. Durata trebuie să fie pozitivă și prețul nu poate fi negativ."
+      );
       return;
     }
-    
+
     setSaving(true);
     setErrorMessage(null);
-    
+
     try {
       const serviceData: Omit<SpecialistService, "id"> = {
         specialistId: user.uid,
@@ -211,16 +238,20 @@ const SpecialistServices: React.FC = () => {
         duration: newService.duration,
         price: newService.price,
         isActive: true,
-        category: newService.category || specialistProfile?.specialization || "General",
-        createdAt: serverTimestamp()
+        category:
+          newService.category || specialistProfile?.specialization || "General",
+        createdAt: serverTimestamp(),
       };
-      
-      const docRef = await addDoc(collection(firestore, "specialistServices"), serviceData);
-      
+
+      const docRef = await addDoc(
+        collection(firestore, "specialistServices"),
+        serviceData
+      );
+
       // Update the state with the new service
       setServices([...services, { id: docRef.id, ...serviceData }]);
       setSuccessMessage("Serviciu adăugat cu succes!");
-      
+
       // Reset form
       setNewService({
         name: "",
@@ -228,17 +259,19 @@ const SpecialistServices: React.FC = () => {
         duration: 60,
         price: 150,
         isActive: true,
-        category: specialistProfile?.specialization || ""
+        category: specialistProfile?.specialization || "",
       });
       setShowAddForm(false);
-      
+
       // Clear success message after 3 seconds
       setTimeout(() => {
         setSuccessMessage(null);
       }, 3000);
     } catch (error) {
       console.error("Error adding service:", error);
-      setErrorMessage("A apărut o eroare la adăugarea serviciului. Vă rugăm încercați din nou.");
+      setErrorMessage(
+        "A apărut o eroare la adăugarea serviciului. Vă rugăm încercați din nou."
+      );
     } finally {
       setSaving(false);
     }
@@ -247,22 +280,24 @@ const SpecialistServices: React.FC = () => {
   // Delete a service
   const handleDeleteService = async (serviceId: string) => {
     if (!confirm("Sigur doriți să ștergeți acest serviciu?")) return;
-    
+
     try {
       await deleteDoc(doc(firestore, "specialistServices", serviceId));
-      
+
       // Update the state
-      setServices(services.filter(service => service.id !== serviceId));
-      
+      setServices(services.filter((service) => service.id !== serviceId));
+
       setSuccessMessage("Serviciu șters cu succes!");
-      
+
       // Clear success message after 3 seconds
       setTimeout(() => {
         setSuccessMessage(null);
       }, 3000);
     } catch (error) {
       console.error("Error deleting service:", error);
-      setErrorMessage("A apărut o eroare la ștergerea serviciului. Vă rugăm încercați din nou.");
+      setErrorMessage(
+        "A apărut o eroare la ștergerea serviciului. Vă rugăm încercați din nou."
+      );
     }
   };
 
@@ -281,73 +316,98 @@ const SpecialistServices: React.FC = () => {
   // Save edited service
   const handleSaveEdit = async () => {
     if (!editedService || !editedService.id) return;
-    
-    if (!editedService.name || !editedService.description || editedService.duration <= 0 || editedService.price < 0) {
-      setErrorMessage("Toate câmpurile sunt obligatorii. Durata trebuie să fie pozitivă și prețul nu poate fi negativ.");
+
+    if (
+      !editedService.name ||
+      !editedService.description ||
+      editedService.duration <= 0 ||
+      editedService.price < 0
+    ) {
+      setErrorMessage(
+        "Toate câmpurile sunt obligatorii. Durata trebuie să fie pozitivă și prețul nu poate fi negativ."
+      );
       return;
     }
-    
+
     setSaving(true);
     setErrorMessage(null);
-    
+
     try {
       const serviceRef = doc(firestore, "specialistServices", editedService.id);
-      
+
       await updateDoc(serviceRef, {
         name: editedService.name,
         description: editedService.description,
         duration: editedService.duration,
         price: editedService.price,
         isActive: editedService.isActive,
-        category: editedService.category || specialistProfile?.specialization || "General",
-        updatedAt: serverTimestamp()
+        category:
+          editedService.category ||
+          specialistProfile?.specialization ||
+          "General",
+        updatedAt: serverTimestamp(),
       });
-      
+
       // Update the state
-      setServices(services.map(service => 
-        service.id === editedService.id ? editedService : service
-      ));
-      
+      setServices(
+        services.map((service) =>
+          service.id === editedService.id ? editedService : service
+        )
+      );
+
       setSuccessMessage("Serviciu actualizat cu succes!");
       setEditing(null);
       setEditedService(null);
-      
+
       // Clear success message after 3 seconds
       setTimeout(() => {
         setSuccessMessage(null);
       }, 3000);
     } catch (error) {
       console.error("Error updating service:", error);
-      setErrorMessage("A apărut o eroare la actualizarea serviciului. Vă rugăm încercați din nou.");
+      setErrorMessage(
+        "A apărut o eroare la actualizarea serviciului. Vă rugăm încercați din nou."
+      );
     } finally {
       setSaving(false);
     }
   };
 
   // Toggle service active status
-  const toggleServiceActive = async (serviceId: string, currentStatus: boolean) => {
+  const toggleServiceActive = async (
+    serviceId: string,
+    currentStatus: boolean
+  ) => {
     try {
       const serviceRef = doc(firestore, "specialistServices", serviceId);
-      
+
       await updateDoc(serviceRef, {
         isActive: !currentStatus,
-        updatedAt: serverTimestamp()
+        updatedAt: serverTimestamp(),
       });
-      
+
       // Update the state
-      setServices(services.map(service => 
-        service.id === serviceId ? { ...service, isActive: !currentStatus } : service
-      ));
-      
-      setSuccessMessage(`Serviciu ${!currentStatus ? "activat" : "dezactivat"} cu succes!`);
-      
+      setServices(
+        services.map((service) =>
+          service.id === serviceId
+            ? { ...service, isActive: !currentStatus }
+            : service
+        )
+      );
+
+      setSuccessMessage(
+        `Serviciu ${!currentStatus ? "activat" : "dezactivat"} cu succes!`
+      );
+
       // Clear success message after 3 seconds
       setTimeout(() => {
         setSuccessMessage(null);
       }, 3000);
     } catch (error) {
       console.error("Error toggling service status:", error);
-      setErrorMessage("A apărut o eroare la actualizarea statusului serviciului. Vă rugăm încercați din nou.");
+      setErrorMessage(
+        "A apărut o eroare la actualizarea statusului serviciului. Vă rugăm încercați din nou."
+      );
     }
   };
 
@@ -357,12 +417,8 @@ const SpecialistServices: React.FC = () => {
       style: "currency",
       currency: "RON",
       minimumFractionDigits: 0,
-      maximumFractionDigits: 0
+      maximumFractionDigits: 0,
     }).format(price);
-  };
-
-  const _handleServiceSubmit = (_service: ServiceItem): void => {
-    // ...existing code...
   };
 
   if (loading) {
@@ -380,17 +436,10 @@ const SpecialistServices: React.FC = () => {
         <h2 className="text-xl font-semibold text-gray-800">Serviciile mele</h2>
         <button
           onClick={() => setShowAddForm(!showAddForm)}
-          className="flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
+          title="Adaugă serviciu"
+          aria-label="Adaugă serviciu"
         >
-          {showAddForm ? (
-            <>
-              <FaTimes className="mr-2" /> Anulează
-            </>
-          ) : (
-            <>
-              <FaPlus className="mr-2" /> Adaugă serviciu nou
-            </>
-          )}
+          <FaPlus />
         </button>
       </div>
 
@@ -400,6 +449,8 @@ const SpecialistServices: React.FC = () => {
           <button
             className="absolute top-2 right-2"
             onClick={() => setErrorMessage(null)}
+            title="Închide mesajul de eroare"
+            aria-label="Închide mesajul de eroare"
           >
             <FaTimes />
           </button>
@@ -412,6 +463,8 @@ const SpecialistServices: React.FC = () => {
           <button
             className="absolute top-2 right-2"
             onClick={() => setSuccessMessage(null)}
+            title="Închide mesajul de succes"
+            aria-label="Închide mesajul de succes"
           >
             <FaTimes />
           </button>
@@ -429,28 +482,33 @@ const SpecialistServices: React.FC = () => {
               <input
                 type="text"
                 value={newService.name}
-                onChange={(e) => setNewService({...newService, name: e.target.value})}
+                onChange={(e) =>
+                  setNewService({ ...newService, name: e.target.value })
+                }
                 className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-                placeholder="Ex: Terapie individuală"
+                placeholder="Introdu numele serviciului"
+                aria-label="Nume serviciu"
+                title="Nume serviciu"
               />
             </div>
-            
+
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
                 Categorie
               </label>
               <select
-                value={newService.category}
-                onChange={(e) => setNewService({...newService, category: e.target.value})}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                aria-label="Alege categoria serviciului"
+                title="Alege categoria serviciului"
               >
-                <option value="">Selectează o categorie</option>
+                <option value="">Selectează categoria</option>
                 {SpecializationCategories.map((cat) => (
-                  <option key={cat.id} value={cat.id}>{cat.name}</option>
+                  <option key={cat.id} value={cat.id}>
+                    {cat.name}
+                  </option>
                 ))}
               </select>
             </div>
-            
+
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
                 Durată (minute) *
@@ -458,12 +516,20 @@ const SpecialistServices: React.FC = () => {
               <input
                 type="number"
                 value={newService.duration}
-                onChange={(e) => setNewService({...newService, duration: parseInt(e.target.value) || 0})}
+                onChange={(e) =>
+                  setNewService({
+                    ...newService,
+                    duration: parseInt(e.target.value) || 0,
+                  })
+                }
                 min="1"
                 className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                placeholder="Durata în minute"
+                aria-label="Durată (minute)"
+                title="Durată (minute)"
               />
             </div>
-            
+
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
                 Preț (RON) *
@@ -471,26 +537,38 @@ const SpecialistServices: React.FC = () => {
               <input
                 type="number"
                 value={newService.price}
-                onChange={(e) => setNewService({...newService, price: parseInt(e.target.value) || 0})}
+                onChange={(e) =>
+                  setNewService({
+                    ...newService,
+                    price: parseInt(e.target.value) || 0,
+                  })
+                }
                 min="0"
                 className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                placeholder="Preț în RON"
+                aria-label="Preț (RON)"
+                title="Preț (RON)"
               />
             </div>
-            
+
             <div className="md:col-span-2">
               <label className="block text-sm font-medium text-gray-700 mb-1">
                 Descriere *
               </label>
               <textarea
                 value={newService.description}
-                onChange={(e) => setNewService({...newService, description: e.target.value})}
+                onChange={(e) =>
+                  setNewService({ ...newService, description: e.target.value })
+                }
                 rows={3}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-                placeholder="Descrieți pe scurt în ce constă acest serviciu..."
-              ></textarea>
+                placeholder="Descriere serviciu"
+                aria-label="Descriere serviciu"
+                title="Descriere serviciu"
+              />
             </div>
           </div>
-          
+
           <div className="mt-4 flex justify-end">
             <button
               onClick={() => setShowAddForm(false)}
@@ -520,12 +598,26 @@ const SpecialistServices: React.FC = () => {
 
       {services.length === 0 ? (
         <div className="text-center py-8 bg-gray-50 rounded-lg">
-          <svg xmlns="http://www.w3.org/2000/svg" className="h-12 w-12 mx-auto text-gray-400 mb-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            className="h-12 w-12 mx-auto text-gray-400 mb-3"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"
+            />
           </svg>
-          <h3 className="text-lg font-medium text-gray-800 mb-2">Niciun serviciu adăugat</h3>
+          <h3 className="text-lg font-medium text-gray-800 mb-2">
+            Niciun serviciu adăugat
+          </h3>
           <p className="text-gray-600 mb-4 max-w-md mx-auto">
-            Adăugați serviciile pe care le oferiți pentru a permite clienților să le aleagă la programare.
+            Adăugați serviciile pe care le oferiți pentru a permite clienților
+            să le aleagă la programare.
           </p>
           <button
             onClick={() => setShowAddForm(true)}
@@ -539,23 +631,38 @@ const SpecialistServices: React.FC = () => {
           <table className="min-w-full divide-y divide-gray-200">
             <thead className="bg-gray-50">
               <tr>
-                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th
+                  scope="col"
+                  className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                >
                   Serviciu
                 </th>
-                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th
+                  scope="col"
+                  className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                >
                   Detalii
                 </th>
-                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th
+                  scope="col"
+                  className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                >
                   Status
                 </th>
-                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th
+                  scope="col"
+                  className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                >
                   Acțiuni
                 </th>
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
               {services.map((service) => (
-                <tr key={service.id} className={`${service.isActive ? "" : "bg-gray-50"}`}>
+                <tr
+                  key={service.id}
+                  className={`${service.isActive ? "" : "bg-gray-50"}`}
+                >
                   {editing === service.id ? (
                     <>
                       <td className="px-6 py-4" colSpan={4}>
@@ -567,27 +674,46 @@ const SpecialistServices: React.FC = () => {
                             <input
                               type="text"
                               value={editedService?.name || ""}
-                              onChange={(e) => setEditedService(prev => prev ? {...prev, name: e.target.value} : null)}
+                              onChange={(e) =>
+                                setEditedService((prev) =>
+                                  prev
+                                    ? { ...prev, name: e.target.value }
+                                    : null
+                                )
+                              }
                               className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                              placeholder="Introdu numele serviciului"
+                              aria-label="Nume serviciu"
+                              title="Nume serviciu"
                             />
                           </div>
-                          
+
                           <div>
                             <label className="block text-sm font-medium text-gray-700 mb-1">
                               Categorie
                             </label>
                             <select
                               value={editedService?.category || ""}
-                              onChange={(e) => setEditedService(prev => prev ? {...prev, category: e.target.value} : null)}
+                              onChange={(e) =>
+                                setEditedService((prev) =>
+                                  prev
+                                    ? { ...prev, category: e.target.value }
+                                    : null
+                                )
+                              }
                               className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                              aria-label="Categorie serviciu"
+                              title="Categorie serviciu"
                             >
                               <option value="">Selectează o categorie</option>
                               {SpecializationCategories.map((cat) => (
-                                <option key={cat.id} value={cat.id}>{cat.name}</option>
+                                <option key={cat.id} value={cat.id}>
+                                  {cat.name}
+                                </option>
                               ))}
                             </select>
                           </div>
-                          
+
                           <div>
                             <label className="block text-sm font-medium text-gray-700 mb-1">
                               Durată (minute) *
@@ -595,12 +721,24 @@ const SpecialistServices: React.FC = () => {
                             <input
                               type="number"
                               value={editedService?.duration || 0}
-                              onChange={(e) => setEditedService(prev => prev ? {...prev, duration: parseInt(e.target.value) || 0} : null)}
+                              onChange={(e) =>
+                                setEditedService((prev) =>
+                                  prev
+                                    ? {
+                                        ...prev,
+                                        duration: parseInt(e.target.value) || 0,
+                                      }
+                                    : null
+                                )
+                              }
                               min="1"
                               className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                              placeholder="Durata în minute"
+                              aria-label="Durată (minute)"
+                              title="Durată (minute)"
                             />
                           </div>
-                          
+
                           <div>
                             <label className="block text-sm font-medium text-gray-700 mb-1">
                               Preț (RON) *
@@ -608,38 +746,68 @@ const SpecialistServices: React.FC = () => {
                             <input
                               type="number"
                               value={editedService?.price || 0}
-                              onChange={(e) => setEditedService(prev => prev ? {...prev, price: parseInt(e.target.value) || 0} : null)}
+                              onChange={(e) =>
+                                setEditedService((prev) =>
+                                  prev
+                                    ? {
+                                        ...prev,
+                                        price: parseInt(e.target.value) || 0,
+                                      }
+                                    : null
+                                )
+                              }
                               min="0"
                               className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                              placeholder="Preț în RON"
+                              aria-label="Preț (RON)"
+                              title="Preț (RON)"
                             />
                           </div>
-                          
+
                           <div className="md:col-span-2">
                             <label className="block text-sm font-medium text-gray-700 mb-1">
                               Descriere *
                             </label>
                             <textarea
                               value={editedService?.description || ""}
-                              onChange={(e) => setEditedService(prev => prev ? {...prev, description: e.target.value} : null)}
+                              onChange={(e) =>
+                                setEditedService((prev) =>
+                                  prev
+                                    ? { ...prev, description: e.target.value }
+                                    : null
+                                )
+                              }
                               rows={3}
                               className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                              placeholder="Descriere serviciu"
+                              aria-label="Descriere serviciu"
+                              title="Descriere serviciu"
                             ></textarea>
                           </div>
-                          
+
                           <div className="md:col-span-2 flex items-center">
                             <input
                               type="checkbox"
                               id={`active-${service.id}`}
                               checked={editedService?.isActive || false}
-                              onChange={(e) => setEditedService(prev => prev ? {...prev, isActive: e.target.checked} : null)}
+                              onChange={(e) =>
+                                setEditedService((prev) =>
+                                  prev
+                                    ? { ...prev, isActive: e.target.checked }
+                                    : null
+                                )
+                              }
                               className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
                             />
-                            <label htmlFor={`active-${service.id}`} className="ml-2 block text-sm text-gray-700">
+                            <label
+                              htmlFor={`active-${service.id}`}
+                              className="ml-2 block text-sm text-gray-700"
+                            >
                               Serviciu activ (disponibil pentru programări)
                             </label>
                           </div>
                         </div>
-                        
+
                         <div className="mt-4 flex justify-end">
                           <button
                             onClick={handleEditCancel}
@@ -671,28 +839,44 @@ const SpecialistServices: React.FC = () => {
                       <td className="px-6 py-4">
                         <div className="flex items-start">
                           <div>
-                            <div className="text-sm font-medium text-gray-900">{service.name}</div>
-                            <div className="text-xs text-gray-500 mt-1">{service.category || "General"}</div>
+                            <div className="text-sm font-medium text-gray-900">
+                              {service.name}
+                            </div>
+                            <div className="text-xs text-gray-500 mt-1">
+                              {service.category || "General"}
+                            </div>
                           </div>
                         </div>
                       </td>
                       <td className="px-6 py-4">
-                        <div className="text-sm text-gray-900 max-w-xs">{service.description}</div>
+                        <div className="text-sm text-gray-900 max-w-xs">
+                          {service.description}
+                        </div>
                         <div className="flex items-center mt-1 text-xs text-gray-500">
                           <FaClock className="mr-1" /> {service.duration} minute
                           <span className="mx-2">•</span>
-                          <FaMoneyBillWave className="mr-1" /> {formatPrice(service.price)}
+                          <FaMoneyBillWave className="mr-1" />{" "}
+                          {formatPrice(service.price)}
                         </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
-                        <span 
+                        <span
                           className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full cursor-pointer ${
-                            service.isActive 
-                              ? "bg-green-100 text-green-800 hover:bg-green-200" 
+                            service.isActive
+                              ? "bg-green-100 text-green-800 hover:bg-green-200"
                               : "bg-gray-100 text-gray-800 hover:bg-gray-200"
                           }`}
-                          onClick={() => toggleServiceActive(service.id || "", service.isActive)}
-                          title={service.isActive ? "Click pentru a dezactiva" : "Click pentru a activa"}
+                          onClick={() =>
+                            toggleServiceActive(
+                              service.id || "",
+                              service.isActive
+                            )
+                          }
+                          title={
+                            service.isActive
+                              ? "Click pentru a dezactiva"
+                              : "Click pentru a activa"
+                          }
                         >
                           {service.isActive ? "Activ" : "Inactiv"}
                         </span>

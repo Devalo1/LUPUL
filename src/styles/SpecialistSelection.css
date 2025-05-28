@@ -1,0 +1,64 @@
+/* Appointment Steps Progress Bar Styles - Reusable across all appointment pages */
+
+/* Progress bar background */
+.progress-bar-background {
+  position: absolute;
+  height: 0.25rem;
+  background-color: #e5e7eb; /* bg-gray-200 */
+  top: 0;
+  left: 0;
+  right: 0;
+}
+
+/* Progress bar fill with step-based widths */
+.progress-bar-fill {
+  position: absolute;
+  height: 0.25rem;
+  background-color: #3b82f6; /* bg-blue-500 */
+  top: 0;
+  left: 0;
+  transition: width 0.3s ease-in-out;
+}
+
+/* Step-specific progress widths */
+.progress-bar-fill.step-1 {
+  width: 0%;
+}
+
+.progress-bar-fill.step-2 {
+  width: 25%;
+}
+
+.progress-bar-fill.step-3 {
+  width: 50%;
+}
+
+.progress-bar-fill.step-4 {
+  width: 75%;
+}
+
+.progress-bar-fill.step-5 {
+  width: 100%;
+}
+
+/* Progress container */
+.progress-container {
+  position: relative;
+  height: 0.25rem;
+  margin-top: 0.75rem;
+}
+
+/* Smooth transitions for step indicators */
+.step-indicator {
+  transition: all 0.3s ease-in-out;
+}
+
+.step-indicator.active {
+  background-color: #3b82f6;
+  color: white;
+}
+
+.step-indicator.inactive {
+  background-color: #e5e7eb;
+  color: #6b7280;
+}

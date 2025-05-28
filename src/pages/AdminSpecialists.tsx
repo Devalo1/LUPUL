@@ -1,9 +1,32 @@
 import React, { useState, useEffect } from "react";
-import { Link, useNavigate } from "react-router-dom";
-import { collection, getDocs, doc, updateDoc, deleteDoc, query, where, addDoc, Timestamp, getDoc, setDoc } from "firebase/firestore";
+import { Link } from "react-router-dom";
+import {
+  collection,
+  getDocs,
+  doc,
+  updateDoc,
+  deleteDoc,
+  query,
+  where,
+  Timestamp,
+  getDoc,
+  setDoc,
+} from "firebase/firestore";
 import { db } from "../firebase";
 import { toast } from "react-toastify";
-import { FaUserMd, FaEdit, FaTrash, FaCheck, FaBan, FaArrowRight, FaSearch, FaUserEdit, FaPhone, FaEnvelope, FaCalendarAlt } from "react-icons/fa";
+import {
+  FaUserMd,
+  FaEdit,
+  FaTrash,
+  FaCheck,
+  FaBan,
+  FaArrowRight,
+  FaSearch,
+  FaUserEdit,
+  FaPhone,
+  FaEnvelope,
+  FaCalendarAlt,
+} from "react-icons/fa";
 import { SpecializationCategories } from "../utils/specializationCategories";
 
 interface Specialist {
@@ -27,7 +50,6 @@ const AdminSpecialists: React.FC = () => {
   const [filterActive, setFilterActive] = useState<string>("all");
   const [editingSpecialist, setEditingSpecialist] = useState<any>({});
   const [showEditForm, setShowEditForm] = useState<boolean>(false);
-  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchSpecialists = async () => {
@@ -45,20 +67,32 @@ const AdminSpecialists: React.FC = () => {
           specialistsMap.set(userId, {
             id: doc.id,
             userId: userId,
-            fullName: data.fullName || data.name || data.displayName || data.email || "Fără nume",
-            specialization: data.specialization || data.specializationCategory || data.serviceType || "Neselectat",
+            fullName:
+              data.fullName ||
+              data.name ||
+              data.displayName ||
+              data.email ||
+              "Fără nume",
+            specialization:
+              data.specialization ||
+              data.specializationCategory ||
+              data.serviceType ||
+              "Neselectat",
             specializationCategory: data.specializationCategory || "",
             email: data.email || "",
             phone: data.phone || "",
             bio: data.bio || data.description || "",
             isActive: data.isActive ?? true,
             createdAt: data.createdAt,
-            imageUrl: data.imageUrl || data.photoURL || ""
+            imageUrl: data.imageUrl || data.photoURL || "",
           });
         });
 
         const usersCollection = collection(db, "users");
-        const specialistQuery = query(usersCollection, where("role", "==", "specialist"));
+        const specialistQuery = query(
+          usersCollection,
+          where("role", "==", "specialist")
+        );
         const specialistSnapshot = await getDocs(specialistQuery);
 
         specialistSnapshot.forEach((userDoc) => {
@@ -69,32 +103,56 @@ const AdminSpecialists: React.FC = () => {
             const existing = specialistsMap.get(userId)!;
             specialistsMap.set(userId, {
               ...existing,
-              fullName: existing.fullName !== "Fără nume" ? existing.fullName :
-                (userData.displayName || userData.fullName || userData.email || "Fără nume"),
+              fullName:
+                existing.fullName !== "Fără nume"
+                  ? existing.fullName
+                  : userData.displayName ||
+                    userData.fullName ||
+                    userData.email ||
+                    "Fără nume",
               email: existing.email || userData.email || "",
-              phone: existing.phone || userData.phone || userData.phoneNumber || "",
-              specialization: existing.specialization !== "Neselectat" ? existing.specialization :
-                (userData.specialization || userData.specializationCategory || "Neselectat"),
-              imageUrl: existing.imageUrl || userData.photoURL || userData.imageUrl || "",
+              phone:
+                existing.phone || userData.phone || userData.phoneNumber || "",
+              specialization:
+                existing.specialization !== "Neselectat"
+                  ? existing.specialization
+                  : userData.specialization ||
+                    userData.specializationCategory ||
+                    "Neselectat",
+              imageUrl:
+                existing.imageUrl ||
+                userData.photoURL ||
+                userData.imageUrl ||
+                "",
             });
           } else {
             specialistsMap.set(userId, {
               id: userId,
               userId: userId,
-              fullName: userData.displayName || userData.fullName || userData.email || "Fără nume",
-              specialization: userData.specialization || userData.specializationCategory || "Neselectat",
+              fullName:
+                userData.displayName ||
+                userData.fullName ||
+                userData.email ||
+                "Fără nume",
+              specialization:
+                userData.specialization ||
+                userData.specializationCategory ||
+                "Neselectat",
               specializationCategory: userData.specializationCategory || "",
               email: userData.email || "",
               phone: userData.phone || userData.phoneNumber || "",
               bio: userData.bio || userData.description || "",
               isActive: userData.isActive ?? true,
               createdAt: userData.createdAt,
-              imageUrl: userData.photoURL || userData.imageUrl || ""
+              imageUrl: userData.photoURL || userData.imageUrl || "",
             });
           }
         });
 
-        const usersWithClaimsQuery = query(usersCollection, where("isSpecialist", "==", true));
+        const usersWithClaimsQuery = query(
+          usersCollection,
+          where("isSpecialist", "==", true)
+        );
         const usersWithClaimsSnapshot = await getDocs(usersWithClaimsQuery);
 
         usersWithClaimsSnapshot.forEach((userDoc) => {
@@ -105,24 +163,37 @@ const AdminSpecialists: React.FC = () => {
             const existing = specialistsMap.get(userId)!;
             specialistsMap.set(userId, {
               ...existing,
-              fullName: existing.fullName !== "Fără nume" ? existing.fullName :
-                (userData.displayName || userData.fullName || userData.email || "Fără nume"),
+              fullName:
+                existing.fullName !== "Fără nume"
+                  ? existing.fullName
+                  : userData.displayName ||
+                    userData.fullName ||
+                    userData.email ||
+                    "Fără nume",
               email: existing.email || userData.email || "",
-              phone: existing.phone || userData.phone || userData.phoneNumber || "",
+              phone:
+                existing.phone || userData.phone || userData.phoneNumber || "",
             });
           } else {
             specialistsMap.set(userId, {
               id: userId,
               userId: userId,
-              fullName: userData.displayName || userData.fullName || userData.email || "Fără nume",
-              specialization: userData.specialization || userData.specializationCategory || "Neselectat",
+              fullName:
+                userData.displayName ||
+                userData.fullName ||
+                userData.email ||
+                "Fără nume",
+              specialization:
+                userData.specialization ||
+                userData.specializationCategory ||
+                "Neselectat",
               specializationCategory: userData.specializationCategory || "",
               email: userData.email || "",
               phone: userData.phone || userData.phoneNumber || "",
               bio: userData.bio || userData.description || "",
               isActive: userData.isActive ?? true,
               createdAt: userData.createdAt,
-              imageUrl: userData.photoURL || userData.imageUrl || ""
+              imageUrl: userData.photoURL || userData.imageUrl || "",
             });
           }
         });
@@ -132,7 +203,7 @@ const AdminSpecialists: React.FC = () => {
           const servicesSnapshot = await getDocs(servicesCollection);
 
           const specialistIdsFromServices = new Set<string>();
-          servicesSnapshot.forEach(doc => {
+          servicesSnapshot.forEach((doc) => {
             const data = doc.data();
             if (data.specialistId) {
               specialistIdsFromServices.add(data.specialistId);
@@ -142,101 +213,150 @@ const AdminSpecialists: React.FC = () => {
           const processSpecialistIds = async () => {
             for (const specialistId of Array.from(specialistIdsFromServices)) {
               try {
-                const userDoc = await getDoc(doc(usersCollection, specialistId));
+                const userDoc = await getDoc(
+                  doc(usersCollection, specialistId)
+                );
                 if (userDoc.exists()) {
                   const userData = userDoc.data();
                   specialistsMap.set(specialistId, {
                     id: specialistId,
                     userId: specialistId,
-                    fullName: userData.displayName || userData.fullName || userData.email || "Fără nume",
-                    specialization: userData.specialization || userData.specializationCategory || "Neselectat",
-                    specializationCategory: userData.specializationCategory || "",
+                    fullName:
+                      userData.displayName ||
+                      userData.fullName ||
+                      userData.email ||
+                      "Fără nume",
+                    specialization:
+                      userData.specialization ||
+                      userData.specializationCategory ||
+                      "Neselectat",
+                    specializationCategory:
+                      userData.specializationCategory || "",
                     email: userData.email || "",
                     phone: userData.phone || userData.phoneNumber || "",
                     bio: userData.bio || userData.description || "",
                     isActive: userData.isActive ?? true,
                     createdAt: userData.createdAt,
-                    imageUrl: userData.photoURL || userData.imageUrl || ""
+                    imageUrl: userData.photoURL || userData.imageUrl || "",
                   });
 
                   if (!userData.role || userData.role !== "specialist") {
                     await updateDoc(doc(usersCollection, specialistId), {
                       role: "specialist",
                       isSpecialist: true,
-                      updatedAt: Timestamp.now()
+                      updatedAt: Timestamp.now(),
                     });
-                    console.log(`Updated user ${specialistId} with specialist role`);
+                    console.log(
+                      `Updated user ${specialistId} with specialist role`
+                    );
                   }
                 }
               } catch (err) {
-                console.error(`Error fetching user data for specialist ${specialistId}:`, err);
+                console.error(
+                  `Error fetching user data for specialist ${specialistId}:`,
+                  err
+                );
               }
             }
           };
 
           const processSpecialistMap = async () => {
             await Promise.all(
-              Array.from(specialistsMap.entries()).map(async ([userId, specialist]) => {
-                if (specialist.fullName === "Fără nume") {
-                  try {
-                    const appointmentsRef = collection(db, "appointments");
-                    const appointmentsQuery = query(appointmentsRef, where("specialistId", "==", userId));
-                    const appointmentsSnapshot = await getDocs(appointmentsQuery);
+              Array.from(specialistsMap.entries()).map(
+                async ([userId, specialist]) => {
+                  if (specialist.fullName === "Fără nume") {
+                    try {
+                      const appointmentsRef = collection(db, "appointments");
+                      const appointmentsQuery = query(
+                        appointmentsRef,
+                        where("specialistId", "==", userId)
+                      );
+                      const appointmentsSnapshot =
+                        await getDocs(appointmentsQuery);
 
-                    if (!appointmentsSnapshot.empty) {
-                      for (const appointmentDoc of appointmentsSnapshot.docs) {
-                        const appointmentData = appointmentDoc.data();
-                        if (appointmentData.specialistName && appointmentData.specialistName !== "Fără nume") {
-                          specialist.fullName = appointmentData.specialistName;
-                          break;
+                      if (!appointmentsSnapshot.empty) {
+                        for (const appointmentDoc of appointmentsSnapshot.docs) {
+                          const appointmentData = appointmentDoc.data();
+                          if (
+                            appointmentData.specialistName &&
+                            appointmentData.specialistName !== "Fără nume"
+                          ) {
+                            specialist.fullName =
+                              appointmentData.specialistName;
+                            break;
+                          }
                         }
                       }
-                    }
 
-                    if (specialist.fullName === "Fără nume") {
-                      const specialistProfileRef = doc(db, "specialistProfiles", userId);
-                      const specialistProfileDoc = await getDoc(specialistProfileRef);
+                      if (specialist.fullName === "Fără nume") {
+                        const specialistProfileRef = doc(
+                          db,
+                          "specialistProfiles",
+                          userId
+                        );
+                        const specialistProfileDoc =
+                          await getDoc(specialistProfileRef);
 
-                      if (specialistProfileDoc.exists()) {
-                        const profileData = specialistProfileDoc.data();
-                        if (profileData.fullName || profileData.name || profileData.displayName) {
-                          specialist.fullName = profileData.fullName || profileData.name || profileData.displayName;
+                        if (specialistProfileDoc.exists()) {
+                          const profileData = specialistProfileDoc.data();
+                          if (
+                            profileData.fullName ||
+                            profileData.name ||
+                            profileData.displayName
+                          ) {
+                            specialist.fullName =
+                              profileData.fullName ||
+                              profileData.name ||
+                              profileData.displayName;
+                          }
                         }
                       }
-                    }
 
-                    if (specialist.fullName !== "Fără nume") {
-                      try {
-                        const specialistRef = doc(db, "specialists", specialist.id);
-                        const specialistDoc = await getDoc(specialistRef);
+                      if (specialist.fullName !== "Fără nume") {
+                        try {
+                          const specialistRef = doc(
+                            db,
+                            "specialists",
+                            specialist.id
+                          );
+                          const specialistDoc = await getDoc(specialistRef);
 
-                        if (specialistDoc.exists()) {
-                          await updateDoc(specialistRef, {
-                            fullName: specialist.fullName,
-                            updatedAt: Timestamp.now()
-                          });
+                          if (specialistDoc.exists()) {
+                            await updateDoc(specialistRef, {
+                              fullName: specialist.fullName,
+                              updatedAt: Timestamp.now(),
+                            });
+                          }
+
+                          const userRef = doc(db, "users", userId);
+                          const userDoc = await getDoc(userRef);
+
+                          if (userDoc.exists()) {
+                            await updateDoc(userRef, {
+                              displayName: specialist.fullName,
+                              updatedAt: Timestamp.now(),
+                            });
+                          }
+
+                          console.log(
+                            `Updated name for specialist ${userId} to ${specialist.fullName}`
+                          );
+                        } catch (updateError) {
+                          console.error(
+                            `Error updating name for specialist ${userId}:`,
+                            updateError
+                          );
                         }
-
-                        const userRef = doc(db, "users", userId);
-                        const userDoc = await getDoc(userRef);
-
-                        if (userDoc.exists()) {
-                          await updateDoc(userRef, {
-                            displayName: specialist.fullName,
-                            updatedAt: Timestamp.now()
-                          });
-                        }
-
-                        console.log(`Updated name for specialist ${userId} to ${specialist.fullName}`);
-                      } catch (updateError) {
-                        console.error(`Error updating name for specialist ${userId}:`, updateError);
                       }
+                    } catch (searchError) {
+                      console.error(
+                        `Error searching for specialist name ${userId}:`,
+                        searchError
+                      );
                     }
-                  } catch (searchError) {
-                    console.error(`Error searching for specialist name ${userId}:`, searchError);
                   }
                 }
-              })
+              )
             );
           };
 
@@ -262,7 +382,10 @@ const AdminSpecialists: React.FC = () => {
     fetchSpecialists();
   }, []);
 
-  const handleToggleActive = async (specialistId: string, currentStatus: boolean) => {
+  const handleToggleActive = async (
+    specialistId: string,
+    currentStatus: boolean
+  ) => {
     try {
       const specialistRef = doc(db, "specialists", specialistId);
       const specialistDoc = await getDoc(specialistRef);
@@ -270,10 +393,10 @@ const AdminSpecialists: React.FC = () => {
       if (specialistDoc.exists()) {
         await updateDoc(specialistRef, {
           isActive: !currentStatus,
-          updatedAt: Timestamp.now()
+          updatedAt: Timestamp.now(),
         });
       } else {
-        const specialistData = specialists.find(s => s.id === specialistId);
+        const specialistData = specialists.find((s) => s.id === specialistId);
 
         if (specialistData) {
           await setDoc(specialistRef, {
@@ -287,7 +410,7 @@ const AdminSpecialists: React.FC = () => {
             isActive: !currentStatus,
             createdAt: Timestamp.now(),
             updatedAt: Timestamp.now(),
-            imageUrl: specialistData.imageUrl || ""
+            imageUrl: specialistData.imageUrl || "",
           });
 
           const userRef = doc(db, "users", specialistData.userId);
@@ -295,24 +418,35 @@ const AdminSpecialists: React.FC = () => {
             isSpecialist: true,
             role: "specialist",
             isActive: !currentStatus,
-            updatedAt: Timestamp.now()
+            updatedAt: Timestamp.now(),
           });
         }
       }
 
-      setSpecialists(specialists.map(s =>
-        s.id === specialistId ? { ...s, isActive: !currentStatus } : s
-      ));
+      setSpecialists(
+        specialists.map((s) =>
+          s.id === specialistId ? { ...s, isActive: !currentStatus } : s
+        )
+      );
 
-      toast.success(`Specialistul a fost ${!currentStatus ? "activat" : "dezactivat"} cu succes`);
+      toast.success(
+        `Specialistul a fost ${!currentStatus ? "activat" : "dezactivat"} cu succes`
+      );
     } catch (error) {
       console.error("Error toggling specialist status:", error);
       toast.error("A apărut o eroare la actualizarea statusului");
     }
   };
 
-  const handleDeleteSpecialist = async (specialistId: string, userId: string) => {
-    if (!window.confirm("Sunteți sigur că doriți să ștergeți acest specialist? Această acțiune nu poate fi anulată.")) {
+  const handleDeleteSpecialist = async (
+    specialistId: string,
+    userId: string
+  ) => {
+    if (
+      !window.confirm(
+        "Sunteți sigur că doriți să ștergeți acest specialist? Această acțiune nu poate fi anulată."
+      )
+    ) {
       return;
     }
 
@@ -332,7 +466,7 @@ const AdminSpecialists: React.FC = () => {
           await updateDoc(userRef, {
             isSpecialist: false,
             role: "user",
-            updatedAt: Timestamp.now()
+            updatedAt: Timestamp.now(),
           });
         }
       }
@@ -344,13 +478,15 @@ const AdminSpecialists: React.FC = () => {
         );
 
         const servicesSnapshot = await getDocs(servicesQuery);
-        const deletePromises = servicesSnapshot.docs.map(doc => deleteDoc(doc.ref));
+        const deletePromises = servicesSnapshot.docs.map((doc) =>
+          deleteDoc(doc.ref)
+        );
         await Promise.all(deletePromises);
       } catch (error) {
         console.warn("Error deleting related services:", error);
       }
 
-      setSpecialists(specialists.filter(s => s.id !== specialistId));
+      setSpecialists(specialists.filter((s) => s.id !== specialistId));
 
       toast.success("Specialistul a fost șters cu succes");
     } catch (error) {
@@ -375,25 +511,29 @@ const AdminSpecialists: React.FC = () => {
         await updateDoc(specialistRef, {
           fullName: editingSpecialist.fullName,
           specialization: editingSpecialist.specialization,
-          specializationCategory: editingSpecialist.specializationCategory || editingSpecialist.specialization,
+          specializationCategory:
+            editingSpecialist.specializationCategory ||
+            editingSpecialist.specialization,
           email: editingSpecialist.email,
           phone: editingSpecialist.phone,
           bio: editingSpecialist.bio,
-          updatedAt: Timestamp.now()
+          updatedAt: Timestamp.now(),
         });
       } else {
         await setDoc(specialistRef, {
           userId: editingSpecialist.userId,
           fullName: editingSpecialist.fullName,
           specialization: editingSpecialist.specialization,
-          specializationCategory: editingSpecialist.specializationCategory || editingSpecialist.specialization,
+          specializationCategory:
+            editingSpecialist.specializationCategory ||
+            editingSpecialist.specialization,
           email: editingSpecialist.email,
           phone: editingSpecialist.phone,
           bio: editingSpecialist.bio,
           isActive: editingSpecialist.isActive,
           createdAt: Timestamp.now(),
           updatedAt: Timestamp.now(),
-          imageUrl: editingSpecialist.imageUrl || ""
+          imageUrl: editingSpecialist.imageUrl || "",
         });
       }
 
@@ -403,17 +543,21 @@ const AdminSpecialists: React.FC = () => {
       if (userDoc.exists()) {
         await updateDoc(userRef, {
           specialization: editingSpecialist.specialization,
-          specializationCategory: editingSpecialist.specializationCategory || editingSpecialist.specialization,
+          specializationCategory:
+            editingSpecialist.specializationCategory ||
+            editingSpecialist.specialization,
           displayName: editingSpecialist.fullName,
           phone: editingSpecialist.phone,
           bio: editingSpecialist.bio,
-          updatedAt: Timestamp.now()
+          updatedAt: Timestamp.now(),
         });
       }
 
-      setSpecialists(specialists.map(s =>
-        s.id === editingSpecialist.id ? editingSpecialist : s
-      ));
+      setSpecialists(
+        specialists.map((s) =>
+          s.id === editingSpecialist.id ? editingSpecialist : s
+        )
+      );
 
       toast.success("Specialistul a fost actualizat cu succes");
       setShowEditForm(false);
@@ -429,52 +573,25 @@ const AdminSpecialists: React.FC = () => {
     setShowEditForm(true);
   };
 
-  const filteredSpecialists = specialists.filter(specialist => {
+  const filteredSpecialists = specialists.filter((specialist) => {
     const matchesSearch =
-      (specialist.fullName?.toLowerCase() || "").includes(searchTerm.toLowerCase()) ||
-      (specialist.specialization?.toLowerCase() || "").includes(searchTerm.toLowerCase()) ||
-      (specialist.email?.toLowerCase() || "").includes(searchTerm.toLowerCase());
+      (specialist.fullName?.toLowerCase() || "").includes(
+        searchTerm.toLowerCase()
+      ) ||
+      (specialist.specialization?.toLowerCase() || "").includes(
+        searchTerm.toLowerCase()
+      ) ||
+      (specialist.email?.toLowerCase() || "").includes(
+        searchTerm.toLowerCase()
+      );
 
     if (filterActive === "all") return matchesSearch;
     if (filterActive === "active") return matchesSearch && specialist.isActive;
-    if (filterActive === "inactive") return matchesSearch && !specialist.isActive;
+    if (filterActive === "inactive")
+      return matchesSearch && !specialist.isActive;
 
     return matchesSearch;
   });
-
-  const _createSpecialistInFirestore = async () => {
-    try {
-      const specialistsCollection = collection(db, "specialists");
-      const docRef = await addDoc(specialistsCollection, {
-        ...editingSpecialist,
-        createdAt: Timestamp.now(),
-        updatedAt: Timestamp.now(),
-        isActive: true
-      });
-
-      if (editingSpecialist.userId) {
-        const userRef = doc(db, "users", editingSpecialist.userId);
-        const userDoc = await getDoc(userRef);
-
-        if (userDoc.exists()) {
-          await updateDoc(userRef, {
-            isSpecialist: true,
-            role: "specialist",
-            specialization: editingSpecialist.specialization || "",
-            specializationCategory: editingSpecialist.specializationCategory || "",
-            updatedAt: Timestamp.now()
-          });
-        }
-      }
-
-      toast.success("Specialist creat cu succes!");
-
-      navigate(`/admin/specialists/edit/${docRef.id}`);
-    } catch (error) {
-      console.error("Error creating specialist:", error);
-      toast.error("A apărut o eroare la crearea specialistului");
-    }
-  };
 
   const formatDate = (date: any) => {
     if (!date) return "N/A";
@@ -489,7 +606,7 @@ const AdminSpecialists: React.FC = () => {
       return new Date(date).toLocaleDateString("ro-RO", {
         year: "numeric",
         month: "long",
-        day: "numeric"
+        day: "numeric",
       });
     } catch (error) {
       return "Data invalidă";
@@ -573,7 +690,12 @@ const AdminSpecialists: React.FC = () => {
                 <input
                   type="text"
                   value={editingSpecialist.fullName}
-                  onChange={(e) => setEditingSpecialist({...editingSpecialist, fullName: e.target.value})}
+                  onChange={(e) =>
+                    setEditingSpecialist({
+                      ...editingSpecialist,
+                      fullName: e.target.value,
+                    })
+                  }
                   className="w-full px-3 py-2 border border-gray-300 rounded-md"
                   placeholder="Ex: Dr. Ana Popescu"
                 />
@@ -586,23 +708,37 @@ const AdminSpecialists: React.FC = () => {
                 <input
                   type="text"
                   value={editingSpecialist.specialization}
-                  onChange={(e) => setEditingSpecialist({...editingSpecialist, specialization: e.target.value})}
+                  onChange={(e) =>
+                    setEditingSpecialist({
+                      ...editingSpecialist,
+                      specialization: e.target.value,
+                    })
+                  }
                   className="w-full px-3 py-2 border border-gray-300 rounded-md"
                   placeholder="Ex: Psihoterapeut"
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label
+                  htmlFor="specialization-category"
+                  className="block text-sm font-medium text-gray-700 mb-1"
+                >
                   Categorie specializare
                 </label>
                 <select
+                  id="specialization-category"
                   value={editingSpecialist.specializationCategory || ""}
-                  onChange={(e) => setEditingSpecialist({...editingSpecialist, specializationCategory: e.target.value})}
+                  onChange={(e) =>
+                    setEditingSpecialist({
+                      ...editingSpecialist,
+                      specializationCategory: e.target.value,
+                    })
+                  }
                   className="w-full px-3 py-2 border border-gray-300 rounded-md"
                 >
                   <option value="">Selectează categoria</option>
-                  {SpecializationCategories.map(category => (
+                  {SpecializationCategories.map((category) => (
                     <option key={category.id} value={category.id}>
                       {category.name}
                     </option>
@@ -617,7 +753,12 @@ const AdminSpecialists: React.FC = () => {
                 <input
                   type="email"
                   value={editingSpecialist.email}
-                  onChange={(e) => setEditingSpecialist({...editingSpecialist, email: e.target.value})}
+                  onChange={(e) =>
+                    setEditingSpecialist({
+                      ...editingSpecialist,
+                      email: e.target.value,
+                    })
+                  }
                   className="w-full px-3 py-2 border border-gray-300 rounded-md"
                   placeholder="email@example.com"
                 />
@@ -630,7 +771,12 @@ const AdminSpecialists: React.FC = () => {
                 <input
                   type="text"
                   value={editingSpecialist.phone}
-                  onChange={(e) => setEditingSpecialist({...editingSpecialist, phone: e.target.value})}
+                  onChange={(e) =>
+                    setEditingSpecialist({
+                      ...editingSpecialist,
+                      phone: e.target.value,
+                    })
+                  }
                   className="w-full px-3 py-2 border border-gray-300 rounded-md"
                   placeholder="Ex: 0712345678"
                 />
@@ -642,7 +788,12 @@ const AdminSpecialists: React.FC = () => {
                 </label>
                 <textarea
                   value={editingSpecialist.bio}
-                  onChange={(e) => setEditingSpecialist({...editingSpecialist, bio: e.target.value})}
+                  onChange={(e) =>
+                    setEditingSpecialist({
+                      ...editingSpecialist,
+                      bio: e.target.value,
+                    })
+                  }
                   className="w-full px-3 py-2 border border-gray-300 rounded-md"
                   rows={3}
                   placeholder="Descriere a experienței și specializărilor"
@@ -677,18 +828,30 @@ const AdminSpecialists: React.FC = () => {
           </div>
         ) : filteredSpecialists.length === 0 ? (
           <div className="text-center py-8 bg-gray-50 rounded-lg">
-            <p className="text-gray-600">Nu există specialiști care să corespundă criteriilor de căutare.</p>
+            <p className="text-gray-600">
+              Nu există specialiști care să corespundă criteriilor de căutare.
+            </p>
           </div>
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full border-collapse">
               <thead>
                 <tr className="bg-gray-50">
-                  <th className="px-4 py-3 text-left text-sm font-medium text-gray-500 uppercase tracking-wider">Specialist</th>
-                  <th className="px-4 py-3 text-left text-sm font-medium text-gray-500 uppercase tracking-wider">Specializare</th>
-                  <th className="px-4 py-3 text-left text-sm font-medium text-gray-500 uppercase tracking-wider">Contact</th>
-                  <th className="px-4 py-3 text-left text-sm font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                  <th className="px-4 py-3 text-right text-sm font-medium text-gray-500 uppercase tracking-wider">Acțiuni</th>
+                  <th className="px-4 py-3 text-left text-sm font-medium text-gray-500 uppercase tracking-wider">
+                    Specialist
+                  </th>
+                  <th className="px-4 py-3 text-left text-sm font-medium text-gray-500 uppercase tracking-wider">
+                    Specializare
+                  </th>
+                  <th className="px-4 py-3 text-left text-sm font-medium text-gray-500 uppercase tracking-wider">
+                    Contact
+                  </th>
+                  <th className="px-4 py-3 text-left text-sm font-medium text-gray-500 uppercase tracking-wider">
+                    Status
+                  </th>
+                  <th className="px-4 py-3 text-right text-sm font-medium text-gray-500 uppercase tracking-wider">
+                    Acțiuni
+                  </th>
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
@@ -698,12 +861,15 @@ const AdminSpecialists: React.FC = () => {
                       <div className="flex items-center">
                         {specialist.imageUrl ? (
                           <div className="flex-shrink-0 h-10 w-10">
-                            <img 
-                              src={specialist.imageUrl} 
+                            <img
+                              src={specialist.imageUrl}
                               alt={specialist.fullName}
                               className="h-10 w-10 rounded-full object-cover"
                               onError={(e) => {
-                                e.currentTarget.src = "https://ui-avatars.com/api/?name=" + encodeURIComponent(specialist.fullName) + "&background=0D8ABC&color=fff";
+                                e.currentTarget.src =
+                                  "https://ui-avatars.com/api/?name=" +
+                                  encodeURIComponent(specialist.fullName) +
+                                  "&background=0D8ABC&color=fff";
                               }}
                             />
                           </div>
@@ -713,7 +879,9 @@ const AdminSpecialists: React.FC = () => {
                           </div>
                         )}
                         <div className="ml-4">
-                          <div className="text-sm font-medium text-gray-900">{specialist.fullName}</div>
+                          <div className="text-sm font-medium text-gray-900">
+                            {specialist.fullName}
+                          </div>
                           <div className="text-xs text-gray-500">
                             <FaCalendarAlt className="inline mr-1" size={10} />
                             Înregistrat: {formatDate(specialist.createdAt)}
@@ -722,10 +890,16 @@ const AdminSpecialists: React.FC = () => {
                       </div>
                     </td>
                     <td className="px-4 py-4 whitespace-nowrap">
-                      <div className="text-sm text-gray-900">{specialist.specialization}</div>
-                      {specialist.specializationCategory && specialist.specializationCategory !== specialist.specialization && (
-                        <div className="text-xs text-gray-500">{specialist.specializationCategory}</div>
-                      )}
+                      <div className="text-sm text-gray-900">
+                        {specialist.specialization}
+                      </div>
+                      {specialist.specializationCategory &&
+                        specialist.specializationCategory !==
+                          specialist.specialization && (
+                          <div className="text-xs text-gray-500">
+                            {specialist.specializationCategory}
+                          </div>
+                        )}
                     </td>
                     <td className="px-4 py-4 whitespace-nowrap">
                       {specialist.email && (
@@ -765,18 +939,34 @@ const AdminSpecialists: React.FC = () => {
                           <FaEdit className="h-5 w-5" />
                         </button>
                         <button
-                          onClick={() => handleToggleActive(specialist.id, specialist.isActive)}
+                          onClick={() =>
+                            handleToggleActive(
+                              specialist.id,
+                              specialist.isActive
+                            )
+                          }
                           className={`p-1 rounded ${
                             specialist.isActive
                               ? "text-red-600 hover:text-red-800"
                               : "text-green-600 hover:text-green-800"
                           }`}
-                          title={specialist.isActive ? "Dezactivează" : "Activează"}
+                          title={
+                            specialist.isActive ? "Dezactivează" : "Activează"
+                          }
                         >
-                          {specialist.isActive ? <FaBan className="h-5 w-5" /> : <FaCheck className="h-5 w-5" />}
+                          {specialist.isActive ? (
+                            <FaBan className="h-5 w-5" />
+                          ) : (
+                            <FaCheck className="h-5 w-5" />
+                          )}
                         </button>
                         <button
-                          onClick={() => handleDeleteSpecialist(specialist.id, specialist.userId)}
+                          onClick={() =>
+                            handleDeleteSpecialist(
+                              specialist.id,
+                              specialist.userId
+                            )
+                          }
                           className="p-1 text-red-600 hover:text-red-800"
                           title="Șterge"
                         >

@@ -1,17 +1,25 @@
 import React, { useState, useEffect } from "react";
 import { useAuth } from "../contexts/AuthContext";
-import { doc, getDoc, updateDoc, collection, query, where, getDocs } from "firebase/firestore";
+import {
+  doc,
+  getDoc,
+  updateDoc,
+  collection,
+  query,
+  where,
+  getDocs,
+} from "firebase/firestore";
 import { firestore } from "../firebase";
-import { 
-  FaStar, 
-  FaGraduationCap, 
-  FaBriefcase, 
-  FaCertificate, 
-  FaEdit, 
-  FaSave, 
+import {
+  FaStar,
+  FaGraduationCap,
+  FaBriefcase,
+  FaCertificate,
+  FaEdit,
+  FaSave,
   FaTimes,
   FaRegStar,
-  FaStarHalfAlt
+  FaStarHalfAlt,
 } from "react-icons/fa";
 
 interface SpecialistProfileProps {
@@ -44,17 +52,9 @@ interface ReviewData {
   [key: string]: unknown;
 }
 
-interface _EventData {
-  target: {
-    name: string;
-    value: string | number;
-  };
-  preventDefault: () => void;
-}
-
-const SpecialistProfile: React.FC<SpecialistProfileProps> = ({ 
-  specialistId, 
-  editable = false 
+const SpecialistProfile: React.FC<SpecialistProfileProps> = ({
+  specialistId,
+  editable = false,
 }) => {
   const { user } = useAuth();
   const [loading, setLoading] = useState(true);
@@ -69,7 +69,7 @@ const SpecialistProfile: React.FC<SpecialistProfileProps> = ({
     experience: [],
     certifications: [],
     bio: "",
-    rating: 0
+    rating: 0,
   });
   const [editing, setEditing] = useState(false);
   const [editedProfile, setEditedProfile] = useState<ProfileData>({
@@ -82,7 +82,7 @@ const SpecialistProfile: React.FC<SpecialistProfileProps> = ({
     experience: [],
     certifications: [],
     bio: "",
-    rating: 0
+    rating: 0,
   });
   const [reviews, setReviews] = useState<ReviewData[]>([]);
   const [error, setError] = useState<string | null>(null);
@@ -92,11 +92,11 @@ const SpecialistProfile: React.FC<SpecialistProfileProps> = ({
   useEffect(() => {
     const fetchProfile = async () => {
       if (!targetId) return;
-      
+
       setLoading(true);
       try {
         const userDoc = await getDoc(doc(firestore, "users", targetId));
-        
+
         if (userDoc.exists()) {
           const userData = userDoc.data();
           setProfile((prev: ProfileData) => ({
@@ -110,21 +110,21 @@ const SpecialistProfile: React.FC<SpecialistProfileProps> = ({
             experience: userData.experience || [],
             certifications: userData.certifications || [],
             bio: userData.bio || "",
-            rating: userData.rating || 0
+            rating: userData.rating || 0,
           }));
-          
+
           setEditedProfile((prev: ProfileData) => ({
             ...prev,
             bio: userData.bio || "",
             education: userData.education || [],
             experience: userData.experience || [],
-            certifications: userData.certifications || []
+            certifications: userData.certifications || [],
           }));
         } else {
           const specialistsRef = collection(firestore, "specialists");
           const q = query(specialistsRef, where("userId", "==", targetId));
           const querySnapshot = await getDocs(q);
-          
+
           if (!querySnapshot.empty) {
             const specialistData = querySnapshot.docs[0].data();
             setProfile((prev: ProfileData) => ({
@@ -133,24 +133,25 @@ const SpecialistProfile: React.FC<SpecialistProfileProps> = ({
               photoURL: specialistData.photoURL || "",
               reviewCount: specialistData.reviewCount || 0,
               specialization: specialistData.specialization || "",
-              specializationCategory: specialistData.specializationCategory || "",
+              specializationCategory:
+                specialistData.specializationCategory || "",
               education: specialistData.education || [],
               experience: specialistData.experience || [],
               certifications: specialistData.certifications || [],
               bio: specialistData.bio || "",
-              rating: specialistData.rating || 0
+              rating: specialistData.rating || 0,
             }));
-            
+
             setEditedProfile((prev: ProfileData) => ({
               ...prev,
               bio: specialistData.bio || "",
               education: specialistData.education || [],
               experience: specialistData.experience || [],
-              certifications: specialistData.certifications || []
+              certifications: specialistData.certifications || [],
             }));
           }
         }
-        
+
         await fetchReviews();
       } catch (err) {
         console.error("Error fetching specialist profile:", err);
@@ -159,16 +160,19 @@ const SpecialistProfile: React.FC<SpecialistProfileProps> = ({
         setLoading(false);
       }
     };
-    
+
     fetchProfile();
   }, [targetId]);
 
   const fetchReviews = async () => {
     try {
       const reviewsRef = collection(firestore, "specialistReviews");
-      const reviewsQuery = query(reviewsRef, where("specialistId", "==", targetId));
+      const reviewsQuery = query(
+        reviewsRef,
+        where("specialistId", "==", targetId)
+      );
       const reviewsSnapshot = await getDocs(reviewsQuery);
-      
+
       const reviewsData: ReviewData[] = [];
       reviewsSnapshot.forEach((doc) => {
         const data = doc.data();
@@ -181,11 +185,15 @@ const SpecialistProfile: React.FC<SpecialistProfileProps> = ({
           userPhotoURL: data.userPhotoURL || "",
           comment: data.comment || data.text || "",
           createdAt: data.createdAt?.toDate() || new Date(),
-          ...data
+          ...data,
         });
       });
-      
-      reviewsData.sort((a, b) => new Date(String(b.createdAt)).getTime() - new Date(String(a.createdAt)).getTime());
+
+      reviewsData.sort(
+        (a, b) =>
+          new Date(String(b.createdAt)).getTime() -
+          new Date(String(a.createdAt)).getTime()
+      );
       setReviews(reviewsData);
     } catch (err) {
       console.error("Error fetching reviews:", err);
@@ -194,24 +202,24 @@ const SpecialistProfile: React.FC<SpecialistProfileProps> = ({
 
   const handleSaveProfile = async () => {
     if (!user || !editable) return;
-    
+
     setSaving(true);
     try {
       await updateDoc(doc(firestore, "users", user.uid), {
         bio: editedProfile.bio,
         education: editedProfile.education,
         experience: editedProfile.experience,
-        certifications: editedProfile.certifications
+        certifications: editedProfile.certifications,
       });
-      
+
       setProfile((prev: ProfileData) => ({
         ...prev,
         bio: editedProfile.bio,
         education: editedProfile.education,
         experience: editedProfile.experience,
-        certifications: editedProfile.certifications
+        certifications: editedProfile.certifications,
       }));
-      
+
       setEditing(false);
     } catch (err) {
       console.error("Error saving profile:", err);
@@ -224,18 +232,22 @@ const SpecialistProfile: React.FC<SpecialistProfileProps> = ({
   const handleEditField = (field: keyof ProfileData, value: unknown) => {
     setEditedProfile((prev: ProfileData) => ({
       ...prev,
-      [field]: value
+      [field]: value,
     }));
   };
 
   const handleAddField = (field: keyof ProfileData) => {
     setEditedProfile((prev) => ({
       ...prev,
-      [field]: [...((prev[field] as string[]) || []), ""]
+      [field]: [...((prev[field] as string[]) || []), ""],
     }));
   };
 
-  const updateListItem = (field: keyof ProfileData, index: number, value: string) => {
+  const updateListItem = (
+    field: keyof ProfileData,
+    index: number,
+    value: string
+  ) => {
     const newList = [...(editedProfile[field] as string[])];
     newList[index] = value;
     handleEditField(field, newList);
@@ -246,35 +258,11 @@ const SpecialistProfile: React.FC<SpecialistProfileProps> = ({
     newList.splice(index, 1);
     handleEditField(field, newList);
   };
-
-  const _handleEvent = (event: React.FormEvent<HTMLFormElement>): void => {
-    const { name, value } = event.target as HTMLInputElement;
-    setEditedProfile((prev: ProfileData) => ({
-      ...prev,
-      [name]: value
-    }));
-  };
-
-  const _handleData = (_data: Record<string, unknown>): void => {
-    // Process data
-  };
-
-  const _handleRatingChange = (value: number): void => {
-    setProfile((prev: ProfileData) => ({
-      ...prev,
-      rating: prev.rating === value ? 0 : value
-    }));
-  };
-
-  const _toggleReviewForm = (): void => {
-    setEditing(prev => !prev);
-  };
-
   const renderStars = (rating: number) => {
     const stars = [];
     const fullStars = Math.floor(rating);
     const hasHalfStar = rating % 1 >= 0.5;
-    
+
     for (let i = 1; i <= 5; i++) {
       if (i <= fullStars) {
         stars.push(<FaStar key={i} className="text-yellow-400" />);
@@ -284,11 +272,13 @@ const SpecialistProfile: React.FC<SpecialistProfileProps> = ({
         stars.push(<FaRegStar key={i} className="text-yellow-400" />);
       }
     }
-    
+
     return (
       <div className="flex">
         {stars}
-        <span className="ml-1 text-sm text-gray-600">({profile.reviewCount || 0} evaluări)</span>
+        <span className="ml-1 text-sm text-gray-600">
+          ({profile.reviewCount || 0} evaluări)
+        </span>
       </div>
     );
   };
@@ -304,38 +294,44 @@ const SpecialistProfile: React.FC<SpecialistProfileProps> = ({
           {error}
         </div>
       )}
-      
+
       <div className="flex flex-col sm:flex-row items-start sm:items-center mb-6">
         <div className="flex-shrink-0 mb-4 sm:mb-0 sm:mr-6">
           <div className="h-24 w-24 rounded-full overflow-hidden bg-gray-200">
             {profile.photoURL ? (
-              <img src={profile.photoURL} alt={profile.displayName} className="h-full w-full object-cover" />
+              <img
+                src={profile.photoURL}
+                alt={profile.displayName}
+                className="h-full w-full object-cover"
+              />
             ) : (
               <div className="h-full w-full flex items-center justify-center bg-blue-100 text-blue-500 text-2xl font-bold">
-                {profile.displayName && profile.displayName.charAt(0) || "S"}
+                {(profile.displayName && profile.displayName.charAt(0)) || "S"}
               </div>
             )}
           </div>
         </div>
-        
+
         <div>
           <h2 className="text-2xl font-bold mb-1">{profile.displayName}</h2>
-          
+
           <div className="text-sm text-gray-600 mb-2">
             {profile.specialization || profile.specializationCategory ? (
               <span className="bg-blue-100 text-blue-800 px-2 py-1 rounded-full text-xs font-medium">
                 {profile.specialization || profile.specializationCategory}
               </span>
             ) : (
-              <span className="text-gray-500 italic">Specializare nespecificată</span>
+              <span className="text-gray-500 italic">
+                Specializare nespecificată
+              </span>
             )}
           </div>
-          
+
           {profile.rating > 0 && renderStars(profile.rating)}
         </div>
-        
+
         {editable && !editing && (
-          <button 
+          <button
             onClick={() => setEditing(true)}
             className="ml-auto bg-blue-100 text-blue-700 px-4 py-2 rounded flex items-center"
           >
@@ -343,7 +339,7 @@ const SpecialistProfile: React.FC<SpecialistProfileProps> = ({
           </button>
         )}
       </div>
-      
+
       <div className="mb-6">
         <h3 className="text-lg font-medium mb-2 flex items-center">
           <span className="mr-2">Despre mine</span>
@@ -353,7 +349,7 @@ const SpecialistProfile: React.FC<SpecialistProfileProps> = ({
             </span>
           )}
         </h3>
-        
+
         {editing ? (
           <textarea
             value={editedProfile.bio}
@@ -364,17 +360,21 @@ const SpecialistProfile: React.FC<SpecialistProfileProps> = ({
           />
         ) : (
           <p className="text-gray-700">
-            {profile.bio || <span className="text-gray-400 italic">Nicio descriere adăugată</span>}
+            {profile.bio || (
+              <span className="text-gray-400 italic">
+                Nicio descriere adăugată
+              </span>
+            )}
           </p>
         )}
       </div>
-      
+
       <div className="mb-6">
         <h3 className="text-lg font-medium mb-2 flex items-center">
           <FaGraduationCap className="mr-2" />
           Educație
         </h3>
-        
+
         {editing ? (
           <div className="space-y-2">
             {editedProfile.education?.map((item: string, index: number) => (
@@ -382,19 +382,23 @@ const SpecialistProfile: React.FC<SpecialistProfileProps> = ({
                 <input
                   type="text"
                   value={item}
-                  onChange={(e) => updateListItem("education", index, e.target.value)}
+                  onChange={(e) =>
+                    updateListItem("education", index, e.target.value)
+                  }
                   className="flex-grow p-2 border border-gray-300 rounded-md"
                   placeholder="Ex: Licență în Psihologie, Universitatea București, 2018"
                 />
-                <button 
+                <button
                   onClick={() => removeListItem("education", index)}
                   className="ml-2 text-red-600 p-2"
+                  title="Șterge educația"
+                  aria-label="Șterge educația"
                 >
                   <FaTimes />
                 </button>
               </div>
             ))}
-            
+
             <button
               onClick={() => handleAddField("education")}
               className="mt-2 text-blue-600 px-4 py-1 border border-blue-600 rounded-md"
@@ -416,13 +420,13 @@ const SpecialistProfile: React.FC<SpecialistProfileProps> = ({
           </div>
         )}
       </div>
-      
+
       <div className="mb-6">
         <h3 className="text-lg font-medium mb-2 flex items-center">
           <FaBriefcase className="mr-2" />
           Experiență profesională
         </h3>
-        
+
         {editing ? (
           <div className="space-y-2">
             {editedProfile.experience?.map((item: string, index: number) => (
@@ -430,19 +434,23 @@ const SpecialistProfile: React.FC<SpecialistProfileProps> = ({
                 <input
                   type="text"
                   value={item}
-                  onChange={(e) => updateListItem("experience", index, e.target.value)}
+                  onChange={(e) =>
+                    updateListItem("experience", index, e.target.value)
+                  }
                   className="flex-grow p-2 border border-gray-300 rounded-md"
                   placeholder="Ex: Psiholog clinician, Spitalul X, 2018-prezent"
                 />
-                <button 
+                <button
                   onClick={() => removeListItem("experience", index)}
                   className="ml-2 text-red-600 p-2"
+                  title="Șterge experiența"
+                  aria-label="Șterge experiența"
                 >
                   <FaTimes />
                 </button>
               </div>
             ))}
-            
+
             <button
               onClick={() => handleAddField("experience")}
               className="mt-2 text-blue-600 px-4 py-1 border border-blue-600 rounded-md"
@@ -464,33 +472,39 @@ const SpecialistProfile: React.FC<SpecialistProfileProps> = ({
           </div>
         )}
       </div>
-      
+
       <div className="mb-6">
         <h3 className="text-lg font-medium mb-2 flex items-center">
           <FaCertificate className="mr-2" />
           Certificări
         </h3>
-        
+
         {editing ? (
           <div className="space-y-2">
-            {editedProfile.certifications?.map((item: string, index: number) => (
-              <div key={index} className="flex items-center">
-                <input
-                  type="text"
-                  value={item}
-                  onChange={(e) => updateListItem("certifications", index, e.target.value)}
-                  className="flex-grow p-2 border border-gray-300 rounded-md"
-                  placeholder="Ex: Certificare în Terapie Cognitiv-Comportamentală, 2020"
-                />
-                <button 
-                  onClick={() => removeListItem("certifications", index)}
-                  className="ml-2 text-red-600 p-2"
-                >
-                  <FaTimes />
-                </button>
-              </div>
-            ))}
-            
+            {editedProfile.certifications?.map(
+              (item: string, index: number) => (
+                <div key={index} className="flex items-center">
+                  <input
+                    type="text"
+                    value={item}
+                    onChange={(e) =>
+                      updateListItem("certifications", index, e.target.value)
+                    }
+                    className="flex-grow p-2 border border-gray-300 rounded-md"
+                    placeholder="Ex: Certificare în Terapie Cognitiv-Comportamentală, 2020"
+                  />
+                  <button
+                    onClick={() => removeListItem("certifications", index)}
+                    className="ml-2 text-red-600 p-2"
+                    title="Șterge certificarea"
+                    aria-label="Șterge certificarea"
+                  >
+                    <FaTimes />
+                  </button>
+                </div>
+              )
+            )}
+
             <button
               onClick={() => handleAddField("certifications")}
               className="mt-2 text-blue-600 px-4 py-1 border border-blue-600 rounded-md"
@@ -512,50 +526,60 @@ const SpecialistProfile: React.FC<SpecialistProfileProps> = ({
           </div>
         )}
       </div>
-      
+
       {!editing && reviews.length > 0 && (
         <div className="mt-8">
           <h3 className="text-lg font-medium mb-3">Feedback de la clienți</h3>
-          
+
           <div className="space-y-4">
-            {reviews.slice(0, 3).map(review => (
+            {reviews.slice(0, 3).map((review) => (
               <div key={review.id} className="bg-gray-50 p-4 rounded-lg">
                 <div className="flex justify-between mb-2">
                   <div className="flex items-center">
                     <div className="h-8 w-8 rounded-full overflow-hidden bg-gray-200 mr-2">
                       {review.userPhotoURL ? (
-                        <img 
-                          src={String(review.userPhotoURL || "")} 
-                          alt={String(review.userName || "Client")} 
-                          className="h-full w-full object-cover" 
+                        <img
+                          src={String(review.userPhotoURL || "")}
+                          alt={String(review.userName || "Client")}
+                          className="h-full w-full object-cover"
                         />
                       ) : (
                         <div className="h-full w-full flex items-center justify-center bg-blue-100 text-xs font-bold">
-                          {typeof review.userName === "string" ? review.userName.charAt(0) : "U"}
+                          {typeof review.userName === "string"
+                            ? review.userName.charAt(0)
+                            : "U"}
                         </div>
                       )}
                     </div>
-                    <span className="font-medium">{String(review.userName || "Client")}</span>
+                    <span className="font-medium">
+                      {String(review.userName || "Client")}
+                    </span>
                   </div>
                   <div className="flex">
                     {[...Array(5)].map((_, i) => (
-                      <FaStar 
-                        key={i} 
-                        className={i < review.rating ? "text-yellow-400" : "text-gray-300"} 
+                      <FaStar
+                        key={i}
+                        className={
+                          i < review.rating
+                            ? "text-yellow-400"
+                            : "text-gray-300"
+                        }
                       />
                     ))}
                   </div>
                 </div>
-                
+
                 <p className="text-gray-700">{String(review.comment || "")}</p>
-                
+
                 <div className="text-xs text-gray-500 mt-2">
-                  {new Date(String(review.createdAt || "")).toLocaleDateString()}
+                  {new Date(
+                    String(review.createdAt || "")
+                  ).toLocaleDateString()}
                 </div>
               </div>
             ))}
           </div>
-          
+
           {reviews.length > 3 && (
             <div className="text-center mt-4">
               <button className="text-blue-600 hover:underline">
@@ -565,7 +589,7 @@ const SpecialistProfile: React.FC<SpecialistProfileProps> = ({
           )}
         </div>
       )}
-      
+
       {editing && (
         <div className="flex justify-end mt-6">
           <button

@@ -1,36 +1,25 @@
 import React, { useState, useEffect } from "react";
 import { useAuth } from "../contexts/AuthContext";
-import { 
-  doc, 
+import {
+  doc,
   /* updateDoc, */
-  collection, 
-  addDoc, 
-  serverTimestamp, 
-  query, 
-  where, 
-  getDocs, 
+  collection,
+  addDoc,
+  serverTimestamp,
+  query,
+  where,
+  getDocs,
   Timestamp,
-  getDoc // Add missing import
+  getDoc, // Add missing import
 } from "firebase/firestore";
 import { firestore } from "../firebase";
 import { toast } from "react-toastify";
-import { FaBan, FaExclamationTriangle, FaCheckCircle, FaSpinner } from "react-icons/fa";
-
-// Replace any with specific types
-interface UserData {
-  id: string;
-  displayName?: string;
-  email?: string;
-  role?: string;
-  [key: string]: unknown;
-}
-
-interface StatusData {
-  id: string; 
-  status?: string;
-  lastUpdated?: Date;
-  [key: string]: unknown;
-}
+import {
+  FaBan,
+  FaExclamationTriangle,
+  FaCheckCircle,
+  FaSpinner,
+} from "react-icons/fa";
 
 interface FirebaseTimestamp {
   toDate(): Date;
@@ -39,10 +28,10 @@ interface FirebaseTimestamp {
 // Define a better type guard and utility function for handling Firestore timestamps
 function isFirebaseTimestamp(value: unknown): value is FirebaseTimestamp {
   return Boolean(
-    value && 
-    typeof value === "object" && 
-    "toDate" in value && 
-    typeof (value as { toDate: unknown }).toDate === "function"
+    value &&
+      typeof value === "object" &&
+      "toDate" in value &&
+      typeof (value as { toDate: unknown }).toDate === "function"
   );
 }
 
@@ -96,31 +85,21 @@ interface SpecialistProfile {
   [key: string]: unknown;
 }
 
-// Add underscore prefix to unused variables
-const _userData: UserData = {
-  id: "default-id",
-  // Other properties
-};
-
-const _statusData: StatusData = {
-  id: "default-id",
-  // Other properties  
-};
-
-// Add underscore prefix to unused function
-const _refreshUserData = (_userData: UserData): void => {
-  // Placeholder for unused function
-};
-
 const SpecialistStatusPanel: React.FC = () => {
   const { user, refreshUserData: _refreshUserData } = useAuth();
-  const [specialistData, setSpecialistData] = useState<SpecialistProfile | null>(null);
+  const [specialistData, setSpecialistData] =
+    useState<SpecialistProfile | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
-  const [pendingRequests, setPendingRequests] = useState<SpecializationChange[]>([]);
-  const [pendingDeactivation, setPendingDeactivation] = useState<StatusDeactivationRequest | null>(null);
-  const [showDeactivationForm, setShowDeactivationForm] = useState<boolean>(false);
+  const [pendingRequests, setPendingRequests] = useState<
+    SpecializationChange[]
+  >([]);
+  const [pendingDeactivation, setPendingDeactivation] =
+    useState<StatusDeactivationRequest | null>(null);
+  const [showDeactivationForm, setShowDeactivationForm] =
+    useState<boolean>(false);
   const [deactivationReason, setDeactivationReason] = useState<string>("");
-  const [submittingDeactivation, setSubmittingDeactivation] = useState<boolean>(false);
+  const [submittingDeactivation, setSubmittingDeactivation] =
+    useState<boolean>(false);
 
   // Fetch specialist data
   useEffect(() => {
@@ -139,35 +118,41 @@ const SpecialistStatusPanel: React.FC = () => {
         }
 
         // Check for pending specialization change requests
-        const changeRequestsRef = collection(firestore, "specializationChangeRequests");
+        const changeRequestsRef = collection(
+          firestore,
+          "specializationChangeRequests"
+        );
         const q = query(
           changeRequestsRef,
           where("userId", "==", user.uid),
           where("status", "==", "pending")
         );
         const snapshot = await getDocs(q);
-        
+
         if (!snapshot.empty) {
-          const requests = snapshot.docs.map(doc => ({
+          const requests = snapshot.docs.map((doc) => ({
             id: doc.id,
-            ...doc.data()
+            ...doc.data(),
           })) as SpecializationChange[];
           setPendingRequests(requests);
         }
 
         // Check for pending deactivation requests
-        const deactivationRequestsRef = collection(firestore, "specialistDeactivationRequests");
+        const deactivationRequestsRef = collection(
+          firestore,
+          "specialistDeactivationRequests"
+        );
         const deactivationQuery = query(
           deactivationRequestsRef,
           where("userId", "==", user.uid),
           where("status", "==", "pending")
         );
         const deactivationSnapshot = await getDocs(deactivationQuery);
-        
+
         if (!deactivationSnapshot.empty) {
           const deactivationRequest = {
             id: deactivationSnapshot.docs[0].id,
-            ...deactivationSnapshot.docs[0].data()
+            ...deactivationSnapshot.docs[0].data(),
           } as StatusDeactivationRequest;
           setPendingDeactivation(deactivationRequest);
         }
@@ -197,15 +182,18 @@ const SpecialistStatusPanel: React.FC = () => {
         userId: user.uid,
         reason: deactivationReason.trim(),
         status: "pending",
-        submittedAt: serverTimestamp()
+        submittedAt: serverTimestamp(),
       };
 
-      await addDoc(collection(firestore, "specialistDeactivationRequests"), deactivationRequest);
-      
+      await addDoc(
+        collection(firestore, "specialistDeactivationRequests"),
+        deactivationRequest
+      );
+
       toast.success("Your deactivation request has been submitted for review");
       setPendingDeactivation({
         ...deactivationRequest,
-        submittedAt: Timestamp.now()
+        submittedAt: Timestamp.now(),
       });
       setShowDeactivationForm(false);
       setDeactivationReason("");
@@ -230,7 +218,8 @@ const SpecialistStatusPanel: React.FC = () => {
       <div className="bg-white rounded-lg shadow-md p-6 mb-6">
         <div className="text-center py-4">
           <p className="text-gray-600">
-            Specialist data not available. Please contact support if you believe this is an error.
+            Specialist data not available. Please contact support if you believe
+            this is an error.
           </p>
         </div>
       </div>
@@ -239,18 +228,31 @@ const SpecialistStatusPanel: React.FC = () => {
 
   return (
     <div className="bg-white rounded-lg shadow-md p-6 mb-6">
-      <h2 className="text-xl font-semibold mb-4 text-gray-800 border-b pb-2">Specialist Status</h2>
-      
+      <h2 className="text-xl font-semibold mb-4 text-gray-800 border-b pb-2">
+        Specialist Status
+      </h2>
+
       {/* Display current specialization info */}
       <div className="mb-6">
         <h3 className="text-lg font-medium mb-2">Current Specialization</h3>
         <div className="bg-gray-50 p-4 rounded-md">
-          <p className="mb-1"><span className="font-medium">Category:</span> {String(specialistData.specializationCategory || "")}</p>
-          <p className="mb-1"><span className="font-medium">Specialization:</span> {String(specialistData.specialization || "")}</p>
-          <p className="mb-1"><span className="font-medium">Status:</span> 
-            <span className={`ml-2 px-2 py-1 rounded-full text-sm ${
-              specialistData.status === "active" ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800"
-            }`}>
+          <p className="mb-1">
+            <span className="font-medium">Category:</span>{" "}
+            {String(specialistData.specializationCategory || "")}
+          </p>
+          <p className="mb-1">
+            <span className="font-medium">Specialization:</span>{" "}
+            {String(specialistData.specialization || "")}
+          </p>
+          <p className="mb-1">
+            <span className="font-medium">Status:</span>
+            <span
+              className={`ml-2 px-2 py-1 rounded-full text-sm ${
+                specialistData.status === "active"
+                  ? "bg-green-100 text-green-800"
+                  : "bg-red-100 text-red-800"
+              }`}
+            >
               {specialistData.status === "active" ? "Active" : "Inactive"}
             </span>
           </p>
@@ -262,15 +264,29 @@ const SpecialistStatusPanel: React.FC = () => {
         <div className="mb-6 bg-yellow-50 p-4 rounded-md border border-yellow-200">
           <div className="flex items-center mb-2">
             <FaExclamationTriangle className="text-yellow-500 mr-2" />
-            <h3 className="text-lg font-medium">Pending Specialization Change</h3>
+            <h3 className="text-lg font-medium">
+              Pending Specialization Change
+            </h3>
           </div>
           <p className="text-gray-700 mb-2">
-            You have a pending request to change your specialization from 
-            <span className="font-medium"> {pendingRequests[0].oldCategory} - {pendingRequests[0].oldSpecialization}</span> to 
-            <span className="font-medium"> {pendingRequests[0].newCategory} - {pendingRequests[0].newSpecialization}</span>
+            You have a pending request to change your specialization from
+            <span className="font-medium">
+              {" "}
+              {pendingRequests[0].oldCategory} -{" "}
+              {pendingRequests[0].oldSpecialization}
+            </span>{" "}
+            to
+            <span className="font-medium">
+              {" "}
+              {pendingRequests[0].newCategory} -{" "}
+              {pendingRequests[0].newSpecialization}
+            </span>
           </p>
           <p className="text-sm text-gray-500">
-            Submitted on {getDateFromTimestamp(pendingRequests[0].submittedAt).toLocaleDateString()}
+            Submitted on{" "}
+            {getDateFromTimestamp(
+              pendingRequests[0].submittedAt
+            ).toLocaleDateString()}
           </p>
         </div>
       )}
@@ -280,13 +296,19 @@ const SpecialistStatusPanel: React.FC = () => {
         <div className="mb-6 bg-red-50 p-4 rounded-md border border-red-200">
           <div className="flex items-center mb-2">
             <FaBan className="text-red-500 mr-2" />
-            <h3 className="text-lg font-medium">Pending Deactivation Request</h3>
+            <h3 className="text-lg font-medium">
+              Pending Deactivation Request
+            </h3>
           </div>
           <p className="text-gray-700">
-            You have requested to deactivate your specialist status. This request is currently under review.
+            You have requested to deactivate your specialist status. This
+            request is currently under review.
           </p>
           <p className="text-sm text-gray-500 mt-1">
-            Submitted on {getDateFromTimestamp(pendingDeactivation.submittedAt).toLocaleDateString()}
+            Submitted on{" "}
+            {getDateFromTimestamp(
+              pendingDeactivation.submittedAt
+            ).toLocaleDateString()}
           </p>
         </div>
       )}
@@ -296,19 +318,25 @@ const SpecialistStatusPanel: React.FC = () => {
         <>
           {!showDeactivationForm ? (
             <div className="mt-6">
-              <button 
+              <button
                 onClick={() => setShowDeactivationForm(true)}
                 className="bg-red-50 hover:bg-red-100 text-red-700 font-medium py-2 px-4 rounded border border-red-200 transition duration-150 flex items-center"
               >
-                <FaBan className="mr-2" /> Request to Deactivate Specialist Status
+                <FaBan className="mr-2" /> Request to Deactivate Specialist
+                Status
               </button>
             </div>
           ) : (
             <div className="mt-6 bg-gray-50 p-4 rounded-md border border-gray-200">
-              <h3 className="text-lg font-medium mb-3">Request Specialist Status Deactivation</h3>
+              <h3 className="text-lg font-medium mb-3">
+                Request Specialist Status Deactivation
+              </h3>
               <form onSubmit={handleDeactivationSubmit}>
                 <div className="mb-4">
-                  <label htmlFor="deactivationReason" className="block text-sm font-medium text-gray-700 mb-1">
+                  <label
+                    htmlFor="deactivationReason"
+                    className="block text-sm font-medium text-gray-700 mb-1"
+                  >
                     Reason for deactivation
                   </label>
                   <textarea
@@ -358,7 +386,8 @@ const SpecialistStatusPanel: React.FC = () => {
           <div className="flex items-center">
             <FaCheckCircle className="text-blue-500 mr-2" />
             <p className="text-gray-700">
-              Your specialist status is currently inactive. To reactivate, please contact support.
+              Your specialist status is currently inactive. To reactivate,
+              please contact support.
             </p>
           </div>
         </div>

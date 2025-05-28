@@ -1,11 +1,11 @@
 import { User as BaseUser } from "../types/auth";
-import { 
-  collection, 
-  query, 
-  where, 
-  getDocs, 
-  getDoc, 
-  doc 
+import {
+  collection,
+  query,
+  where,
+  getDocs,
+  getDoc,
+  doc,
 } from "firebase/firestore";
 import { db } from "../firebase";
 
@@ -42,7 +42,7 @@ export const AUTH_ERRORS = {
   "auth/wrong-password": "Parolă incorectă.",
   "auth/email-already-in-use": "Există deja un cont cu acest email.",
   "auth/weak-password": "Parola trebuie să aibă minim 6 caractere.",
-  "auth/invalid-email": "Adresa de email nu este validă."
+  "auth/invalid-email": "Adresa de email nu este validă.",
 };
 
 // Move constants, types, and helper functions here
@@ -54,25 +54,25 @@ export interface User extends BaseUser {
 
 /**
  * Verifică dacă un utilizator are rol de administrator
- * 
+ *
  * @param email - Email-ul utilizatorului de verificat
  * @returns Promisiune care se rezolvă cu true dacă utilizatorul este admin, false în caz contrar
  */
 export const isUserAdmin = async (email: string): Promise<boolean> => {
   if (!email) return false;
-  
+
   try {
     // Cazul special pentru administratorul principal
     if (email === "dani_popa21@yahoo.ro") {
       console.log("Email administrator principal detectat:", email);
       return true;
     }
-    
+
     // Verificăm în colecția de utilizatori
     const usersRef = collection(db, "users");
     const q = query(usersRef, where("email", "==", email));
     const querySnapshot = await getDocs(q);
-    
+
     if (!querySnapshot.empty) {
       const userData = querySnapshot.docs[0].data();
       // Verificăm câmpul isAdmin sau rolul de admin
@@ -81,21 +81,24 @@ export const isUserAdmin = async (email: string): Promise<boolean> => {
         return true;
       }
     }
-    
+
     // Verificăm și în colecția dedicată de admini (dacă există)
     try {
       const adminDocRef = doc(db, "admins", email.replace(/[.@]/g, "_"));
       const adminDoc = await getDoc(adminDocRef);
-      
+
       if (adminDoc.exists()) {
         console.log("Admin găsit în colecția de admini:", email);
         return true;
       }
     } catch (err) {
       // Ignorăm erorile aici, deoarece colecția poate să nu existe
-      console.log("Eroare la verificarea colecției de admini (poate lipsi):", err);
+      console.log(
+        "Eroare la verificarea colecției de admini (poate lipsi):",
+        err
+      );
     }
-    
+
     console.log("Utilizatorul nu este admin:", email);
     return false;
   } catch (error) {
@@ -104,3 +107,5 @@ export const isUserAdmin = async (email: string): Promise<boolean> => {
     return false;
   }
 };
+
+export { isUserSpecialist } from "./userRoles";

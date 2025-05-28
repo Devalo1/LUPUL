@@ -16,6 +16,10 @@ export interface AuthContextType {
   resetAuthError: () => void;
   resetPassword: (email: string) => Promise<AuthResult>;
   currentUser: User | null;
+  userRole?: string | null;
+  isSpecialist?: boolean;
+  refreshUserData?: () => Promise<void>;
+  refreshUserPhoto?: () => Promise<void>;
 }
 
 // Initialize with empty defaults that match the type
@@ -32,6 +36,10 @@ const defaultContext: AuthContextType = {
   resetAuthError: () => {},
   resetPassword: async () => ({ success: false }),
   currentUser: null,
+  userRole: null,
+  isSpecialist: false,
+  refreshUserData: async () => {},
+  refreshUserPhoto: async () => {},
 };
 
 // Create the context with defaults

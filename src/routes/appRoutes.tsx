@@ -3,6 +3,7 @@ import { Routes, Route, Navigate } from "react-router-dom";
 import { ProtectedRoute, AdminRoute } from "../components";
 import { lazyLoad, LazyComponent } from "../utils/lazyLoad";
 import SpecialistRoute from "../components/routes/SpecialistRoute";
+import AccountantRoute from "../components/routes/AccountantRoute";
 
 // Import lazy pentru paginile publice
 const HomePage = lazyLoad(() => import("../pages/HomePage"));
@@ -46,8 +47,8 @@ const ArticleEdit = lazyLoad(() => import("../pages/ArticleEdit")); // Adăugăm
 const AdminSettings = lazyLoad(() => import("../pages/AdminSettings"));
 // Import pentru pagina de administrare comenzi
 const AdminOrders = lazyLoad(() => import("../pages/AdminOrders"));
-
-// Import pentru panoul de specialist
+const AdminAccounting = lazyLoad(() => import("../pages/AdminAccounting"));
+// Import for specialist panel
 const SpecialistPanel = lazyLoad(() => import("../pages/SpecialistPanel"));
 
 /**
@@ -59,185 +60,323 @@ const AppRoutes: React.FC = () => {
     <Routes>
       {/* Rute publice */}
       <Route path="/" element={<LazyComponent component={<HomePage />} />} />
-      <Route path="/about" element={<LazyComponent component={<AboutUs />} />} />
-      <Route path="/contact" element={<LazyComponent component={<Contact />} />} />
-      <Route path="/login" element={<LazyComponent component={<LoginPage />} />} />
-      <Route path="/register" element={<LazyComponent component={<RegisterPage />} />} />
-      <Route path="/forgot-password" element={<LazyComponent component={<ForgotPassword />} />} />
-      <Route path="/reset-password" element={<LazyComponent component={<ResetPassword />} />} />
-      <Route path="/events" element={<LazyComponent component={<EventsPage />} />} />
-      <Route path="/events/:id" element={<LazyComponent component={<EventDetails />} />} />
-      
+      <Route
+        path="/about"
+        element={<LazyComponent component={<AboutUs />} />}
+      />
+      <Route
+        path="/contact"
+        element={<LazyComponent component={<Contact />} />}
+      />
+      <Route
+        path="/login"
+        element={<LazyComponent component={<LoginPage />} />}
+      />
+      <Route
+        path="/register"
+        element={<LazyComponent component={<RegisterPage />} />}
+      />
+      <Route
+        path="/forgot-password"
+        element={<LazyComponent component={<ForgotPassword />} />}
+      />
+      <Route
+        path="/reset-password"
+        element={<LazyComponent component={<ResetPassword />} />}
+      />
+      <Route
+        path="/events"
+        element={<LazyComponent component={<EventsPage />} />}
+      />
+      <Route
+        path="/events/:id"
+        element={<LazyComponent component={<EventDetails />} />}
+      />
+
       {/* Redirecționăm /products către /magazin pentru a unifica experiența */}
       <Route path="/products" element={<Navigate replace to="/magazin" />} />
-      <Route path="/products/:categorySlug" element={<Navigate replace to="/magazin?category=:categorySlug" />} />
-      
+      <Route
+        path="/products/:categorySlug"
+        element={<Navigate replace to="/magazin?category=:categorySlug" />}
+      />
+
       {/* Magazin rămâne ruta principală pentru vizualizarea produselor */}
       <Route path="/magazin" element={<LazyComponent component={<Shop />} />} />
-      
+
       <Route path="/cart" element={<LazyComponent component={<Cart />} />} />
-      <Route path="/servicii" element={<LazyComponent component={<Services />} />} />
-      <Route path="/privacy-policy" element={<LazyComponent component={<PrivacyPolicy />} />} />
-      
+      <Route
+        path="/servicii"
+        element={<LazyComponent component={<Services />} />}
+      />
+      <Route
+        path="/privacy-policy"
+        element={<LazyComponent component={<PrivacyPolicy />} />}
+      />
+
       {/* Rută alternativă pentru detalii produs la singular */}
-      <Route path="/product/:id" element={<LazyComponent component={<ProductDetails />} />} />
-      
+      <Route
+        path="/product/:id"
+        element={<LazyComponent component={<ProductDetails />} />}
+      />
+
       {/* Rută pentru ONG */}
       <Route path="/ong" element={<LazyComponent component={<Ong />} />} />
-      
+
       {/* Rute protejate (necesită autentificare) */}
-      <Route path="/dashboard" element={
-        <ProtectedRoute>
-          <LazyComponent component={<Dashboard />} />
-        </ProtectedRoute>
-      } />
-      <Route path="/profile" element={
-        <ProtectedRoute>
-          <LazyComponent component={<Profile />} />
-        </ProtectedRoute>
-      } />
-      <Route path="/checkout" element={
-        <ProtectedRoute>
-          <LazyComponent component={<Checkout />} />
-        </ProtectedRoute>
-      } />
-      
+      <Route
+        path="/dashboard"
+        element={
+          <ProtectedRoute>
+            <LazyComponent component={<Dashboard />} />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/profile"
+        element={
+          <ProtectedRoute>
+            <LazyComponent component={<Profile />} />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/checkout"
+        element={
+          <ProtectedRoute>
+            <LazyComponent component={<Checkout />} />
+          </ProtectedRoute>
+        }
+      />
+
       {/* Pagina de confirmare comandă - accesibilă fără autentificare */}
-      <Route path="/checkout/success" element={<LazyComponent component={<CheckoutSuccess />} />} />
-      
+      <Route
+        path="/checkout/success"
+        element={<LazyComponent component={<CheckoutSuccess />} />}
+      />
+
       {/* Rută alternativă pentru checkout success (cu liniuță) */}
-      <Route path="/checkout-success" element={<LazyComponent component={<CheckoutSuccess />} />} />
-      
-      <Route path="/user-home" element={
-        <ProtectedRoute>
-          <LazyComponent component={<UserHome />} />
-        </ProtectedRoute>
-      } />
-      
+      <Route
+        path="/checkout-success"
+        element={<LazyComponent component={<CheckoutSuccess />} />}
+      />
+
+      <Route
+        path="/user-home"
+        element={
+          <ProtectedRoute>
+            <LazyComponent component={<UserHome />} />
+          </ProtectedRoute>
+        }
+      />
+
       {/* Rută pentru programări */}
-      <Route path="/appointments" element={
-        <ProtectedRoute>
-          <LazyComponent component={<Appointments />} />
-        </ProtectedRoute>
-      } />
-      <Route path="/programari" element={
-        <ProtectedRoute>
-          <LazyComponent component={<Appointments />} />
-        </ProtectedRoute>
-      } />
-      
+      <Route
+        path="/appointments"
+        element={
+          <ProtectedRoute>
+            <LazyComponent component={<Appointments />} />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/programari"
+        element={
+          <ProtectedRoute>
+            <LazyComponent component={<Appointments />} />
+          </ProtectedRoute>
+        }
+      />
       {/* Rută pentru panoul de specialist */}
-      <Route path="/specialist" element={
-        <SpecialistRoute>
-          <LazyComponent component={<SpecialistPanel />} />
-        </SpecialistRoute>
-      } />
-      <Route path="/specialist/dashboard" element={
-        <SpecialistRoute>
-          <LazyComponent component={<SpecialistPanel />} />
-        </SpecialistRoute>
-      } />
-      
+      <Route
+        path="/specialist"
+        element={
+          <SpecialistRoute>
+            <LazyComponent component={<SpecialistPanel />} />
+          </SpecialistRoute>
+        }
+      />
+      <Route
+        path="/specialist/dashboard"
+        element={
+          <SpecialistRoute>
+            <LazyComponent component={<SpecialistPanel />} />
+          </SpecialistRoute>
+        }
+      />
+
+      {/* Rută pentru panoul de contabilitate */}
+      <Route
+        path="/accounting/:panel"
+        element={
+          <AccountantRoute>
+            <LazyComponent component={<AdminAccounting />} />
+          </AccountantRoute>
+        }
+      />
+      <Route
+        path="/accounting"
+        element={<Navigate to="/accounting/dashboard" replace />}
+      />
+
       {/* Rute administrative (necesită rol de admin) */}
-      <Route path="/admin" element={
-        <AdminRoute>
-          <LazyComponent component={<AdminPanel />} />
-        </AdminRoute>
-      } />
-      <Route path="/admin/dashboard" element={
-        <AdminRoute>
-          <LazyComponent component={<AdminPanel />} />
-        </AdminRoute>
-      } />
-      <Route path="/admin/inventory" element={
-        <AdminRoute>
-          <LazyComponent component={<AdminInventory />} />
-        </AdminRoute>
-      } />
-      <Route path="/admin/users" element={
-        <AdminRoute>
-          <LazyComponent component={<AdminUsers />} />
-        </AdminRoute>
-      } />
-      <Route path="/admin/categories" element={
-        <AdminRoute>
-          <LazyComponent component={<AdminCategories />} />
-        </AdminRoute>
-      } />
-      <Route path="/admin/products/add" element={
-        <AdminRoute>
-          <LazyComponent component={<AddProduct />} />
-        </AdminRoute>
-      } />
-      <Route path="/admin/products/edit/:id" element={
-        <AdminRoute>
-          <LazyComponent component={<EditProduct />} />
-        </AdminRoute>
-      } />
-      <Route path="/admin/events/add" element={
-        <AdminRoute>
-          <LazyComponent component={<AddEvent />} />
-        </AdminRoute>
-      } />
-      
+      <Route
+        path="/admin"
+        element={
+          <AdminRoute>
+            <LazyComponent component={<AdminPanel />} />
+          </AdminRoute>
+        }
+      />
+      <Route
+        path="/admin/dashboard"
+        element={
+          <AdminRoute>
+            <LazyComponent component={<AdminPanel />} />
+          </AdminRoute>
+        }
+      />
+      <Route
+        path="/admin/inventory"
+        element={
+          <AdminRoute>
+            <LazyComponent component={<AdminInventory />} />
+          </AdminRoute>
+        }
+      />
+      <Route
+        path="/admin/users"
+        element={
+          <AdminRoute>
+            <LazyComponent component={<AdminUsers />} />
+          </AdminRoute>
+        }
+      />
+      <Route
+        path="/admin/categories"
+        element={
+          <AdminRoute>
+            <LazyComponent component={<AdminCategories />} />
+          </AdminRoute>
+        }
+      />
+      <Route
+        path="/admin/products/add"
+        element={
+          <AdminRoute>
+            <LazyComponent component={<AddProduct />} />
+          </AdminRoute>
+        }
+      />
+      <Route
+        path="/admin/products/edit/:id"
+        element={
+          <AdminRoute>
+            <LazyComponent component={<EditProduct />} />
+          </AdminRoute>
+        }
+      />
+      <Route
+        path="/admin/events/add"
+        element={
+          <AdminRoute>
+            <LazyComponent component={<AddEvent />} />
+          </AdminRoute>
+        }
+      />
+
       {/* Rută alternativă pentru adăugarea produselor */}
-      <Route path="/admin/add-product" element={
-        <AdminRoute>
-          <LazyComponent component={<AddProduct />} />
-        </AdminRoute>
-      } />
-      
+      <Route
+        path="/admin/add-product"
+        element={
+          <AdminRoute>
+            <LazyComponent component={<AddProduct />} />
+          </AdminRoute>
+        }
+      />
+
       {/* Rută pentru programări admin */}
-      <Route path="/admin/appointments" element={
-        <AdminRoute>
-          <LazyComponent component={<AdminAppointments />} />
-        </AdminRoute>
-      } />
-      
+      <Route
+        path="/admin/appointments"
+        element={
+          <AdminRoute>
+            <LazyComponent component={<AdminAppointments />} />
+          </AdminRoute>
+        }
+      />
+
       {/* Rută alternativă pentru adăugarea evenimentelor */}
-      <Route path="/admin/add-event" element={
-        <AdminRoute>
-          <LazyComponent component={<AddEvent />} />
-        </AdminRoute>
-      } />
-      
+      <Route
+        path="/admin/add-event"
+        element={
+          <AdminRoute>
+            <LazyComponent component={<AddEvent />} />
+          </AdminRoute>
+        }
+      />
+
       {/* Rută pentru comenzi admin */}
-      <Route path="/admin/orders" element={
-        <AdminRoute>
-          <LazyComponent component={<AdminOrders />} />
-        </AdminRoute>
-      } />
-      
+      <Route
+        path="/admin/orders"
+        element={
+          <AdminRoute>
+            <LazyComponent component={<AdminOrders />} />
+          </AdminRoute>
+        }
+      />
+      <Route
+        path="/admin/accounting"
+        element={
+          <AdminRoute>
+            <LazyComponent component={<AdminAccounting />} />
+          </AdminRoute>
+        }
+      />
+
       {/* Rute pentru noile pagini admin create */}
-      <Route path="/admin/events" element={
-        <AdminRoute>
-          <LazyComponent component={<AdminEvents />} />
-        </AdminRoute>
-      } />
-      <Route path="/admin/articles" element={
-        <AdminRoute>
-          <LazyComponent component={<AdminArticles />} />
-        </AdminRoute>
-      } />
-      
+      <Route
+        path="/admin/events"
+        element={
+          <AdminRoute>
+            <LazyComponent component={<AdminEvents />} />
+          </AdminRoute>
+        }
+      />
+      <Route
+        path="/admin/articles"
+        element={
+          <AdminRoute>
+            <LazyComponent component={<AdminArticles />} />
+          </AdminRoute>
+        }
+      />
+
       {/* Adăugăm rutele pentru adăugarea și editarea articolelor */}
-      <Route path="/admin/articles/add" element={
-        <AdminRoute>
-          <LazyComponent component={<ArticleEdit />} />
-        </AdminRoute>
-      } />
-      <Route path="/admin/articles/edit/:id" element={
-        <AdminRoute>
-          <LazyComponent component={<ArticleEdit />} />
-        </AdminRoute>
-      } />
-      
-      <Route path="/admin/settings" element={
-        <AdminRoute>
-          <LazyComponent component={<AdminSettings />} />
-        </AdminRoute>
-      } />
-      
+      <Route
+        path="/admin/articles/add"
+        element={
+          <AdminRoute>
+            <LazyComponent component={<ArticleEdit />} />
+          </AdminRoute>
+        }
+      />
+      <Route
+        path="/admin/articles/edit/:id"
+        element={
+          <AdminRoute>
+            <LazyComponent component={<ArticleEdit />} />
+          </AdminRoute>
+        }
+      />
+
+      <Route
+        path="/admin/settings"
+        element={
+          <AdminRoute>
+            <LazyComponent component={<AdminSettings />} />
+          </AdminRoute>
+        }
+      />
+
       {/* Ruta pentru pagini inexistente */}
       <Route path="*" element={<LazyComponent component={<NotFound />} />} />
     </Routes>

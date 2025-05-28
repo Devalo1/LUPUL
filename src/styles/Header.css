@@ -6,14 +6,17 @@
   width: 100%;
   min-height: 64px; /* Înălțimea minimă a header-ului */
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
-  
+
   /* Fundal cu temă românească care umple tot header-ul - softened colors */
-  background: linear-gradient(270deg, #4A90E2, #5C6BC0, #4A90E2);
+  background: linear-gradient(270deg, #4a90e2, #5c6bc0, #4a90e2);
   background-size: 400% 400%;
   animation: animatedGradient 8s ease infinite;
   position: relative;
   background-color: transparent; /* Ensure the header container doesn't have a background by default */
-  transition: transform 0.3s ease, background-color 0.3s ease, box-shadow 0.3s ease;
+  transition:
+    transform 0.3s ease,
+    background-color 0.3s ease,
+    box-shadow 0.3s ease;
 }
 
 .header-container:hover {
@@ -31,16 +34,21 @@
 
 /* Bandă tricoloră care traversează întregul header - softened colors */
 .header-container::before {
-  content: '';
+  content: "";
   position: absolute;
   top: 0;
   left: 0;
   right: 0;
   height: 4px;
-  background: linear-gradient(to right, 
-    var(--ro-blue) 0%, var(--ro-blue) 33.33%,
-    var(--ro-yellow) 33.33%, var(--ro-yellow) 66.66%,
-    var(--ro-red) 66.66%, var(--ro-red) 100%);
+  background: linear-gradient(
+    to right,
+    var(--ro-blue) 0%,
+    var(--ro-blue) 33.33%,
+    var(--ro-yellow) 33.33%,
+    var(--ro-yellow) 66.66%,
+    var(--ro-red) 66.66%,
+    var(--ro-red) 100%
+  );
   z-index: 1;
   animation: colorShift 8s infinite alternate;
 }
@@ -56,25 +64,36 @@
 
 /* Bandă tricoloră la partea de jos a header-ului - softened colors */
 .header-container::after {
-  content: '';
+  content: "";
   position: absolute;
   bottom: 0;
   left: 0;
   width: 100%;
   height: 4px;
-  background: linear-gradient(to right, 
-    var(--ro-blue) 0%, var(--ro-blue) 33.33%,
-    var(--ro-yellow) 33.33%, var(--ro-yellow) 66.66%,
-    var(--ro-red) 66.66%, var(--ro-red) 100%);
+  background: linear-gradient(
+    to right,
+    var(--ro-blue) 0%,
+    var(--ro-blue) 33.33%,
+    var(--ro-yellow) 33.33%,
+    var(--ro-yellow) 66.66%,
+    var(--ro-red) 66.66%,
+    var(--ro-red) 100%
+  );
   z-index: 1;
   animation: colorShift 8s infinite alternate-reverse;
 }
 
 /* Efectul la scroll - Enhanced with animations */
 .header-container.scrolled {
-  background-color: rgba(17, 24, 39, 0.95) !important; /* slightly transparent dark background */
-  background: linear-gradient(rgba(74, 144, 226, 0.95), rgba(92, 107, 192, 0.95)), 
-              url('/images/romanian-pattern.png');
+  background-color: rgba(
+    17,
+    24,
+    39,
+    0.95
+  ) !important; /* slightly transparent dark background */
+  background:
+    linear-gradient(rgba(74, 144, 226, 0.95), rgba(92, 107, 192, 0.95)),
+    url("/images/romanian-pattern.png");
   background-size: 200px;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
   transform: translateY(-2px); /* Slight shift on scroll for dynamic effect */
@@ -86,7 +105,7 @@
   width: 40px;
   height: 40px;
   opacity: 0.2;
-  background-image: url('/images/romanian-motif.svg');
+  background-image: url("/images/romanian-motif.svg");
   background-size: contain;
   background-repeat: no-repeat;
   z-index: 1;
@@ -119,26 +138,30 @@
 }
 
 /* Enhanced link animations */
-.header-container a, .header-container button {
+.header-container a,
+.header-container button {
   position: relative;
   overflow: hidden;
   z-index: 2;
-  transition: transform 0.3s ease, color 0.3s ease;
+  transition:
+    transform 0.3s ease,
+    color 0.3s ease;
 }
 
-.header-container a:hover, .header-container button:hover {
+.header-container a:hover,
+.header-container button:hover {
   transform: translateY(-2px);
 }
 
-.header-container a::after, 
+.header-container a::after,
 .header-container button::after {
-  content: '';
+  content: "";
   position: absolute;
   bottom: 0;
   left: 50%;
   width: 0;
   height: 2px;
-  background: #FCD116; /* Galben din drapelul românesc */
+  background: #fcd116; /* Galben din drapelul românesc */
   transition: all 0.3s ease;
   transform: translateX(-50%);
 }
@@ -151,7 +174,9 @@
 /* Efect de iluminare pe hover pentru link-uri */
 .header-container a {
   position: relative;
-  transition: color 0.3s ease, text-shadow 0.3s ease;
+  transition:
+    color 0.3s ease,
+    text-shadow 0.3s ease;
 }
 
 .header-container a:hover {
@@ -182,15 +207,17 @@
 /* Enhanced mobile menu with animations */
 .mobile-menu {
   box-shadow: 5px 0 15px rgba(0, 0, 0, 0.3);
-  background: linear-gradient(rgba(0, 43, 127, 0.97), rgba(0, 43, 127, 0.97)), 
-              url('/images/romanian-pattern.png');
+  background:
+    linear-gradient(rgba(0, 43, 127, 0.97), rgba(0, 43, 127, 0.97)),
+    url("/images/romanian-pattern.png");
   background-size: 200px;
-  border-right: 3px solid #FCD116; /* Bordură galbenă */
+  border-right: 3px solid #fcd116; /* Bordură galbenă */
   padding-top: 60px; /* Spațiu pentru butonul hamburger */
   transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
 
-.mobile-menu a, .mobile-menu button {
+.mobile-menu a,
+.mobile-menu button {
   transform: translateX(-10px);
   opacity: 0;
   animation: slideInLinks 0.4s forwards;
@@ -212,19 +239,25 @@
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
   background: linear-gradient(
     to right,
-    #0033a0 0%, #0033a0 33.33%,
-    #ffda44 33.33%, #ffda44 66.66%,
-    #cc0b2f 66.66%, #cc0b2f 100%
+    #0033a0 0%,
+    #0033a0 33.33%,
+    #ffda44 33.33%,
+    #ffda44 66.66%,
+    #cc0b2f 66.66%,
+    #cc0b2f 100%
   );
   filter: blur(0.2px);
   perspective: 1200px;
   transform-style: preserve-3d;
-  animation: waveFlag 10s cubic-bezier(0.42, 0, 0.58, 1) infinite, shadowShift 8s ease-in-out infinite;
+  animation:
+    waveFlag 10s cubic-bezier(0.42, 0, 0.58, 1) infinite,
+    shadowShift 8s ease-in-out infinite;
 }
 
 /* Enhanced wave animation for more realistic flag movement */
 @keyframes waveFlag {
-  0%, 100% {
+  0%,
+  100% {
     transform: rotateX(0deg) rotateY(0deg) rotateZ(0deg);
     background-position: 0% 0%;
   }
@@ -286,6 +319,88 @@
   margin-right: 0.3rem;
 }
 
+/* Animations for navbar */
+@keyframes fade-in {
+  0% {
+    opacity: 0;
+    transform: translateY(-10px) scale(0.95);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+.animate-fade-in {
+  animation: fade-in 0.7s cubic-bezier(0.4, 0, 0.2, 1) both;
+}
+@keyframes nav-pop {
+  0% {
+    opacity: 0;
+    transform: scale(0.8) translateY(-10px);
+  }
+  80% {
+    opacity: 1;
+    transform: scale(1.05) translateY(2px);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+.animate-nav-pop {
+  animation: nav-pop 0.5s cubic-bezier(0.4, 0, 0.2, 1) both;
+}
+@keyframes dropdown-fade {
+  0% {
+    opacity: 0;
+    transform: translateY(-10px) scale(0.95);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+.animate-dropdown-fade {
+  animation: dropdown-fade 0.3s cubic-bezier(0.4, 0, 0.2, 1) both;
+}
+
+/* Navbar link hover and focus */
+.nav-link {
+  position: relative;
+  transition:
+    color 0.2s,
+    background 0.2s,
+    box-shadow 0.2s,
+    transform 0.2s;
+  font-size: 1.08rem;
+  letter-spacing: 0.01em;
+}
+.nav-link:hover,
+.nav-link:focus {
+  background: linear-gradient(90deg, #4a90e2 60%, #5c6bc0 100%);
+  color: #fff;
+  box-shadow: 0 2px 8px rgba(76, 110, 245, 0.15);
+  transform: scale(1.07) translateY(-2px);
+}
+
+/* Auth button gradient */
+.auth-button {
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  box-shadow: 0 2px 8px rgba(76, 110, 245, 0.12);
+  transition:
+    background 0.2s,
+    color 0.2s,
+    transform 0.2s,
+    box-shadow 0.2s;
+}
+.auth-button:hover,
+.auth-button:focus {
+  filter: brightness(1.1);
+  transform: scale(1.07) translateY(-2px);
+  box-shadow: 0 4px 16px rgba(76, 110, 245, 0.18);
+}
+
 /* Improved mobile header styles */
 @media (max-width: 768px) {
   .header-container {
@@ -316,6 +431,106 @@
   .romanian-motif {
     display: none;
   }
+}
+
+/* Fix: Centralizează perfect meniul navbar și aliniază vertical iconițele și textul */
+.header-container nav > div.flex.items-center {
+  justify-content: center !important;
+  align-items: flex-end !important;
+  width: 100%;
+  margin-left: auto !important;
+  margin-right: auto !important;
+  max-width: 900px;
+  display: flex !important;
+  gap: 2.5rem;
+  padding-top: 0.5rem;
+  padding-bottom: 0.5rem;
+}
+
+.nav-link,
+.auth-button {
+  font-size: 0.85rem !important;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.18rem;
+  height: 4.7rem;
+  min-width: 5.7rem;
+  padding: 0.2rem 0.5rem !important;
+  display: flex;
+}
+
+.nav-link .lucide,
+.auth-button .lucide,
+.nav-link .lucide-shopping-cart {
+  width: 2.5rem !important;
+  height: 2.5rem !important;
+  margin-bottom: 0.18rem;
+  color: #c7e0ff;
+  stroke-width: 1.7;
+  display: block;
+  transition:
+    color 0.2s,
+    transform 0.2s;
+}
+
+/* Centralizează meniul navbar pe mijloc pe orice ecran mare */
+@media (min-width: 1024px) {
+  .header-container nav > div.flex.items-center {
+    justify-content: center !important;
+    width: 100%;
+    margin-left: auto !important;
+    margin-right: auto !important;
+    max-width: 900px;
+    display: flex !important;
+  }
+}
+
+/* Asigură centralizarea și pe ecrane mai mici dacă este nevoie */
+.header-container nav > div.flex.items-center {
+  justify-content: center !important;
+  width: 100%;
+  margin-left: auto;
+  margin-right: auto;
+  max-width: 900px;
+  display: flex;
+}
+
+/* Badge pentru cosul de cumparaturi in navbar */
+.nav-link .cart-badge {
+  position: absolute;
+  top: 0.1rem;
+  right: 0.2rem;
+  background: #e53e3e;
+  color: #fff;
+  font-size: 0.8rem;
+  width: 1.3rem;
+  height: 1.3rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 9999px;
+  font-weight: 700;
+  box-shadow: 0 2px 6px rgba(229, 62, 62, 0.18);
+  z-index: 2;
+  pointer-events: none;
+}
+
+/* Mărește și aliniază iconița coșului de cumpărături la fel ca restul simbolurilor din navbar */
+.nav-link .lucide-shopping-cart {
+  width: 2.25rem !important;
+  height: 2.25rem !important;
+  margin-bottom: 0.15rem;
+  color: #c7e0ff;
+  stroke-width: 1.7;
+  display: block;
+  transition:
+    color 0.2s,
+    transform 0.2s;
+}
+.nav-link:hover .lucide-shopping-cart {
+  color: #fff;
+  transform: scale(1.12) rotate(-4deg);
 }
 
 /* Rest of your CSS */

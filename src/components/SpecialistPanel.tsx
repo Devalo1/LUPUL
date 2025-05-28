@@ -1,6 +1,14 @@
 import React, { useState, useEffect } from "react";
 import { useAuth } from "../contexts";
-import { collection, doc, getDoc, getDocs, addDoc, query, where } from "firebase/firestore";
+import {
+  collection,
+  doc,
+  getDoc,
+  getDocs,
+  addDoc,
+  query,
+  where,
+} from "firebase/firestore";
 import { firestore } from "../firebase";
 import { FaPaperPlane } from "react-icons/fa";
 
@@ -13,31 +21,26 @@ interface DataItem {
   [key: string]: unknown;
 }
 
-interface _RequestData {
-  id: string;
-  status?: string;
-  reason?: string;
-  adminComment?: string;
-  createdAt?: Date;
-  currentSpecialization?: string;
-  newSpecialization?: string;
-  [key: string]: unknown;
-}
+// Some request-related interfaces can be defined here when needed
 
 const SpecialistPanel: React.FC = () => {
   const { user, userRole } = useAuth();
   const [loading, setLoading] = useState(false);
   const [specialistData, setSpecialistData] = useState({
     currentSpecialization: "",
-    services: []
+    services: [],
   });
-  const [specializationChangeRequest, setSpecializationChangeRequest] = useState({
-    newSpecialization: "",
-    reason: "",
-    status: "pending"
-  });
+  const [specializationChangeRequest, setSpecializationChangeRequest] =
+    useState({
+      newSpecialization: "",
+      reason: "",
+      status: "pending",
+    });
   const [showChangeForm, setShowChangeForm] = useState(false);
-  const [formMessage, setFormMessage] = useState<{type: "success" | "error", message: string} | null>(null);
+  const [formMessage, setFormMessage] = useState<{
+    type: "success" | "error";
+    message: string;
+  } | null>(null);
   const [previousRequests, setPreviousRequests] = useState<DataItem[]>([]);
   const [_selectedAppointment, _setSelectedAppointment] = useState(null);
   const [_uploadProgress, _setUploadProgress] = useState(0);
@@ -53,37 +56,40 @@ const SpecialistPanel: React.FC = () => {
 
   useEffect(() => {
     if (!user) return;
-    
+
     const fetchSpecialistData = async () => {
       try {
         setLoading(true);
-        
+
         // Fetch specialist profile data
         const userRef = doc(firestore, "users", user.uid);
         const userDoc = await getDoc(userRef);
-        
+
         if (userDoc.exists()) {
           const userData = userDoc.data();
           setSpecialistData({
             currentSpecialization: userData.specialization || "",
-            services: userData.services || []
+            services: userData.services || [],
           });
         }
-        
+
         // Fetch previous specialization change requests
-        const requestsRef = collection(firestore, "specializationChangeRequests");
+        const requestsRef = collection(
+          firestore,
+          "specializationChangeRequests"
+        );
         const q = query(requestsRef, where("userId", "==", user.uid));
         const requestsSnapshot = await getDocs(q);
-        
+
         const requests: DataItem[] = [];
         requestsSnapshot.forEach((doc) => {
           requests.push({
             id: doc.id,
             ...doc.data(),
-            createdAt: doc.data().createdAt?.toDate()
+            createdAt: doc.data().createdAt?.toDate(),
           });
         });
-        
+
         // Sort by creation date, newest first
         requests.sort((a, b) => {
           const dateA = a.createdAt instanceof Date ? a.createdAt.getTime() : 0;
@@ -91,44 +97,51 @@ const SpecialistPanel: React.FC = () => {
           return dateB - dateA;
         });
         setPreviousRequests(requests);
-        
       } catch (error) {
         console.error("Error fetching specialist data:", error);
         setFormMessage({
           type: "error",
-          message: "A apărut o eroare la încărcarea datelor. Vă rugăm încercați din nou."
+          message:
+            "A apărut o eroare la încărcarea datelor. Vă rugăm încercați din nou.",
         });
       } finally {
         setLoading(false);
       }
     };
-    
+
     fetchSpecialistData();
   }, [user]);
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+  const handleInputChange = (
+    e: React.ChangeEvent<
+      HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
+    >
+  ) => {
     const { name, value } = e.target;
-    setSpecializationChangeRequest(prev => ({
+    setSpecializationChangeRequest((prev) => ({
       ...prev,
-      [name]: value
+      [name]: value,
     }));
   };
 
   const handleSubmitRequest = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!user) return;
-    
-    if (!specializationChangeRequest.newSpecialization || !specializationChangeRequest.reason) {
+
+    if (
+      !specializationChangeRequest.newSpecialization ||
+      !specializationChangeRequest.reason
+    ) {
       setFormMessage({
         type: "error",
-        message: "Vă rugăm completați toate câmpurile obligatorii."
+        message: "Vă rugăm completați toate câmpurile obligatorii.",
       });
       return;
     }
-    
+
     try {
       setLoading(true);
-      
+
       // Add the request to the database
       const requestRef = collection(firestore, "specializationChangeRequests");
       await addDoc(requestRef, {
@@ -138,37 +151,38 @@ const SpecialistPanel: React.FC = () => {
         newSpecialization: specializationChangeRequest.newSpecialization,
         reason: specializationChangeRequest.reason,
         status: "pending",
-        createdAt: new Date()
+        createdAt: new Date(),
       });
-      
+
       // Reset form and show success message
       setSpecializationChangeRequest({
         newSpecialization: "",
         reason: "",
-        status: "pending"
+        status: "pending",
       });
-      
+
       setFormMessage({
         type: "success",
-        message: "Cererea de schimbare a specializării a fost trimisă cu succes și este în așteptare pentru aprobare."
+        message:
+          "Cererea de schimbare a specializării a fost trimisă cu succes și este în așteptare pentru aprobare.",
       });
-      
+
       setShowChangeForm(false);
-      
+
       // Refresh the list of previous requests
       const requestsRef = collection(firestore, "specializationChangeRequests");
       const q = query(requestsRef, where("userId", "==", user.uid));
       const requestsSnapshot = await getDocs(q);
-      
+
       const requests: DataItem[] = [];
       requestsSnapshot.forEach((doc) => {
         requests.push({
           id: doc.id,
           ...doc.data(),
-          createdAt: doc.data().createdAt?.toDate()
+          createdAt: doc.data().createdAt?.toDate(),
         });
       });
-      
+
       // Sort by creation date, newest first
       requests.sort((a, b) => {
         const dateA = a.createdAt instanceof Date ? a.createdAt.getTime() : 0;
@@ -176,12 +190,12 @@ const SpecialistPanel: React.FC = () => {
         return dateB - dateA;
       });
       setPreviousRequests(requests);
-      
     } catch (error) {
       console.error("Error submitting specialization change request:", error);
       setFormMessage({
         type: "error",
-        message: "A apărut o eroare la trimiterea cererii. Vă rugăm încercați din nou."
+        message:
+          "A apărut o eroare la trimiterea cererii. Vă rugăm încercați din nou.",
       });
     } finally {
       setLoading(false);
@@ -195,7 +209,7 @@ const SpecialistPanel: React.FC = () => {
       month: "long",
       day: "numeric",
       hour: "2-digit",
-      minute: "2-digit"
+      minute: "2-digit",
     });
   };
 
@@ -241,19 +255,24 @@ const SpecialistPanel: React.FC = () => {
         <div className="bg-white rounded-lg shadow overflow-hidden">
           <div className="bg-blue-600 px-6 py-8 text-white">
             <h1 className="text-3xl font-bold">Panou Specialist</h1>
-            <p className="mt-2 text-blue-100">Gestionează specializările și serviciile oferite</p>
+            <p className="mt-2 text-blue-100">
+              Gestionează specializările și serviciile oferite
+            </p>
           </div>
-          
+
           <div className="p-6">
             {formMessage && (
-              <div className={`mb-6 p-4 rounded-md ${
-                formMessage.type === "success" ? "bg-green-50 text-green-800 border border-green-200" : 
-                "bg-red-50 text-red-800 border border-red-200"
-              }`}>
+              <div
+                className={`mb-6 p-4 rounded-md ${
+                  formMessage.type === "success"
+                    ? "bg-green-50 text-green-800 border border-green-200"
+                    : "bg-red-50 text-red-800 border border-red-200"
+                }`}
+              >
                 {formMessage.message}
               </div>
             )}
-            
+
             {/* Current specialization card */}
             <div className="mb-8 p-6 bg-blue-50 rounded-lg border border-blue-100">
               <div className="flex items-start">
@@ -261,14 +280,18 @@ const SpecialistPanel: React.FC = () => {
                   <FaPaperPlane className="h-6 w-6 text-blue-600" />
                 </div>
                 <div className="ml-4 flex-1">
-                  <h3 className="text-lg font-medium text-blue-900">Specializarea curentă</h3>
+                  <h3 className="text-lg font-medium text-blue-900">
+                    Specializarea curentă
+                  </h3>
                   <p className="mt-1 text-xl font-semibold text-blue-600">
                     {specialistData.currentSpecialization || "Nespecificată"}
                   </p>
                   <p className="mt-2 text-sm text-blue-700">
-                    Puteți solicita o schimbare a specializării folosind formularul de mai jos. Solicitarea va fi revizuită de administratori.
+                    Puteți solicita o schimbare a specializării folosind
+                    formularul de mai jos. Solicitarea va fi revizuită de
+                    administratori.
                   </p>
-                  
+
                   <div className="mt-4">
                     {!showChangeForm ? (
                       <button
@@ -278,22 +301,34 @@ const SpecialistPanel: React.FC = () => {
                         Solicită schimbarea specializării
                       </button>
                     ) : (
-                      <form onSubmit={handleSubmitRequest} className="mt-3 space-y-4 bg-white p-4 rounded-md shadow-sm">
-                        <h4 className="text-lg font-medium text-gray-800">Solicitare schimbare specializare</h4>
-                        
+                      <form
+                        onSubmit={handleSubmitRequest}
+                        className="mt-3 space-y-4 bg-white p-4 rounded-md shadow-sm"
+                      >
+                        <h4 className="text-lg font-medium text-gray-800">
+                          Solicitare schimbare specializare
+                        </h4>
+
                         <div>
-                          <label htmlFor="newSpecialization" className="block text-sm font-medium text-gray-700">
+                          <label
+                            htmlFor="newSpecialization"
+                            className="block text-sm font-medium text-gray-700"
+                          >
                             Noua specializare dorită *
                           </label>
                           <select
                             id="newSpecialization"
                             name="newSpecialization"
-                            value={specializationChangeRequest.newSpecialization}
+                            value={
+                              specializationChangeRequest.newSpecialization
+                            }
                             onChange={handleInputChange}
                             className="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
                             required
                           >
-                            <option value="">Selectați noua specializare</option>
+                            <option value="">
+                              Selectați noua specializare
+                            </option>
                             <option value="Psihologie">Psihologie</option>
                             <option value="Psihoterapie">Psihoterapie</option>
                             <option value="Nutriție">Nutriție</option>
@@ -304,9 +339,12 @@ const SpecialistPanel: React.FC = () => {
                             <option value="Consiliere">Consiliere</option>
                           </select>
                         </div>
-                        
+
                         <div>
-                          <label htmlFor="reason" className="block text-sm font-medium text-gray-700">
+                          <label
+                            htmlFor="reason"
+                            className="block text-sm font-medium text-gray-700"
+                          >
                             Motivul schimbării *
                           </label>
                           <textarea
@@ -320,7 +358,7 @@ const SpecialistPanel: React.FC = () => {
                             required
                           />
                         </div>
-                        
+
                         <div className="flex justify-end space-x-3">
                           <button
                             type="button"
@@ -336,9 +374,25 @@ const SpecialistPanel: React.FC = () => {
                           >
                             {loading ? (
                               <span className="flex items-center">
-                                <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                <svg
+                                  className="animate-spin -ml-1 mr-2 h-4 w-4 text-white"
+                                  xmlns="http://www.w3.org/2000/svg"
+                                  fill="none"
+                                  viewBox="0 0 24 24"
+                                >
+                                  <circle
+                                    className="opacity-25"
+                                    cx="12"
+                                    cy="12"
+                                    r="10"
+                                    stroke="currentColor"
+                                    strokeWidth="4"
+                                  ></circle>
+                                  <path
+                                    className="opacity-75"
+                                    fill="currentColor"
+                                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                                  ></path>
                                 </svg>
                                 Se trimite...
                               </span>
@@ -356,15 +410,17 @@ const SpecialistPanel: React.FC = () => {
                 </div>
               </div>
             </div>
-            
+
             {/* Previous requests section */}
             <div className="mb-8">
               <h3 className="text-lg font-medium text-gray-900 mb-4 flex items-center">
                 Istoricul solicitărilor de schimbare a specializării
               </h3>
-              
+
               {previousRequests.length === 0 ? (
-                <p className="text-gray-500 italic">Nu aveți solicitări anterioare.</p>
+                <p className="text-gray-500 italic">
+                  Nu aveți solicitări anterioare.
+                </p>
               ) : (
                 <div className="bg-white shadow overflow-hidden sm:rounded-md">
                   <ul className="divide-y divide-gray-200">
@@ -373,37 +429,57 @@ const SpecialistPanel: React.FC = () => {
                         <div className="flex items-center justify-between">
                           <div className="flex items-center">
                             <p className="text-sm font-medium text-blue-600 truncate">
-                              Schimbare: {String(request.currentSpecialization || "")} → {String(request.newSpecialization || "")}
+                              Schimbare:{" "}
+                              {String(request.currentSpecialization || "")} →{" "}
+                              {String(request.newSpecialization || "")}
                             </p>
                           </div>
                           <div className="ml-2 flex-shrink-0">
-                            <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${getStatusBadgeClass(String(request.status || ""))}`}>
-                              {getStatusDisplayName(String(request.status || ""))}
+                            <span
+                              className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${getStatusBadgeClass(String(request.status || ""))}`}
+                            >
+                              {getStatusDisplayName(
+                                String(request.status || "")
+                              )}
                             </span>
                           </div>
                         </div>
                         <div className="mt-2 sm:flex sm:justify-between">
                           <div className="sm:flex">
                             <p className="flex items-center text-sm text-gray-500">
-                              {typeof request.reason === "string" && request.reason.length > 100 ?
-                                `${request.reason.substring(0, 100)}...` :
-                                request.reason}
+                              {typeof request.reason === "string" &&
+                              request.reason.length > 100
+                                ? `${request.reason.substring(0, 100)}...`
+                                : request.reason}
                             </p>
                           </div>
                           <div className="mt-2 flex items-center text-xs text-gray-500 sm:mt-0">
                             <p>
-                              <time dateTime={request.createdAt instanceof Date ? request.createdAt.toISOString() : ""}>
-                                {formatDate(request.createdAt instanceof Date ? request.createdAt : new Date())}
+                              <time
+                                dateTime={
+                                  request.createdAt instanceof Date
+                                    ? request.createdAt.toISOString()
+                                    : ""
+                                }
+                              >
+                                {formatDate(
+                                  request.createdAt instanceof Date
+                                    ? request.createdAt
+                                    : new Date()
+                                )}
                               </time>
                             </p>
                           </div>
                         </div>
-                        {request.adminComment && (
-                          <div className="mt-2 text-sm text-gray-700 bg-gray-50 p-2 rounded">
-                            <p className="font-semibold">Răspuns administrator:</p>
-                            <p>{String(request.adminComment || "")}</p>
-                          </div>
-                        )}
+                        {typeof request.adminComment === "string" &&
+                          request.adminComment && (
+                            <div className="mt-2 text-sm text-gray-700 bg-gray-50 p-2 rounded">
+                              <p className="font-semibold">
+                                Răspuns administrator:
+                              </p>
+                              <p>{request.adminComment}</p>
+                            </div>
+                          )}
                       </li>
                     ))}
                   </ul>

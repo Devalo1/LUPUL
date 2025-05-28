@@ -4,10 +4,8 @@
     "useDefineForClassFields": true,
     "lib": ["ES2020", "DOM", "DOM.Iterable"],
     "module": "ESNext",
-    "skipLibCheck": true,
-
-    /* Bundler mode */
-    "moduleResolution": "bundler",
+    "skipLibCheck": true /* Bundler mode */,
+    "moduleResolution": "node",
     "allowImportingTsExtensions": true,
     "resolveJsonModule": true,
     "isolatedModules": true,
@@ -15,16 +13,16 @@
     "jsx": "react-jsx",
 
     /* Linting - strict for build */
-    "strict": true,               /* Enable strict type checking */
-    "noUnusedLocals": true,       /* Error on unused locals */
-    "noUnusedParameters": true,   /* Error on unused parameters */
+    "strict": true /* Enable strict type checking */,
+    "noUnusedLocals": true /* Error on unused locals */,
+    "noUnusedParameters": true /* Error on unused parameters */,
     "noFallthroughCasesInSwitch": true,
     "forceConsistentCasingInFileNames": true,
-    
+
     /* Added to fix build issues */
-    "noImplicitAny": true,        /* Disallow implicit any */
-    "strictNullChecks": true,     /* Enable strict null checks */
-    
+    "noImplicitAny": true /* Disallow implicit any */,
+    "strictNullChecks": true /* Enable strict null checks */,
+
     /* Paths */
     "baseUrl": ".",
     "paths": {
@@ -34,10 +32,7 @@
 
     /* Types */
     "types": ["node"],
-    "typeRoots": [
-      "./node_modules/@types",
-      "./types"
-    ],
+    "typeRoots": ["./node_modules/@types", "./src/types", "./types"],
     "allowSyntheticDefaultImports": true,
     "esModuleInterop": true
   },

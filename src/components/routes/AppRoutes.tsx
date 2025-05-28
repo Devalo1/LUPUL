@@ -3,9 +3,11 @@ import { Routes, Route, Navigate } from "react-router-dom";
 // Protecție rute
 import ProtectedRoute from "./ProtectedRoute";
 import AdminRoute from "./AdminRoute";
+import AccountantRoute from "./AccountantRoute";
 
-// Import rute admin centralizate
+// Import rute admin și contabilitate centralizate
 import adminRoutes from "../../routes/adminRoutes";
+import accountingRoutes from "../../routes/accountingRoutes";
 
 // Pagini publice
 import HomePage from "../../pages/HomePage";
@@ -58,28 +60,96 @@ const AppRoutes = () => {
       <Route path="/privacy-policy" element={<PrivacyPolicy />} />
       <Route path="/ong" element={<Ong />} />
       <Route path="/partners" element={<Partners />} />
-      
       {/* Rute protejate (necesită autentificare) */}
-      <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
-      <Route path="/user-home" element={<ProtectedRoute><UserHome /></ProtectedRoute>} />
-      <Route path="/profil" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
+      <Route
+        path="/dashboard"
+        element={
+          <ProtectedRoute>
+            <Dashboard />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/user-home"
+        element={
+          <ProtectedRoute>
+            <UserHome />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/profil"
+        element={
+          <ProtectedRoute>
+            <Profile />
+          </ProtectedRoute>
+        }
+      />
       <Route path="/cart" element={<Cart />} />
-      <Route path="/checkout" element={<ProtectedRoute><Checkout /></ProtectedRoute>} />
-      <Route path="/order-success" element={<ProtectedRoute><OrderSuccess /></ProtectedRoute>} />
-      <Route path="/checkout-success" element={<ProtectedRoute><CheckoutSuccess /></ProtectedRoute>} />
-      <Route path="/orders" element={<ProtectedRoute><Orders /></ProtectedRoute>} />
-      <Route path="/account" element={<ProtectedRoute><Account /></ProtectedRoute>} />
-      <Route path="/appointments" element={<ProtectedRoute><Appointments /></ProtectedRoute>} />
-      
+      <Route
+        path="/checkout"
+        element={
+          <ProtectedRoute>
+            <Checkout />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/order-success"
+        element={
+          <ProtectedRoute>
+            <OrderSuccess />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/checkout-success"
+        element={
+          <ProtectedRoute>
+            <CheckoutSuccess />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/orders"
+        element={
+          <ProtectedRoute>
+            <Orders />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/account"
+        element={
+          <ProtectedRoute>
+            <Account />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/appointments"
+        element={
+          <ProtectedRoute>
+            <Appointments />
+          </ProtectedRoute>
+        }
+      />{" "}
       {/* Rute admin - folosind configurația centralizată din adminRoutes.tsx */}
       {adminRoutes.map((route) => (
-        <Route 
-          key={route.path} 
-          path={route.path} 
-          element={<AdminRoute>{route.element}</AdminRoute>} 
+        <Route
+          key={route.path}
+          path={route.path}
+          element={<AdminRoute>{route.element}</AdminRoute>}
         />
       ))}
-      
+      {/* Rute contabilitate - folosind configurația centralizată din accountingRoutes.tsx */}
+      {accountingRoutes.map((route) => (
+        <Route
+          key={route.path}
+          path={route.path}
+          element={<AccountantRoute>{route.element}</AccountantRoute>}
+        />
+      ))}
       {/* Redirecționări pentru compatibilitate */}
       <Route path="/admin/panel" element={<Navigate to="/admin" replace />} />
       <Route path="/adminpanel" element={<Navigate to="/admin" replace />} />
@@ -87,7 +157,6 @@ const AppRoutes = () => {
       <Route path="/evenimente" element={<Navigate to="/events" replace />} />
       <Route path="/cos" element={<Navigate to="/cart" replace />} />
       <Route path="/cont" element={<Navigate to="/account" replace />} />
-      
       {/* Rută 404 Not Found */}
       <Route path="*" element={<NotFound />} />
     </Routes>

@@ -40,12 +40,11 @@ export class ProfilePhotoService {
     if (!userId) return;
 
     try {
-      // Adăugăm timestamp pentru a forța reîncărcarea
-      const _timestamp = Date.now();
-
       // Actualizăm cache-ul local
       if (auth.currentUser?.photoURL) {
-        this.imageCache[userId] = ProfilePhotoService.getPhotoURLWithTimestamp(auth.currentUser.photoURL);
+        this.imageCache[userId] = ProfilePhotoService.getPhotoURLWithTimestamp(
+          auth.currentUser.photoURL
+        );
       }
     } catch (error) {
       console.error("Eroare la reîmprospătarea cache-ului imaginii:", error);
@@ -67,15 +66,18 @@ export class ProfilePhotoService {
       const base64 = await this.convertToBase64(file);
 
       // Apelează funcția cloud pentru încărcare și sincronizare
-      const uploadProfilePhotoFunction = httpsCallable(functions, "uploadProfilePhoto");
+      const uploadProfilePhotoFunction = httpsCallable(
+        functions,
+        "uploadProfilePhoto"
+      );
       const result = await uploadProfilePhotoFunction({
         photoBase64: base64,
-        userId: this.user.uid
+        userId: this.user.uid,
       });
 
       // Extrage datele din rezultat
-      const data = result.data as { 
-        success: boolean; 
+      const data = result.data as {
+        success: boolean;
         photoURL: string;
         timestamp: number;
       };
@@ -106,7 +108,7 @@ export class ProfilePhotoService {
       // Optional: Update the user profile to remove the photo URL
       const userDocRef = doc(firestore, "users", userId);
       await updateDoc(userDocRef, {
-        photoURL: null
+        photoURL: null,
       });
     } catch (error) {
       console.error("Error removing profile photo:", error);
@@ -119,28 +121,30 @@ export class ProfilePhotoService {
    * @param photoURL URL-ul fotografiei
    * @param timestamp Timestamp pentru a preveni cache-ul
    */
-  private async updateLocalPhotoReferences(photoURL: string, timestamp: number) {
+  private async updateLocalPhotoReferences(
+    photoURL: string,
+    timestamp: number
+  ) {
     if (!this.user) return;
 
     try {
       // Actualizează documentul utilizatorului cu timestamp pentru a forța actualizarea
       const userRef = doc(firestore, "users", this.user.uid);
-      await updateDoc(userRef, { 
-        photoURL, 
-        photoTimestamp: timestamp 
+      await updateDoc(userRef, {
+        photoURL,
+        photoTimestamp: timestamp,
       });
 
       // Verifică dacă există și document de specialist
       const specialistRef = doc(firestore, "specialists", this.user.uid);
       try {
-        await updateDoc(specialistRef, { 
+        await updateDoc(specialistRef, {
           photoURL,
-          photoTimestamp: timestamp 
+          photoTimestamp: timestamp,
         });
       } catch (e) {
         // Ignorăm eroarea dacă utilizatorul nu este specialist
       }
-
     } catch (error) {
       console.error("Eroare la actualizarea referințelor locale:", error);
     }
@@ -153,7 +157,7 @@ export class ProfilePhotoService {
    */
   static getPhotoURLWithTimestamp(photoURL: string | null | undefined): string {
     if (!photoURL) return "";
-    
+
     // Folosim processImageUrl pentru a asigura consistența procesării URL-urilor
     // Asta va aplica toate corectările necesare și va adăuga un singur timestamp
     return processImageUrl(photoURL, true);

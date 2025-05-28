@@ -1,103 +1,132 @@
-// Firebase Auth type extensions
-import { FirebaseApp } from "firebase/app";
+// Firebase Auth type augmentation
+// This file extends the firebase/auth module with our custom User properties
 
 declare module "firebase/auth" {
-  // Main User interface extensions
+  // Extend the User interface with all Firebase properties and our custom properties
   interface User {
-    uid: string;
-    email: string | null;
-    emailVerified: boolean;
-    displayName: string | null;
-    photoURL: string | null;
-    phoneNumber: string | null;
-    isAnonymous: boolean;
-    tenantId: string | null;
-    providerData: UserInfo[];
-    metadata: {
-      creationTime?: string;
-      lastSignInTime?: string;
+    // Standard Firebase User properties from UserInfo
+    readonly uid: string;
+    readonly email: string | null;
+    readonly displayName: string | null;
+    readonly photoURL: string | null;
+    readonly phoneNumber: string | null;
+    readonly providerId: string;
+
+    // Additional Firebase User properties
+    readonly emailVerified: boolean;
+    readonly isAnonymous: boolean;
+    readonly metadata: {
+      readonly creationTime?: string;
+      readonly lastSignInTime?: string;
     };
-    
-    // Our custom properties
+    readonly providerData: Array<{
+      readonly uid: string;
+      readonly email: string | null;
+      readonly displayName: string | null;
+      readonly photoURL: string | null;
+      readonly phoneNumber: string | null;
+      readonly providerId: string;
+    }>;
+    readonly refreshToken: string;
+    readonly tenantId: string | null;
+
+    // Firebase User methods
+    delete(): Promise<void>;
+    getIdToken(forceRefresh?: boolean): Promise<string>;
+    getIdTokenResult(forceRefresh?: boolean): Promise<{
+      token: string;
+      authTime: string;
+      issuedAtTime: string;
+      expirationTime: string;
+      signInProvider: string | null;
+      signInSecondFactor: string | null;
+      claims: Record<string, unknown>;
+    }>;
+    reload(): Promise<void>; // Our custom properties
     isAdmin?: boolean;
+    isAccountant?: boolean;
     createdAt?: Date | number | string;
-    
-    // Methods
-    getIdTokenResult(): Promise<IdTokenResult>;
   }
 
-  // Auth functions
-  export function getAuth(app?: FirebaseApp): Auth;
-  export function onAuthStateChanged(auth: Auth, nextOrObserver: NextOrObserver<User | null>): Unsubscribe;
-  export function signInWithEmailAndPassword(auth: Auth, email: string, password: string): Promise<UserCredential>;
-  export function createUserWithEmailAndPassword(auth: Auth, email: string, password: string): Promise<UserCredential>;
-  export function signOut(auth: Auth): Promise<void>;
-  export function sendPasswordResetEmail(auth: Auth, email: string, actionCodeSettings?: ActionCodeSettings): Promise<void>;
-  export function updateProfile(user: User, profile: {displayName?: string, photoURL?: string}): Promise<void>;
-  export function getRedirectResult(auth: Auth): Promise<UserCredential | null>;
-  export function connectAuthEmulator(auth: Auth, url: string, options?: any): void;
-  export function signInWithRedirect(auth: Auth, provider: AuthProvider | GoogleAuthProvider): Promise<never>;
-  export function signInWithPopup(auth: Auth, provider: AuthProvider | GoogleAuthProvider): Promise<UserCredential>;
-  
-  // Provider classes
-  export class GoogleAuthProvider implements AuthProvider {
+  // Firebase Auth exports
+  export function getAuth(app?: any): any;
+  export function onAuthStateChanged(
+    auth: any,
+    nextOrObserver: (user: User | null) => void,
+    error?: (error: Error) => void,
+    completed?: () => void
+  ): () => void;
+  export function signInWithEmailAndPassword(
+    auth: any,
+    email: string,
+    password: string
+  ): Promise<any>;
+  export function createUserWithEmailAndPassword(
+    auth: any,
+    email: string,
+    password: string
+  ): Promise<any>;
+  export function signOut(auth: any): Promise<void>;
+  export function sendPasswordResetEmail(
+    auth: any,
+    email: string,
+    actionCodeSettings?: any
+  ): Promise<void>;
+  export function updateProfile(user: User, profile: any): Promise<void>;
+  export class GoogleAuthProvider {
+    readonly providerId: string;
     constructor();
+    static credential(
+      idToken?: string | null,
+      accessToken?: string | null
+    ): any;
     addScope(scope: string): GoogleAuthProvider;
-    setCustomParameters(customOAuthParameters: Object): GoogleAuthProvider;
-    providerId: string;
-    static PROVIDER_ID: string;
-    static GOOGLE_SIGN_IN_METHOD: string;
+    setCustomParameters(
+      customOAuthParameters: Record<string, string>
+    ): GoogleAuthProvider;
   }
+  export function signInWithPopup(auth: any, provider: any): Promise<any>;
+  export function signInWithRedirect(auth: any, provider: any): Promise<void>;
+  export function getRedirectResult(auth: any): Promise<any>;
+  export function connectAuthEmulator(
+    auth: any,
+    url: string,
+    options?: any
+  ): void;
 
-  // Essential interfaces
   export interface Auth {
-    app: FirebaseApp;
-    name: string;
     currentUser: User | null;
   }
 
   export interface UserCredential {
     user: User;
-    providerId: string | null;
     operationType?: string;
+    providerId?: string | null;
   }
 
   export interface AuthProvider {
     providerId: string;
   }
 
-  export interface UserInfo {
-    uid: string;
-    displayName: string | null;
-    email: string | null;
-    phoneNumber: string | null;
-    photoURL: string | null;
-    providerId: string;
-  }
-  
-  export interface IdTokenResult {
-    claims: {
-      [key: string]: any;
-      admin?: boolean;
+  export interface ActionCodeSettings {
+    url: string;
+    iOS?: { bundleId: string };
+    android?: {
+      packageName: string;
+      installApp?: boolean;
+      minimumVersion?: string;
     };
+    handleCodeInApp?: boolean;
+    dynamicLinkDomain?: string;
+  }
+
+  export interface IdTokenResult {
     token: string;
     authTime: string;
     issuedAtTime: string;
     expirationTime: string;
-    signInProvider?: string | null;
+    signInProvider: string | null;
+    signInSecondFactor: string | null;
+    claims: Record<string, unknown>;
   }
-
-  export interface ActionCodeSettings {
-    url: string;
-    [key: string]: any;
-  }
-
-  // Utility types
-  export type NextOrObserver<T> = ((a: T) => any) | Observer<T>;
-  export interface Observer<T> {
-    next: (a: T) => void;
-    error?: (error: Error) => void;
-    complete?: () => void;
-  }
-  export type Unsubscribe = () => void;
 }

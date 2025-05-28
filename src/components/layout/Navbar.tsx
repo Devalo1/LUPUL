@@ -1,20 +1,30 @@
 import { useState, useEffect, useRef } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
-import { useAuth } from "../../hooks/useAuth"; // Correct import
-import { useNavigation } from "../../hooks/useNavigation"; // Correct import
+import { useAuth } from "../../hooks/useAuth";
+import { useNavigation } from "../../hooks/useNavigation";
 import "../../styles/Header.css";
-import { isUserAdmin, isUserSpecialist, MAIN_ADMIN_EMAIL } from "../../utils/userRoles";
+import { isUserAccountant } from "../../utils/userRoles";
 import { useCart } from "../../contexts/CartContext";
+import {
+  Home,
+  Store,
+  ShoppingCart,
+  CalendarHeart,
+  UsersRound,
+  FileText,
+  UserCircle2,
+  LogOut,
+  BriefcaseBusiness,
+} from "lucide-react";
 
 const Navbar: React.FC = () => {
-  const { user, logout } = useAuth(); // Removed unused loading
+  const { user, logout } = useAuth();
   const { toggleSideNav } = useNavigation();
   const navigate = useNavigate();
   const location = useLocation();
   const isHomePage = location.pathname === "/";
   const [scrolled, setScrolled] = useState(false);
-  const [isAdmin, setIsAdmin] = useState(false); // State to track admin status
-  const [isSpecialist, setIsSpecialist] = useState(false); // State to track specialist status
+  const [isAccountant, setIsAccountant] = useState(false);
   const { totalItems } = useCart();
   const [shopMenuOpen, setShopMenuOpen] = useState(false);
   const shopMenuRef = useRef<HTMLDivElement>(null);
@@ -39,42 +49,28 @@ const Navbar: React.FC = () => {
   }, []);
 
   useEffect(() => {
-    const checkAdmin = async () => {
+    const checkAccountant = async () => {
       if (user?.email) {
-        // Directly set admin status for specific admin email
-        if (user.email === MAIN_ADMIN_EMAIL) {
-          console.log("Admin status set for primary admin email:", user.email);
-          setIsAdmin(true); // Set the isAdmin state to true here
-          return;
-        }
-        
-        // Otherwise check through the admin verification function
-        const isAdmin = await isUserAdmin(user.email);
-        setIsAdmin(isAdmin); // Update isAdmin state based on the result
-      }
-    };
-
-    const checkSpecialist = async () => {
-      if (user?.email) {
-        // Verificăm dacă utilizatorul are rol de specialist
-        const specialistStatus = await isUserSpecialist(user.email);
-        setIsSpecialist(specialistStatus);
+        // Verificăm dacă utilizatorul are rol de contabil
+        const accountantStatus = await isUserAccountant(user.email);
+        setIsAccountant(accountantStatus);
       }
     };
 
     if (user) {
-      checkAdmin();
-      checkSpecialist(); // Verificăm și rolul de specialist
+      checkAccountant(); // Verificăm și rolul de contabil
     } else {
-      setIsAdmin(false);
-      setIsSpecialist(false);
+      setIsAccountant(false);
     }
   }, [user]);
 
   useEffect(() => {
     // Închide meniul când se face click în afara lui
     const handleClickOutside = (event: MouseEvent) => {
-      if (shopMenuRef.current && !shopMenuRef.current.contains(event.target as Node)) {
+      if (
+        shopMenuRef.current &&
+        !shopMenuRef.current.contains(event.target as Node)
+      ) {
         setShopMenuOpen(false);
       }
     };
@@ -104,11 +100,7 @@ const Navbar: React.FC = () => {
     <header
       className={`header-container ${scrolled ? "scrolled" : ""} ${
         isHomePage && !scrolled ? "bg-transparent" : ""
-      }`}
-      style={{
-        backgroundColor: isHomePage && !scrolled ? "transparent" : undefined,
-        zIndex: 999,
-      }}
+      } custom-header-bg`}
     >
       {/* Elemente decorative românești */}
       <div className="romanian-motif left"></div>
@@ -120,34 +112,52 @@ const Navbar: React.FC = () => {
           {/* Coloana stânga - meniu hamburger */}
           <div className="flex justify-start">
             <button
-              className="menu-button text-white focus:outline-none z-50 p-2 rounded-md"
+              className="menu-button text-white focus:outline-none z-50 p-2 rounded-md menu-btn-bg"
               onClick={toggleSideNav}
               aria-label="Deschide meniul"
-              style={{ backgroundColor: "rgba(0,0,0,0.2)" }}
             >
-              <svg className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M4 12h16M4 18h16" />
+              <svg
+                className="w-6 h-6"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M4 6h16M4 12h16M4 18h16"
+                />
               </svg>
             </button>
           </div>
-          
+
           {/* Coloana centrală - logo */}
           <div className="flex justify-center">
-            <a href="#" onClick={navigateToHome} className="flex items-center justify-center">
-              <img className="h-12 w-auto" src="/images/LC.png" alt="Lupul și Corbul" />
+            <a
+              href="#"
+              onClick={navigateToHome}
+              className="flex items-center justify-center"
+            >
+              <img
+                className="h-12 w-auto"
+                src="/images/LC.png"
+                alt="Lupul și Corbul"
+              />
             </a>
           </div>
-          
+
           {/* Coloana dreapta - coș */}
           <div className="flex justify-end">
-            <Link to="/cart" className="text-white relative p-2">
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
-              </svg>
+            <Link
+              to="/cart"
+              className="nav-link flex flex-col items-center gap-1 text-white hover:bg-blue-600 px-2 py-1 rounded-md transition-all duration-300 font-semibold animate-nav-pop relative cart-align"
+              title="Coș de cumpărături"
+            >
+              <ShoppingCart className="w-9 h-9 mb-1 text-blue-200 cart-icon" />
+              Coș
               {totalItems > 0 && (
-                <span className="absolute -top-2 -right-2 bg-red-600 text-white text-xs w-5 h-5 flex items-center justify-center rounded-full">
-                  {totalItems}
-                </span>
+                <span className="cart-badge">{totalItems}</span>
               )}
             </Link>
           </div>
@@ -156,59 +166,78 @@ const Navbar: React.FC = () => {
         {/* Desktop navigation */}
         <div className="hidden md:flex justify-between items-center h-16">
           {/* Logo la stânga pe desktop */}
-          <a href="#" onClick={navigateToHome} className="flex items-center logo">
-            <img className="h-12 w-auto" src="/images/LC.png" alt="Lupul și Corbul" />
-            <span className="ml-2 text-xl font-bold text-white">Lupul și Corbul</span>
+          <a
+            href="#"
+            onClick={navigateToHome}
+            className="flex items-center logo"
+          >
+            <img
+              className="h-12 w-auto"
+              src="/images/LC.png"
+              alt="Lupul și Corbul"
+            />
+            <span className="ml-2 text-xl font-bold text-white">
+              Lupul și Corbul
+            </span>
           </a>
 
           {/* Meniul desktop */}
-          <div className="flex items-center justify-center space-x-1 lg:space-x-4">
-            <a href="#" onClick={navigateToHome} className="nav-link text-white hover:text-gray-200 px-3 py-2 rounded-md transition duration-300">
+          <div className="flex items-center justify-center space-x-1 lg:space-x-4 animate-fade-in">
+            <a
+              href="#"
+              onClick={navigateToHome}
+              className="nav-link flex flex-col items-center gap-1 text-white hover:bg-blue-600 px-2 py-1 rounded-md transition-all duration-300 font-semibold shadow-md animate-nav-pop nav-text"
+              title="Acasă"
+            >
+              <Home className="w-9 h-9 mb-1 text-blue-200 nav-icon" />
               Acasă
             </a>
-            
-            {/* Dropdown Magazin */}
-            <div className="relative" ref={shopMenuRef}>
-              <button 
+            <div className="relative group" ref={shopMenuRef}>
+              <button
                 onClick={() => setShopMenuOpen(!shopMenuOpen)}
-                className="nav-link text-white hover:text-gray-200 px-3 py-2 rounded-md transition duration-300 flex items-center"
+                className="nav-link flex flex-col items-center gap-1 text-white hover:bg-blue-600 px-2 py-1 rounded-md transition-all duration-300 font-semibold animate-nav-pop nav-text"
+                title="Magazin"
               >
+                <Store className="w-9 h-9 mb-1 text-blue-200 nav-icon" />
                 Magazin
-                <svg 
-                  className={`ml-1 h-4 w-4 transition-transform ${shopMenuOpen ? "rotate-180" : ""}`} 
-                  fill="none" 
-                  viewBox="0 0 24 24" 
+                <svg
+                  className={`ml-1 h-4 w-4 transition-transform ${shopMenuOpen ? "rotate-180" : ""}`}
+                  fill="none"
+                  viewBox="0 0 24 24"
                   stroke="currentColor"
                 >
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M19 9l-7 7-7-7"
+                  />
                 </svg>
               </button>
-              
               {shopMenuOpen && (
-                <div className="absolute left-0 mt-2 w-56 origin-top-left bg-white divide-y divide-gray-100 rounded-md shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none z-50"
-                     style={{ backgroundColor: "rgba(60, 60, 60, 0.95)" }}>
+                <div className="absolute left-0 mt-2 w-56 origin-top-left bg-gradient-to-br from-blue-700 via-blue-500 to-blue-300 text-white divide-y divide-blue-200 rounded-xl shadow-2xl ring-1 ring-black ring-opacity-5 focus:outline-none z-50 animate-dropdown-fade">
                   <div className="py-1">
                     <button
                       onClick={() => navigate("/magazin")}
-                      className="text-white block w-full text-left px-4 py-2 text-sm hover:bg-gray-700"
+                      className="block w-full text-left px-4 py-2 text-sm hover:bg-blue-600 rounded transition-all duration-200"
                     >
                       Toate produsele
                     </button>
                     <button
                       onClick={() => navigateToCategory("traditionale")}
-                      className="text-white block w-full text-left px-4 py-2 text-sm hover:bg-gray-700"
+                      className="block w-full text-left px-4 py-2 text-sm hover:bg-blue-600 rounded transition-all duration-200"
                     >
                       Produse tradiționale
                     </button>
                     <button
                       onClick={() => navigateToCategory("suplimente")}
-                      className="text-white block w-full text-left px-4 py-2 text-sm hover:bg-gray-700"
+                      className="block w-full text-left px-4 py-2 text-sm hover:bg-blue-600 rounded transition-all duration-200"
                     >
                       Suplimente
                     </button>
                     <button
                       onClick={() => navigateToCategory("diverse")}
-                      className="text-white block w-full text-left px-4 py-2 text-sm hover:bg-gray-700"
+                      className="block w-full text-left px-4 py-2 text-sm hover:bg-blue-600 rounded transition-all duration-200"
                     >
                       Diverse
                     </button>
@@ -216,58 +245,77 @@ const Navbar: React.FC = () => {
                 </div>
               )}
             </div>
-            
-            <Link to="/events" className="nav-link text-white hover:text-gray-200 px-3 py-2 rounded-md transition duration-300">
+            <Link
+              to="/cart"
+              className="nav-link flex flex-col items-center gap-1 text-white hover:bg-blue-600 px-2 py-1 rounded-md transition-all duration-300 font-semibold animate-nav-pop relative cart-align"
+              title="Coș de cumpărături"
+            >
+              <ShoppingCart className="w-9 h-9 mb-1 text-blue-200 cart-icon" />
+              Coș
+              {totalItems > 0 && (
+                <span className="cart-badge">{totalItems}</span>
+              )}
+            </Link>
+            <Link
+              to="/events"
+              className="nav-link flex flex-col items-center gap-1 text-white hover:bg-blue-600 px-2 py-1 rounded-md transition-all duration-300 font-semibold animate-nav-pop nav-text"
+              title="Evenimente"
+            >
+              <CalendarHeart className="w-9 h-9 mb-1 text-blue-200 nav-icon" />
               Evenimente
             </Link>
-            <Link to="/about" className="nav-link text-white hover:text-gray-200 px-3 py-2 rounded-md transition duration-300">
+            <Link
+              to="/about"
+              className="nav-link flex flex-col items-center gap-1 text-white hover:bg-blue-600 px-2 py-1 rounded-md transition-all duration-300 font-semibold animate-nav-pop nav-text"
+              title="Despre Noi"
+            >
+              <UsersRound className="w-9 h-9 mb-1 text-blue-200 nav-icon" />
               Despre Noi
             </Link>
-            <Link to="/cart" className="nav-link text-white hover:text-gray-200 px-3 py-2 rounded-md transition duration-300 relative">
-              <span className="flex items-center">
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
-                </svg>
-                {totalItems > 0 && (
-                  <span className="absolute -top-1 -right-1 bg-red-600 text-white text-xs w-5 h-5 flex items-center justify-center rounded-full">
-                    {totalItems}
-                  </span>
-                )}
-              </span>
-            </Link>
-            {isAdmin && (
-              <Link to="/admin" className="nav-link text-white hover:text-gray-200 px-3 py-2 rounded-md transition duration-300">
-                Admin Panel
+            {isAccountant && (
+              <Link
+                to="/accounting"
+                className="nav-link flex flex-col items-center gap-1 text-white hover:bg-blue-600 px-2 py-1 rounded-md transition-all duration-300 font-semibold animate-nav-pop nav-text"
+                title="Contabilitate"
+              >
+                <FileText className="w-9 h-9 mb-1 text-blue-200 nav-icon" />
+                Contabilitate
               </Link>
             )}
-            {isSpecialist && (
-              <Link to="/specialist" className="nav-link text-white hover:text-gray-200 px-3 py-2 rounded-md transition duration-300">
-                Panou Specialist
-              </Link>
-            )}
-            <button 
-              onClick={toggleSideNav} 
-              className="nav-link text-white hover:text-gray-200 px-3 py-2 rounded-md transition duration-300"
+            <button
+              onClick={toggleSideNav}
+              className="nav-link flex flex-col items-center gap-1 text-white hover:bg-blue-600 px-2 py-1 rounded-md transition-all duration-300 font-semibold animate-nav-pop nav-text"
+              title="Servicii"
             >
+              <BriefcaseBusiness className="w-9 h-9 mb-1 text-blue-200 nav-icon" />
               Servicii
             </button>
             {user ? (
               <>
-                <Link to="/dashboard" className="nav-link text-white hover:text-gray-200 px-3 py-2 rounded-md transition duration-300">
+                <Link
+                  to="/dashboard"
+                  className="nav-link flex flex-col items-center gap-1 text-white hover:bg-blue-600 px-2 py-1 rounded-md transition-all duration-300 font-semibold animate-nav-pop nav-text"
+                  title="Contul Meu"
+                >
+                  <UserCircle2 className="w-9 h-9 mb-1 text-blue-200 nav-icon" />
                   Contul Meu
                 </Link>
-                <button 
-                  onClick={handleLogout} 
-                  className="auth-button text-white hover:text-gray-200 px-4 py-2 rounded-md transition duration-300"
+                <button
+                  onClick={handleLogout}
+                  className="auth-button flex flex-col items-center gap-1 bg-gradient-to-r from-red-500 to-red-700 text-white hover:scale-105 px-2 py-1 rounded-md transition-all duration-300 shadow-lg animate-nav-pop nav-text"
+                  title="Deconectare"
                 >
+                  <LogOut className="w-9 h-9 mb-1 text-blue-200 nav-icon" />
                   Deconectare
                 </button>
               </>
             ) : (
-              <Link 
-                to="/login" 
-                className="auth-button text-white hover:text-white px-4 py-2 rounded-md transition duration-300 shadow-md"
+              <Link
+                to="/login"
+                className="auth-button flex flex-col items-center gap-1 bg-gradient-to-r from-green-500 to-green-700 text-white hover:scale-105 px-2 py-1 rounded-md transition-all duration-300 shadow-lg animate-nav-pop nav-text"
+                title="Autentificare"
               >
+                <UserCircle2 className="w-9 h-9 mb-1 text-blue-200 nav-icon" />
                 Autentificare
               </Link>
             )}

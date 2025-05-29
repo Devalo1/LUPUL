@@ -12,6 +12,10 @@ const analyticsSessionKey = "analytics_calls_in_session";
 
 // Helper pentru a determina mediul actual
 const getCurrentEnvironment = () => {
+  // Check if we're on Netlify (production/preview)
+  if (window.location.hostname.includes("netlify.app") || window.location.hostname.includes("lupulsicorbul.com")) {
+    return "production";
+  }
   return isProd 
     ? "production" 
     : (window.location.port === "5174" ? "preview" : "development");
@@ -39,8 +43,8 @@ export const sendAnalyticsData = async (data: Record<string, unknown>): Promise<
       }
     };
 
-    // În mediul de dezvoltare sau preview (orice non-prod pe localhost), folosim strategii pentru a evita CORS
-    if (!isProd) {
+    // În mediul de dezvoltare sau preview (doar pe localhost), folosim strategii pentru a evita CORS
+    if (!isProd && window.location.hostname === "localhost") {
       // Stocăm în session storage pentru debugging
       try {
         const sessionCalls = JSON.parse(sessionStorage.getItem(analyticsSessionKey) || "[]");
@@ -55,7 +59,7 @@ export const sendAnalyticsData = async (data: Record<string, unknown>): Promise<
 
       logger.debug("Analytics (non-production):", enrichedData);
       
-      // Pentru toate mediile non-production, încercăm să folosim proxy-ul local
+      // Pentru toate mediile non-production pe localhost, încercăm să folosim proxy-ul local
       if (currentEnvironment === "development") {
         try {
           // Folosim proxy-ul local configurat în vite.config.ts care gestionează CORS

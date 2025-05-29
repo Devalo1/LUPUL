@@ -16,7 +16,7 @@ export const isPreviewMode = (): boolean => {
   return (
     window.location.port === "5174" || // Port standard pentru preview Vite
     window.location.hostname.includes("preview") || // Subdomain pentru preview
-    window.location.hostname.includes("netlify") || // Netlify preview deployment
+    (window.location.hostname.includes("netlify") && !window.location.hostname.includes("lupulsicorbul.com")) || // Netlify preview deployment
     (import.meta.env.MODE === "production" && !import.meta.env.PROD)
   ); // Build de productie dar nu in productie
 };
@@ -27,7 +27,7 @@ export const isPreviewMode = (): boolean => {
 export const isAnalyticsUrl = (url: string): boolean => {
   return (
     url.includes("lupulsicorbul.com/api/analytics") ||
-    url.includes("/api/analytics-proxy")
+    (url.includes("/api/analytics-proxy") && window.location.hostname === "localhost")
   );
 };
 

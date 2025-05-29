@@ -1,15 +1,20 @@
 // Versiune compatibilă care evită TDZ dar păstrează compatibilitatea cu codul existent
 import { initializeApp } from "firebase/app";
-import { getAuth, GoogleAuthProvider, signInWithRedirect, connectAuthEmulator } from "firebase/auth";
-import { 
-  getFirestore, 
-  connectFirestoreEmulator, 
-  DocumentReference, 
-  CollectionReference, 
-  Query, 
-  WhereFilterOp, 
-  DocumentData, 
-  QueryConstraint, 
+import {
+  getAuth,
+  GoogleAuthProvider,
+  signInWithRedirect,
+  connectAuthEmulator,
+} from "firebase/auth";
+import {
+  getFirestore,
+  connectFirestoreEmulator,
+  DocumentReference,
+  CollectionReference,
+  Query,
+  WhereFilterOp,
+  DocumentData,
+  QueryConstraint,
   OrderByDirection,
   Firestore,
   SetOptions,
@@ -17,18 +22,22 @@ import {
   FieldValue,
   QuerySnapshot,
   DocumentSnapshot,
-  Unsubscribe
+  Unsubscribe,
 } from "firebase/firestore";
-import { 
-  getStorage, 
-  connectStorageEmulator, 
-  ref, 
-  uploadBytes, 
+import {
+  getStorage,
+  connectStorageEmulator,
+  ref,
+  uploadBytes,
   uploadString,
-  getDownloadURL, 
-  deleteObject
+  getDownloadURL,
+  deleteObject,
 } from "firebase/storage";
-import { getFunctions, connectFunctionsEmulator, httpsCallable } from "firebase/functions";
+import {
+  getFunctions,
+  connectFunctionsEmulator,
+  httpsCallable,
+} from "firebase/functions";
 import { getAnalytics, Analytics } from "firebase/analytics";
 
 import { useEmulators, getEmulatorConfig } from "./utils/environment";
@@ -42,7 +51,7 @@ const firebaseConfig = {
   storageBucket: "lupulcorbul.firebasestorage.app",
   messagingSenderId: "312943074536",
   appId: "1:312943074536:web:13fc0660014bc58c5c7d5d",
-  measurementId: "G-38YSZKVXDC"
+  measurementId: "G-38YSZKVXDC",
 };
 
 // Inițializare Firebase
@@ -88,7 +97,7 @@ export {
   storage,
   functions,
   analytics,
-  isInitialized
+  isInitialized,
 };
 
 // Interfețe pentru tipuri de date Firestore
@@ -102,39 +111,50 @@ export const authAPI = {
   signInWithRedirect,
   connectAuthEmulator,
   // Adăugăm toate metodele utilizate în aplicație
-  getAuth
+  getAuth,
 };
 
 export const firestoreAPI = {
   connectFirestoreEmulator,
   // Adăugăm și alte metode pentru compatibilitate
   getFirestore,
-  collection: (db: Firestore, path: string): CollectionReference<DocumentData> => {
+  collection: (
+    db: Firestore,
+    path: string
+  ): CollectionReference<DocumentData> => {
     const { collection } = require("firebase/firestore");
     return collection(db, path);
   },
-  doc: (db: Firestore, path: string, ...pathSegments: string[]): DocumentReference<DocumentData> => {
+  doc: (
+    db: Firestore,
+    path: string,
+    ...pathSegments: string[]
+  ): DocumentReference<DocumentData> => {
     const { doc } = require("firebase/firestore");
     return doc(db, path, ...pathSegments);
   },
-  getDoc: async (docRef: DocumentReference<DocumentData>): Promise<DocumentSnapshot<DocumentData>> => {
+  getDoc: async (
+    docRef: DocumentReference<DocumentData>
+  ): Promise<DocumentSnapshot<DocumentData>> => {
     const { getDoc } = require("firebase/firestore");
     return getDoc(docRef);
   },
-  getDocs: async (query: Query<DocumentData>): Promise<QuerySnapshot<DocumentData>> => {
+  getDocs: async (
+    query: Query<DocumentData>
+  ): Promise<QuerySnapshot<DocumentData>> => {
     const { getDocs } = require("firebase/firestore");
     return getDocs(query);
   },
   setDoc: async (
-    docRef: DocumentReference<DocumentData>, 
-    data: FirestoreDocumentData, 
+    docRef: DocumentReference<DocumentData>,
+    data: FirestoreDocumentData,
     options?: SetOptions
   ): Promise<void> => {
     const { setDoc } = require("firebase/firestore");
     return setDoc(docRef, data, options || { merge: false });
   },
   updateDoc: async (
-    docRef: DocumentReference<DocumentData>, 
+    docRef: DocumentReference<DocumentData>,
     data: FirestoreDocumentData
   ): Promise<void> => {
     const { updateDoc } = require("firebase/firestore");
@@ -145,20 +165,24 @@ export const firestoreAPI = {
     return deleteDoc(docRef);
   },
   addDoc: async (
-    collectionRef: CollectionReference<DocumentData>, 
+    collectionRef: CollectionReference<DocumentData>,
     data: FirestoreDocumentData
   ): Promise<DocumentReference<DocumentData>> => {
     const { addDoc } = require("firebase/firestore");
     return addDoc(collectionRef, data);
   },
   query: (
-    collectionRef: CollectionReference<DocumentData> | Query<DocumentData>, 
+    collectionRef: CollectionReference<DocumentData> | Query<DocumentData>,
     ...queryConstraints: QueryConstraint[]
   ): Query<DocumentData> => {
     const { query } = require("firebase/firestore");
     return query(collectionRef, ...queryConstraints);
   },
-  where: (field: string, opStr: WhereFilterOp, value: unknown): QueryConstraint => {
+  where: (
+    field: string,
+    opStr: WhereFilterOp,
+    value: unknown
+  ): QueryConstraint => {
     const { where } = require("firebase/firestore");
     return where(field, opStr, value);
   },
@@ -207,12 +231,12 @@ export const firestoreAPI = {
     return serverTimestamp();
   },
   onSnapshot: (
-    target: Query<DocumentData> | DocumentReference<DocumentData>, 
+    target: Query<DocumentData> | DocumentReference<DocumentData>,
     ...args: unknown[]
   ): Unsubscribe => {
     const { onSnapshot } = require("firebase/firestore");
     return onSnapshot(target, ...args);
-  }
+  },
 };
 
 export const storageAPI = {
@@ -222,16 +246,16 @@ export const storageAPI = {
     return ref(storage, path);
   },
   uploadBytes: async (
-    storageRef: any, 
-    data: any, 
+    storageRef: any,
+    data: any,
     metadata?: any
   ): Promise<any> => {
     return uploadBytes(storageRef, data, metadata);
   },
   uploadString: async (
-    storageRef: any, 
-    data: string, 
-    format?: any, 
+    storageRef: any,
+    data: string,
+    format?: any,
     metadata?: any
   ): Promise<any> => {
     return uploadString(storageRef, data, format, metadata);
@@ -245,35 +269,39 @@ export const storageAPI = {
   listAll: async (storageRef: any) => {
     const { listAll } = require("firebase/storage");
     return listAll(storageRef);
-  }
+  },
 };
 
 export const functionsAPI = {
   connectFunctionsEmulator,
   getFunctions,
-  httpsCallable
+  httpsCallable,
 };
 
 export const analyticsAPI = {
   getAnalytics,
   logEvent: (
-    analyticsInstance: Analytics | null, 
-    eventName: string, 
+    analyticsInstance: Analytics | null,
+    eventName: string,
     eventParams?: Record<string, unknown>
   ): void => {
     if (analyticsInstance) {
       const { logEvent } = require("firebase/analytics");
       return logEvent(analyticsInstance, eventName, eventParams);
     }
-  }
+  },
 };
 
 // Funcția de inițializare pentru compatibilitate cu codul existent
 export const initializeFirebase = () => {
   // Conectarea la emulatori dacă este necesar
-  if (useEmulators() && typeof window !== "undefined" && !window.__EMULATORS_CONNECTED__) {
+  if (
+    useEmulators() &&
+    typeof window !== "undefined" &&
+    !window.__EMULATORS_CONNECTED__
+  ) {
     logger.info("Conectare la emulatorii Firebase...");
-    
+
     try {
       const emulatorConfig = getEmulatorConfig();
       if (emulatorConfig) {
@@ -290,7 +318,7 @@ export const initializeFirebase = () => {
             logger.error("Eroare la conectarea emulatorului Auth:", e);
           }
         }
-        
+
         if (emulatorConfig.firestore) {
           try {
             connectFirestoreEmulator(
@@ -303,7 +331,7 @@ export const initializeFirebase = () => {
             logger.error("Eroare la conectarea emulatorului Firestore:", e);
           }
         }
-        
+
         if (emulatorConfig.storage) {
           try {
             connectStorageEmulator(
@@ -316,7 +344,7 @@ export const initializeFirebase = () => {
             logger.error("Eroare la conectarea emulatorului Storage:", e);
           }
         }
-        
+
         if (emulatorConfig.functions) {
           try {
             connectFunctionsEmulator(
@@ -329,7 +357,7 @@ export const initializeFirebase = () => {
             logger.error("Eroare la conectarea emulatorului Functions:", e);
           }
         }
-        
+
         // Marcăm emulatorii ca fiind conectați
         window.__EMULATORS_CONNECTED__ = true;
         logger.info("All emulators connected");
@@ -338,7 +366,7 @@ export const initializeFirebase = () => {
       logger.error("Eroare la inițializarea emulatorilor:", error);
     }
   }
-  
+
   logger.info("Firebase already initialized");
   return { app, auth, firestore, storage, functions };
 };

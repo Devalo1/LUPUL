@@ -1,12 +1,11 @@
 [build]
-  command = "VITE_LEGACY_BUILD=true npm run build"
+  command = "npm run build"
   publish = "dist"
   functions = "functions"
 
 [build.environment]
   GENERATE_SOURCEMAP = "false"
   NODE_OPTIONS = "--max-old-space-size=4096"
-  VITE_LEGACY_BUILD = "true"
 
 [dev]
   command = "npm run dev"

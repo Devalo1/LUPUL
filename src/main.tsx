@@ -12,8 +12,8 @@ if (typeof window !== "undefined") {
   initPreviewHelper();
 }
 
-// Intercepție globală pentru cererile analytics în medii de non-producție
-if (typeof window !== "undefined" && !isProd) {
+// Intercepție globală pentru cererile analytics doar în medii de dezvoltare (localhost)
+if (typeof window !== "undefined" && !isProd && window.location.hostname === "localhost") {
   // ===== FETCH INTERCEPTOR =====
   const originalFetch = window.fetch;
   window.fetch = function (resource, init) {

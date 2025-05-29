@@ -1,0 +1,55 @@
+[33mcommit 97a8ac0f5ba2b29cf5fc450093b1d831f37bcb60[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mdeploy-netlify[m[33m, [m[1;31morigin/deploy-netlify[m[33m)[m
+Author: User <user@example.com>
+Date:   Thu May 29 01:44:56 2025 +0300
+
+    fix: bugfixes, improvements, and new accounting features
+
+ PageHeaders.css                                    |   34 [32m+[m[31m-[m
+ firestore.rules                                    |   32 [32m+[m[31m-[m
+ index.html                                         |   21 [32m+[m[31m-[m
+ package-lock.json                                  | 2175 [32m++++++++++[m[31m----------[m
+ package.json                                       |    1 [32m+[m
+ src/components/CVEditForm.tsx                      |  748 [32m+++++[m[31m--[m
+ src/components/ProfilePhotoUploader.tsx            |   90 [32m+[m[31m-[m
+ src/components/ProfileSynchronizer.tsx             |   97 [32m+[m[31m-[m
+ src/components/SpecialistPanel.tsx                 |  258 [32m++[m[31m-[m
+ src/components/SpecialistProfile.tsx               |  290 [32m+[m[31m--[m
+ src/components/SpecialistRoleRequest.tsx           |  258 [32m++[m[31m-[m
+ src/components/SpecialistServices.tsx              |  500 [32m+++[m[31m--[m
+ src/components/SpecialistStatusPanel.tsx           |  199 [32m+[m[31m-[m
+ src/components/TokenRecoveryModal.tsx              |   99 [32m+[m[31m-[m
+ src/components/accounting/AccountingCalendar.tsx   |  642 [32m++++++[m
+ src/components/accounting/AccountingDashboard.tsx  |  191 [32m++[m
+ src/components/accounting/CardReportPanel.tsx      |  129 [32m++[m
+ src/components/accounting/DocumentUpload.tsx       |  280 [32m+++[m
+ src/components/accounting/InvoicePanel.tsx         |  929 [32m+++++++++[m
+ src/components/accounting/SettlementPanel.tsx      |  835 [32m++++++++[m
+ src/components/accounting/StockPanel.tsx           | 1030 [32m+++++++++[m
+ src/components/accounting/ZReportPanel.tsx         |  576 [32m++++++[m
+ src/components/admin/SpecialistManagement.tsx      |  345 [32m++[m[31m--[m
+ .../admin/SpecializationRequestsManager.tsx        |  186 [32m+[m[31m-[m
+ src/components/admin/UserManagement.tsx            |  236 [32m++[m[31m-[m
+ src/components/layout/Navbar.tsx                   |  258 [32m++[m[31m-[m
+ src/components/navigation/SideNavigation.tsx       |  200 [32m+[m[31m-[m
+ src/components/routes/AccountantRoute.tsx          |   97 [32m+[m
+ src/components/routes/AppRoutes.tsx                |  107 [32m+[m[31m-[m
+ src/contexts/AuthContext.tsx                       |    8 [32m+[m
+ src/firebase/tokenBlocker.ts                       |  227 [32m+[m[31m-[m
+ src/hooks/useProfileSync.ts                        |  228 [32m+[m[31m-[m
+ src/hooks/useUserData.ts                           |   17 [32m+[m[31m-[m
+ src/layouts/AccountingLayout.tsx                   |   19 [32m+[m
+ src/pages/AdminAccounting.tsx                      |  523 [32m+++++[m
+ src/pages/AdminPanel.tsx                           |  734 [32m++++[m[31m---[m
+ src/pages/AdminSpecialists.tsx                     |  534 [32m+++[m[31m--[m
+ src/pages/AdminUsers.tsx                           |  612 [32m++++[m[31m--[m
+ src/pages/CreateSessionPage.tsx                    |  294 [32m++[m[31m-[m
+ src/pages/Dashboard.tsx                            |  449 [32m++[m[31m--[m
+ src/pages/EditSessionPage.tsx                      |  258 [32m++[m[31m-[m
+ src/pages/MakeAdmin.tsx                            |  258 [32m++[m[31m-[m
+ src/pages/SpecialistPanel.tsx                      | 1869 [32m+++[m[31m--------------[m
+ src/pages/appointments/DateSelection.tsx           |  149 [32m+[m[31m-[m
+ src/pages/appointments/ServiceSelection.tsx        |  174 [32m+[m[31m-[m
+ src/pages/appointments/SpecialistSelection.tsx     |  476 [32m+++[m[31m--[m
+ src/pages/appointments/TimeSelection.tsx           |  161 [32m+[m[31m-[m
+ src/routes/accountingRoutes.tsx                    |   72 [32m+[m
+ src/routes/appRoutes.tsx                           |  463 [32m+++[

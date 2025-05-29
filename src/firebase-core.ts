@@ -19,7 +19,15 @@ import {
   DocumentSnapshot,
   Unsubscribe
 } from "firebase/firestore";
-import { getStorage, connectStorageEmulator, StorageReference, FirebaseStorage, UploadResult, UploadMetadata, StringFormat } from "firebase/storage";
+import { 
+  getStorage, 
+  connectStorageEmulator, 
+  ref, 
+  uploadBytes, 
+  uploadString,
+  getDownloadURL, 
+  deleteObject
+} from "firebase/storage";
 import { getFunctions, connectFunctionsEmulator, httpsCallable } from "firebase/functions";
 import { getAnalytics, Analytics } from "firebase/analytics";
 
@@ -210,36 +218,31 @@ export const firestoreAPI = {
 export const storageAPI = {
   connectStorageEmulator,
   getStorage,
-  ref: (storage: FirebaseStorage, path: string): StorageReference => {
-    const { ref } = require("firebase/storage");
+  ref: (storage: any, path: string): any => {
     return ref(storage, path);
   },
   uploadBytes: async (
-    storageRef: StorageReference, 
-    data: Uint8Array | ArrayBuffer | Blob | Buffer, 
-    metadata?: UploadMetadata
-  ): Promise<UploadResult> => {
-    const { uploadBytes } = require("firebase/storage");
+    storageRef: any, 
+    data: any, 
+    metadata?: any
+  ): Promise<any> => {
     return uploadBytes(storageRef, data, metadata);
   },
   uploadString: async (
-    storageRef: StorageReference, 
+    storageRef: any, 
     data: string, 
-    format?: StringFormat, 
-    metadata?: UploadMetadata
-  ): Promise<UploadResult> => {
-    const { uploadString } = require("firebase/storage");
+    format?: any, 
+    metadata?: any
+  ): Promise<any> => {
     return uploadString(storageRef, data, format, metadata);
   },
-  getDownloadURL: async (storageRef: StorageReference): Promise<string> => {
-    const { getDownloadURL } = require("firebase/storage");
+  getDownloadURL: async (storageRef: any): Promise<string> => {
     return getDownloadURL(storageRef);
   },
-  deleteObject: async (storageRef: StorageReference): Promise<void> => {
-    const { deleteObject } = require("firebase/storage");
+  deleteObject: async (storageRef: any): Promise<void> => {
     return deleteObject(storageRef);
   },
-  listAll: async (storageRef: StorageReference) => {
+  listAll: async (storageRef: any) => {
     const { listAll } = require("firebase/storage");
     return listAll(storageRef);
   }

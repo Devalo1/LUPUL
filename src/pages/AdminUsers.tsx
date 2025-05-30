@@ -575,85 +575,128 @@ const AdminUsers: React.FC = () => {
                             {" "}
                             {user.appointments}
                           </span>{" "}
-                          programări
+                          programări{" "}
                         </div>
                       </td>
                       <td className="py-4 px-4 whitespace-nowrap">
-                        <button
-                          className="text-blue-600 hover:text-blue-900 mr-3"
-                          onClick={() => handleOpenModal(user)}
-                        >
-                          Detalii
-                        </button>
-                        {!user.isAdmin &&
-                        !user.isSpecialist &&
-                        !user.isAccountant ? (
-                          <div className="space-x-2">
-                            <button
-                              className="text-purple-600 hover:text-purple-900"
-                              onClick={() => makeAdmin(user.id)}
-                            >
-                              Adaugă ca Admin
-                            </button>
-                            <button
-                              className="text-green-600 hover:text-green-900"
-                              onClick={() => makeSpecialist(user.id)}
-                            >
-                              Adaugă ca Specialist
-                            </button>
-                            <button
-                              className="text-teal-600 hover:text-teal-900"
-                              onClick={() => makeAccountant(user.id)}
-                            >
-                              Adaugă ca Contabil
-                            </button>
-                          </div>
-                        ) : user.isAdmin ? (
+                        <div className="flex flex-col gap-2">
                           <button
-                            className="text-red-600 hover:text-red-900"
-                            onClick={() => {
-                              if (
-                                confirm(
-                                  "Sunteți sigur că doriți să revocați rolul de administrator pentru acest utilizator?"
-                                )
-                              ) {
-                                removeAdmin(user.id);
-                              }
-                            }}
+                            className="inline-flex items-center px-3 py-1.5 border border-blue-300 text-sm font-medium rounded-md text-blue-700 bg-blue-50 hover:bg-blue-100 hover:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50 transition-colors duration-200"
+                            onClick={() => handleOpenModal(user)}
                           >
-                            Revocă Admin
+                            Detalii
                           </button>
-                        ) : user.isSpecialist ? (
-                          <button
-                            className="text-red-600 hover:text-red-900"
-                            onClick={() => {
-                              if (
-                                confirm(
-                                  "Sunteți sigur că doriți să revocați rolul de specialist pentru acest utilizator?"
-                                )
-                              ) {
-                                removeSpecialist(user.id);
-                              }
-                            }}
-                          >
-                            Revocă Specialist
-                          </button>
-                        ) : user.isAccountant ? (
-                          <button
-                            className="text-red-600 hover:text-red-900"
-                            onClick={() => {
-                              if (
-                                confirm(
-                                  "Sunteți sigur că doriți să revocați rolul de contabil pentru acest utilizator?"
-                                )
-                              ) {
-                                removeAccountant(user.id);
-                              }
-                            }}
-                          >
-                            Revocă Contabil
-                          </button>
-                        ) : null}
+                          {!user.isAdmin &&
+                          !user.isSpecialist &&
+                          !user.isAccountant ? (
+                            <div className="space-y-3">
+                              <div className="border-2 border-gray-300 rounded-lg p-4 bg-gradient-to-br from-gray-50 to-gray-100 shadow-sm">
+                                <h4 className="text-sm font-bold text-gray-700 mb-3 uppercase tracking-wide flex items-center">
+                                  <span className="w-2 h-2 bg-blue-500 rounded-full mr-2"></span>
+                                  Adaugă Roluri
+                                </h4>
+                                <div className="space-y-3">
+                                  <button
+                                    className="w-full inline-flex items-center justify-center px-4 py-3 border-2 border-purple-400 text-sm font-semibold rounded-lg text-purple-800 bg-gradient-to-r from-purple-50 to-purple-100 hover:from-purple-100 hover:to-purple-200 hover:border-purple-500 focus:outline-none focus:ring-3 focus:ring-purple-300 focus:ring-opacity-50 transition-all duration-200 shadow-md hover:shadow-lg transform hover:-translate-y-0.5"
+                                    onClick={() => makeAdmin(user.id)}
+                                  >
+                                    👑 Adaugă ca Administrator
+                                  </button>
+                                  <button
+                                    className="w-full inline-flex items-center justify-center px-4 py-3 border-2 border-green-400 text-sm font-semibold rounded-lg text-green-800 bg-gradient-to-r from-green-50 to-green-100 hover:from-green-100 hover:to-green-200 hover:border-green-500 focus:outline-none focus:ring-3 focus:ring-green-300 focus:ring-opacity-50 transition-all duration-200 shadow-md hover:shadow-lg transform hover:-translate-y-0.5"
+                                    onClick={() => makeSpecialist(user.id)}
+                                  >
+                                    🩺 Adaugă ca Specialist
+                                  </button>
+                                  <button
+                                    className="w-full inline-flex items-center justify-center px-4 py-3 border-2 border-teal-400 text-sm font-semibold rounded-lg text-teal-800 bg-gradient-to-r from-teal-50 to-teal-100 hover:from-teal-100 hover:to-teal-200 hover:border-teal-500 focus:outline-none focus:ring-3 focus:ring-teal-300 focus:ring-opacity-50 transition-all duration-200 shadow-md hover:shadow-lg transform hover:-translate-y-0.5"
+                                    onClick={() => makeAccountant(user.id)}
+                                  >
+                                    💼 Adaugă ca Contabil
+                                  </button>
+                                </div>
+                              </div>
+                            </div>
+                          ) : user.isAdmin ? (
+                            <div className="border-2 border-red-300 rounded-lg p-4 bg-gradient-to-br from-red-50 to-red-100 shadow-sm">
+                              <h4 className="text-sm font-bold text-red-700 mb-3 uppercase tracking-wide flex items-center">
+                                <span className="w-2 h-2 bg-red-500 rounded-full mr-2"></span>
+                                Rol Actual
+                              </h4>
+                              <div className="bg-white p-3 rounded-lg border border-red-200 mb-3">
+                                <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-purple-100 text-purple-800">
+                                  👑 Administrator
+                                </span>
+                              </div>
+                              <button
+                                className="w-full inline-flex items-center justify-center px-4 py-3 border-2 border-red-400 text-sm font-semibold rounded-lg text-red-800 bg-gradient-to-r from-red-100 to-red-200 hover:from-red-200 hover:to-red-300 hover:border-red-500 focus:outline-none focus:ring-3 focus:ring-red-300 focus:ring-opacity-50 transition-all duration-200 shadow-md hover:shadow-lg"
+                                onClick={() => {
+                                  if (
+                                    confirm(
+                                      "Sunteți sigur că doriți să revocați rolul de administrator pentru acest utilizator?"
+                                    )
+                                  ) {
+                                    removeAdmin(user.id);
+                                  }
+                                }}
+                              >
+                                ❌ Revocă drepturi de Administrator
+                              </button>
+                            </div>
+                          ) : user.isSpecialist ? (
+                            <div className="border-2 border-red-300 rounded-lg p-4 bg-gradient-to-br from-red-50 to-red-100 shadow-sm">
+                              <h4 className="text-sm font-bold text-red-700 mb-3 uppercase tracking-wide flex items-center">
+                                <span className="w-2 h-2 bg-red-500 rounded-full mr-2"></span>
+                                Rol Actual
+                              </h4>
+                              <div className="bg-white p-3 rounded-lg border border-red-200 mb-3">
+                                <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-green-100 text-green-800">
+                                  🩺 Specialist
+                                </span>
+                              </div>
+                              <button
+                                className="w-full inline-flex items-center justify-center px-4 py-3 border-2 border-red-400 text-sm font-semibold rounded-lg text-red-800 bg-gradient-to-r from-red-100 to-red-200 hover:from-red-200 hover:to-red-300 hover:border-red-500 focus:outline-none focus:ring-3 focus:ring-red-300 focus:ring-opacity-50 transition-all duration-200 shadow-md hover:shadow-lg"
+                                onClick={() => {
+                                  if (
+                                    confirm(
+                                      "Sunteți sigur că doriți să revocați rolul de specialist pentru acest utilizator?"
+                                    )
+                                  ) {
+                                    removeSpecialist(user.id);
+                                  }
+                                }}
+                              >
+                                ❌ Revocă drepturi de Specialist
+                              </button>
+                            </div>
+                          ) : user.isAccountant ? (
+                            <div className="border-2 border-red-300 rounded-lg p-4 bg-gradient-to-br from-red-50 to-red-100 shadow-sm">
+                              <h4 className="text-sm font-bold text-red-700 mb-3 uppercase tracking-wide flex items-center">
+                                <span className="w-2 h-2 bg-red-500 rounded-full mr-2"></span>
+                                Rol Actual
+                              </h4>
+                              <div className="bg-white p-3 rounded-lg border border-red-200 mb-3">
+                                <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-teal-100 text-teal-800">
+                                  💼 Contabil
+                                </span>
+                              </div>
+                              <button
+                                className="w-full inline-flex items-center justify-center px-4 py-3 border-2 border-red-400 text-sm font-semibold rounded-lg text-red-800 bg-gradient-to-r from-red-100 to-red-200 hover:from-red-200 hover:to-red-300 hover:border-red-500 focus:outline-none focus:ring-3 focus:ring-red-300 focus:ring-opacity-50 transition-all duration-200 shadow-md hover:shadow-lg"
+                                onClick={() => {
+                                  if (
+                                    confirm(
+                                      "Sunteți sigur că doriți să revocați rolul de contabil pentru acest utilizator?"
+                                    )
+                                  ) {
+                                    removeAccountant(user.id);
+                                  }
+                                }}
+                              >
+                                ❌ Revocă drepturi de Contabil
+                              </button>
+                            </div>
+                          ) : null}
+                        </div>
                       </td>
                     </tr>
                   ))
@@ -735,7 +778,6 @@ const AdminUsers: React.FC = () => {
                         : "Utilizator"}
                 </div>
               </div>
-
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <p className="text-sm font-medium text-gray-500">
@@ -788,66 +830,133 @@ const AdminUsers: React.FC = () => {
                     {selectedUser.appointments || 0}
                   </p>
                 </div>
-              </div>
-
+              </div>{" "}
               <div className="pt-4 border-t border-gray-200">
-                <h5 className="text-sm font-medium text-gray-500 mb-2">
-                  Acțiuni
-                </h5>
-                {!selectedUser.isAdmin && !selectedUser.isSpecialist ? (
-                  <div className="space-y-2">
-                    <button
-                      onClick={() => {
-                        makeAdmin(selectedUser.id);
-                        handleCloseModal();
-                      }}
-                      className="w-full px-4 py-2 bg-purple-600 text-white rounded-md hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-purple-500"
-                    >
-                      Adaugă ca Administrator
-                    </button>
-                    <button
-                      onClick={() => {
-                        makeSpecialist(selectedUser.id);
-                        handleCloseModal();
-                      }}
-                      className="w-full px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500"
-                    >
-                      Adaugă ca Specialist
-                    </button>
+                <h5 className="text-sm font-medium text-gray-500 mb-3">
+                  Gestionare Roluri
+                </h5>{" "}
+                {!selectedUser.isAdmin &&
+                !selectedUser.isSpecialist &&
+                !selectedUser.isAccountant ? (
+                  <div className="space-y-4">
+                    <div className="border-2 border-gray-300 rounded-lg p-5 bg-gradient-to-br from-gray-50 to-gray-100 shadow-sm">
+                      <h6 className="text-sm font-bold text-gray-700 mb-4 uppercase tracking-wide flex items-center">
+                        <span className="w-2 h-2 bg-blue-500 rounded-full mr-2"></span>
+                        Adaugă Roluri
+                      </h6>
+                      <div className="space-y-3">
+                        <button
+                          onClick={() => {
+                            makeAdmin(selectedUser.id);
+                            handleCloseModal();
+                          }}
+                          className="w-full inline-flex items-center justify-center px-5 py-3 border-2 border-purple-400 text-sm font-semibold rounded-lg text-purple-800 bg-gradient-to-r from-purple-50 to-purple-100 hover:from-purple-100 hover:to-purple-200 hover:border-purple-500 focus:outline-none focus:ring-3 focus:ring-purple-300 focus:ring-opacity-50 transition-all duration-200 shadow-md hover:shadow-lg transform hover:-translate-y-0.5"
+                        >
+                          👑 Adaugă ca Administrator
+                        </button>
+                        <button
+                          onClick={() => {
+                            makeSpecialist(selectedUser.id);
+                            handleCloseModal();
+                          }}
+                          className="w-full inline-flex items-center justify-center px-5 py-3 border-2 border-green-400 text-sm font-semibold rounded-lg text-green-800 bg-gradient-to-r from-green-50 to-green-100 hover:from-green-100 hover:to-green-200 hover:border-green-500 focus:outline-none focus:ring-3 focus:ring-green-300 focus:ring-opacity-50 transition-all duration-200 shadow-md hover:shadow-lg transform hover:-translate-y-0.5"
+                        >
+                          🩺 Adaugă ca Specialist
+                        </button>
+                        <button
+                          onClick={() => {
+                            makeAccountant(selectedUser.id);
+                            handleCloseModal();
+                          }}
+                          className="w-full inline-flex items-center justify-center px-5 py-3 border-2 border-teal-400 text-sm font-semibold rounded-lg text-teal-800 bg-gradient-to-r from-teal-50 to-teal-100 hover:from-teal-100 hover:to-teal-200 hover:border-teal-500 focus:outline-none focus:ring-3 focus:ring-teal-300 focus:ring-opacity-50 transition-all duration-200 shadow-md hover:shadow-lg transform hover:-translate-y-0.5"
+                        >
+                          💼 Adaugă ca Contabil
+                        </button>
+                      </div>
+                    </div>
                   </div>
                 ) : selectedUser.isAdmin ? (
-                  <button
-                    onClick={() => {
-                      if (
-                        confirm(
-                          "Sunteți sigur că doriți să revocați rolul de administrator pentru acest utilizator?"
-                        )
-                      ) {
-                        removeAdmin(selectedUser.id);
-                        handleCloseModal();
-                      }
-                    }}
-                    className="w-full px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500"
-                  >
-                    Revocă drepturi de Administrator
-                  </button>
-                ) : (
-                  <button
-                    onClick={() => {
-                      if (
-                        confirm(
-                          "Sunteți sigur că doriți să revocați rolul de specialist pentru acest utilizator?"
-                        )
-                      ) {
-                        removeSpecialist(selectedUser.id);
-                        handleCloseModal();
-                      }
-                    }}
-                    className="w-full px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500"
-                  >
-                    Revocă drepturi de Specialist
-                  </button>
-                )}
+                  <div className="border-2 border-red-300 rounded-lg p-5 bg-gradient-to-br from-red-50 to-red-100 shadow-sm">
+                    <h6 className="text-sm font-bold text-red-700 mb-4 uppercase tracking-wide flex items-center">
+                      <span className="w-2 h-2 bg-red-500 rounded-full mr-2"></span>
+                      Rol Actual
+                    </h6>
+                    <div className="bg-white p-4 rounded-lg border border-red-200 mb-4 shadow-sm">
+                      <span className="inline-flex items-center px-4 py-2 rounded-full text-sm font-medium bg-purple-100 text-purple-800 shadow-sm">
+                        👑 Administrator
+                      </span>
+                    </div>
+                    <button
+                      onClick={() => {
+                        if (
+                          confirm(
+                            "Sunteți sigur că doriți să revocați rolul de administrator pentru acest utilizator?"
+                          )
+                        ) {
+                          removeAdmin(selectedUser.id);
+                          handleCloseModal();
+                        }
+                      }}
+                      className="w-full inline-flex items-center justify-center px-5 py-3 border-2 border-red-400 text-sm font-semibold rounded-lg text-red-800 bg-gradient-to-r from-red-100 to-red-200 hover:from-red-200 hover:to-red-300 hover:border-red-500 focus:outline-none focus:ring-3 focus:ring-red-300 focus:ring-opacity-50 transition-all duration-200 shadow-md hover:shadow-lg"
+                    >
+                      ❌ Revocă drepturi de Administrator
+                    </button>
+                  </div>
+                ) : selectedUser.isSpecialist ? (
+                  <div className="border-2 border-red-300 rounded-lg p-5 bg-gradient-to-br from-red-50 to-red-100 shadow-sm">
+                    <h6 className="text-sm font-bold text-red-700 mb-4 uppercase tracking-wide flex items-center">
+                      <span className="w-2 h-2 bg-red-500 rounded-full mr-2"></span>
+                      Rol Actual
+                    </h6>
+                    <div className="bg-white p-4 rounded-lg border border-red-200 mb-4 shadow-sm">
+                      <span className="inline-flex items-center px-4 py-2 rounded-full text-sm font-medium bg-green-100 text-green-800 shadow-sm">
+                        🩺 Specialist
+                      </span>
+                    </div>
+                    <button
+                      onClick={() => {
+                        if (
+                          confirm(
+                            "Sunteți sigur că doriți să revocați rolul de specialist pentru acest utilizator?"
+                          )
+                        ) {
+                          removeSpecialist(selectedUser.id);
+                          handleCloseModal();
+                        }
+                      }}
+                      className="w-full inline-flex items-center justify-center px-5 py-3 border-2 border-red-400 text-sm font-semibold rounded-lg text-red-800 bg-gradient-to-r from-red-100 to-red-200 hover:from-red-200 hover:to-red-300 hover:border-red-500 focus:outline-none focus:ring-3 focus:ring-red-300 focus:ring-opacity-50 transition-all duration-200 shadow-md hover:shadow-lg"
+                    >
+                      ❌ Revocă drepturi de Specialist
+                    </button>
+                  </div>
+                ) : selectedUser.isAccountant ? (
+                  <div className="border-2 border-red-300 rounded-lg p-5 bg-gradient-to-br from-red-50 to-red-100 shadow-sm">
+                    <h6 className="text-sm font-bold text-red-700 mb-4 uppercase tracking-wide flex items-center">
+                      <span className="w-2 h-2 bg-red-500 rounded-full mr-2"></span>
+                      Rol Actual
+                    </h6>
+                    <div className="bg-white p-4 rounded-lg border border-red-200 mb-4 shadow-sm">
+                      <span className="inline-flex items-center px-4 py-2 rounded-full text-sm font-medium bg-teal-100 text-teal-800 shadow-sm">
+                        💼 Contabil
+                      </span>
+                    </div>
+                    <button
+                      onClick={() => {
+                        if (
+                          confirm(
+                            "Sunteți sigur că doriți să revocați rolul de contabil pentru acest utilizator?"
+                          )
+                        ) {
+                          removeAccountant(selectedUser.id);
+                          handleCloseModal();
+                        }
+                      }}
+                      className="w-full inline-flex items-center justify-center px-5 py-3 border-2 border-red-400 text-sm font-semibold rounded-lg text-red-800 bg-gradient-to-r from-red-100 to-red-200 hover:from-red-200 hover:to-red-300 hover:border-red-500 focus:outline-none focus:ring-3 focus:ring-red-300 focus:ring-opacity-50 transition-all duration-200 shadow-md hover:shadow-lg"
+                    >
+                      ❌ Revocă drepturi de Contabil
+                    </button>
+                  </div>
+                ) : null}
               </div>
             </div>
           </div>

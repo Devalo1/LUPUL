@@ -3,7 +3,7 @@ import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../../hooks/useAuth";
 import { useNavigation } from "../../hooks/useNavigation";
 import "../../styles/Header.css";
-import { isUserAccountant } from "../../utils/userRoles";
+import { isUserAccountant, isUserAdmin } from "../../utils/userRoles";
 import { useCart } from "../../contexts/CartContext";
 import {
   Home,
@@ -15,6 +15,7 @@ import {
   UserCircle2,
   LogOut,
   BriefcaseBusiness,
+  Settings,
 } from "lucide-react";
 
 const Navbar: React.FC = () => {
@@ -25,6 +26,7 @@ const Navbar: React.FC = () => {
   const isHomePage = location.pathname === "/";
   const [scrolled, setScrolled] = useState(false);
   const [isAccountant, setIsAccountant] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false);
   const { totalItems } = useCart();
   const [shopMenuOpen, setShopMenuOpen] = useState(false);
   const shopMenuRef = useRef<HTMLDivElement>(null);
@@ -47,20 +49,24 @@ const Navbar: React.FC = () => {
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
-
   useEffect(() => {
     const checkAccountant = async () => {
       if (user?.email) {
         // Verificăm dacă utilizatorul are rol de contabil
         const accountantStatus = await isUserAccountant(user.email);
         setIsAccountant(accountantStatus);
+
+        // Verificăm dacă utilizatorul are rol de admin
+        const adminStatus = await isUserAdmin(user.email);
+        setIsAdmin(adminStatus);
       }
     };
 
     if (user) {
-      checkAccountant(); // Verificăm și rolul de contabil
+      checkAccountant(); // Verificăm și rolul de contabil și admin
     } else {
       setIsAccountant(false);
+      setIsAdmin(false);
     }
   }, [user]);
 
@@ -271,7 +277,7 @@ const Navbar: React.FC = () => {
             >
               <UsersRound className="w-9 h-9 mb-1 text-blue-200 nav-icon" />
               Despre Noi
-            </Link>
+            </Link>{" "}
             {isAccountant && (
               <Link
                 to="/accounting"
@@ -280,6 +286,16 @@ const Navbar: React.FC = () => {
               >
                 <FileText className="w-9 h-9 mb-1 text-blue-200 nav-icon" />
                 Contabilitate
+              </Link>
+            )}{" "}
+            {isAdmin && (
+              <Link
+                to="/admin"
+                className="nav-link flex flex-col items-center gap-1 text-white hover:bg-blue-600 px-2 py-1 rounded-md transition-all duration-300 font-semibold animate-nav-pop nav-text"
+                title="Panou Admin"
+              >
+                <Settings className="w-9 h-9 mb-1 text-blue-200 nav-icon" />
+                Panou Admin
               </Link>
             )}
             <button

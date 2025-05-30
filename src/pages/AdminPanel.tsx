@@ -395,7 +395,6 @@ const AdminPanel: React.FC = () => {
                 </a>
               </div>
             </div>
-
             <div className="bg-green-50 border border-green-200 rounded-lg p-5 hover:shadow-md transition-shadow">
               <h3 className="font-bold text-green-800 mb-2">Evenimente</h3>
               <p className="text-sm mb-4">
@@ -422,7 +421,6 @@ const AdminPanel: React.FC = () => {
                 </a>
               </div>
             </div>
-
             <div className="bg-purple-50 border border-purple-200 rounded-lg p-5 hover:shadow-md transition-shadow">
               <h3 className="font-bold text-purple-800 mb-2">Utilizatori</h3>
               <p className="text-sm mb-4">
@@ -448,8 +446,7 @@ const AdminPanel: React.FC = () => {
                   👨‍⚕️ Gestionare specialiști
                 </a>
               </div>
-            </div>
-
+            </div>{" "}
             <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-5 hover:shadow-md transition-shadow">
               <h3 className="font-bold text-yellow-800 mb-2">Conținut</h3>
               <p className="text-sm mb-4">
@@ -469,8 +466,32 @@ const AdminPanel: React.FC = () => {
                   ➕ Adaugă articol nou
                 </a>
               </div>
+            </div>            <div className="bg-blue-50 border border-blue-200 rounded-lg p-5 hover:shadow-md transition-shadow">
+              <h3 className="font-bold text-blue-800 mb-2">Analytics</h3>
+              <p className="text-sm mb-4">
+                Analizează comportamentul utilizatorilor și statistici de
+                citire.
+              </p>              <div className="flex flex-col space-y-2">
+                <a
+                  href="/admin/userinfo"
+                  className="text-blue-600 hover:underline text-sm"
+                >
+                  📊 Panou Analytics
+                </a>
+                <a
+                  href="/admin/userinfo"
+                  className="text-blue-600 hover:underline text-sm"
+                >
+                  👤 Angajament utilizatori
+                </a>
+                <a
+                  href="/admin/userinfo"
+                  className="text-blue-600 hover:underline text-sm"
+                >
+                  📈 Rapoarte de citire
+                </a>
+              </div>
             </div>
-
             <div className="bg-red-50 border border-red-200 rounded-lg p-5 hover:shadow-md transition-shadow">
               <h3 className="font-bold text-red-800 mb-2">Comenzi</h3>
               <p className="text-sm mb-4">
@@ -491,7 +512,6 @@ const AdminPanel: React.FC = () => {
                 </a>
               </div>
             </div>
-
             <div className="bg-teal-50 border border-teal-200 rounded-lg p-5 hover:shadow-md transition-shadow">
               <h3 className="font-bold text-teal-800 mb-2">Contabilitate</h3>
               <p className="text-sm mb-4">
@@ -506,7 +526,6 @@ const AdminPanel: React.FC = () => {
                 </a>
               </div>
             </div>
-
             <div className="bg-indigo-50 border border-indigo-200 rounded-lg p-5 hover:shadow-md transition-shadow">
               <h3 className="font-bold text-indigo-800 mb-2">Setări</h3>
               <p className="text-sm mb-4">Configurează setările aplicației.</p>
@@ -952,8 +971,7 @@ const AdminPanel: React.FC = () => {
                 Utilizatori
               </h4>
               <p className="text-2xl font-bold text-gray-800">891</p>
-            </div>
-            <div className="bg-gray-50 rounded-lg p-4 text-center">
+            </div>            <div className="bg-gray-50 rounded-lg p-4 text-center">
               <h4 className="text-sm font-medium text-gray-500 mb-1">
                 Evenimente
               </h4>

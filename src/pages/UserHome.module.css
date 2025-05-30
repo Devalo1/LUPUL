@@ -1,0 +1,67 @@
+/* UserHome CSS Module */
+
+.progressBar {
+  transition: width 0.3s ease-in-out;
+}
+
+.romanianPatternBackground {
+  background-image: url("/images/romanian-pattern.png");
+  background-repeat: repeat;
+  background-size: auto;
+}
+
+.romanianMotifBackground {
+  background-image: url("/images/romanian-motif.svg");
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: contain;
+}
+
+.readingProgressContainer {
+  position: relative;
+  height: 4px;
+  background-color: #e5e7eb;
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.readingProgressBar {
+  height: 100%;
+  background-color: #3b82f6;
+  border-radius: 2px;
+  transition: width 0.3s ease-in-out;
+}
+
+.articleCard {
+  transition:
+    transform 0.2s ease-in-out,
+    box-shadow 0.2s ease-in-out;
+}
+
+.articleCard:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.decorativeSection {
+  position: relative;
+  overflow: hidden;
+}
+
+.decorativeSection::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  opacity: 0.1;
+  pointer-events: none;
+}
+
+/* Fix for img loading attribute Safari compatibility */
+.galleryImage {
+  width: 100%;
+  height: 192px; /* h-48 equivalent */
+  object-fit: cover;
+}

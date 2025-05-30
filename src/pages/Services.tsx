@@ -176,23 +176,25 @@ const Services: React.FC = () => {
                 </div>
                 <div className="absolute inset-0 bg-gradient-to-r from-black/40 to-transparent md:hidden"></div>
               </div>
-              
               <div className="md:w-3/5 p-8 md:p-12">
                 <h2 className="text-3xl font-bold text-green-700 mb-4">Terapie, reconectare și sprijin</h2>
-                <p className="text-gray-700 text-lg mb-6">
-                  Oferim un spațiu sigur pentru suflet – ședințe de terapie holistică, reconectare cu natura, 
-                  discuții deschise și grupuri de sprijin. Pentru cei care vor mai mult decât un simplu „e ok".
+                <p className="text-gray-700 text-lg mb-4">
+                  Oferim un spațiu sigur pentru suflet și corp – ședințe de terapie holistică, reconectare cu natura, discuții deschise și grupuri de sprijin. Pentru cei care vor mai mult decât un simplu „e ok".
+                </p>
+                <p className="text-gray-700 text-lg mb-4">
+                  <span className="font-semibold text-green-700">Terapie personalizată cu AI și specialiști</span><br/>
+                  <span className="font-medium">Terapie psihică</span> – Sprijin pentru suflet, consiliere, gestionarea stresului, anxietății, depresiei și dezvoltare personală.<br/>
+                  <span className="font-medium">Terapie fizică pentru corp</span> – Recomandări pentru relaxare, exerciții, somn, respirație, mișcare și recuperare fizică, adaptate stilului tău de viață și nevoilor tale. AI-ul nostru analizează răspunsurile tale și îți oferă un diagnostic orientativ și un plan de tratament personalizat, iar dacă este nevoie, vei fi direcționat către un specialist uman.
                 </p>
                 <p className="text-gray-700 text-lg mb-8">
-                  Prin abordarea noastră integrativă, te ajutăm să găsești echilibrul și să descoperi 
-                  resursele interioare necesare pentru a face față provocărilor vieții moderne.
+                  Prin abordarea noastră integrativă, te ajutăm să găsești echilibrul și să descoperi resursele interioare necesare pentru a face față provocărilor vieții moderne. Toate recomandările sunt confidențiale, rapide și pot fi ajustate împreună cu un expert.
                 </p>
-                <button 
-                  onClick={() => document.getElementById("contact-form")?.scrollIntoView({ behavior: "smooth" })}
+                <Link 
+                  to="/terapie"
                   className="inline-block px-6 py-3 bg-green-600 text-white font-medium rounded-lg hover:bg-green-700 transition duration-300 shadow-md"
                 >
                   Programează o sesiune
-                </button>
+                </Link>
               </div>
             </div>
           </section>

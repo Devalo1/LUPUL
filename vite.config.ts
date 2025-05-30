@@ -4,6 +4,7 @@ import path from "path";
 import { visualizer } from "rollup-plugin-visualizer";
 import compression from "vite-plugin-compression";
 import type { ProxyOptions } from "vite";
+/// <reference types="vitest" />
 
 export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd());
@@ -316,7 +317,6 @@ export default defineConfig(({ mode }) => {
       __LEGACY_BUILD__: isLegacyBuild,
       __PREVENT_TDZ__: true,
     },
-
     assetsInclude: [
       "**/*.png",
       "**/*.jpg",
@@ -324,5 +324,17 @@ export default defineConfig(({ mode }) => {
       "**/*.gif",
       "**/*.svg",
     ],
+
+    test: {
+      globals: true,
+      environment: "jsdom",
+      setupFiles: ["./src/test/setup.ts"],
+      css: true,
+      reporters: ["verbose"],
+      coverage: {
+        reporter: ["text", "json", "html"],
+        exclude: ["node_modules/", "src/test/"],
+      },
+    },
   };
 });

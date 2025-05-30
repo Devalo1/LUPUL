@@ -22,11 +22,15 @@ const NotFound = lazyLoad(() => import("../pages/NotFound"));
 const Services = lazyLoad(() => import("../pages/Services"));
 const PrivacyPolicy = lazyLoad(() => import("../pages/PrivacyPolicy"));
 const Ong = lazyLoad(() => import("../pages/Ong"));
+const Terapie = lazyLoad(() => import("../pages/Terapie"));
+const TerapiePsihica = lazyLoad(() => import("../pages/terapie/Psihica"));
+const TerapieFizica = lazyLoad(() => import("../pages/terapie/Fizica"));
 
 // Import lazy pentru paginile ce necesită autentificare
 const Dashboard = lazyLoad(() => import("../pages/Dashboard"));
 const UserHome = lazyLoad(() => import("../pages/UserHome"));
 const Profile = lazyLoad(() => import("../pages/Profile"));
+const ProfileInfo = lazyLoad(() => import("../pages/ProfileInfo"));
 const Checkout = lazyLoad(() => import("../pages/Checkout"));
 const CheckoutSuccess = lazyLoad(() => import("../pages/CheckoutSuccess"));
 const Appointments = lazyLoad(() => import("../pages/Appointments"));
@@ -48,8 +52,11 @@ const AdminSettings = lazyLoad(() => import("../pages/AdminSettings"));
 // Import pentru pagina de administrare comenzi
 const AdminOrders = lazyLoad(() => import("../pages/AdminOrders"));
 const AdminAccounting = lazyLoad(() => import("../pages/AdminAccounting"));
+const AdminAnalytics = lazyLoad(() => import("../pages/AdminAnalytics"));
 // Import for specialist panel
 const SpecialistPanel = lazyLoad(() => import("../pages/SpecialistPanel"));
+// Import for user profiles admin
+const UserProfilesAdmin = lazyLoad(() => import("../pages/UserProfilesAdmin"));
 
 /**
  * Componenta principală pentru definirea rutelor aplicației
@@ -92,17 +99,14 @@ const AppRoutes: React.FC = () => {
         path="/events/:id"
         element={<LazyComponent component={<EventDetails />} />}
       />
-
       {/* Redirecționăm /products către /magazin pentru a unifica experiența */}
       <Route path="/products" element={<Navigate replace to="/magazin" />} />
       <Route
         path="/products/:categorySlug"
         element={<Navigate replace to="/magazin?category=:categorySlug" />}
       />
-
       {/* Magazin rămâne ruta principală pentru vizualizarea produselor */}
       <Route path="/magazin" element={<LazyComponent component={<Shop />} />} />
-
       <Route path="/cart" element={<LazyComponent component={<Cart />} />} />
       <Route
         path="/servicii"
@@ -112,16 +116,17 @@ const AppRoutes: React.FC = () => {
         path="/privacy-policy"
         element={<LazyComponent component={<PrivacyPolicy />} />}
       />
-
       {/* Rută alternativă pentru detalii produs la singular */}
       <Route
         path="/product/:id"
         element={<LazyComponent component={<ProductDetails />} />}
       />
-
       {/* Rută pentru ONG */}
       <Route path="/ong" element={<LazyComponent component={<Ong />} />} />
-
+      {/* Rută pentru Terapie */}
+      <Route path="/terapie" element={<LazyComponent component={<Terapie />} />} />
+      <Route path="/terapie/psihica" element={<LazyComponent component={<TerapiePsihica />} />} />
+      <Route path="/terapie/fizica" element={<LazyComponent component={<TerapieFizica />} />} />
       {/* Rute protejate (necesită autentificare) */}
       <Route
         path="/dashboard"
@@ -130,12 +135,20 @@ const AppRoutes: React.FC = () => {
             <LazyComponent component={<Dashboard />} />
           </ProtectedRoute>
         }
-      />
+      />{" "}
       <Route
         path="/profile"
         element={
           <ProtectedRoute>
             <LazyComponent component={<Profile />} />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/profile/info"
+        element={
+          <ProtectedRoute>
+            <LazyComponent component={<ProfileInfo />} />
           </ProtectedRoute>
         }
       />
@@ -147,19 +160,16 @@ const AppRoutes: React.FC = () => {
           </ProtectedRoute>
         }
       />
-
       {/* Pagina de confirmare comandă - accesibilă fără autentificare */}
       <Route
         path="/checkout/success"
         element={<LazyComponent component={<CheckoutSuccess />} />}
       />
-
       {/* Rută alternativă pentru checkout success (cu liniuță) */}
       <Route
         path="/checkout-success"
         element={<LazyComponent component={<CheckoutSuccess />} />}
       />
-
       <Route
         path="/user-home"
         element={
@@ -168,7 +178,6 @@ const AppRoutes: React.FC = () => {
           </ProtectedRoute>
         }
       />
-
       {/* Rută pentru programări */}
       <Route
         path="/appointments"
@@ -203,7 +212,6 @@ const AppRoutes: React.FC = () => {
           </SpecialistRoute>
         }
       />
-
       {/* Rută pentru panoul de contabilitate */}
       <Route
         path="/accounting/:panel"
@@ -217,7 +225,6 @@ const AppRoutes: React.FC = () => {
         path="/accounting"
         element={<Navigate to="/accounting/dashboard" replace />}
       />
-
       {/* Rute administrative (necesită rol de admin) */}
       <Route
         path="/admin"
@@ -283,7 +290,6 @@ const AppRoutes: React.FC = () => {
           </AdminRoute>
         }
       />
-
       {/* Rută alternativă pentru adăugarea produselor */}
       <Route
         path="/admin/add-product"
@@ -293,7 +299,6 @@ const AppRoutes: React.FC = () => {
           </AdminRoute>
         }
       />
-
       {/* Rută pentru programări admin */}
       <Route
         path="/admin/appointments"
@@ -303,7 +308,6 @@ const AppRoutes: React.FC = () => {
           </AdminRoute>
         }
       />
-
       {/* Rută alternativă pentru adăugarea evenimentelor */}
       <Route
         path="/admin/add-event"
@@ -313,7 +317,6 @@ const AppRoutes: React.FC = () => {
           </AdminRoute>
         }
       />
-
       {/* Rută pentru comenzi admin */}
       <Route
         path="/admin/orders"
@@ -331,7 +334,6 @@ const AppRoutes: React.FC = () => {
           </AdminRoute>
         }
       />
-
       {/* Rute pentru noile pagini admin create */}
       <Route
         path="/admin/events"
@@ -349,7 +351,6 @@ const AppRoutes: React.FC = () => {
           </AdminRoute>
         }
       />
-
       {/* Adăugăm rutele pentru adăugarea și editarea articolelor */}
       <Route
         path="/admin/articles/add"
@@ -367,7 +368,6 @@ const AppRoutes: React.FC = () => {
           </AdminRoute>
         }
       />
-
       <Route
         path="/admin/settings"
         element={
@@ -375,8 +375,24 @@ const AppRoutes: React.FC = () => {
             <LazyComponent component={<AdminSettings />} />
           </AdminRoute>
         }
+      />      {/* Ruta pentru profilurile utilizatorilor cu analytics */}
+      <Route
+        path="/admin/users-profiles"
+        element={
+          <AdminRoute>
+            <LazyComponent component={<UserProfilesAdmin />} />
+          </AdminRoute>
+        }
       />
-
+      {/* Ruta pentru analytics/info utilizatori */}
+      <Route
+        path="/admin/userinfo"
+        element={
+          <AdminRoute>
+            <LazyComponent component={<AdminAnalytics />} />
+          </AdminRoute>
+        }
+      />
       {/* Ruta pentru pagini inexistente */}
       <Route path="*" element={<LazyComponent component={<NotFound />} />} />
     </Routes>

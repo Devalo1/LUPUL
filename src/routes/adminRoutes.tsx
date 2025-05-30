@@ -11,6 +11,7 @@ import MakeAdmin from "../pages/MakeAdmin";
 import AdminArticles from "../pages/AdminArticles";
 import ArticleEdit from "../pages/ArticleEdit";
 import AdminEvents from "../pages/AdminEvents"; // Adăugat import pentru AdminEvents
+import AdminAnalytics from "../pages/AdminAnalytics";
 import { Navigate } from "react-router-dom";
 
 /**
@@ -105,13 +106,19 @@ export const adminRoutes: AdminRoute[] = [
     title: "Permisiuni Admin",
     description: "Gestionează permisiunile de administrator",
     icon: "admin"
-  },
-  {
+  },  {
     path: "/admin/articles",
     element: <AdminArticles />,
     title: "Articole",
     description: "Gestionează articolele",
     icon: "articles"
+  },
+  {
+    path: "/admin/userinfo",
+    element: <AdminAnalytics />,
+    title: "Informații Utilizatori",
+    description: "Analizează comportamentul utilizatorilor și statistici",
+    icon: "userinfo"
   },
   {
     path: "/admin/edit-article/:id",

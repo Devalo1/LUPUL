@@ -1,0 +1,78 @@
+.terapie-chat-container {
+  max-width: 600px;
+  margin: 0 auto;
+  padding: 24px;
+}
+
+.terapie-chat-box {
+  min-height: 200px;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  padding: 16px;
+  margin-bottom: 16px;
+  background: #fafafa;
+}
+
+.terapie-chat-msg {
+  margin-bottom: 12px;
+  padding: 6px 10px;
+  border-radius: 6px;
+  max-width: 90%;
+  word-break: break-word;
+}
+
+.terapie-chat-msg.user {
+  background: #e3f2fd;
+  text-align: right;
+  margin-left: auto;
+}
+
+.terapie-chat-msg.ai {
+  background: #e8f5e9;
+  text-align: left;
+  margin-right: auto;
+}
+
+.terapie-chat-error {
+  color: #d32f2f;
+  margin-top: 8px;
+}
+
+.terapie-chat-input-row {
+  display: flex;
+  gap: 8px;
+}
+
+.terapie-chat-input {
+  flex: 1;
+  padding: 8px;
+  border-radius: 4px;
+  border: 1px solid #ccc;
+}
+
+.terapie-nav-row {
+  display: flex;
+  justify-content: center;
+  gap: 16px;
+  margin-bottom: 32px;
+}
+
+.terapie-nav-btn-psihica {
+  padding: 12px 24px;
+  background: #2e7d32;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.terapie-nav-btn-fizica {
+  padding: 12px 24px;
+  background: #1565c0;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+}

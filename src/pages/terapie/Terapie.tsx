@@ -1,18 +1,20 @@
 import React, { useState } from "react";
 import { getTherapyResponse } from "../../services/openaiService";
+import { useNavigate } from "react-router-dom";
 import "../../assets/styles/terapie-chat.css";
 
-const Fizica: React.FC = () => {
+const Terapie: React.FC = () => {
   const [messages, setMessages] = useState([
     {
       role: "system",
       content:
-        "Ești un terapeut virtual specializat în terapie fizică, recuperare și sănătate corporală. Oferă recomandări pentru relaxare, exerciții, somn, respirație, mișcare și recuperare fizică, adaptate stilului de viață și nevoilor utilizatorului. Fii profesionist, empatic și confidențial.",
+        "Ești un terapeut virtual empatic și profesionist. Oferă răspunsuri personalizate și suportive.",
     },
   ]);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const navigate = useNavigate();
 
   const handleSend = async () => {
     if (!input.trim()) return;
@@ -22,8 +24,8 @@ const Fizica: React.FC = () => {
     setMessages(newMessages);
     setInput("");
     try {
-      // Folosește profilul "fizica" cu configurările sale specifice
-      const aiResponse = await getTherapyResponse(newMessages, "fizica");
+      // Folosește profilul "general" cu configurările sale specifice
+      const aiResponse = await getTherapyResponse(newMessages, "general");
       setMessages([...newMessages, { role: "assistant", content: aiResponse }]);
     } catch (err) {
       setError("A apărut o eroare. Încearcă din nou.");
@@ -34,7 +36,21 @@ const Fizica: React.FC = () => {
 
   return (
     <div className="terapie-chat-container">
-      <h2>Terapie fizică AI</h2>
+      <h2>Terapie AI personalizată</h2>
+      <div className="terapie-nav-row">
+        <button
+          className="terapie-nav-btn-psihica"
+          onClick={() => navigate("/terapie/psihica")}
+        >
+          Terapie psihică
+        </button>
+        <button
+          className="terapie-nav-btn-fizica"
+          onClick={() => navigate("/terapie/fizica")}
+        >
+          Terapie fizică
+        </button>
+      </div>
       <div className="terapie-chat-box">
         {messages
           .filter((m) => m.role !== "system")
@@ -71,4 +87,4 @@ const Fizica: React.FC = () => {
   );
 };
 
-export default Fizica;
+export default Terapie;

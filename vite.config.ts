@@ -308,9 +308,11 @@ export default defineConfig(({ mode }) => {
       },
       force: true,
     },
-
     define: {
       "process.env": env,
+      "import.meta.env.VITE_OPENAI_API_KEY": JSON.stringify(
+        env.VITE_OPENAI_API_KEY
+      ),
       __APP_VERSION__: JSON.stringify(env.VITE_APP_VERSION || "1.0.0"),
       __BUILD_DATE__: JSON.stringify(new Date().toISOString()),
       __DEV__: mode !== "production",

@@ -13,63 +13,76 @@ if (typeof window !== "undefined") {
 }
 
 // Intercepție globală pentru cererile analytics doar în medii de dezvoltare (localhost)
-if (typeof window !== "undefined" && !isProd && window.location.hostname === "localhost") {
+if (
+  typeof window !== "undefined" &&
+  !isProd &&
+  window.location.hostname === "localhost"
+) {
   // ===== FETCH INTERCEPTOR =====
   const originalFetch = window.fetch;
   window.fetch = function (resource, init) {
     const url = resource instanceof Request ? resource.url : String(resource);
-    
+
     // Interceptează toate cererile către API-ul de analytics
     if (url.includes("lupulsicorbul.com/api/analytics")) {
-      console.log(`[${import.meta.env.MODE.toUpperCase()}] Cerere către API-ul de analytics interceptată:`, {
-        url,
-        method: init?.method || "GET",
-        mode: init?.mode
-      });
-      
+      console.log(
+        `[${import.meta.env.MODE.toUpperCase()}] Cerere către API-ul de analytics interceptată:`,
+        {
+          url,
+          method: init?.method || "GET",
+          mode: init?.mode,
+        }
+      );
+
       // Verificăm dacă este preflight OPTIONS
       const isPreflightRequest = init?.method === "OPTIONS";
-      
+
       // Construim headerele corespunzătoare în funcție de tipul cererii
       const headers = new Headers({
         "Access-Control-Allow-Origin": "*",
         "Access-Control-Allow-Methods": "GET, POST, OPTIONS, PUT, DELETE",
-        "Access-Control-Allow-Headers": "Content-Type, Authorization, X-Requested-With",
+        "Access-Control-Allow-Headers":
+          "Content-Type, Authorization, X-Requested-With",
         "Access-Control-Max-Age": "86400", // 24 ore pentru cache preflight
       });
-      
+
       // Pentru cereri non-preflight, adăugăm și Content-Type
       if (!isPreflightRequest) {
         headers.append("Content-Type", "application/json");
       }
-      
+
       // Returnăm un răspuns simulat adaptat în funcție de tipul cererii
-      return Promise.resolve(new Response(
-        // Preflight cererile nu ar trebui să aibă corp
-        isPreflightRequest ? null : JSON.stringify({
-          success: true,
-          simulated: true,
-          environment: import.meta.env.MODE,
-          timestamp: new Date().toISOString(),
-          message: "Răspuns simulat pentru cererea de analytics în mediul de non-producție"
-        }),
-        {
-          status: 200,
-          headers: headers
-        }
-      ));
+      return Promise.resolve(
+        new Response(
+          // Preflight cererile nu ar trebui să aibă corp
+          isPreflightRequest
+            ? null
+            : JSON.stringify({
+                success: true,
+                simulated: true,
+                environment: import.meta.env.MODE,
+                timestamp: new Date().toISOString(),
+                message:
+                  "Răspuns simulat pentru cererea de analytics în mediul de non-producție",
+              }),
+          {
+            status: 200,
+            headers: headers,
+          }
+        )
+      );
     }
-    
+
     // Pentru toate celelalte cereri, folosim fetch-ul original
     return originalFetch(resource, init);
   };
-  
+
   // ===== XMLHttpRequest INTERCEPTOR =====
   const originalXhrOpen = XMLHttpRequest.prototype.open;
   const originalXhrSend = XMLHttpRequest.prototype.send;
-  
+
   // Interceptăm metoda open pentru a identifica cererile către analytics
-  XMLHttpRequest.prototype.open = function(
+  XMLHttpRequest.prototype.open = function (
     method: string,
     url: string | URL,
     async: boolean = true,
@@ -77,116 +90,155 @@ if (typeof window !== "undefined" && !isProd && window.location.hostname === "lo
     password?: string | null
   ): void {
     const urlString = url instanceof URL ? url.toString() : url;
-    
+
     // Marcăm obiectul xhr dacă este o cerere către analytics
-    if (typeof urlString === "string" && urlString.includes("lupulsicorbul.com/api/analytics")) {
-      console.log(`[${import.meta.env.MODE.toUpperCase()}] Cerere XHR către API-ul de analytics interceptată:`, {
-        url: urlString,
-        method
-      });
-      
+    if (
+      typeof urlString === "string" &&
+      urlString.includes("lupulsicorbul.com/api/analytics")
+    ) {
+      console.log(
+        `[${import.meta.env.MODE.toUpperCase()}] Cerere XHR către API-ul de analytics interceptată:`,
+        {
+          url: urlString,
+          method,
+        }
+      );
+
       // Adăugăm proprietate personalizată pentru a marca acest XHR ca fiind pentru analytics
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       (this as any).__isAnalyticsRequest = true;
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       (this as any).__analyticsMethod = method;
     }
-    
+
     // Apelăm metoda originală
     originalXhrOpen.call(this, method, url, async, username, password);
   };
-  
+
   // Interceptăm metoda send pentru a simula răspunsul pentru cererile de analytics
-  XMLHttpRequest.prototype.send = function(body?: Document | XMLHttpRequestBodyInit | null): void {
+  XMLHttpRequest.prototype.send = function (
+    body?: Document | XMLHttpRequestBodyInit | null
+  ): void {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     if ((this as any).__isAnalyticsRequest) {
       // Simulăm progresul și răspunsul pentru o cerere reușită
-      
+
       // Setăm headers pentru CORS
       this.setRequestHeader("Access-Control-Allow-Origin", "*");
-      this.setRequestHeader("Access-Control-Allow-Methods", "GET, POST, OPTIONS, PUT, DELETE");
-      this.setRequestHeader("Access-Control-Allow-Headers", "Content-Type, Authorization, X-Requested-With");
-      
+      this.setRequestHeader(
+        "Access-Control-Allow-Methods",
+        "GET, POST, OPTIONS, PUT, DELETE"
+      );
+      this.setRequestHeader(
+        "Access-Control-Allow-Headers",
+        "Content-Type, Authorization, X-Requested-With"
+      );
+
       // Creăm event pentru a-l folosi în callbacks
       const createProgressEvent = () => {
         return new Event("readystatechange") as Event;
       };
-      
+
       // Folosim defineProperty pentru a modifica proprietăți read-only
       const self = this;
-      
+
       // Simulăm evenimentele asincron
       setTimeout(() => {
         // Simulăm event de deschidere a conexiunii
         if (typeof self.onreadystatechange === "function") {
-          Object.defineProperty(self, "readyState", { value: 1, configurable: true }); // OPENED
+          Object.defineProperty(self, "readyState", {
+            value: 1,
+            configurable: true,
+          }); // OPENED
           self.onreadystatechange(createProgressEvent());
         }
-        
+
         // Simulăm primirea header-urilor
         setTimeout(() => {
           if (typeof self.onreadystatechange === "function") {
-            Object.defineProperty(self, "readyState", { value: 2, configurable: true }); // HEADERS_RECEIVED
+            Object.defineProperty(self, "readyState", {
+              value: 2,
+              configurable: true,
+            }); // HEADERS_RECEIVED
             self.onreadystatechange(createProgressEvent());
           }
-          
+
           // Simulăm încărcarea datelor
           setTimeout(() => {
             if (typeof self.onreadystatechange === "function") {
-              Object.defineProperty(self, "readyState", { value: 3, configurable: true }); // LOADING
+              Object.defineProperty(self, "readyState", {
+                value: 3,
+                configurable: true,
+              }); // LOADING
               self.onreadystatechange(createProgressEvent());
             }
-            
+
             // Simulăm finalizarea cererii
             setTimeout(() => {
               // Setăm proprietățile pentru răspuns
-              Object.defineProperty(self, "status", { value: 200, configurable: true });
-              Object.defineProperty(self, "statusText", { value: "OK", configurable: true });
-              
+              Object.defineProperty(self, "status", {
+                value: 200,
+                configurable: true,
+              });
+              Object.defineProperty(self, "statusText", {
+                value: "OK",
+                configurable: true,
+              });
+
               // Setăm conținutul răspunsului
               const responseData = JSON.stringify({
                 success: true,
                 simulated: true,
                 environment: import.meta.env.MODE,
                 timestamp: new Date().toISOString(),
-                message: "Răspuns simulat XHR pentru cererea de analytics"
+                message: "Răspuns simulat XHR pentru cererea de analytics",
               });
-              
-              Object.defineProperty(self, "responseText", { value: responseData, configurable: true });
-              Object.defineProperty(self, "response", { value: responseData, configurable: true });
-              
+
+              Object.defineProperty(self, "responseText", {
+                value: responseData,
+                configurable: true,
+              });
+              Object.defineProperty(self, "response", {
+                value: responseData,
+                configurable: true,
+              });
+
               // Finalizăm cererea simulată
-              Object.defineProperty(self, "readyState", { value: 4, configurable: true }); // DONE
-              
+              Object.defineProperty(self, "readyState", {
+                value: 4,
+                configurable: true,
+              }); // DONE
+
               // Declanșăm evenimentele corespunzătoare
               if (typeof self.onreadystatechange === "function") {
                 self.onreadystatechange(createProgressEvent());
               }
-              
+
               if (typeof self.onload === "function") {
                 // Creăm un ProgressEvent pentru onload
                 const progressEvent = new ProgressEvent("load", {
                   lengthComputable: true,
                   loaded: responseData.length,
-                  total: responseData.length
+                  total: responseData.length,
                 });
                 self.onload(progressEvent);
               }
-              
             }, 10);
           }, 10);
         }, 10);
       }, 10);
-      
+
       // Returnăm fără a trimite cererea reală
       return;
     }
-    
+
     // Pentru toate celelalte cereri, folosim comportamentul original
     originalXhrSend.call(this, body);
   };
-  
-  console.log(`[${import.meta.env.MODE.toUpperCase()}] Interceptare globală a cererilor către API-ul de analytics activată`);
+
+  console.log(
+    `[${import.meta.env.MODE.toUpperCase()}] Interceptare globală a cererilor către API-ul de analytics activată`
+  );
 }
 
 import React from "react";
@@ -214,21 +266,24 @@ const handleInitializationErrors = () => {
   window.addEventListener("error", (event) => {
     // Logăm detaliile erorii
     console.error("Eroare de inițializare a aplicației:", event.error);
-    
+
     // Dacă eroarea conține referința la 'e', este probabil o eroare TDZ
     const errorMessage = event.error?.message || event.message || "";
-    const isTDZError = errorMessage.includes("Cannot access") && 
-                       (errorMessage.includes("before initialization") || 
-                        errorMessage.includes("is not defined"));
-    
+    const isTDZError =
+      errorMessage.includes("Cannot access") &&
+      (errorMessage.includes("before initialization") ||
+        errorMessage.includes("is not defined"));
+
     if (isTDZError) {
-      console.warn("Detectată posibilă eroare TDZ. Încercăm reîncărcarea aplicației...");
+      console.warn(
+        "Detectată posibilă eroare TDZ. Încercăm reîncărcarea aplicației..."
+      );
       // Marcăm eroarea și reîncărcăm pagina după o scurtă întârziere
       window.__FIREBASE_INITIALIZATION_ERROR__ = true;
       setTimeout(() => window.location.reload(), 1000);
       return;
     }
-    
+
     // Afișăm un mesaj de eroare prietenos dacă aplicația nu a reușit să pornească
     if (document.getElementById("root")?.children.length === 0) {
       const errorDiv = document.createElement("div");
@@ -241,7 +296,7 @@ const handleInitializationErrors = () => {
       errorDiv.style.fontFamily = "Arial, sans-serif";
       errorDiv.style.lineHeight = "1.5";
       errorDiv.style.color = "#d32f2f";
-      
+
       errorDiv.innerHTML = `
         <h2 style="margin-top: 0; color: #b71c1c;">Eroare de inițializare</h2>
         <p>Ne pare rău, a apărut o eroare la inițializarea aplicației.</p>
@@ -253,9 +308,9 @@ const handleInitializationErrors = () => {
           Reîncarcă aplicația
         </button>
       `;
-      
+
       document.getElementById("root")?.appendChild(errorDiv);
-      
+
       // Adăugăm handler pentru reîncărcare
       document.getElementById("reload-app")?.addEventListener("click", () => {
         window.location.reload();
@@ -272,16 +327,18 @@ async function initializeAndRenderApp() {
   try {
     // Preload vendor chunks first to avoid TDZ errors
     await preloadVendorChunks();
-    
+
     // Verificăm dacă am avut o eroare anterioară și forțăm un hard refresh al cache-ului
     if (window.__FIREBASE_INITIALIZATION_ERROR__) {
-      console.info("Recuperare după eroare de inițializare. Curățăm cache-ul...");
+      console.info(
+        "Recuperare după eroare de inițializare. Curățăm cache-ul..."
+      );
       // Clear any cached resources that might be causing issues
       if ("caches" in window) {
         try {
           const cacheNames = await window.caches.keys();
           await Promise.all(
-            cacheNames.map(cacheName => window.caches.delete(cacheName))
+            cacheNames.map((cacheName) => window.caches.delete(cacheName))
           );
           console.info("Cache curățat cu succes");
         } catch (e) {
@@ -289,18 +346,20 @@ async function initializeAndRenderApp() {
         }
       }
     }
-    
+
     // Așteptăm inițializarea Firebase
     console.info("Inițializare Firebase...");
     const firebaseInitialized = await ensureFirebaseInitialized();
-    
+
     if (!firebaseInitialized) {
       throw new Error("Firebase nu a putut fi inițializat");
     }
-    
+
     // Logăm versiunea aplicației
     const appVersion = import.meta.env.VITE_APP_VERSION || "1.0.0";
-    console.info(`Aplicația Lupul și Corbul s-a inițializat - Versiune: ${appVersion}`);
+    console.info(
+      `Aplicația Lupul și Corbul s-a inițializat - Versiune: ${appVersion}`
+    );
 
     // Randăm aplicația doar după ce Firebase a fost inițializat
     ReactDOM.createRoot(document.getElementById("root")!).render(
@@ -315,7 +374,7 @@ async function initializeAndRenderApp() {
     }
   } catch (error) {
     console.error("Eroare critică la inițializarea aplicației:", error);
-    
+
     // Afișăm un mesaj de eroare prietenos
     const errorContainer = document.getElementById("root");
     if (errorContainer) {
@@ -338,3 +397,5 @@ async function initializeAndRenderApp() {
 
 // Începem inițializarea aplicației
 initializeAndRenderApp();
+
+console.log("DEBUG GLOBAL import.meta.env:", import.meta.env);

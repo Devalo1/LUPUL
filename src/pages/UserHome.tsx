@@ -879,7 +879,7 @@ const UserHome: React.FC = () => {
               const personalizedArticles = fetchedArticles.map((article) => {
                 let personalizedContent = article.content;
                 personalizedContent = personalizedContent.replace(
-                  '${user?.displayName || "prieten"}',
+                  "${user?.displayName || \"prieten\"}",
                   userDisplayName
                 );
 

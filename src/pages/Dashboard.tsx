@@ -29,6 +29,7 @@ import {
   requestRoleChange,
   checkPendingRoleRequests,
 } from "../utils/userRoles";
+import AISettingsPanel from "../components/user/AISettingsPanel";
 
 // Define custom user type extending Firebase User
 interface ExtendedUser {
@@ -83,6 +84,9 @@ const Dashboard: React.FC = () => {
     "none" | "success" | "error" | "existing"
   >("none");
   const [hasPendingRoleRequest, setHasPendingRoleRequest] = useState(false);
+
+  // AI Settings state
+  const [isAISettingsOpen, setIsAISettingsOpen] = useState(false);
 
   // Redirect if not authenticated
   useEffect(() => {
@@ -431,7 +435,6 @@ const Dashboard: React.FC = () => {
           Bun venit înapoi pe panoul tău de control personal.
         </p>
       </div>
-
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-8">
         <motion.div
           className="bg-white rounded-lg shadow-md p-6"
@@ -528,6 +531,7 @@ const Dashboard: React.FC = () => {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.2 }}
         >
+          {" "}
           <h2 className="text-lg font-semibold mb-4">Acțiuni Rapide</h2>
           <div className="grid grid-cols-2 gap-3">
             <button
@@ -610,6 +614,32 @@ const Dashboard: React.FC = () => {
               </svg>
               Evenimente
             </button>
+            <button
+              onClick={() => setIsAISettingsOpen(true)}
+              className="p-3 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 transition duration-200 text-sm font-medium flex flex-col items-center col-span-2"
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                className="h-6 w-6 mb-1"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"
+                />
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
+                />
+              </svg>
+              Setări AI
+            </button>
           </div>
         </motion.div>
 
@@ -664,7 +694,6 @@ const Dashboard: React.FC = () => {
           </div>
         </motion.div>
       </div>
-
       <section className="mt-8">
         <h2 className="text-2xl font-bold mb-4">Activitate Recentă</h2>
         <div className="bg-white rounded-lg shadow-md p-6">
@@ -746,7 +775,6 @@ const Dashboard: React.FC = () => {
           </div>
         </div>
       </section>
-
       <section className="mt-8">
         <h2 className="text-2xl font-bold mb-4">
           Participările Tale la Evenimente
@@ -810,7 +838,6 @@ const Dashboard: React.FC = () => {
           )}
         </div>
       </section>
-
       <section className="mt-8">
         <h2 className="text-2xl font-bold mb-4">Comenzile Tale</h2>
         <div className="bg-white rounded-lg shadow-md p-6">
@@ -912,7 +939,6 @@ const Dashboard: React.FC = () => {
           )}
         </div>
       </section>
-
       <section className="mt-8">
         <h2 className="text-2xl font-bold mb-4">Opțiuni cont</h2>
         <div className="bg-white rounded-lg shadow-md p-6">
@@ -958,7 +984,6 @@ const Dashboard: React.FC = () => {
           {/* Alte opțiuni de cont ar putea fi adăugate aici */}
         </div>
       </section>
-
       {/* Modal pentru cererea de schimbare a rolului */}
       {roleChangeModalOpen && (
         <div className="fixed inset-0 z-50 overflow-y-auto">
@@ -969,14 +994,12 @@ const Dashboard: React.FC = () => {
             >
               <div className="absolute inset-0 bg-gray-500 opacity-75"></div>
             </div>
-
             <span
               className="hidden sm:inline-block sm:align-middle sm:h-screen"
               aria-hidden="true"
             >
               &#8203;
             </span>
-
             <div className="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
               <div className="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
                 <div className="sm:flex sm:items-start">
@@ -1138,9 +1161,13 @@ const Dashboard: React.FC = () => {
                     : "Anulează"}
                 </button>
               </div>
-            </div>
+            </div>{" "}
           </div>
         </div>
+      )}{" "}
+      {/* AI Settings Panel */}
+      {isAISettingsOpen && (
+        <AISettingsPanel onClose={() => setIsAISettingsOpen(false)} />
       )}
     </div>
   );

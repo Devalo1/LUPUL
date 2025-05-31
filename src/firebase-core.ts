@@ -32,6 +32,11 @@ import {
   uploadString,
   getDownloadURL,
   deleteObject,
+  StorageReference,
+  UploadMetadata,
+  StringFormat,
+  UploadResult,
+  ListResult,
 } from "firebase/storage";
 import {
   getFunctions,
@@ -242,31 +247,34 @@ export const firestoreAPI = {
 export const storageAPI = {
   connectStorageEmulator,
   getStorage,
-  ref: (storage: any, path: string): any => {
+  ref: (
+    storage: ReturnType<typeof getStorage>,
+    path: string
+  ): StorageReference => {
     return ref(storage, path);
   },
   uploadBytes: async (
-    storageRef: any,
-    data: any,
-    metadata?: any
-  ): Promise<any> => {
+    storageRef: StorageReference,
+    data: ArrayBuffer | Uint8Array | Blob,
+    metadata?: UploadMetadata
+  ): Promise<UploadResult> => {
     return uploadBytes(storageRef, data, metadata);
   },
   uploadString: async (
-    storageRef: any,
+    storageRef: StorageReference,
     data: string,
-    format?: any,
-    metadata?: any
-  ): Promise<any> => {
+    format?: StringFormat,
+    metadata?: UploadMetadata
+  ): Promise<UploadResult> => {
     return uploadString(storageRef, data, format, metadata);
   },
-  getDownloadURL: async (storageRef: any): Promise<string> => {
+  getDownloadURL: async (storageRef: StorageReference): Promise<string> => {
     return getDownloadURL(storageRef);
   },
-  deleteObject: async (storageRef: any): Promise<void> => {
+  deleteObject: async (storageRef: StorageReference): Promise<void> => {
     return deleteObject(storageRef);
   },
-  listAll: async (storageRef: any) => {
+  listAll: async (storageRef: StorageReference): Promise<ListResult> => {
     const { listAll } = require("firebase/storage");
     return listAll(storageRef);
   },

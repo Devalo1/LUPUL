@@ -25,6 +25,7 @@ const Ong = lazyLoad(() => import("../pages/Ong"));
 const Terapie = lazyLoad(() => import("../pages/Terapie"));
 const TerapiePsihica = lazyLoad(() => import("../pages/terapie/Psihica"));
 const TerapieFizica = lazyLoad(() => import("../pages/terapie/Fizica"));
+const AIAdmin = lazyLoad(() => import("../pages/AIAdmin"));
 
 // Import lazy pentru paginile ce necesită autentificare
 const Dashboard = lazyLoad(() => import("../pages/Dashboard"));
@@ -122,11 +123,24 @@ const AppRoutes: React.FC = () => {
         element={<LazyComponent component={<ProductDetails />} />}
       />
       {/* Rută pentru ONG */}
-      <Route path="/ong" element={<LazyComponent component={<Ong />} />} />
+      <Route path="/ong" element={<LazyComponent component={<Ong />} />} />{" "}
       {/* Rută pentru Terapie */}
-      <Route path="/terapie" element={<LazyComponent component={<Terapie />} />} />
-      <Route path="/terapie/psihica" element={<LazyComponent component={<TerapiePsihica />} />} />
-      <Route path="/terapie/fizica" element={<LazyComponent component={<TerapieFizica />} />} />
+      <Route
+        path="/terapie"
+        element={<LazyComponent component={<Terapie />} />}
+      />
+      <Route
+        path="/terapie/psihica"
+        element={<LazyComponent component={<TerapiePsihica />} />}
+      />{" "}
+      <Route
+        path="/terapie/fizica"
+        element={<LazyComponent component={<TerapieFizica />} />}
+      />
+      <Route
+        path="/ai-admin"
+        element={<LazyComponent component={<AIAdmin />} />}
+      />
       {/* Rute protejate (necesită autentificare) */}
       <Route
         path="/dashboard"
@@ -375,7 +389,8 @@ const AppRoutes: React.FC = () => {
             <LazyComponent component={<AdminSettings />} />
           </AdminRoute>
         }
-      />      {/* Ruta pentru profilurile utilizatorilor cu analytics */}
+      />{" "}
+      {/* Ruta pentru profilurile utilizatorilor cu analytics */}
       <Route
         path="/admin/users-profiles"
         element={

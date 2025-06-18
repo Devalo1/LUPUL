@@ -1,18 +1,29 @@
-# My TypeScript App
+# Lupul și Corbul - TypeScript React App
 
 ## Overview
 
-This is a React-based e-commerce and service website for "Lupul și Corbul" (The Wolf and the Raven), offering therapy services and wellness products.
+This is a comprehensive React-based platform for "Lupul și Corbul" (The Wolf and the Raven), offering therapy services, wellness products, and an advanced AI Assistant for personalized support.
 
 ## Features
 
+### Core Features
 - Responsive design with modern UI
-- Product catalog with search and filtering
+- Product catalog with advanced search and filtering
 - Shopping cart with localStorage persistence
 - User authentication with Firebase
-- Therapy services booking
-- Role-based access control
-- Order management
+- Therapy services booking system
+- Role-based access control (User, Specialist, Admin)
+- Order management and tracking
+
+### AI Assistant Widget 🤖
+- **Messenger-style floating widget** - Always accessible, draggable interface
+- **Modal chat with dual layout** - 25% conversation history, 75% active chat
+- **Real conversation history** - Per-user, saved in Firestore with auto-generated subjects
+- **Fullscreen mode** - Dedicated `/ai-messenger` page for extended conversations
+- **Romanian language support** - Perfect grammar and culturally appropriate responses
+- **Personalized AI responses** - Using user profile data for tailored assistance
+- **Real-time typing indicators** - Enhanced UX with loading states
+- **Mobile-optimized** - Fully responsive and touch-friendly
 
 ## Technologies
 
@@ -137,6 +148,55 @@ Dacă apar probleme cu pornirea aplicației:
   - `/services` - External service connections (Firebase)
   - `/types` - TypeScript type definitions
   - `/utils` - Utility functions
+
+## Deployment
+
+### Netlify Deployment
+
+This project is configured for automatic deployment on Netlify.
+
+#### Automated Deployment from GitHub
+
+1. **Connect GitHub Repository**: Link your Netlify account to the GitHub repository
+2. **Configure Build Settings**:
+   - Build command: `npm run build`
+   - Publish directory: `dist`
+   - Node version: 18.x
+
+#### Environment Variables on Netlify
+
+Set these environment variables in your Netlify dashboard:
+
+```bash
+# Firebase Configuration
+VITE_FIREBASE_API_KEY=your-api-key
+VITE_FIREBASE_AUTH_DOMAIN=your-auth-domain
+VITE_FIREBASE_PROJECT_ID=your-project-id
+VITE_FIREBASE_STORAGE_BUCKET=your-storage-bucket
+VITE_FIREBASE_MESSAGING_SENDER_ID=your-messaging-sender-id
+VITE_FIREBASE_APP_ID=your-app-id
+VITE_FIREBASE_MEASUREMENT_ID=your-measurement-id
+
+# OpenAI Configuration (for AI Assistant)
+VITE_OPENAI_API_KEY=your-openai-api-key
+OPENAI_API_KEY=your-openai-api-key
+
+# App Configuration
+VITE_APP_ENV=production
+VITE_USE_EMULATORS=false
+```
+
+#### Build Optimizations
+
+The build is optimized with:
+- Bundle splitting for better caching
+- Gzip and Brotli compression
+- CSS and JS minification
+- Tree shaking for smaller bundle sizes
+
+#### Live Demo
+
+🚀 **Production Site**: https://your-netlify-site.netlify.app
 
 ## License
 

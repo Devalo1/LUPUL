@@ -82,14 +82,69 @@ service cloud.firestore {
     }
     match /stockMovements/{movementId} {
       allow read, write: if isAuthenticated();
-    }
-    match /stocks/{stockId} {
+    }    match /stocks/{stockId} {
       allow read, write: if isAuthenticated();
     }
 
     // Card Reports - rapoarte zilnice de plăți cu cardul
     match /cardReports/{cardReportId} {
       allow read, write: if true;
+    }
+
+    // Therapy Conversations - conversațiile de terapie ale utilizatorilor
+    match /therapyConversations/{conversationId} {
+      allow read, write: if isAuthenticated() && request.auth.uid == resource.data.userId;
+      allow create: if isAuthenticated() && request.auth.uid == request.resource.data.userId;
+    }
+
+    // User AI Profiles - profilurile AI personalizate ale utilizatorilor
+    match /userAIProfiles/{profileId} {
+      allow read, write: if isAuthenticated() && request.auth.uid == resource.data.userId;
+      allow create: if isAuthenticated() && request.auth.uid == request.resource.data.userId;
+    }
+
+    // AI Settings and Configuration - setările AI pentru utilizatori
+    match /aiSettings/{userId} {
+      allow read, write: if isAuthenticated() && request.auth.uid == userId;
+      allow create: if isAuthenticated() && request.auth.uid == request.resource.data.userId;
+    }
+
+    // Specialists collection access
+    match /specialists/{specialistId} {
+      allow read: if isAuthenticated();
+      allow write: if isAuthenticated() && (request.auth.uid == resource.data.userId || isAdmin());
+    }
+
+    // Services collection - serviciile disponibile pentru programări
+    match /services/{serviceId} {
+      allow read: if true; // Services are public
+      allow write: if isAdmin();
+    }
+
+    // Specialist Services - serviciile specifice ale specialiștilor
+    match /specialistServices/{serviceId} {
+      allow read: if isAuthenticated();
+      allow write: if isAuthenticated() && (request.auth.uid == resource.data.specialistId || isAdmin());
+    }
+
+    // Appointments - programările utilizatorilor
+    match /appointments/{appointmentId} {
+      allow read: if isAuthenticated() && (request.auth.uid == resource.data.userId || request.auth.uid == resource.data.specialistId || isAdmin());
+      allow create: if isAuthenticated() && request.auth.uid == request.resource.data.userId;
+      allow update: if isAuthenticated() && (request.auth.uid == resource.data.userId || request.auth.uid == resource.data.specialistId || isAdmin());
+      allow delete: if isAdmin();
+    }
+
+    // AI Assistant Conversations - Messenger widget
+    match /conversations/{conversationId} {
+      // Allow authenticated users to read their own conversations
+      allow read: if isAuthenticated() && resource.data.userId == request.auth.uid;
+      // Allow authenticated users to create a conversation for themselves
+      allow create: if isAuthenticated() && request.auth.uid == request.resource.data.userId;
+      // Allow authenticated users to update/delete their own conversations
+      allow update, delete: if isAuthenticated() && resource.data.userId == request.auth.uid;
+      // Admins can do anything
+      allow read, write: if isAdmin();
     }
 
     // Default rule - deny access unless specific rule allows it

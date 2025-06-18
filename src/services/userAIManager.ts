@@ -2,11 +2,23 @@ import { AI_CONFIG } from "./openaiService";
 import { type AIProfileType } from "./aiProfiles";
 
 // Tipuri pentru gestionarea AI-ului pe utilizatori
+export interface UserAICustomPrompts {
+  aiType?: string;
+  aiName?: string;
+  character?: string;
+  goal?: string;
+  addressMode?: string;
+  responseLength?: string;
+  sex?: "masculin" | "feminin" | "neutru";
+  conversationStyle?: "formal" | "casual" | "prietenos" | "profesional";
+  [key: string]: string | undefined; // Pentru compatibilitate cu Record<string, string>
+}
+
 export interface UserAIConfig {
   userId: string;
   config: Partial<typeof AI_CONFIG>;
   activeProfiles: Record<string, AIProfileType>;
-  customPrompts: Record<string, string>;
+  customPrompts: UserAICustomPrompts | Record<string, string>;
   lastUpdated: string;
   isEnabled: boolean;
 }

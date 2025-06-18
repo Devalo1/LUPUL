@@ -1,0 +1,1 @@
+Dacă vezi acest fișier în File Explorer și în editor, și îl vezi și în lista de fișiere servite de Vite (sau la un refresh al aplicației), atunci Vite folosește corect acest folder sursă. Dacă nu, există o problemă de workspace sau build.

@@ -1,5 +1,7 @@
 .nav-container {
-  transition: background-color 0.3s ease, box-shadow 0.3s ease;
+  transition:
+    background-color 0.3s ease,
+    box-shadow 0.3s ease;
 }
 
 .nav-container.scrolled {
@@ -10,7 +12,9 @@
 /* Improved link animations */
 .nav-link {
   position: relative;
-  transition: transform 0.3s ease, color 0.3s ease;
+  transition:
+    transform 0.3s ease,
+    color 0.3s ease;
   color: white !important; /* Ensure text is white as requested */
 }
 
@@ -20,14 +24,16 @@
 }
 
 .nav-link:after {
-  content: '';
+  content: "";
   position: absolute;
   bottom: 0;
   left: 50%;
   width: 0;
   height: 2px;
   background: var(--ro-yellow); /* Using softer yellow from variables */
-  transition: width 0.3s ease, left 0.3s ease;
+  transition:
+    width 0.3s ease,
+    left 0.3s ease;
 }
 
 .nav-link:hover:after {
@@ -132,4 +138,71 @@ button.nav-link,
 
 .absolute button.text-gray-700:hover {
   background-color: rgba(255, 255, 255, 0.2) !important;
+}
+
+/* Ascunde textul din navbar pe desktop, păstrează doar iconițele */
+@media (min-width: 768px) {
+  /* Centrează navbar-ul pe mijloc */
+  .header-container nav .flex.items-center.justify-center {
+    justify-content: center !important;
+    align-items: center !important;
+    width: 100% !important;
+    max-width: none !important;
+    margin: 0 auto !important;
+  }
+
+  /* Ascunde toate textele */
+  .nav-link .nav-text-label,
+  .auth-button .nav-text-label,
+  .nav-link > span:not(.nav-icon):not(.cart-badge):not(.lucide),
+  .auth-button > span:not(.nav-icon):not(.cart-badge):not(.lucide) {
+    display: none !important;
+  }
+
+  /* Stilizează link-urile pentru a fi mai compacte */
+  .nav-link,
+  .auth-button {
+    min-width: 60px !important;
+    height: 60px !important;
+    padding: 8px !important;
+    justify-content: center !important;
+    align-items: center !important;
+    flex-direction: column !important;
+    margin: 0 4px !important;
+  }
+
+  /* Asigură-te că iconițele sunt centrate și vizibile */
+  .nav-link .lucide,
+  .nav-link svg:not(.cart-badge),
+  .auth-button .lucide,
+  .auth-button svg:not(.cart-badge) {
+    display: block !important;
+    margin: 0 auto !important;
+    width: 28px !important;
+    height: 28px !important;
+  }
+
+  /* Păstrează badge-ul coșului */
+  .cart-badge {
+    display: flex !important;
+    position: absolute !important;
+    top: 8px !important;
+    right: 8px !important;
+  }
+
+  /* Păstrează săgeata pentru dropdown-ul magazin */
+  .nav-link svg[viewBox="0 0 24 24"] {
+    display: block !important;
+    width: 12px !important;
+    height: 12px !important;
+    margin-top: 2px !important;
+  }
+
+  /* Centrează containerul principal al navbar-ului */
+  .header-container nav > div.hidden.md\\:flex {
+    justify-content: center !important;
+    width: 100% !important;
+    max-width: 800px !important;
+    margin: 0 auto !important;
+  }
 }

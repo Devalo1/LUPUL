@@ -189,6 +189,7 @@ const Navbar: React.FC = () => {
 
           {/* Meniul desktop */}
           <div className="flex items-center justify-center space-x-1 lg:space-x-4 animate-fade-in">
+            {" "}
             <a
               href="#"
               onClick={navigateToHome}
@@ -196,16 +197,17 @@ const Navbar: React.FC = () => {
               title="Acasă"
             >
               <Home className="w-9 h-9 mb-1 text-blue-200 nav-icon" />
-              Acasă
+              <span className="nav-text-label">Acasă</span>
             </a>
             <div className="relative group" ref={shopMenuRef}>
+              {" "}
               <button
                 onClick={() => setShopMenuOpen(!shopMenuOpen)}
                 className="nav-link flex flex-col items-center gap-1 text-white hover:bg-blue-600 px-2 py-1 rounded-md transition-all duration-300 font-semibold animate-nav-pop nav-text"
                 title="Magazin"
               >
                 <Store className="w-9 h-9 mb-1 text-blue-200 nav-icon" />
-                Magazin
+                <span className="nav-text-label">Magazin</span>
                 <svg
                   className={`ml-1 h-4 w-4 transition-transform ${shopMenuOpen ? "rotate-180" : ""}`}
                   fill="none"
@@ -257,7 +259,7 @@ const Navbar: React.FC = () => {
               title="Coș de cumpărături"
             >
               <ShoppingCart className="w-9 h-9 mb-1 text-blue-200 cart-icon" />
-              Coș
+              <span className="nav-text-label">Coș</span>
               {totalItems > 0 && (
                 <span className="cart-badge">{totalItems}</span>
               )}
@@ -268,15 +270,15 @@ const Navbar: React.FC = () => {
               title="Evenimente"
             >
               <CalendarHeart className="w-9 h-9 mb-1 text-blue-200 nav-icon" />
-              Evenimente
-            </Link>
+              <span className="nav-text-label">Evenimente</span>
+            </Link>{" "}
             <Link
               to="/about"
               className="nav-link flex flex-col items-center gap-1 text-white hover:bg-blue-600 px-2 py-1 rounded-md transition-all duration-300 font-semibold animate-nav-pop nav-text"
               title="Despre Noi"
             >
               <UsersRound className="w-9 h-9 mb-1 text-blue-200 nav-icon" />
-              Despre Noi
+              <span className="nav-text-label">Despre Noi</span>
             </Link>{" "}
             {isAccountant && (
               <Link
@@ -285,7 +287,7 @@ const Navbar: React.FC = () => {
                 title="Contabilitate"
               >
                 <FileText className="w-9 h-9 mb-1 text-blue-200 nav-icon" />
-                Contabilitate
+                <span className="nav-text-label">Contabilitate</span>
               </Link>
             )}{" "}
             {isAdmin && (
@@ -295,26 +297,27 @@ const Navbar: React.FC = () => {
                 title="Panou Admin"
               >
                 <Settings className="w-9 h-9 mb-1 text-blue-200 nav-icon" />
-                Panou Admin
+                <span className="nav-text-label">Panou Admin</span>
               </Link>
-            )}
+            )}{" "}
             <button
               onClick={toggleSideNav}
               className="nav-link flex flex-col items-center gap-1 text-white hover:bg-blue-600 px-2 py-1 rounded-md transition-all duration-300 font-semibold animate-nav-pop nav-text"
               title="Servicii"
             >
               <BriefcaseBusiness className="w-9 h-9 mb-1 text-blue-200 nav-icon" />
-              Servicii
+              <span className="nav-text-label">Servicii</span>
             </button>
             {user ? (
               <>
+                {" "}
                 <Link
                   to="/dashboard"
                   className="nav-link flex flex-col items-center gap-1 text-white hover:bg-blue-600 px-2 py-1 rounded-md transition-all duration-300 font-semibold animate-nav-pop nav-text"
                   title="Contul Meu"
                 >
                   <UserCircle2 className="w-9 h-9 mb-1 text-blue-200 nav-icon" />
-                  Contul Meu
+                  <span className="nav-text-label">Contul Meu</span>
                 </Link>
                 <button
                   onClick={handleLogout}
@@ -322,7 +325,7 @@ const Navbar: React.FC = () => {
                   title="Deconectare"
                 >
                   <LogOut className="w-9 h-9 mb-1 text-blue-200 nav-icon" />
-                  Deconectare
+                  <span className="nav-text-label">Deconectare</span>
                 </button>
               </>
             ) : (
@@ -332,7 +335,7 @@ const Navbar: React.FC = () => {
                 title="Autentificare"
               >
                 <UserCircle2 className="w-9 h-9 mb-1 text-blue-200 nav-icon" />
-                Autentificare
+                <span className="nav-text-label">Autentificare</span>
               </Link>
             )}
           </div>

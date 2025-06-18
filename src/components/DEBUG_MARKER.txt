@@ -1,0 +1,1 @@
+Dacă vezi acest fișier în File Explorer și în editor, lucrezi în același folder ca și serverul Vite. Dacă nu, ai două foldere diferite sau deschizi alt workspace.

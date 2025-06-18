@@ -1,0 +1,66 @@
+/*
+AISettingsForm.css
+Stilizare specială pentru formularul din panoul AI Settings, cu accent galben-albastru.
+*/
+
+.ai-settings-form {
+  background: linear-gradient(120deg, #eab308 0%, #1e3a8a 100%);
+  border-radius: 1.25rem;
+  box-shadow: 0 4px 24px 0 #1e3a8a33;
+  padding: 2.5rem 2rem;
+  margin-bottom: 1.5rem;
+  border: 2px solid #eab308;
+}
+
+.ai-settings-form label {
+  color: #1e3a8a;
+  font-weight: 700;
+  margin-bottom: 0.5rem;
+  letter-spacing: 0.01em;
+}
+
+.ai-settings-form input,
+.ai-settings-form select {
+  border: 2px solid #1e3a8a;
+  border-radius: 0.75rem;
+  padding: 0.75rem 1rem;
+  font-size: 1rem;
+  margin-bottom: 1.5rem;
+  background: #fffbe6;
+  color: #1e293b;
+  transition: border 0.2s, box-shadow 0.2s;
+  box-shadow: 0 1px 4px #1e3a8a33;
+}
+.ai-settings-form input:focus,
+.ai-settings-form select:focus {
+  border-color: #eab308;
+  outline: none;
+  box-shadow: 0 0 0 2px #eab30833;
+}
+
+.ai-settings-form .profile-avatar {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 3px solid #eab308;
+  margin-bottom: 1rem;
+  box-shadow: 0 2px 8px #eab308cc;
+}
+
+.ai-settings-form .edit-btn {
+  background: linear-gradient(90deg, #eab308 0%, #1e3a8a 100%);
+  color: #fff;
+  font-weight: 700;
+  border: none;
+  border-radius: 0.75rem;
+  padding: 0.7rem 1.8rem;
+  font-size: 1rem;
+  margin-top: 1rem;
+  box-shadow: 0 2px 8px #1e3a8acc;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+.ai-settings-form .edit-btn:hover {
+  background: linear-gradient(90deg, #1e3a8a 0%, #eab308 100%);
+}

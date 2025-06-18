@@ -8,9 +8,10 @@
   NODE_OPTIONS = "--max-old-space-size=4096"
 
 [dev]
-  command = "npm run dev"
-  port = 5173
-  targetPort = 5173
+  command = "vite"
+  port = 8888         # Netlify Dev va servi pe acest port
+  targetPort = 5173   # Vite va rula pe acest port (default)
+  functions = "netlify/functions"
   publish = "dist"
   autoLaunch = false
 

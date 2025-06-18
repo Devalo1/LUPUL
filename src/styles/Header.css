@@ -436,42 +436,15 @@
 /* Fix: Centralizează perfect meniul navbar și aliniază vertical iconițele și textul */
 .header-container nav > div.flex.items-center {
   justify-content: center !important;
-  align-items: flex-end !important;
+  align-items: center !important;
   width: 100%;
   margin-left: auto !important;
   margin-right: auto !important;
-  max-width: 900px;
+  max-width: 800px;
   display: flex !important;
-  gap: 2.5rem;
+  gap: 1rem;
   padding-top: 0.5rem;
   padding-bottom: 0.5rem;
-}
-
-.nav-link,
-.auth-button {
-  font-size: 0.85rem !important;
-  flex-direction: column;
-  align-items: center;
-  justify-content: flex-end;
-  gap: 0.18rem;
-  height: 4.7rem;
-  min-width: 5.7rem;
-  padding: 0.2rem 0.5rem !important;
-  display: flex;
-}
-
-.nav-link .lucide,
-.auth-button .lucide,
-.nav-link .lucide-shopping-cart {
-  width: 2.5rem !important;
-  height: 2.5rem !important;
-  margin-bottom: 0.18rem;
-  color: #c7e0ff;
-  stroke-width: 1.7;
-  display: block;
-  transition:
-    color 0.2s,
-    transform 0.2s;
 }
 
 /* Centralizează meniul navbar pe mijloc pe orice ecran mare */
@@ -481,7 +454,7 @@
     width: 100%;
     margin-left: auto !important;
     margin-right: auto !important;
-    max-width: 900px;
+    max-width: 800px;
     display: flex !important;
   }
 }
@@ -492,7 +465,7 @@
   width: 100%;
   margin-left: auto;
   margin-right: auto;
-  max-width: 900px;
+  max-width: 800px;
   display: flex;
 }
 
@@ -533,4 +506,65 @@
   transform: scale(1.12) rotate(-4deg);
 }
 
-/* Rest of your CSS */
+/* Ascunde textele din navbar pe desktop, păstrează doar iconițele */
+@media (min-width: 768px) {
+  /* Centrează perfect navbar-ul */
+  .header-container nav > div.flex.items-center {
+    justify-content: center !important;
+    align-items: center !important;
+    width: 100% !important;
+    max-width: 800px !important;
+    margin: 0 auto !important;
+    gap: 1rem !important;
+  }
+
+  /* Ascunde tot textul din nav-link-uri exceptând iconițele și badge-urile */
+  .nav-link {
+    font-size: 0 !important;
+    line-height: 0 !important;
+  }
+
+  .auth-button {
+    font-size: 0 !important;
+    line-height: 0 !important;
+  }
+
+  /* Ascunde toate textele din nav-link și auth-button */
+  .nav-link .nav-text-label,
+  .auth-button .nav-text-label,
+  .nav-link > *:not(.lucide):not(.cart-badge):not(svg),
+  .auth-button > *:not(.lucide):not(.cart-badge):not(svg) {
+    display: none !important;
+  }
+
+  /* Asigură-te că iconițele Lucide rămân vizibile și centrate */
+  .nav-link .lucide,
+  .auth-button .lucide,
+  .nav-link svg,
+  .auth-button svg,
+  .cart-badge {
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    font-size: initial !important;
+    margin: 0 auto !important;
+  }
+
+  /* Ajustează padding-ul pentru a fi mai compact fără text */
+  .nav-link,
+  .auth-button {
+    padding: 12px !important;
+    min-width: 60px !important;
+    height: 60px !important;
+    justify-content: center !important;
+    align-items: center !important;
+    flex-direction: column !important;
+  }
+
+  /* Stilizează iconițele pentru a fi uniforme */
+  .nav-link .lucide,
+  .auth-button .lucide {
+    width: 28px !important;
+    height: 28px !important;
+  }
+}

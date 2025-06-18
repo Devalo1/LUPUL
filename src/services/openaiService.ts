@@ -1,5 +1,10 @@
 import axios from "axios";
 import { AI_PROFILES, type AIProfileType } from "./aiProfiles";
+import {
+  generatePersonalizedPrompt,
+  loadPersonalizedAISettings,
+} from "../utils/personalizedAIUtilsNew";
+import { userDynamicProfileService } from "./userDynamicProfileService";
 
 const OPENAI_API_URL = "https://api.openai.com/v1/chat/completions";
 
@@ -16,7 +21,8 @@ export const AI_CONFIG = {
 export async function getTherapyResponse(
   messages: Array<{ role: string; content: string }>,
   profileType?: AIProfileType,
-  customConfig?: Partial<typeof AI_CONFIG>
+  customConfig?: Partial<typeof AI_CONFIG>,
+  userId?: string
 ) {
   // Determină profilul AI de folosit
   const profile = profileType ? AI_PROFILES[profileType] : null;
@@ -38,19 +44,60 @@ export async function getTherapyResponse(
     ...AI_CONFIG,
     ...(profile?.config || {}),
     ...customConfig,
-  };
+  }; // Încarcă setările personalizate ale utilizatorului
+  let systemPrompt =
+    profile?.systemPrompt ||
+    "Ești un asistent AI util și empatic care vorbește româna perfect, folosind întotdeauna gramatica română standard și diacriticele corecte (ă, â, î, ș, ț).";
 
-  // Pregătește mesajele cu prompt-ul de sistem din profil (dacă există)
+  if (userId) {
+    try {
+      // Încarcă profilul dinamic al utilizatorului
+      const dynamicProfile =
+        await userDynamicProfileService.getUserProfile(userId);
+      const personalizedSettings = await loadPersonalizedAISettings(userId); // Generează prompt-ul personalizat bazat pe setările și profilul dinamic
+      let basePrompt =
+        profile?.systemPrompt ||
+        "Ești un asistent AI util și empatic care vorbește româna perfect, folosind întotdeauna gramatica română standard și diacriticele corecte (ă, â, î, ș, ț).";
+
+      // Adaugă informații din profilul dinamic
+      if (dynamicProfile) {
+        const dynamicPrompt =
+          userDynamicProfileService.generatePersonalizedPrompt(dynamicProfile);
+        basePrompt += "\n\n" + dynamicPrompt;
+      }
+
+      // Generate personalized prompt if settings are available
+      if (personalizedSettings) {
+        systemPrompt = generatePersonalizedPrompt(
+          personalizedSettings,
+          undefined, // userProfile - can be added later if needed
+          basePrompt // context
+        );
+      }
+
+      // Actualizează profilul dinamic în background (fără să blocheze răspunsul)
+      userDynamicProfileService
+        .analyzeAndUpdateProfile(userId)
+        .catch((error) => {
+          console.error("Eroare la actualizarea profilului dinamic:", error);
+        });
+    } catch (error) {
+      console.error("Eroare la încărcarea setărilor personalizate:", error);
+      // Fallback la prompt-ul standard
+    }
+  }
+
+  // Pregătește mesajele cu prompt-ul de sistem personalizat
   let processedMessages = messages;
-  if (profile && messages[0]?.role !== "system") {
+  if (messages[0]?.role !== "system") {
     processedMessages = [
-      { role: "system", content: profile.systemPrompt },
+      { role: "system", content: systemPrompt },
       ...messages,
     ];
-  } else if (profile && messages[0]?.role === "system") {
-    // Înlocuiește primul mesaj de sistem cu cel din profil
+  } else {
+    // Înlocuiește primul mesaj de sistem cu cel personalizat
     processedMessages = [
-      { role: "system", content: profile.systemPrompt },
+      { role: "system", content: systemPrompt },
       ...messages.slice(1),
     ];
   }

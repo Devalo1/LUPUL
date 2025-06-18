@@ -3,7 +3,8 @@
  */
 
 import "@testing-library/jest-dom";
-import { render, screen } from "@testing-library/react";
+import { render } from "@testing-library/react";
+import { screen } from "@testing-library/dom";
 
 // Simple test component without external dependencies
 const SimpleComponent = ({ children }: { children: React.ReactNode }) => {

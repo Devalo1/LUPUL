@@ -1,0 +1,142 @@
+/*
+AISettingsPanel.css
+Visually attractive, modern, and colorful style for the AI Settings modal.
+*/
+
+/* High z-index overlay to ensure modal appears above all elements */
+.ai-settings-overlay {
+  z-index: 10000 !important;
+}
+
+.ai-settings-modal {
+  background: linear-gradient(135deg, #f0f4ff 0%, #e0e7ff 100%) !important;
+  border-radius: 1.5rem;
+  box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.25);
+  border: 1.5px solid #e0e7ff;
+  padding: 0 !important;
+  overflow: hidden;
+  animation: popIn 0.4s cubic-bezier(0.23, 1, 0.32, 1);
+}
+
+@keyframes popIn {
+  0% { transform: scale(0.95); opacity: 0; }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+.ai-settings-header {
+  background: linear-gradient(90deg, #1e3a8a 0%, #fbbf24 100%); /* albastru spre maro-auriu */
+  color: #f3f4f6;
+  border-bottom: 2px solid #e0e7ff;
+  padding: 2rem 2.5rem 1.5rem 2.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.ai-settings-header .ai-icon {
+  color: #fbbf24;
+}
+
+.ai-settings-title {
+  color: #f3f4f6;
+}
+
+.ai-settings-close {
+  color: #f3f4f6;
+}
+
+.ai-settings-content {
+  padding: 2.5rem !important;
+  background: rgba(255,255,255,0.95) !important;
+  border-radius: 0 0 1.5rem 1.5rem;
+  min-height: 400px;
+}
+
+.ai-settings-form label {
+  color: #1e3a8a;
+  font-weight: 700;
+  margin-bottom: 0.5rem;
+  letter-spacing: 0.01em;
+}
+
+.ai-settings-form input,
+.ai-settings-form select {
+  border: 2px solid #fbbf24;
+  border-radius: 0.75rem;
+  padding: 0.75rem 1rem;
+  font-size: 1rem;
+  margin-bottom: 1.5rem;
+  background: #fdf6e3;
+  color: #1e293b;
+  transition: border 0.2s, box-shadow 0.2s;
+  box-shadow: 0 1px 4px #fbbf2433;
+}
+.ai-settings-form input:focus,
+.ai-settings-form select:focus {
+  border-color: #1e3a8a;
+  outline: none;
+  box-shadow: 0 0 0 2px #1e3a8a33;
+}
+
+.ai-settings-form .profile-avatar {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 3px solid #6366f1;
+  margin-bottom: 1rem;
+  box-shadow: 0 2px 8px #6366f1cc;
+}
+
+.ai-settings-form .save-btn {
+  background: linear-gradient(90deg, #6366f1 0%, #60a5fa 100%);
+  color: #fff;
+  font-weight: 700;
+  border: none;
+  border-radius: 0.75rem;
+  padding: 0.9rem 2.2rem;
+  font-size: 1.1rem;
+  box-shadow: 0 2px 8px #6366f1cc;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+.ai-settings-form .save-btn:hover {
+  background: linear-gradient(90deg, #60a5fa 0%, #6366f1 100%);
+}
+
+.ai-settings-form .edit-btn {
+  background: linear-gradient(90deg, #1e3a8a 0%, #fbbf24 100%);
+  color: #fff;
+  font-weight: 700;
+  border: none;
+  border-radius: 0.75rem;
+  padding: 0.7rem 1.8rem;
+  font-size: 1rem;
+  margin-top: 1rem;
+  box-shadow: 0 2px 8px #fbbf24cc;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+.ai-settings-form .edit-btn:hover {
+  background: linear-gradient(90deg, #fbbf24 0%, #1e3a8a 100%);
+}
+
+.ai-settings-alert {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem 1.5rem;
+  border-radius: 0.75rem;
+  font-weight: 600;
+  margin-bottom: 1.5rem;
+}
+.ai-settings-alert.error {
+  background: #fee2e2;
+  color: #b91c1c;
+  border: 2px solid #fca5a5;
+}
+.ai-settings-alert.success {
+  background: #d1fae5;
+  color: #065f46;
+  border: 2px solid #6ee7b7;
+}

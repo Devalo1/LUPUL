@@ -40,6 +40,9 @@ import Orders from "../../pages/Orders";
 import Account from "../../pages/Account";
 import Appointments from "../../pages/Appointments";
 
+// Pagini AI
+import AIMessenger from "../../pages/ai/AIMessenger";
+
 const AppRoutes = () => {
   return (
     <Routes>
@@ -131,6 +134,14 @@ const AppRoutes = () => {
         element={
           <ProtectedRoute>
             <Appointments />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/ai-messenger"
+        element={
+          <ProtectedRoute>
+            <AIMessenger />
           </ProtectedRoute>
         }
       />{" "}

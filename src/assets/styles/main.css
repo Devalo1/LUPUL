@@ -1,7 +1,7 @@
 /* Ensure this file contains only valid CSS */
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@100;200;300;400;500;600;700;800;900&display=swap');
-@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@100;200;300;400;500;600;700;800;900&display=swap');
-@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&display=swap');
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@100;200;300;400;500;600;700;800;900&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Montserrat:wght@100;200;300;400;500;600;700;800;900&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&display=swap");
 
 @tailwind base;
 @tailwind components;
@@ -13,32 +13,33 @@
   --primary-dark: #1a365d;
   --secondary: #4c9aff; /* Lighter blue for accents */
   --secondary-dark: #2b6cb0;
-  
+
   /* Warm accent colors for balance */
   --accent: #f6ad55; /* Warm orange */
   --accent-dark: #dd6b20;
-  
+
   /* Improved text colors with better contrast */
   --text-primary: #222832; /* Darkened for better contrast */
   --text-secondary: #3d4a5c; /* Enhanced for better readability */
   --text-light: #ffffff; /* Pure white for maximum contrast on dark backgrounds */
   --text-muted: #718096; /* For less important text */
-  
+
   /* Background colors with proper layering */
   --bg-light: #f7fafc; /* Very light blue-gray */
-  --bg-white: #ffffff; 
+  --bg-white: #ffffff;
   --bg-overlay: rgba(255, 255, 255, 0.9); /* For content over images */
   --bg-card: rgba(255, 255, 255, 0.95);
-  
+
   /* Softened Romanian flag colors - less harsh but still recognizable */
   --ro-blue: #173a7e; /* Softer, slightly darker blue */
   --ro-yellow: #f5d776; /* Less saturated, softer yellow */
   --ro-red: #c73e4d; /* Less aggressive, more elegant red */
-  
+
   /* Shadow variables for consistent depth */
   --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
   --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.05), 0 1px 3px rgba(0, 0, 0, 0.1);
-  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  --shadow-lg:
+    0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
 }
 
 html {
@@ -50,7 +51,7 @@ html {
 body {
   background-color: var(--bg-light);
   color: var(--text-primary);
-  font-family: 'Inter', sans-serif;
+  font-family: "Inter", sans-serif;
   line-height: 1.6;
   margin: 0;
   padding: 0;
@@ -59,22 +60,41 @@ body {
 }
 
 /* Typography refinements */
-h1, h2, h3, h4, h5 {
-  font-family: 'Playfair Display', serif;
+h1,
+h2,
+h3,
+h4,
+h5 {
+  font-family: "Playfair Display", serif;
   font-weight: 600;
   color: var(--text-primary);
   line-height: 1.3;
   margin-bottom: 0.5em;
 }
 
-h1 { font-size: 2.5rem; }
-h2 { font-size: 2rem; }
-h3 { font-size: 1.75rem; }
-h4 { font-size: 1.5rem; }
-h5 { font-size: 1.25rem; }
+h1 {
+  font-size: 2.5rem;
+}
+h2 {
+  font-size: 2rem;
+}
+h3 {
+  font-size: 1.75rem;
+}
+h4 {
+  font-size: 1.5rem;
+}
+h5 {
+  font-size: 1.25rem;
+}
 
-p, li, a, button, input, textarea {
-  font-family: 'Inter', sans-serif;
+p,
+li,
+a,
+button,
+input,
+textarea {
+  font-family: "Inter", sans-serif;
 }
 
 /* Full-screen background styles */
@@ -113,7 +133,7 @@ p, li, a, button, input, textarea {
 }
 
 .login-container {
-  background-image: url('/images/background.svg');
+  background-image: url("/images/background.svg");
   background-size: cover;
   background-position: center;
   background-attachment: fixed;
@@ -150,37 +170,39 @@ p, li, a, button, input, textarea {
     position: relative;
     padding: 0.5rem 1rem;
   }
-  
+
   .nav-link::before {
     @apply content-[''] absolute top-0 left-0 w-full h-0 transition-all duration-500;
     background-color: var(--primary);
     z-index: -1;
     height: 0;
   }
-  
+
   .nav-link::after {
     @apply content-[''] absolute left-0 bottom-0 w-0 h-0.5 transition-all duration-500 ease-in-out;
-    background: linear-gradient(90deg, 
-      var(--ro-blue) 0%, 
-      var(--ro-blue) 33.33%, 
-      var(--ro-yellow) 33.33%, 
-      var(--ro-yellow) 66.66%, 
-      var(--ro-red) 66.66%, 
-      var(--ro-red) 100%);
+    background: linear-gradient(
+      90deg,
+      var(--ro-blue) 0%,
+      var(--ro-blue) 33.33%,
+      var(--ro-yellow) 33.33%,
+      var(--ro-yellow) 66.66%,
+      var(--ro-red) 66.66%,
+      var(--ro-red) 100%
+    );
   }
-  
+
   .nav-link:hover::before {
     height: 5px;
   }
-  
+
   .nav-link:hover::after {
     @apply w-full;
   }
-  
+
   .nav-link:hover {
     color: var(--primary) !important;
   }
-  
+
   /* Navbar active link fix - keep text white when active */
   .nav-link.active {
     color: var(--text-light) !important; /* Keep white when active */
@@ -189,7 +211,7 @@ p, li, a, button, input, textarea {
   }
 
   .nav-link.active::after {
-    content: '';
+    content: "";
     position: absolute;
     bottom: -2px;
     left: 0;
@@ -205,14 +227,16 @@ p, li, a, button, input, textarea {
     position: sticky;
     top: 0;
     z-index: 100;
-    transition: background-color 0.3s ease, box-shadow 0.3s ease;
+    transition:
+      background-color 0.3s ease,
+      box-shadow 0.3s ease;
   }
-  
+
   .nav-container.scrolled {
     background-color: var(--primary);
     box-shadow: var(--shadow-lg);
   }
-  
+
   /* Romanian flag navbar animation - refined with softer colors */
   .ro-flag-nav {
     @apply flex items-center justify-center gap-4;
@@ -223,37 +247,37 @@ p, li, a, button, input, textarea {
     position: relative;
     overflow: hidden;
   }
-  
+
   /* Header styling */
   .header-transparent {
     background-color: rgba(255, 255, 255, 0.9);
     backdrop-filter: blur(8px);
     box-shadow: var(--shadow-sm);
   }
-  
+
   .header-scrolled {
     background-color: var(--bg-white);
     box-shadow: var(--shadow-md);
     backdrop-filter: blur(10px);
   }
-  
+
   /* Form styles */
   .form-input {
     @apply block w-full p-3 border border-gray-300 rounded-md;
     background-color: white;
     transition: all 0.3s ease;
   }
-  
+
   .form-input:focus {
     @apply outline-none ring-2 ring-primary border-transparent;
     box-shadow: var(--shadow-sm);
   }
-  
+
   .form-label {
     @apply block text-sm font-medium mb-1;
     color: var(--text-secondary);
   }
-  
+
   /* Card styling - refined for elegance */
   .card {
     background-color: var(--bg-card);
@@ -263,7 +287,7 @@ p, li, a, button, input, textarea {
     transition: all 0.3s ease;
     border: 1px solid rgba(0, 0, 0, 0.05);
   }
-  
+
   .card:hover {
     transform: translateY(-3px);
     box-shadow: var(--shadow-lg);
@@ -291,22 +315,28 @@ p, li, a, button, input, textarea {
 }
 
 .ro-flag-animate::before {
-  content: '';
+  content: "";
   position: absolute;
   top: 0;
   left: 0;
   right: 0;
   bottom: 0;
-  background: linear-gradient(to right,
-    var(--ro-blue) 0%, var(--ro-blue) 33.33%,
-    var(--ro-yellow) 33.33%, var(--ro-yellow) 66.66%,
-    var(--ro-red) 66.66%, var(--ro-red) 100%);
+  background: linear-gradient(
+    to right,
+    var(--ro-blue) 0%,
+    var(--ro-blue) 33.33%,
+    var(--ro-yellow) 33.33%,
+    var(--ro-yellow) 66.66%,
+    var(--ro-red) 66.66%,
+    var(--ro-red) 100%
+  );
   opacity: 0.85; /* Slightly transparent to soften */
   animation: flag-wave 10s ease-in-out infinite;
 }
 
 @keyframes flag-wave {
-  0%, 100% {
+  0%,
+  100% {
     transform: skewY(0deg);
   }
   50% {
@@ -367,7 +397,7 @@ p, li, a, button, input, textarea {
 
 .section-title {
   @apply text-3xl md:text-4xl font-bold mb-6 text-center;
-  font-family: 'Playfair Display', serif;
+  font-family: "Playfair Display", serif;
   color: var(--text-primary);
 }
 
@@ -381,27 +411,31 @@ p, li, a, button, input, textarea {
   position: relative;
   overflow: hidden;
   padding: 5rem 0;
-  background: linear-gradient(135deg, 
-    rgba(255, 255, 255, 0.95) 0%, 
-    rgba(247, 250, 252, 0.9) 100%);
+  background: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.95) 0%,
+    rgba(247, 250, 252, 0.9) 100%
+  );
 }
 
 .hero-container::before {
-  content: '';
+  content: "";
   position: absolute;
   top: 0;
   left: 0;
   right: 0;
   bottom: 0;
-  background: linear-gradient(135deg, 
-    rgba(44, 82, 130, 0.05) 0%, 
-    rgba(76, 154, 255, 0.05) 100%);
+  background: linear-gradient(
+    135deg,
+    rgba(44, 82, 130, 0.05) 0%,
+    rgba(76, 154, 255, 0.05) 100%
+  );
   z-index: -1;
 }
 
 .hero-title {
   color: var(--text-primary);
-  font-family: 'Playfair Display', serif;
+  font-family: "Playfair Display", serif;
   font-weight: 700;
   font-size: 3rem;
   line-height: 1.2;
@@ -459,11 +493,11 @@ p, li, a, button, input, textarea {
   .hero-title {
     font-size: 2rem;
   }
-  
+
   .hero-subtitle {
     font-size: 1.25rem;
   }
-  
+
   .section-title {
     font-size: 1.75rem;
   }

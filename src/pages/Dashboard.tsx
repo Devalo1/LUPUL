@@ -29,7 +29,7 @@ import {
   requestRoleChange,
   checkPendingRoleRequests,
 } from "../utils/userRoles";
-import AISettingsPanel from "../components/user/AISettingsPanel";
+import "../components/AssistantProfileDashboard.css";
 
 // Define custom user type extending Firebase User
 interface ExtendedUser {
@@ -84,9 +84,6 @@ const Dashboard: React.FC = () => {
     "none" | "success" | "error" | "existing"
   >("none");
   const [hasPendingRoleRequest, setHasPendingRoleRequest] = useState(false);
-
-  // AI Settings state
-  const [isAISettingsOpen, setIsAISettingsOpen] = useState(false);
 
   // Redirect if not authenticated
   useEffect(() => {
@@ -613,9 +610,9 @@ const Dashboard: React.FC = () => {
                 />
               </svg>
               Evenimente
-            </button>
+            </button>{" "}
             <button
-              onClick={() => setIsAISettingsOpen(true)}
+              onClick={() => navigate("/dashboard/AIsettings")}
               className="p-3 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 transition duration-200 text-sm font-medium flex flex-col items-center col-span-2"
             >
               <svg
@@ -1166,9 +1163,12 @@ const Dashboard: React.FC = () => {
         </div>
       )}{" "}
       {/* AI Settings Panel */}
-      {isAISettingsOpen && (
+      {/* {isAISettingsOpen && (
         <AISettingsPanel onClose={() => setIsAISettingsOpen(false)} />
-      )}
+      )} */}
+      {/* Assistant Profile Dashboard */}
+      {/* Eliminăm complet AssistantProfileDashboard din dashboard dacă nu vrei să apară deloc */}
+      {/* <AssistantProfileDashboard onEdit={() => setEditOpen(true)} /> */}
     </div>
   );
 };

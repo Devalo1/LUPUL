@@ -25,10 +25,12 @@ const Ong = lazyLoad(() => import("../pages/Ong"));
 const Terapie = lazyLoad(() => import("../pages/Terapie"));
 const TerapiePsihica = lazyLoad(() => import("../pages/terapie/Psihica"));
 const TerapieFizica = lazyLoad(() => import("../pages/terapie/Fizica"));
-const AIAdmin = lazyLoad(() => import("../pages/AIAdmin"));
 
 // Import lazy pentru paginile ce necesită autentificare
 const Dashboard = lazyLoad(() => import("../pages/Dashboard"));
+const DashboardAISettings = lazyLoad(
+  () => import("../pages/dashboard/AIsettings")
+);
 const UserHome = lazyLoad(() => import("../pages/UserHome"));
 const Profile = lazyLoad(() => import("../pages/Profile"));
 const ProfileInfo = lazyLoad(() => import("../pages/ProfileInfo"));
@@ -137,16 +139,20 @@ const AppRoutes: React.FC = () => {
         path="/terapie/fizica"
         element={<LazyComponent component={<TerapieFizica />} />}
       />
-      <Route
-        path="/ai-admin"
-        element={<LazyComponent component={<AIAdmin />} />}
-      />
       {/* Rute protejate (necesită autentificare) */}
       <Route
         path="/dashboard"
         element={
           <ProtectedRoute>
             <LazyComponent component={<Dashboard />} />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/dashboard/AIsettings"
+        element={
+          <ProtectedRoute>
+            <LazyComponent component={<DashboardAISettings />} />
           </ProtectedRoute>
         }
       />{" "}

@@ -1,0 +1,42 @@
+.assistant-profile-dashboard {
+  background: #fff;
+  border-radius: 18px;
+  box-shadow: 0 2px 16px rgba(0, 0, 0, 0.1);
+  padding: 32px 24px;
+  max-width: 420px;
+  margin: 32px auto;
+}
+.assistant-profile-dashboard__main {
+  display: flex;
+  gap: 18px;
+  align-items: center;
+  margin-bottom: 18px;
+}
+.assistant-profile-dashboard__edit {
+  margin: 12px 0 24px 0;
+  padding: 8px 18px;
+  border-radius: 8px;
+  border: none;
+  background: #1a237e;
+  color: #fff;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+.assistant-profile-dashboard__edit:hover {
+  background: #3949ab;
+}
+.assistant-profile-dashboard__history {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  font-size: 0.98em;
+}
+.assistant-profile-dashboard__history li {
+  margin-bottom: 7px;
+  color: #444;
+}
+.assistant-profile-dashboard__avatar {
+  width: 80px;
+  border-radius: 16px;
+}

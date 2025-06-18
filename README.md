@@ -7,6 +7,7 @@ This is a comprehensive React-based platform for "Lupul și Corbul" (The Wolf an
 ## Features
 
 ### Core Features
+
 - Responsive design with modern UI
 - Product catalog with advanced search and filtering
 - Shopping cart with localStorage persistence
@@ -16,6 +17,7 @@ This is a comprehensive React-based platform for "Lupul și Corbul" (The Wolf an
 - Order management and tracking
 
 ### AI Assistant Widget 🤖
+
 - **Messenger-style floating widget** - Always accessible, draggable interface
 - **Modal chat with dual layout** - 25% conversation history, 75% active chat
 - **Real conversation history** - Per-user, saved in Firestore with auto-generated subjects
@@ -63,6 +65,7 @@ This is a comprehensive React-based platform for "Lupul și Corbul" (The Wolf an
 ### Development
 
 Start the development server:
+
 ```
 npm run dev
 ```
@@ -72,16 +75,19 @@ npm run dev
 Pentru a rula aplicația corect cu emulatorii Firebase, urmează acești pași:
 
 1. **Pornește emulatorii Firebase într-un terminal:**
+
 ```bash
 npm run emulators
 ```
 
 2. **Pornește aplicația într-un alt terminal:**
+
 ```bash
 npm run dev
 ```
 
 3. **Sau pornește ambele simultan:**
+
 ```bash
 npm run dev:all
 ```
@@ -91,6 +97,7 @@ npm run dev:all
 Dacă întâmpini erori de conexiune precum `ERR_CONNECTION_REFUSED` când accesezi portul 8080 (Firestore) sau alte porturi ale emulatorilor:
 
 1. Verifică dacă emulatorii rulează:
+
 ```bash
 npm run check-emulators
 ```
@@ -98,6 +105,7 @@ npm run check-emulators
 2. Asigură-te că porturile nu sunt blocate de firewall sau alte aplicații.
 
 3. Pentru probleme persistente, încearcă să resetezi emulatorii:
+
 ```bash
 firebase emulators:stop
 firebase emulators:start
@@ -189,6 +197,7 @@ VITE_USE_EMULATORS=false
 #### Build Optimizations
 
 The build is optimized with:
+
 - Bundle splitting for better caching
 - Gzip and Brotli compression
 - CSS and JS minification

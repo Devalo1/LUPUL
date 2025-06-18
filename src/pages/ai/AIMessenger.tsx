@@ -4,39 +4,12 @@ import { useAssistantProfile } from "../../contexts/useAssistantProfile";
 import { useConversations } from "../../hooks/useConversations";
 import { getAIAssistantName } from "../../utils/aiNameUtils";
 import { getTherapyResponse } from "../../services/openaiService";
+import { fetchAIResponseSafe } from "../../utils/aiApiUtils";
 import { Timestamp } from "firebase/firestore";
 import "./AIMessenger.css";
 
-// Același serviciu OpenAI ca în widget
-async function fetchAIResponse(
-  prompt: string,
-  assistantProfile: { name: string; addressMode: string }
-) {
-  try {
-    const systemPrompt = `${assistantProfile.name} este un asistent AI personal amabil și profesionist care vorbește română perfect. Oferă sprijin general pentru viața de zi cu zi, organizare, productivitate, dezvoltare personală și rezolvarea problemelor cotidiene.
-
-IMPORTANTE DESPRE GRAMATICA ROMÂNĂ:
-- Folosește DOAR gramatica română standard, corectă și impecabilă
-- Respectă toate regulile de ortografie și punctuație
-- Acordul în gen și număr să fie perfect
-- Folosește diacriticele obligatoriu (ă, â, î, ș, ț)
-- Verifică de două ori fiecare propoziție înainte de a răspunde
-- Folosește forme de plural corecte și conjugări verbale precise
-- Evită barbarismele și anglicismele inutile
-
-Folosește modul de adresare: ${assistantProfile.addressMode}. Fii empatic, constructiv și orientat pe soluții practice, dar mai presus de toate, să vorbești româna perfect.`;
-
-    const messages = [
-      { role: "system", content: systemPrompt },
-      { role: "user", content: prompt },
-    ];
-    const response = await getTherapyResponse(messages, "general");
-    return response || "(Fără răspuns AI)";
-  } catch (err) {
-    console.error("Eroare la fetchAIResponse:", err);
-    return "(Eroare la răspunsul AI. Încearcă din nou mai târziu.)";
-  }
-}
+// Folosește funcția sigură pentru AI Response (adaptată pentru producție)
+const fetchAIResponse = fetchAIResponseSafe;
 
 const AIMessenger: React.FC = () => {
   const { user } = useAuth();
@@ -83,7 +56,7 @@ const AIMessenger: React.FC = () => {
           return;
         }
         setActiveConversationId(convId);
-      }      // Add user message
+      } // Add user message
       await addMessage({
         id: Date.now().toString(),
         sender: "user",
@@ -94,7 +67,7 @@ const AIMessenger: React.FC = () => {
       // Get AI response
       setAiTyping(true);
       const aiReply = await fetchAIResponse(userMessage, assistantProfile);
-      setAiTyping(false);      // Add AI response
+      setAiTyping(false); // Add AI response
       await addMessage({
         id: (Date.now() + 1).toString(),
         sender: "ai",
@@ -103,13 +76,20 @@ const AIMessenger: React.FC = () => {
       });
 
       // Generate title if this is the first exchange and conversation has no subject
-      if (activeConversation && (!activeConversation.subject || activeConversation.subject === "")) {
-        console.log("[AIMessenger] Generez titlu automat pentru conversația:", convId);
-        
+      if (
+        activeConversation &&
+        (!activeConversation.subject || activeConversation.subject === "")
+      ) {
+        console.log(
+          "[AIMessenger] Generez titlu automat pentru conversația:",
+          convId
+        );
+
         const titleMessages = [
           {
             role: "system",
-            content: "Ești un asistent care creează titluri pentru conversații folosind gramatica română perfectă. Analizează conversația și creează un titlu scurt, relevant și descriptiv în română standard (maxim 5 cuvinte). OBLIGATORIU să folosești diacriticele corecte (ă, â, î, ș, ț) și să respecti toate regulile gramaticale. Răspunde DOAR cu titlul, fără ghilimele sau explicații. Exemplu bun: 'Planificare vacanță în Greece' sau 'Sfaturi pentru productivitate'.",
+            content:
+              "Ești un asistent care creează titluri pentru conversații folosind gramatica română perfectă. Analizează conversația și creează un titlu scurt, relevant și descriptiv în română standard (maxim 5 cuvinte). OBLIGATORIU să folosești diacriticele corecte (ă, â, î, ș, ț) și să respecti toate regulile gramaticale. Răspunde DOAR cu titlul, fără ghilimele sau explicații. Exemplu bun: 'Planificare vacanță în Greece' sau 'Sfaturi pentru productivitate'.",
           },
           {
             role: "user",
@@ -118,13 +98,19 @@ const AIMessenger: React.FC = () => {
         ];
 
         try {
-          const generatedTitle = await getTherapyResponse(titleMessages, "general");
-          const cleanTitle = generatedTitle?.replace(/['"]/g, "").trim() || "Conversație generală";
+          const generatedTitle = await getTherapyResponse(
+            titleMessages,
+            "general"
+          );
+          const cleanTitle =
+            generatedTitle?.replace(/['"]/g, "").trim() ||
+            "Conversație generală";
           console.log("[AIMessenger] Titlu generat:", cleanTitle);
           await renameConversation(convId, cleanTitle);
         } catch (err) {
           console.error("Eroare la generarea titlului:", err);
-          const fallbackTitle = userMessage.slice(0, 30) + (userMessage.length > 30 ? "..." : "");
+          const fallbackTitle =
+            userMessage.slice(0, 30) + (userMessage.length > 30 ? "..." : "");
           await renameConversation(convId, fallbackTitle);
         }
       }
@@ -165,7 +151,7 @@ const AIMessenger: React.FC = () => {
               + Nouă
             </button>
           </div>
-          
+
           <div className="ai-messenger__conversations">
             {conversations.length === 0 ? (
               <div className="ai-messenger__empty">
@@ -279,12 +265,13 @@ const AIMessenger: React.FC = () => {
                 </div>
                 <h3>Bună ziua! Sunt {assistantName}</h3>
                 <p>
-                  Sunt aici să te ajut cu orice întrebări sau sarcini ai.
-                  Cum te pot ajuta astăzi?
+                  Sunt aici să te ajut cu orice întrebări sau sarcini ai. Cum te
+                  pot ajuta astăzi?
                 </p>
               </div>
             ) : (
-              activeConversation?.messages?.map((message) => (                <div
+              activeConversation?.messages?.map((message) => (
+                <div
                   key={message.id}
                   className={`ai-messenger__message ai-messenger__message--${message.sender}`}
                 >
@@ -292,14 +279,11 @@ const AIMessenger: React.FC = () => {
                     {message.content}
                   </div>
                   <div className="ai-messenger__message-time">
-                    {message.timestamp &&
-                    message.timestamp instanceof Timestamp
-                      ? message.timestamp
-                          .toDate()
-                          .toLocaleTimeString("ro-RO", {
-                            hour: "2-digit",
-                            minute: "2-digit",
-                          })
+                    {message.timestamp && message.timestamp instanceof Timestamp
+                      ? message.timestamp.toDate().toLocaleTimeString("ro-RO", {
+                          hour: "2-digit",
+                          minute: "2-digit",
+                        })
                       : ""}
                   </div>
                 </div>

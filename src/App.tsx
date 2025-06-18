@@ -1,5 +1,7 @@
 import React, { useEffect } from "react";
 import { BrowserRouter as Router } from "react-router-dom";
+import { ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 import ErrorBoundary from "./ErrorBoundary";
 import AppLayout from "./components/AppLayout";
 import { AuthProvider } from "./contexts/AuthContextProvider";
@@ -45,8 +47,19 @@ const App: React.FC = () => {
                     {" "}
                     {/* Componenta care inițializează datele în Firestore */}
                     <DataInitializer />{" "}
-                    {/* Toate rutele sunt gestionate în AppLayout */}
+                    {/* Toate rutele sunt gestionate în AppLayout */}{" "}
                     <AppLayout />
+                    <ToastContainer
+                      position="top-right"
+                      autoClose={4000}
+                      hideProgressBar={false}
+                      newestOnTop={false}
+                      closeOnClick
+                      rtl={false}
+                      pauseOnFocusLoss
+                      draggable
+                      pauseOnHover
+                    />
                   </ConversationsProvider>
                 </AssistantProfileProvider>
               </CategoryProvider>

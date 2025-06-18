@@ -22,6 +22,7 @@ const NotFound = lazyLoad(() => import("../pages/NotFound"));
 const Services = lazyLoad(() => import("../pages/Services"));
 const PrivacyPolicy = lazyLoad(() => import("../pages/PrivacyPolicy"));
 const Ong = lazyLoad(() => import("../pages/Ong"));
+const Formular230Page = lazyLoad(() => import("../pages/Formular230Page"));
 const Terapie = lazyLoad(() => import("../pages/Terapie"));
 const TerapiePsihica = lazyLoad(() => import("../pages/terapie/Psihica"));
 const TerapieFizica = lazyLoad(() => import("../pages/terapie/Fizica"));
@@ -123,9 +124,14 @@ const AppRoutes: React.FC = () => {
       <Route
         path="/product/:id"
         element={<LazyComponent component={<ProductDetails />} />}
-      />
+      />{" "}
       {/* Rută pentru ONG */}
-      <Route path="/ong" element={<LazyComponent component={<Ong />} />} />{" "}
+      <Route path="/ong" element={<LazyComponent component={<Ong />} />} />
+      {/* Rută pentru Formularul 230 */}
+      <Route
+        path="/formular-230"
+        element={<LazyComponent component={<Formular230Page />} />}
+      />
       {/* Rută pentru Terapie */}
       <Route
         path="/terapie"

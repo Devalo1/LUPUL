@@ -6,38 +6,11 @@ import { useNavigate, useLocation } from "react-router-dom";
 import { getAIAssistantName } from "../utils/aiNameUtils";
 import { useConversations } from "../hooks/useConversations";
 import { Timestamp } from "firebase/firestore";
+import { fetchAIResponseSafe } from "../utils/aiApiUtils";
 import { getTherapyResponse } from "../services/openaiService";
 
-// Folosește același serviciu OpenAI ca și terapia (direct din frontend)
-async function fetchAIResponse(
-  prompt: string,
-  assistantProfile: { name: string; addressMode: string }
-) {
-  try {
-    const systemPrompt = `${assistantProfile.name} este un asistent AI personal amabil și profesionist care vorbește română perfect. Oferă sprijin general pentru viața de zi cu zi, organizare, productivitate, dezvoltare personală și rezolvarea problemelor cotidiene.
-
-IMPORTANTE DESPRE GRAMATICA ROMÂNĂ:
-- Folosește DOAR gramatica română standard, corectă și impecabilă
-- Respectă toate regulile de ortografie și punctuație
-- Acordul în gen și număr să fie perfect
-- Folosește diacriticele obligatoriu (ă, â, î, ș, ț)
-- Verifică de două ori fiecare propoziție înainte de a răspunde
-- Folosește forme de plural corecte și conjugări verbale precise
-- Evită barbarismele și anglicismele inutile
-
-Folosește modul de adresare: ${assistantProfile.addressMode}. Fii empatic, constructiv și orientat pe soluții practice, dar mai presus de toate, să vorbești româna perfect.`;
-
-    const messages = [
-      { role: "system", content: systemPrompt },
-      { role: "user", content: prompt },
-    ];
-    const response = await getTherapyResponse(messages, "general");
-    return response || "(Fără răspuns AI)";
-  } catch (err) {
-    console.error("Eroare la fetchAIResponse:", err);
-    return "(Eroare la răspunsul AI. Încearcă din nou mai târziu.)";
-  }
-}
+// Folosește funcția sigură pentru AI Response (adaptată pentru producție)
+const fetchAIResponse = fetchAIResponseSafe;
 
 const AIAssistantWidget: React.FC = () => {
   const { profileState } = useAssistantProfile();
@@ -330,7 +303,9 @@ const AIAssistantWidget: React.FC = () => {
                 />
                 <span>{assistantName}</span>
               </div>
-              <div className="ai-assistant-widget__modal-actions">                <button
+              <div className="ai-assistant-widget__modal-actions">
+                {" "}
+                <button
                   className="ai-assistant-widget__fullscreen-btn"
                   onClick={() => {
                     setOpen(false);

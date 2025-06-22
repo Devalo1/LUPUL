@@ -1,12 +1,14 @@
 /* Emergency background fix with highest priority */
-html, body {
+html,
+body {
   margin: 0 !important;
   padding: 0 !important;
   height: 100% !important;
   overflow-x: hidden !important;
 }
 
-/* Force background image on body with maximum z-index priority */
+/* Background fix - dezactivat pentru a evita dublarea */
+/*
 body::before {
   content: "";
   position: fixed;
@@ -21,6 +23,7 @@ body::before {
   background-repeat: no-repeat;
   background-attachment: fixed;
 }
+*/
 
 /* Remove all backgrounds from containers to let the body background show through */
 body,
@@ -36,7 +39,9 @@ main {
 }
 
 /* Make regular content semi-transparent with a dark overlay */
-.content-section:not(nav):not(header):not(footer):not(.button-container):not(.navbar-container):not(.home-buttons) {
+.content-section:not(nav):not(header):not(footer):not(.button-container):not(
+    .navbar-container
+  ):not(.home-buttons) {
   background-color: rgba(0, 0, 0, 0.7);
   backdrop-filter: blur(5px);
   border-radius: 8px;
@@ -46,8 +51,8 @@ main {
 }
 
 /* Enhanced navbar visibility */
-header, 
-.navbar-romanian-flag, 
+header,
+.navbar-romanian-flag,
 nav {
   position: relative;
   z-index: 1000;
@@ -69,8 +74,8 @@ button,
 .btn-primary,
 .btn-secondary,
 .btn-ro,
-.btn-primary-light, 
-.btn-secondary-light, 
+.btn-primary-light,
+.btn-secondary-light,
 .btn-tertiary-light,
 .btn-gradient-blue,
 .btn-gradient-green,

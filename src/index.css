@@ -1,5 +1,5 @@
-@import './styles/variables.css';
-@import './assets/styles/main.css';
+@import "./styles/variables.css";
+@import "./assets/styles/main.css";
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -19,7 +19,7 @@
   --text-secondary: #555555;
   --accent-color: #5d7fb9;
 
-  font-family: 'Montserrat', sans-serif;
+  font-family: "Montserrat", sans-serif;
   line-height: 1.5;
   font-weight: 400;
 
@@ -59,19 +59,31 @@
 /* Full page background setup - high quality but softer */
 body {
   margin: 0;
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
-    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+  font-family:
+    "Inter",
+    -apple-system,
+    BlinkMacSystemFont,
+    "Segoe UI",
+    "Roboto",
+    "Oxygen",
+    "Ubuntu",
+    "Cantarell",
+    "Fira Sans",
+    "Droid Sans",
+    "Helvetica Neue",
     sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 
-  /* Un overlay mai subtil peste background care reduce intensitatea */
-  background-image: linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)), url('/images/background.jpeg') !important;
-  background-size: cover !important;
-  background-position: center !important;
-  background-repeat: no-repeat !important;
-  background-attachment: fixed !important;
-  color: #f5f5f5; /* Text mai puțin strident */
+  /* Fundal simplificat și optimizat */
+  background-image:
+    linear-gradient(rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.4)),
+    url("/images/background.jpeg");
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-attachment: scroll; /* Schimbat din fixed pentru a evita problemele pe mobile */
+  color: #f5f5f5;
   min-height: 100vh;
 }
 
@@ -112,8 +124,8 @@ body {
 }
 
 /* Ensure primary elements are visible */
-.navbar-container, 
-.footer-container, 
+.navbar-container,
+.footer-container,
 .button-container,
 .home-buttons {
   position: relative;
@@ -146,7 +158,8 @@ body {
 }
 
 /* Fixed header/navbar */
-header, .navbar-romanian-flag {
+header,
+.navbar-romanian-flag {
   position: fixed;
   top: 0;
   left: 0;
@@ -203,11 +216,11 @@ button:focus-visible {
   .btn-primary-light {
     @apply bg-blue-500 bg-opacity-90 text-white rounded-lg font-semibold hover:bg-blue-600 transition-colors;
   }
-  
+
   .btn-secondary-light {
     @apply bg-green-600 bg-opacity-90 text-white rounded-lg font-semibold hover:bg-green-700 transition-colors;
   }
-  
+
   .btn-tertiary-light {
     @apply bg-indigo-500 bg-opacity-90 text-white rounded-lg font-semibold hover:bg-indigo-600 transition-colors;
   }
@@ -215,8 +228,12 @@ button:focus-visible {
 
 /* Add the fade-out animation for loaders */
 @keyframes fadeOut {
-  from { opacity: 1; }
-  to { opacity: 0; }
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
 }
 
 .fade-out {
@@ -231,7 +248,7 @@ button:focus-visible {
     transition-duration: 0.01ms !important;
     scroll-behavior: auto !important;
   }
-  
+
   .animate-spin {
     animation-duration: 1s !important;
   }
@@ -240,7 +257,9 @@ button:focus-visible {
 /* Mobile performance optimizations */
 @media screen and (max-width: 768px) {
   /* Force hardware acceleration for animations */
-  .animate-spin, .loading-spinner-container, .loading-spinner-inner {
+  .animate-spin,
+  .loading-spinner-container,
+  .loading-spinner-inner {
     transform: translateZ(0);
     will-change: transform;
     backface-visibility: hidden;
@@ -254,9 +273,11 @@ button:focus-visible {
 }
 
 .bg-gradient-subtle {
-  background: linear-gradient(135deg, 
-    rgba(255, 255, 255, 0.8) 0%, 
-    rgba(247, 250, 252, 0.9) 100%);
+  background: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.8) 0%,
+    rgba(247, 250, 252, 0.9) 100%
+  );
 }
 
 /* Additional responsive utilities */
@@ -449,7 +470,9 @@ label {
   font-weight: 600;
   font-size: 1rem;
   cursor: pointer;
-  transition: background-color 0.2s ease, transform 0.2s ease;
+  transition:
+    background-color 0.2s ease,
+    transform 0.2s ease;
 }
 
 .btn-primary:hover {
@@ -465,7 +488,9 @@ label {
   font-weight: 600;
   font-size: 1rem;
   cursor: pointer;
-  transition: background-color 0.2s ease, transform 0.2s ease;
+  transition:
+    background-color 0.2s ease,
+    transform 0.2s ease;
   margin-top: 1rem;
 }
 

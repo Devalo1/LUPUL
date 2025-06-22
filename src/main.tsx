@@ -359,13 +359,15 @@ async function initializeAndRenderApp() {
     const appVersion = import.meta.env.VITE_APP_VERSION || "1.0.0";
     console.info(
       `Aplicația Lupul și Corbul s-a inițializat - Versiune: ${appVersion}`
-    );
-
-    // Randăm aplicația doar după ce Firebase a fost inițializat
+    ); // Randăm aplicația doar după ce Firebase a fost inițializat
     ReactDOM.createRoot(document.getElementById("root")!).render(
-      <React.StrictMode>
+      isProd ? (
+        <React.StrictMode>
+          <App />
+        </React.StrictMode>
+      ) : (
         <App />
-      </React.StrictMode>
+      )
     );
 
     // Raportare Web Vitals - activă doar în producție

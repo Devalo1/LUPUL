@@ -132,7 +132,7 @@ const Formular230: React.FC = () => {
     pdf.setFont("helvetica", "bold");
     pdf.text("CĂTRE:", 20, 60);
     pdf.setFont("helvetica", "normal");
-    pdf.text('Asociația "Făuritorii de Destin"', 20, 70);
+    pdf.text("Asociația \"Făuritorii de Destin\"", 20, 70);
     pdf.text("Cod Fiscal: RO12345678", 20, 80);
     pdf.text("Cont IBAN: RO98BTRL12345678901234567", 20, 90);
 
@@ -192,7 +192,7 @@ const Formular230: React.FC = () => {
 
     const declaratieText = [
       "Prin prezenta, solicit redirecționarea unei cote de până la 3,5% din impozitul",
-      'pe venitul datorat către Asociația "Făuritorii de Destin", în conformitate',
+      "pe venitul datorat către Asociația \"Făuritorii de Destin\", în conformitate",
       "cu prevederile Legii nr. 571/2003 privind Codul fiscal.",
     ];
 

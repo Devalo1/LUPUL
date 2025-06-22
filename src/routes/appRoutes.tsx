@@ -32,6 +32,7 @@ const Dashboard = lazyLoad(() => import("../pages/Dashboard"));
 const DashboardAISettings = lazyLoad(
   () => import("../pages/dashboard/AIsettings")
 );
+const AIMessenger = lazyLoad(() => import("../pages/ai/AIMessengerAdvanced"));
 const UserHome = lazyLoad(() => import("../pages/UserHome"));
 const Profile = lazyLoad(() => import("../pages/Profile"));
 const ProfileInfo = lazyLoad(() => import("../pages/ProfileInfo"));
@@ -153,7 +154,7 @@ const AppRoutes: React.FC = () => {
             <LazyComponent component={<Dashboard />} />
           </ProtectedRoute>
         }
-      />
+      />{" "}
       <Route
         path="/dashboard/AIsettings"
         element={
@@ -162,6 +163,14 @@ const AppRoutes: React.FC = () => {
           </ProtectedRoute>
         }
       />{" "}
+      <Route
+        path="/ai-messenger"
+        element={
+          <ProtectedRoute>
+            <LazyComponent component={<AIMessenger />} />
+          </ProtectedRoute>
+        }
+      />
       <Route
         path="/profile"
         element={

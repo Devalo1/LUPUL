@@ -133,9 +133,7 @@ service cloud.firestore {
       allow create: if isAuthenticated() && request.auth.uid == request.resource.data.userId;
       allow update: if isAuthenticated() && (request.auth.uid == resource.data.userId || request.auth.uid == resource.data.specialistId || isAdmin());
       allow delete: if isAdmin();
-    }
-
-    // AI Assistant Conversations - Messenger widget
+    }    // AI Assistant Conversations - Messenger widget
     match /conversations/{conversationId} {
       // Allow authenticated users to read their own conversations
       allow read: if isAuthenticated() && resource.data.userId == request.auth.uid;
@@ -144,6 +142,14 @@ service cloud.firestore {
       // Allow authenticated users to update/delete their own conversations
       allow update, delete: if isAuthenticated() && resource.data.userId == request.auth.uid;
       // Admins can do anything
+      allow read, write: if isAdmin();
+    }
+
+    // User Personality Profiles - profilurile de personalizare AI bazate pe analiza conversațiilor
+    match /userPersonalityProfiles/{userId} {
+      // Only the user can read and write their own personality profile
+      allow read, write: if isAuthenticated() && request.auth.uid == userId;
+      // Admins can access any profile for debugging/support
       allow read, write: if isAdmin();
     }
 

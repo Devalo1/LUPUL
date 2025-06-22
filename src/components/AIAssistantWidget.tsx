@@ -47,9 +47,57 @@ const AIAssistantWidget: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [aiTyping, setAiTyping] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  // Enhanced drag handlers with viewport constraints  // Handler pentru deschiderea AI Messenger pe tot ecranul
+  const handleFullscreen = () => {
+    console.log("[AIWidget] Buton fullscreen apăsat");
+    console.log("[AIWidget] User autentificat:", !!user);
+    console.log("[AIWidget] User ID:", user?.uid);
+    console.log("[AIWidget] Current location:", window.location.href);
 
-  // Drag handlers (desktop + mobil)
+    if (!user) {
+      alert("Trebuie să te autentifici pentru a accesa această funcție.");
+      return;
+    } // Adaugă feedback vizual
+    const button = document.querySelector(
+      ".ai-assistant-widget__fullscreen-btn"
+    );
+    if (button) {
+      button.textContent = "⏳";
+      button.setAttribute("disabled", "true");
+    }
+    console.log("[AIWidget] Navighez către AI Messenger folosind React Router");
+
+    try {
+      handleClose();
+
+      // Folosește React Router pentru navigare pe același port
+      // Aceasta va funcționa corect atât pe Vite (5173) cât și pe Netlify (8888)
+      console.log("[AIWidget] Navighez către /ai-messenger pe portul curent");
+
+      // Mică întârziere pentru feedback vizual
+      setTimeout(() => {
+        // Folosește React Router navigate pentru navigare pe același server
+        navigate("/ai-messenger");
+      }, 200);
+    } catch (error) {
+      console.error("Eroare la navigarea către AI Messenger:", error); // Resetează butonul în caz de eroare
+      if (button) {
+        button.textContent = "⬜";
+        button.removeAttribute("disabled");
+      } // Fallback cu React Router
+      setTimeout(() => {
+        navigate("/ai-messenger");
+      }, 300);
+    }
+  };
+
+  // Enhanced drag handlers with improved mobile detection and constraints
   const handleDragStart = (e: React.MouseEvent | React.TouchEvent) => {
+    // Disable dragging on mobile devices
+    if (window.innerWidth <= 768) {
+      return;
+    }
+
     setDragging(true);
     let clientX = 0,
       clientY = 0;
@@ -67,8 +115,10 @@ const AIAssistantWidget: React.FC = () => {
     });
     e.preventDefault();
   };
+
   const handleDrag = (e: MouseEvent | TouchEvent) => {
-    if (!dragging) return;
+    if (!dragging || window.innerWidth <= 768) return;
+
     let clientX = 0,
       clientY = 0;
     if ("touches" in e && e.touches.length > 0) {
@@ -78,9 +128,45 @@ const AIAssistantWidget: React.FC = () => {
       clientX = (e as MouseEvent).clientX;
       clientY = (e as MouseEvent).clientY;
     }
-    setModalPos({ x: clientX - dragOffset.x, y: clientY - dragOffset.y });
+
+    // Calculate new position with enhanced viewport constraints
+    const newX = clientX - dragOffset.x;
+    const newY = clientY - dragOffset.y;
+
+    const viewport = {
+      width: window.innerWidth,
+      height: window.innerHeight,
+    };
+
+    const modal = {
+      width: modalDimensions.width,
+      height: modalDimensions.height,
+    };
+
+    // Enhanced constraints with safety margins
+    const minPadding = 10;
+    const constrainedX = Math.max(
+      minPadding,
+      Math.min(newX, viewport.width - modal.width - minPadding)
+    );
+    const constrainedY = Math.max(
+      minPadding,
+      Math.min(newY, viewport.height - modal.height - minPadding)
+    );
+
+    setModalPos({ x: constrainedX, y: constrainedY });
   };
   const handleDragEnd = () => setDragging(false);
+
+  // Enhanced close handler for better UX
+  const handleClose = () => {
+    setOpen(false);
+    // Reset position for next opening
+    setTimeout(() => {
+      const optimalPosition = calculateOptimalPosition();
+      setModalPos({ x: optimalPosition.x, y: optimalPosition.y });
+    }, 300);
+  };
 
   useEffect(() => {
     if (dragging) {
@@ -101,29 +187,187 @@ const AIAssistantWidget: React.FC = () => {
       window.removeEventListener("touchend", handleDragEnd);
     };
   }, [dragging, dragOffset]);
-
-  // Previne scroll sub footer când modalul e deschis
+  // Enhanced body scroll management and modal state
   useEffect(() => {
     if (open) {
+      // Prevent body scroll and fix position for mobile
+      document.body.classList.add("modal-open");
       document.body.style.overflow = "hidden";
+      // Store current scroll position
+      const scrollTop =
+        window.pageYOffset || document.documentElement.scrollTop;
+      document.body.style.position = "fixed";
+      document.body.style.top = `-${scrollTop}px`;
+      document.body.style.width = "100%";
     } else {
+      // Restore body scroll
+      document.body.classList.remove("modal-open");
+      const scrollTop = Math.abs(parseInt(document.body.style.top || "0"));
       document.body.style.overflow = "";
+      document.body.style.position = "";
+      document.body.style.top = "";
+      document.body.style.width = "";
+      if (scrollTop > 0) {
+        window.scrollTo(0, scrollTop);
+      }
     }
     return () => {
+      // Cleanup on unmount
+      document.body.classList.remove("modal-open");
       document.body.style.overflow = "";
+      document.body.style.position = "";
+      document.body.style.top = "";
+      document.body.style.width = "";
     };
-  }, [open]);
+  }, [open]); // Enhanced positioning logic with intelligent viewport adaptation
+  const [modalDimensions, setModalDimensions] = useState({
+    width: 450,
+    height: 600,
+  });
 
-  // Poziționează modalul centrat la deschidere
+  // Intelligent positioning system with enhanced mobile support
+  const calculateOptimalPosition = () => {
+    const viewport = {
+      width: window.innerWidth,
+      height: window.innerHeight,
+    };
+
+    const padding = 20;
+
+    // Mobile positioning - optimized full screen overlay
+    if (viewport.width <= 768) {
+      return {
+        x: 10,
+        y: 10,
+        width: Math.min(viewport.width - 20, 420),
+        height: Math.min(viewport.height - 20, viewport.height * 0.9),
+      };
+    }
+
+    // Tablet positioning
+    if (viewport.width <= 1024) {
+      const modal = {
+        width: Math.min(400, viewport.width - 40),
+        height: Math.min(550, viewport.height - 40),
+      };
+
+      return {
+        x: viewport.width - modal.width - padding,
+        y: Math.max(padding, viewport.height - modal.height - padding),
+        width: modal.width,
+        height: modal.height,
+      };
+    }
+
+    // Desktop positioning - smart placement based on available space
+    const modal = {
+      width: modalDimensions.width,
+      height: modalDimensions.height,
+    };
+
+    // Try bottom-right first (preferred)
+    let preferredX = viewport.width - modal.width - padding;
+    let preferredY = viewport.height - modal.height - padding;
+
+    // If not enough space, try other corners
+    if (preferredX < padding) {
+      preferredX = padding; // Left side
+    }
+    if (preferredY < padding) {
+      preferredY = padding; // Top side
+    }
+
+    // Final safety check - ensure modal stays within viewport
+    const safeX = Math.max(
+      padding,
+      Math.min(preferredX, viewport.width - modal.width - padding)
+    );
+    const safeY = Math.max(
+      padding,
+      Math.min(preferredY, viewport.height - modal.height - padding)
+    );
+
+    return {
+      x: safeX,
+      y: safeY,
+      width: modal.width,
+      height: modal.height,
+    };
+  };
+  // Auto-reposition on window resize with debouncing
+  useEffect(() => {
+    let resizeTimeout: NodeJS.Timeout;
+
+    const handleResize = () => {
+      // Clear previous timeout
+      if (resizeTimeout) clearTimeout(resizeTimeout);
+
+      // Debounce resize events for better performance
+      resizeTimeout = setTimeout(() => {
+        if (open) {
+          const newPosition = calculateOptimalPosition();
+          setModalPos({ x: newPosition.x, y: newPosition.y });
+          setModalDimensions({
+            width: newPosition.width,
+            height: newPosition.height,
+          });
+        }
+      }, 150);
+    };
+
+    window.addEventListener("resize", handleResize);
+
+    // Handle orientation change on mobile
+    window.addEventListener("orientationchange", () => {
+      setTimeout(handleResize, 500); // Delay for orientation change
+    });
+
+    return () => {
+      window.removeEventListener("resize", handleResize);
+      window.removeEventListener("orientationchange", handleResize);
+      if (resizeTimeout) clearTimeout(resizeTimeout);
+    };
+  }, [open, modalDimensions]);
+  // Improved modal positioning on open with viewport check
   useEffect(() => {
     if (open && modalRef.current) {
-      const w = window.innerWidth,
-        h = window.innerHeight;
-      const mw = 400,
-        mh = 520;
-      setModalPos({ x: w - mw - 32, y: h - mh - 32 });
+      // Small delay to ensure DOM is ready
+      setTimeout(() => {
+        const optimalPosition = calculateOptimalPosition();
+        setModalPos({ x: optimalPosition.x, y: optimalPosition.y });
+        setModalDimensions({
+          width: optimalPosition.width,
+          height: optimalPosition.height,
+        });
+
+        // Add visual feedback for modal appearance
+        if (modalRef.current) {
+          modalRef.current.style.opacity = "0";
+          modalRef.current.style.transform = "scale(0.9)";
+
+          requestAnimationFrame(() => {
+            if (modalRef.current) {
+              modalRef.current.style.transition =
+                "opacity 0.3s ease, transform 0.3s ease";
+              modalRef.current.style.opacity = "1";
+              modalRef.current.style.transform = "scale(1)";
+            }
+          });
+        }
+      }, 10);
     }
   }, [open]);
+
+  // Apply positioning via DOM manipulation (to avoid inline styles lint warning)
+  useEffect(() => {
+    if (modalRef.current && open) {
+      const modal = modalRef.current;
+      modal.style.setProperty("--modal-x", `${modalPos.x}px`);
+      modal.style.setProperty("--modal-y", `${modalPos.y}px`);
+      modal.style.setProperty("--modal-width", `${modalDimensions.width}px`);
+      modal.style.setProperty("--modal-height", `${modalDimensions.height}px`);
+    }
+  }, [modalPos, modalDimensions, open]);
 
   // Scroll to bottom when messages change
   useEffect(() => {
@@ -141,9 +385,9 @@ const AIAssistantWidget: React.FC = () => {
   useEffect(() => {
     console.log("[AIAssistantWidget] conversations:", conversations);
   }, [conversations]);
-
   // Debug logs pentru a vedea starea
   console.log("[AIWidget] User:", user?.uid, "Location:", location.pathname);
+  console.log("[AIWidget] User autentificat:", !!user);
   console.log(
     "[AIWidget] Conversations:",
     conversations.length,
@@ -189,7 +433,14 @@ const AIAssistantWidget: React.FC = () => {
       });
       setInput(""); // Răspuns real AI via openaiService (ca la terapie)
       setTimeout(async () => {
-        const aiReply = await fetchAIResponse(input.trim(), assistantProfile);
+        console.log(
+          `[AIWidget] Calling fetchAIResponse with userId: ${user?.uid}`
+        );
+        const aiReply = await fetchAIResponse(
+          input.trim(),
+          assistantProfile,
+          user?.uid
+        );
         await addMessage({
           id: (Date.now() + 1).toString(),
           sender: "ai",
@@ -281,13 +532,10 @@ const AIAssistantWidget: React.FC = () => {
       </div>{" "}
       {open && (
         <div className="ai-assistant-widget__modal-overlay">
+          {" "}
           <div
             className="ai-assistant-widget__modal ai-assistant-widget__modal--positioned"
             ref={modalRef}
-            style={{
-              left: modalPos.x,
-              top: modalPos.y,
-            }}
           >
             {/* Header drag handle */}
             <div
@@ -302,22 +550,19 @@ const AIAssistantWidget: React.FC = () => {
                   className="ai-assistant-widget__modal-avatar"
                 />
                 <span>{assistantName}</span>
-              </div>
+              </div>{" "}
               <div className="ai-assistant-widget__modal-actions">
                 {" "}
                 <button
                   className="ai-assistant-widget__fullscreen-btn"
-                  onClick={() => {
-                    setOpen(false);
-                    navigate("/ai-messenger");
-                  }}
+                  onClick={handleFullscreen}
                   title="Deschide pe tot ecranul"
                 >
                   ⬜
                 </button>
                 <button
                   className="ai-assistant-widget__close"
-                  onClick={() => setOpen(false)}
+                  onClick={handleClose}
                   title="Închide chat-ul"
                 >
                   ✕

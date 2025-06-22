@@ -1,6 +1,8 @@
 // Test pentru funcția Netlify AI Chat
 // Rulează acest script pentru a testa funcția în mediul de dezvoltare
 
+import fetch from "node-fetch";
+
 const testNetlifyFunction = async () => {
   console.log("🧪 Testare funcție Netlify AI Chat...\n");
 
@@ -45,13 +47,5 @@ const testNetlifyFunction = async () => {
   }
 };
 
-// Verifică dacă rulează în Node.js
-if (typeof window === "undefined") {
-  // Node.js environment
-  const fetch = require("node-fetch");
-  testNetlifyFunction();
-} else {
-  // Browser environment
-  console.log("Execută din consolă: testNetlifyFunction()");
-  window.testNetlifyFunction = testNetlifyFunction;
-}
+// Rulează testul
+testNetlifyFunction();

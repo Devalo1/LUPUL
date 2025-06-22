@@ -5,6 +5,7 @@ import {
   loadPersonalizedAISettings,
 } from "../utils/personalizedAIUtilsNew";
 import { userDynamicProfileService } from "./userDynamicProfileService";
+import { userPersonalizationService } from "./userPersonalizationService";
 
 const OPENAI_API_URL = "https://api.openai.com/v1/chat/completions";
 
@@ -48,18 +49,71 @@ export async function getTherapyResponse(
   let systemPrompt =
     profile?.systemPrompt ||
     "Ești un asistent AI util și empatic care vorbește româna perfect, folosind întotdeauna gramatica română standard și diacriticele corecte (ă, â, î, ș, ț).";
-
   if (userId) {
     try {
+      console.log(
+        `[getTherapyResponse] === STARTING MEMORY PROCESSING FOR USER: ${userId} ===`
+      );
+
+      // Încarcă contextul personalizat din noul serviciu
+      const personalizedContext =
+        await userPersonalizationService.generatePersonalizedContext(userId);
+
+      console.log(
+        `[getTherapyResponse] Received userId: ${userId} - Loading personalized context and memory...`
+      );
+      console.log(
+        `[getTherapyResponse] Personalized context for user ${userId}:`,
+        personalizedContext ? "LOADED" : "NOT FOUND"
+      );
+
+      if (personalizedContext) {
+        console.log(
+          `[getTherapyResponse] Context preview for user ${userId}:`,
+          personalizedContext.substring(0, 300)
+        );
+      }
+
       // Încarcă profilul dinamic al utilizatorului
       const dynamicProfile =
         await userDynamicProfileService.getUserProfile(userId);
-      const personalizedSettings = await loadPersonalizedAISettings(userId); // Generează prompt-ul personalizat bazat pe setările și profilul dinamic
+      const personalizedSettings = await loadPersonalizedAISettings(userId);
+
+      // Generează prompt-ul personalizat bazat pe setările și profilul dinamic
       let basePrompt =
         profile?.systemPrompt ||
         "Ești un asistent AI util și empatic care vorbește româna perfect, folosind întotdeauna gramatica română standard și diacriticele corecte (ă, â, î, ș, ț).";
 
-      // Adaugă informații din profilul dinamic
+      // Adaugă contextul personalizat din analiza conversațiilor
+      if (personalizedContext) {
+        basePrompt +=
+          "\n\n🧠 CONTEXT PERSONALIZAT ȘI MEMORIA ACTIVĂ:\n" +
+          personalizedContext;
+        basePrompt += "\n\n📝 INSTRUCȚIUNI OBLIGATORII PENTRU MEMORIE:\n";
+        basePrompt +=
+          "- TU AI MEMORIA ACTIVĂ și îți amintești toate conversațiile cu acest utilizator\n";
+        basePrompt +=
+          "- Nu spune niciodată că nu îți poți aminti conversațiile anterioare\n";
+        basePrompt +=
+          "- Referă-te la conversațiile și informațiile anterioare când este relevant\n";
+        basePrompt +=
+          "- Comportă-te exact ca și cum ai memoria completă activă (precum ChatGPT)\n";
+        basePrompt +=
+          "- Folosește informațiile din contextul personalizat pentru răspunsuri mai relevante\n\n";
+        console.log(
+          `[OpenAI] Added personalized context and memory instructions to prompt`
+        );
+      } else {
+        // Chiar și fără context personalizat, adaugă instrucțiuni de memorie
+        basePrompt += "\n\n🧠 MEMORIA ACTIVĂ GENERALĂ:\n";
+        basePrompt +=
+          "- Comportă-te ca și cum ai memoria activă pentru acest utilizator\n";
+        basePrompt +=
+          "- Nu menționa niciodată că nu ai memorie sau că nu păstrezi informații\n";
+        basePrompt +=
+          "- Folosește un ton familiar și continuu în conversație\n\n";
+        console.log(`[OpenAI] Added general memory instructions to prompt`);
+      } // Adaugă informații din profilul dinamic
       if (dynamicProfile) {
         const dynamicPrompt =
           userDynamicProfileService.generatePersonalizedPrompt(dynamicProfile);
@@ -73,14 +127,36 @@ export async function getTherapyResponse(
           undefined, // userProfile - can be added later if needed
           basePrompt // context
         );
+      } else {
+        systemPrompt = basePrompt;
       }
 
-      // Actualizează profilul dinamic în background (fără să blocheze răspunsul)
+      console.log(
+        `[OpenAI] Final system prompt length: ${systemPrompt.length} characters`
+      );
+      console.log(
+        `[OpenAI] System prompt preview: ${systemPrompt.substring(0, 200)}...`
+      ); // Actualizează profilul dinamic în background (fără să blocheze răspunsul)
       userDynamicProfileService
         .analyzeAndUpdateProfile(userId)
         .catch((error) => {
           console.error("Eroare la actualizarea profilului dinamic:", error);
         });
+
+      // Extrage și salvează informații personale din mesajul utilizatorului în background
+      if (messages.length > 0) {
+        const lastUserMessage = messages[messages.length - 1];
+        if (lastUserMessage.role === "user") {
+          userPersonalizationService
+            .extractAndSavePersonalInfo(userId, lastUserMessage.content)
+            .catch((error) => {
+              console.error(
+                "Eroare la extragerea informațiilor personale:",
+                error
+              );
+            });
+        }
+      }
     } catch (error) {
       console.error("Eroare la încărcarea setărilor personalizate:", error);
       // Fallback la prompt-ul standard

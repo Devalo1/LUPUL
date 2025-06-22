@@ -8,6 +8,23 @@ const isDevelopment = import.meta.env.DEV;
 // URL-ul pentru Netlify Functions (se adaptează automat la domeniul actual)
 const getNetlifyFunctionUrl = () => {
   if (isDevelopment) {
+    // Detectează automat portul corrent pentru Netlify functions
+    const currentPort = window.location.port;
+
+    // Dacă suntem pe portul Vite (5173, 5174, 5175, etc.), folosește portul 8888 pentru functions
+    if (
+      currentPort &&
+      (currentPort.startsWith("517") || currentPort === "5173")
+    ) {
+      return "http://localhost:8888/.netlify/functions";
+    }
+
+    // Dacă suntem pe portul 8888 (Netlify), folosește același port
+    if (currentPort === "8888") {
+      return "http://localhost:8888/.netlify/functions";
+    }
+
+    // Fallback pentru orice alt port
     return "http://localhost:8888/.netlify/functions";
   }
   return "/.netlify/functions";
@@ -16,9 +33,17 @@ const getNetlifyFunctionUrl = () => {
 // Funcție pentru AI Chat - folosește Netlify Functions în producție, direct OpenAI în dezvoltare
 export async function fetchAIResponseSafe(
   prompt: string,
-  assistantProfile: { name: string; addressMode: string }
+  assistantProfile: { name: string; addressMode: string },
+  userId?: string
 ): Promise<string> {
-  if (isDevelopment) {
+  console.log(
+    `[fetchAIResponseSafe] isDevelopment: ${isDevelopment}, userId: ${userId}`
+  );
+
+  // FORȚEAZĂ FOLOSIREA FIREBASE ÎN TOATE MODURILE PENTRU MEMORIA PERSISTENTĂ
+  // if (isDevelopment) {
+  if (false) {
+    // Dezactivează temporar direct OpenAI pentru a testa Firebase
     // În dezvoltare folosește direct serviciul OpenAI
     try {
       const systemPrompt = `${assistantProfile.name} este un asistent AI personal amabil și profesionist care vorbește română perfect. Oferă sprijin general pentru viața de zi cu zi, organizare, productivitate, dezvoltare personală și rezolvarea problemelor cotidiene.
@@ -33,12 +58,16 @@ IMPORTANTE DESPRE GRAMATICA ROMÂNĂ:
 - Evită barbarismele și anglicismele inutile
 
 Folosește modul de adresare: ${assistantProfile.addressMode}. Fii empatic, constructiv și orientat pe soluții practice, dar mai presus de toate, să vorbești româna perfect.`;
-
       const messages = [
         { role: "system", content: systemPrompt },
         { role: "user", content: prompt },
       ];
-      const response = await getTherapyResponse(messages, "general");
+      const response = await getTherapyResponse(
+        messages,
+        "general",
+        undefined,
+        userId
+      );
       return response || "(Fără răspuns AI)";
     } catch (err) {
       console.error("Eroare la apelul direct OpenAI:", err);
@@ -47,7 +76,7 @@ Folosește modul de adresare: ${assistantProfile.addressMode}. Fii empatic, cons
   } else {
     // În producție folosește Netlify Functions
     try {
-      const functionUrl = `${getNetlifyFunctionUrl()}/ai-chat`;
+      const functionUrl = `${getNetlifyFunctionUrl()}/ai-chat-firebase-final`;
 
       const response = await fetch(functionUrl, {
         method: "POST",
@@ -58,6 +87,7 @@ Folosește modul de adresare: ${assistantProfile.addressMode}. Fii empatic, cons
           prompt,
           assistantName: assistantProfile.name,
           addressMode: assistantProfile.addressMode,
+          userId: userId, // Pentru memoria activă
         }),
       });
 

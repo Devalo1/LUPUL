@@ -5,6 +5,16 @@ import reactHooksPlugin from "eslint-plugin-react-hooks";
 
 export default [
   {
+    ignores: [
+      ".netlify/**/*",
+      "dist/**/*", 
+      "build/**/*",
+      "node_modules/**/*",
+      "**/*.min.js",
+      "**/functions-serve/**/*"
+    ]
+  },
+  {
     files: ["**/*.ts", "**/*.tsx"],
     languageOptions: {
       parser: typescriptEslintParser,

@@ -62,11 +62,16 @@ const AIMessenger: React.FC = () => {
         sender: "user",
         content: userMessage,
         timestamp: Timestamp.now(),
-      });
-
-      // Get AI response
+      }); // Get AI response
       setAiTyping(true);
-      const aiReply = await fetchAIResponse(userMessage, assistantProfile);
+      console.log(
+        `[AIMessenger] Calling fetchAIResponse with userId: ${user?.uid}`
+      );
+      const aiReply = await fetchAIResponse(
+        userMessage,
+        assistantProfile,
+        user?.uid
+      );
       setAiTyping(false); // Add AI response
       await addMessage({
         id: (Date.now() + 1).toString(),

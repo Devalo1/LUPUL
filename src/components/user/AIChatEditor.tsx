@@ -7,12 +7,22 @@ import {
   FaPlus,
   FaTimes,
   FaTrash,
-  FaExpandArrowsAlt
+  FaExpandArrowsAlt,
+  FaBrain,
+  FaUserCog,
 } from "react-icons/fa";
 import { useAuth } from "../../contexts/AuthContext";
-import { conversationManagerService, Conversation, ConversationMessage } from "../../services/conversationManagerService";
-import { userAIProfileService, UserAIProfile } from "../../services/userAIProfileService";
+import {
+  conversationManagerService,
+  Conversation,
+  ConversationMessage,
+} from "../../services/conversationManagerService";
+import {
+  userAIProfileService,
+  UserAIProfile,
+} from "../../services/userAIProfileService";
 import { getTherapyResponse } from "../../services/openaiService";
+import { useUserPersonalization } from "../../hooks/useUserPersonalization";
 import AIAdvancedSettingsPanel from "./AIAdvancedSettingsPanel";
 import "./AIChatEditor.css";
 
@@ -25,10 +35,21 @@ interface AIChatEditorProps {
 const AIChatEditor: React.FC<AIChatEditorProps> = ({
   aiType = "general",
   initialPrompt,
-  onMinimize
+  onMinimize,
 }) => {
   const { user } = useAuth();
-  const [currentConversation, setCurrentConversation] = useState<Conversation | null>(null);
+  const {
+    personalizedContext,
+    updateAfterConversation,
+    analyzeUserProfile,
+    userStats,
+    hasProfile,
+    needsUpdate,
+    isAnalyzing,
+    error: personalizationError,
+  } = useUserPersonalization();
+  const [currentConversation, setCurrentConversation] =
+    useState<Conversation | null>(null);
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [messages, setMessages] = useState<ConversationMessage[]>([]);
   const [inputMessage, setInputMessage] = useState(initialPrompt || "");
@@ -38,7 +59,7 @@ const AIChatEditor: React.FC<AIChatEditorProps> = ({
   const [userProfile, setUserProfile] = useState<UserAIProfile | null>(null);
   const [isMinimized, setIsMinimized] = useState(false);
   const [backgroundImage, setBackgroundImage] = useState<string>("");
-  
+
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
 
@@ -56,7 +77,11 @@ const AIChatEditor: React.FC<AIChatEditorProps> = ({
   useEffect(() => {
     if (currentConversation) {
       setMessages(currentConversation.messages);
-      setBackgroundImage(currentConversation.backgroundImage || userProfile?.backgroundImage || "");
+      setBackgroundImage(
+        currentConversation.backgroundImage ||
+          userProfile?.backgroundImage ||
+          ""
+      );
     }
   }, [currentConversation, userProfile]);
 
@@ -65,10 +90,10 @@ const AIChatEditor: React.FC<AIChatEditorProps> = ({
   };
   const loadUserProfile = async () => {
     if (!user?.uid) return;
-    
+
     try {
       const profile = await userAIProfileService.getActiveProfileConfig(
-        user.uid, 
+        user.uid,
         aiType === "general" ? "psihica" : aiType
       );
       if (profile) {
@@ -84,8 +109,11 @@ const AIChatEditor: React.FC<AIChatEditorProps> = ({
     if (!user?.uid) return;
 
     try {
-      const userConversations = await conversationManagerService.getUserConversations(user.uid, 20);
-      const filteredConversations = userConversations.filter(conv => conv.aiType === aiType);
+      const userConversations =
+        await conversationManagerService.getUserConversations(user.uid, 20);
+      const filteredConversations = userConversations.filter(
+        (conv) => conv.aiType === aiType
+      );
       setConversations(filteredConversations);
 
       // Încarcă ultima conversație activă
@@ -101,13 +129,15 @@ const AIChatEditor: React.FC<AIChatEditorProps> = ({
     if (!user?.uid) return;
 
     try {
-      const conversationId = await conversationManagerService.createConversation(
-        user.uid,
-        aiType,
-        backgroundImage
-      );
-      
-      const newConversation = await conversationManagerService.getConversation(conversationId);
+      const conversationId =
+        await conversationManagerService.createConversation(
+          user.uid,
+          aiType,
+          backgroundImage
+        );
+
+      const newConversation =
+        await conversationManagerService.getConversation(conversationId);
       if (newConversation) {
         setCurrentConversation(newConversation);
         setMessages([]);
@@ -131,26 +161,31 @@ const AIChatEditor: React.FC<AIChatEditorProps> = ({
         id: `user_${Date.now()}`,
         role: "user",
         content: userMessage,
-        timestamp: new Date()
+        timestamp: new Date(),
       };
 
       await conversationManagerService.addMessage(currentConversation.id, {
         role: userMsg.role,
-        content: userMsg.content
+        content: userMsg.content,
       });
 
       // Actualizează mesajele local
       const updatedMessages = [...messages, userMsg];
-      setMessages(updatedMessages);
-
-      // Generează răspunsul AI
-      const messageHistory = updatedMessages.map(msg => ({
+      setMessages(updatedMessages); // Generează răspunsul AI cu context personalizat
+      const messageHistory = updatedMessages.map((msg) => ({
         role: msg.role,
-        content: msg.content
-      }));      const aiResponse = await getTherapyResponse(
+        content: msg.content,
+      }));
+
+      // Aplică configurația personalizată dacă există
+      const customConfig = personalizedContext
+        ? { max_tokens: 600 } // Mai multe token-uri pentru răspunsuri personalizate
+        : {};
+
+      const aiResponse = await getTherapyResponse(
         messageHistory,
         aiType === "general" ? "psihica" : aiType,
-        undefined,
+        customConfig,
         user?.uid
       );
 
@@ -159,16 +194,25 @@ const AIChatEditor: React.FC<AIChatEditorProps> = ({
         id: `ai_${Date.now()}`,
         role: "assistant",
         content: aiResponse,
-        timestamp: new Date()
+        timestamp: new Date(),
       };
 
       await conversationManagerService.addMessage(currentConversation.id, {
         role: aiMsg.role,
-        content: aiMsg.content
+        content: aiMsg.content,
       });
-
       setMessages([...updatedMessages, aiMsg]);
-      
+
+      // Actualizează profilul de personalizare în background
+      if (currentConversation.id && user?.uid) {
+        updateAfterConversation(currentConversation.id).catch((error) => {
+          console.error(
+            "Eroare la actualizarea profilului de personalizare:",
+            error
+          );
+        });
+      }
+
       // Reîncarcă conversațiile pentru a actualiza titlurile
       await loadConversations();
     } catch (error) {
@@ -183,15 +227,18 @@ const AIChatEditor: React.FC<AIChatEditorProps> = ({
     setShowHistory(false);
   };
 
-  const deleteConversation = async (conversationId: string, e: React.MouseEvent) => {
+  const deleteConversation = async (
+    conversationId: string,
+    e: React.MouseEvent
+  ) => {
     e.stopPropagation();
-    
+
     if (!confirm("Sigur vrei să ștergi această conversație?")) return;
 
     try {
       await conversationManagerService.deleteConversation(conversationId);
       await loadConversations();
-      
+
       if (currentConversation?.id === conversationId) {
         setCurrentConversation(null);
         setMessages([]);
@@ -226,10 +273,13 @@ const AIChatEditor: React.FC<AIChatEditorProps> = ({
         </button>
       </div>
     );
-  }  // Set CSS custom property for background image
+  } // Set CSS custom property for background image
   useEffect(() => {
     if (backgroundImage) {
-      document.documentElement.style.setProperty("--chat-background-image", `url(${backgroundImage})`);
+      document.documentElement.style.setProperty(
+        "--chat-background-image",
+        `url(${backgroundImage})`
+      );
     } else {
       document.documentElement.style.removeProperty("--chat-background-image");
     }
@@ -237,7 +287,7 @@ const AIChatEditor: React.FC<AIChatEditorProps> = ({
 
   return (
     <>
-      <div 
+      <div
         className={`ai-chat-editor ${backgroundImage ? "with-background" : ""}`}
       >
         {/* Header */}
@@ -257,14 +307,58 @@ const AIChatEditor: React.FC<AIChatEditorProps> = ({
             >
               <FaPlus />
             </button>
-          </div>
-
+          </div>{" "}
           <div className="header-center">
             <h3>{currentConversation?.title || "AI Chat"}</h3>
-            <span className="ai-type">{aiType === "psihica" ? "Psihic" : aiType === "fizica" ? "Fizic" : "General"}</span>
-          </div>
-
+            <div className="chat-status">
+              <span className="ai-type">
+                {aiType === "psihica"
+                  ? "Psihic"
+                  : aiType === "fizica"
+                    ? "Fizic"
+                    : "General"}
+              </span>
+              {userStats && (
+                <span
+                  className="personalization-status"
+                  title={`${userStats.totalConversations} conversații, ${userStats.totalMessages} mesaje`}
+                >
+                  <FaBrain /> {userStats.experienceLevel}
+                </span>
+              )}
+              {needsUpdate && (
+                <span
+                  className="update-needed"
+                  title="Profilul necesită actualizare"
+                >
+                  <FaUserCog />
+                </span>
+              )}
+            </div>
+          </div>{" "}
           <div className="header-right">
+            {!hasProfile && (
+              <button
+                onClick={analyzeUserProfile}
+                className="header-button personalize-button"
+                title="Analizează conversațiile pentru personalizare"
+                disabled={isAnalyzing}
+              >
+                <FaBrain />
+                {isAnalyzing ? "..." : ""}
+              </button>
+            )}
+            {needsUpdate && hasProfile && (
+              <button
+                onClick={analyzeUserProfile}
+                className="header-button update-profile-button"
+                title="Actualizează profilul de personalizare"
+                disabled={isAnalyzing}
+              >
+                <FaUserCog />
+                {isAnalyzing ? "..." : ""}
+              </button>
+            )}
             <button
               onClick={() => setShowSettings(true)}
               className="header-button"
@@ -283,12 +377,12 @@ const AIChatEditor: React.FC<AIChatEditorProps> = ({
             )}
           </div>
         </div>
-
         {/* History Sidebar */}
         {showHistory && (
           <div className="history-sidebar">
             <div className="history-header">
-              <h4>Istoric Conversații</h4>              <button
+              <h4>Istoric Conversații</h4>{" "}
+              <button
                 onClick={() => setShowHistory(false)}
                 className="close-history"
                 title="Închide istoric"
@@ -306,8 +400,8 @@ const AIChatEditor: React.FC<AIChatEditorProps> = ({
                   <div className="conversation-title">{conv.title}</div>
                   <div className="conversation-date">
                     {new Date(
-                      conv.updatedAt instanceof Date 
-                        ? conv.updatedAt 
+                      conv.updatedAt instanceof Date
+                        ? conv.updatedAt
                         : conv.updatedAt.toDate()
                     ).toLocaleDateString("ro-RO")}
                   </div>
@@ -327,15 +421,27 @@ const AIChatEditor: React.FC<AIChatEditorProps> = ({
               )}
             </div>
           </div>
-        )}
-
+        )}{" "}
         {/* Chat Messages */}
         <div className="chat-messages">
+          {personalizationError && (
+            <div className="personalization-error">
+              <FaUserCog />
+              <span>Eroare personalizare: {personalizationError}</span>
+              <button onClick={() => window.location.reload()}>
+                Reîncarcă
+              </button>
+            </div>
+          )}
+
           {!currentConversation ? (
             <div className="no-conversation">
               <div className="welcome-message">
                 <h2>Bun venit la AI Chat!</h2>
-                <p>Creează o conversație nouă pentru a începe să vorbești cu AI-ul.</p>
+                <p>
+                  Creează o conversație nouă pentru a începe să vorbești cu
+                  AI-ul.
+                </p>
                 <button
                   onClick={createNewConversation}
                   className="create-conversation-btn"
@@ -352,17 +458,15 @@ const AIChatEditor: React.FC<AIChatEditorProps> = ({
                   key={message.id}
                   className={`message ${message.role === "user" ? "user-message" : "ai-message"}`}
                 >
-                  <div className="message-content">
-                    {message.content}
-                  </div>
+                  <div className="message-content">{message.content}</div>
                   <div className="message-time">
                     {new Date(
-                      message.timestamp instanceof Date 
-                        ? message.timestamp 
+                      message.timestamp instanceof Date
+                        ? message.timestamp
                         : message.timestamp.toDate()
-                    ).toLocaleTimeString("ro-RO", { 
-                      hour: "2-digit", 
-                      minute: "2-digit" 
+                    ).toLocaleTimeString("ro-RO", {
+                      hour: "2-digit",
+                      minute: "2-digit",
                     })}
                   </div>
                 </div>
@@ -382,7 +486,6 @@ const AIChatEditor: React.FC<AIChatEditorProps> = ({
             </>
           )}
         </div>
-
         {/* Input Area */}
         {currentConversation && (
           <div className="chat-input">
@@ -396,7 +499,8 @@ const AIChatEditor: React.FC<AIChatEditorProps> = ({
                 className="message-input"
                 rows={1}
                 disabled={loading}
-              />              <button
+              />{" "}
+              <button
                 onClick={sendMessage}
                 disabled={!inputMessage.trim() || loading}
                 className="send-button"

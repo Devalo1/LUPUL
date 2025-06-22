@@ -1,9 +1,10 @@
 /* Stiluri de bază */
-html, body {
+html,
+body {
   height: 100%;
   margin: 0;
   padding: 0;
-  font-family: 'Roboto', sans-serif;
+  font-family: "Roboto", sans-serif;
 }
 
 .home-page {
@@ -36,10 +37,8 @@ html, body {
   left: 0;
   width: 100%;
   height: 100%;
-  background-image: url('/images/background.jpeg');
-  background-size: cover;
-  background-position: center;
-  background-repeat: no-repeat;
+  /* Eliminăm background-image pentru a evita dublarea cu body */
+  background: transparent;
   z-index: -2;
 }
 
@@ -49,7 +48,7 @@ html, body {
   left: 0;
   width: 100%;
   height: 100%;
-  background: linear-gradient(rgba(0,0,0,0.4), rgba(0,0,0,0.7));
+  background: linear-gradient(rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.7));
   z-index: -1;
 }
 
@@ -58,7 +57,7 @@ html, body {
   width: 800px;
   margin: 0 auto;
   padding: 2rem;
-  background-color: rgba(0,0,0,0.5);
+  background-color: rgba(0, 0, 0, 0.5);
   border-radius: 1rem;
   backdrop-filter: blur(5px);
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
@@ -80,7 +79,7 @@ html, body {
   font-size: clamp(2rem, 5vw, 3.5rem);
   margin-bottom: 0.5rem;
   color: white;
-  text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
 }
 
 .brand-tagline {
@@ -102,7 +101,7 @@ html, body {
 }
 
 .badge {
-  background-color: rgba(255,255,255,0.15);
+  background-color: rgba(255, 255, 255, 0.15);
   padding: 0.5rem 1rem;
   border-radius: 50px;
   font-size: clamp(0.7rem, 2vw, 0.9rem);
@@ -113,7 +112,7 @@ html, body {
 }
 
 .badge svg {
-  color: #FCD116;
+  color: #fcd116;
 }
 
 /* Action Buttons */
@@ -126,14 +125,19 @@ html, body {
   max-width: 500px;
 }
 
-.auth-buttons, .nav-buttons {
+.auth-buttons,
+.nav-buttons {
   display: flex;
   justify-content: center;
   gap: 1rem;
   width: 100%;
 }
 
-.btn-primary, .btn-secondary, .btn-discover, .btn-products, .cta-button {
+.btn-primary,
+.btn-secondary,
+.btn-discover,
+.btn-products,
+.cta-button {
   padding: 0.8rem 1.5rem;
   border-radius: 30px;
   font-weight: 600;
@@ -180,7 +184,7 @@ html, body {
 }
 
 .btn-secondary:hover {
-  background-color: rgba(255,255,255,0.2);
+  background-color: rgba(255, 255, 255, 0.2);
   transform: translateY(-3px);
 }
 
@@ -190,24 +194,26 @@ html, body {
 
 @keyframes glow {
   0% {
-    box-shadow: 0 0 5px rgba(255,255,255,0.3);
+    box-shadow: 0 0 5px rgba(255, 255, 255, 0.3);
   }
   50% {
-    box-shadow: 0 0 20px rgba(255,255,255,0.5);
+    box-shadow: 0 0 20px rgba(255, 255, 255, 0.5);
   }
   100% {
-    box-shadow: 0 0 5px rgba(255,255,255,0.3);
+    box-shadow: 0 0 5px rgba(255, 255, 255, 0.3);
   }
 }
 
-.btn-discover, .btn-products {
-  background-color: rgba(0,0,0,0.6);
+.btn-discover,
+.btn-products {
+  background-color: rgba(0, 0, 0, 0.6);
   color: white;
   width: 100%;
 }
 
-.btn-discover:hover, .btn-products:hover {
-  background-color: rgba(0,0,0,0.8);
+.btn-discover:hover,
+.btn-products:hover {
+  background-color: rgba(0, 0, 0, 0.8);
   transform: translateY(-3px);
 }
 
@@ -215,28 +221,30 @@ html, body {
 .romanian-brand-banner {
   margin: 1.5rem auto 0;
   padding: 10px 20px;
-  background: rgba(0,0,0,0.2);
+  background: rgba(0, 0, 0, 0.2);
   border-radius: 50px;
   display: inline-block;
 }
 
-.blue-text, .yellow-text, .red-text {
+.blue-text,
+.yellow-text,
+.red-text {
   font-weight: 700;
   letter-spacing: 1px;
-  text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
   font-size: clamp(0.8rem, 2vw, 1.1rem);
 }
 
 .blue-text {
-  color: #002B7F;
+  color: #002b7f;
 }
 
 .yellow-text {
-  color: #FCD116;
+  color: #fcd116;
 }
 
 .red-text {
-  color: #CE1126;
+  color: #ce1126;
 }
 
 /* Value Proposition Section */
@@ -255,11 +263,11 @@ html, body {
 }
 
 .section-title:after {
-  content: '';
+  content: "";
   position: absolute;
   width: 60px;
   height: 3px;
-  background: linear-gradient(to right, #002B7F, #FCD116, #CE1126);
+  background: linear-gradient(to right, #002b7f, #fcd116, #ce1126);
   bottom: -10px;
   left: 50%;
   transform: translateX(-50%);
@@ -278,14 +286,14 @@ html, body {
   background-color: white;
   padding: 2rem;
   border-radius: 8px;
-  box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
   transition: all 0.3s ease;
 }
 
 .icon-container {
   font-size: 2.5rem;
   margin-bottom: 1rem;
-  color: #FCD116;
+  color: #fcd116;
 }
 
 .value-card h3 {
@@ -302,7 +310,7 @@ html, body {
 /* Testimonials Section */
 .testimonials-section {
   padding: 4rem 1rem;
-  background-color: #002B7F;
+  background-color: #002b7f;
   color: white;
   text-align: center;
 }
@@ -321,7 +329,7 @@ html, body {
 }
 
 .testimonial-card {
-  background-color: rgba(255,255,255,0.1);
+  background-color: rgba(255, 255, 255, 0.1);
   padding: 2rem;
   border-radius: 8px;
   position: relative;
@@ -333,7 +341,7 @@ html, body {
   position: absolute;
   top: -20px;
   left: 10px;
-  color: rgba(255,255,255,0.2);
+  color: rgba(255, 255, 255, 0.2);
   font-family: serif;
 }
 
@@ -362,7 +370,9 @@ html, body {
 /* Call to Action Section */
 .cta-section {
   padding: 5rem 1rem;
-  background-image: linear-gradient(rgba(0,0,0,0.7), rgba(0,0,0,0.7)), url('/images/cta-background.jpg');
+  background-image:
+    linear-gradient(rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.7)),
+    url("/images/cta-background.jpg");
   background-size: cover;
   background-position: center;
   text-align: center;
@@ -386,7 +396,7 @@ html, body {
 }
 
 .cta-button {
-  background-color: #CE1126;
+  background-color: #ce1126;
   color: white;
   padding: 1rem 2rem;
   font-size: clamp(0.9rem, 2vw, 1.1rem);
@@ -439,7 +449,7 @@ html, body {
 }
 
 .footer-links a:hover {
-  color: #FCD116;
+  color: #fcd116;
 }
 
 .footer-social {
@@ -455,20 +465,20 @@ html, body {
   width: 40px;
   height: 40px;
   border-radius: 50%;
-  background-color: rgba(255,255,255,0.1);
+  background-color: rgba(255, 255, 255, 0.1);
   color: white;
   transition: all 0.3s ease;
 }
 
 .footer-social a:hover {
-  background-color: #FCD116;
+  background-color: #fcd116;
   color: #111;
 }
 
 .footer-bottom {
   text-align: center;
   padding-top: 1.5rem;
-  border-top: 1px solid rgba(255,255,255,0.1);
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
   font-size: 0.9rem;
   opacity: 0.7;
 }
@@ -479,41 +489,45 @@ html, body {
     padding: 1.5rem;
     max-width: 95%;
   }
-  
-  .auth-buttons, .nav-buttons {
+
+  .auth-buttons,
+  .nav-buttons {
     flex-direction: column;
     width: 100%;
   }
-  
-  .btn-primary, .btn-secondary {
+
+  .btn-primary,
+  .btn-secondary {
     width: 100%;
     margin-bottom: 0.5rem;
   }
-  
+
   .trust-badges {
     flex-direction: column;
     align-items: center;
   }
-  
+
   .badge {
     width: 80%;
     justify-content: center;
   }
-  
-  .values-grid, .testimonials-container {
+
+  .values-grid,
+  .testimonials-container {
     grid-template-columns: 1fr;
   }
-  
+
   .value-card {
     padding: 1.5rem;
   }
-  
+
   .romanian-brand-banner {
     padding: 8px 15px;
   }
 
   /* Forțăm butoanele să fie mai evidente și mai ușor de atins pe mobile */
-  .btn-discover, .btn-products {
+  .btn-discover,
+  .btn-products {
     padding: 0.9rem 1rem;
     margin-bottom: 0.5rem;
     width: 100%;
@@ -527,34 +541,37 @@ html, body {
   .hero-content {
     padding: 1rem;
   }
-  
+
   .brand-title {
     font-size: 1.8rem;
   }
-  
+
   .brand-tagline {
     font-size: 1rem;
   }
-  
+
   .section-title {
     font-size: 1.5rem;
   }
-  
+
   .badge {
     font-size: 0.7rem;
     padding: 0.4rem 0.8rem;
   }
-  
-  .btn-primary, .btn-secondary, .btn-discover, .btn-products {
+
+  .btn-primary,
+  .btn-secondary,
+  .btn-discover,
+  .btn-products {
     padding: 0.7rem 1rem;
     font-size: 0.9rem;
   }
-  
+
   .cta-button {
     padding: 0.8rem 1.5rem;
     font-size: 1rem;
   }
-  
+
   .footer-content {
     grid-template-columns: 1fr;
     text-align: center;
@@ -562,12 +579,12 @@ html, body {
 }
 
 /* Add this to your existing CSS */
-.page-header, 
+.page-header,
 .section-header {
   padding-top: 80px; /* Adjust this value based on your navbar height */
 }
 
-main, 
+main,
 .page-content {
   margin-top: 60px; /* Adjust this value based on your navbar height */
 }

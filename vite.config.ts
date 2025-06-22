@@ -1,5 +1,4 @@
 import { defineConfig, loadEnv } from "vite";
-import react from "@vitejs/plugin-react";
 import path from "path";
 import { visualizer } from "rollup-plugin-visualizer";
 import compression from "vite-plugin-compression";
@@ -47,19 +46,32 @@ export default defineConfig(({ mode }) => {
       return undefined; // Explicit returnăm undefined pentru alte cazuri
     },
   };
-
   return {
     plugins: [
-      react({
-        babel: {
-          plugins: [
-            isProd && [
-              "babel-plugin-transform-react-remove-prop-types",
-              { removeImport: true },
-            ],
-          ].filter(Boolean),
+      {
+        name: "spa-fallback",
+        configureServer(server) {
+          server.middlewares.use((req, res, next) => {
+            const url = req.url || "";
+
+            // Nu redirecționa fișierele statice și modulele
+            if (
+              req.method === "GET" &&
+              !url.includes(".") &&
+              !url.startsWith("/api") &&
+              !url.startsWith("/@") && // Vite internals
+              !url.startsWith("/node_modules") && // Node modules
+              !url.startsWith("/__vite") && // Vite HMR
+              !url.startsWith("/src/") && // Source files
+              !url.includes("?") && // Query parameters
+              url !== "/favicon.ico" // Favicon
+            ) {
+              req.url = "/index.html";
+            }
+            next();
+          });
         },
-      }),
+      },
       visualizer({
         filename: "./dist/stats.html",
         open: false,
@@ -83,13 +95,24 @@ export default defineConfig(({ mode }) => {
         "@": path.resolve(__dirname, "./src"),
       },
     },
-
+    esbuild: {
+      jsx: "automatic",
+      jsxImportSource: "react",
+      jsxDev: !isProd,
+    },
     server: {
       port: 5173,
       host: true,
       open: true,
       hmr: {
         overlay: false,
+      },
+      // Configurație pentru rutele SPA (Single Page Application)
+      // Aceasta permite ca rutele React Router să funcționeze corect în dev mode
+      middlewareMode: false,
+      // Asigură-te că toate rutele necunoscute sunt redirecționate către index.html
+      fs: {
+        strict: false,
       },
       proxy: {
         "/api/analytics-proxy": analyticsProxyConfig,

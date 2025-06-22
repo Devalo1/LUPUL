@@ -73,10 +73,11 @@ Folosește modul de adresare: ${assistantProfile.addressMode}. Fii empatic, cons
       console.error("Eroare la apelul direct OpenAI:", err);
       return "(Eroare la răspunsul AI. Încearcă din nou mai târziu.)";
     }
-  } else {
-    // În producție folosește Netlify Functions
+  } else {    // În producție folosește Netlify Functions
     try {
-      const functionUrl = `${getNetlifyFunctionUrl()}/ai-chat-firebase-final`;
+      const functionUrl = `${getNetlifyFunctionUrl()}/ai-chat-robust`;
+
+      console.log(`[AI API] Apelează funcția robustă: ${functionUrl}`);
 
       const response = await fetch(functionUrl, {
         method: "POST",
@@ -92,10 +93,13 @@ Folosește modul de adresare: ${assistantProfile.addressMode}. Fii empatic, cons
       });
 
       if (!response.ok) {
+        const errorText = await response.text();
+        console.error(`[AI API] Eroare HTTP ${response.status}:`, errorText);
         throw new Error(`HTTP error! status: ${response.status}`);
       }
 
       const data = await response.json();
+      console.log(`[AI API] Răspuns primit cu modul: ${data.mode}`);
       return data.reply || "(Fără răspuns AI)";
     } catch (err) {
       console.error("Eroare la apelul Netlify Function:", err);

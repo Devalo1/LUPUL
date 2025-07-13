@@ -2,6 +2,11 @@
   command = "npm run build"
   publish = "dist"
   functions = "netlify/functions"
+  environment = { NODE_ENV = "production" }
+
+[build.environment]
+  NODE_ENV = "production"
+  VITE_NETOPIA_SANDBOX = "false"
 
 [build.environment]
   GENERATE_SOURCEMAP = "false"

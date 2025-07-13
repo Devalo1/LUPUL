@@ -7,6 +7,15 @@
 [build.environment]
   NODE_ENV = "production"
   VITE_NETOPIA_SANDBOX = "false"
+  # IMPORTANT: Set these in Netlify Dashboard → Environment Variables:
+  # VITE_FIREBASE_API_KEY = "your-firebase-api-key"
+  # VITE_FIREBASE_AUTH_DOMAIN = "lupulcorbul.firebaseapp.com"
+  # VITE_FIREBASE_PROJECT_ID = "lupulcorbul"
+  # VITE_FIREBASE_STORAGE_BUCKET = "lupulcorbul.firebasestorage.app"
+  # VITE_FIREBASE_MESSAGING_SENDER_ID = "312943074536"
+  # VITE_FIREBASE_APP_ID = "1:312943074536:web:13fc0660014bc58c5c7d5d"
+  # VITE_FIREBASE_MEASUREMENT_ID = "G-38YSZKVXDC"
+  # VITE_OPENAI_API_KEY = "your-openai-api-key"
 
 [build.environment]
   GENERATE_SOURCEMAP = "false"

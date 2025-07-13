@@ -7,6 +7,7 @@ Aplicația este complet configurată și gata pentru deployment automat pe Netli
 ### 📋 Ce este inclus:
 
 #### 🛒 Sistem de Plăți Netopia
+
 - ✅ Integrare completă Netopia Payments
 - ✅ RSA encryption cu chei de producție
 - ✅ Webhook handlers (notify/return)
@@ -14,12 +15,14 @@ Aplicația este complet configurată și gata pentru deployment automat pe Netli
 - ✅ Toate endpoint-urile testate
 
 #### 🎨 UI/UX Modern
+
 - ✅ Temă verde pentru vizibilitate
 - ✅ Design responsiv
 - ✅ Componente TypeScript optimizate
 - ✅ AI Assistant Widget inteligent
 
 #### ⚙️ Configurare Production
+
 - ✅ Netlify.toml configurat
 - ✅ Environment variables pentru production
 - ✅ Build scripts optimizate
@@ -28,6 +31,7 @@ Aplicația este complet configurată și gata pentru deployment automat pe Netli
 ### 🔧 Deployment Automat
 
 #### GitHub → Netlify Pipeline:
+
 1. **Auto-deploy**: Push pe `main` → deployment automat
 2. **Build Command**: `npm run build`
 3. **Publish Directory**: `dist`

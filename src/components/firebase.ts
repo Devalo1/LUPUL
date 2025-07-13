@@ -3,16 +3,16 @@ import { getAuth } from "firebase/auth";
 import { getFirestore } from "firebase/firestore";
 import { getAnalytics, isSupported, Analytics } from "firebase/analytics";
 
-// Your web app's Firebase configuration
+// Your web app's Firebase configuration - Using environment variables
 // For Firebase JS SDK v7.20.0 and later, measurementId is optional
 const firebaseConfig = {
-  apiKey: "AIzaSyCZEWoZn-c7NSH1AGbetWEbtxwEz-iaMR4",
-  authDomain: "lupulcorbul.firebaseapp.com",
-  projectId: "lupulcorbul",
-  storageBucket: "lupulcorbul.firebasestorage.app",
-  messagingSenderId: "312943074536",
-  appId: "1:312943074536:web:13fc0660014bc58c5c7d5d",
-  measurementId: "G-38YSZKVXDC"
+  apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
+  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN || "lupulcorbul.firebaseapp.com",
+  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID || "lupulcorbul",
+  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET || "lupulcorbul.firebasestorage.app",
+  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID || "312943074536",
+  appId: import.meta.env.VITE_FIREBASE_APP_ID || "1:312943074536:web:13fc0660014bc58c5c7d5d",
+  measurementId: import.meta.env.VITE_FIREBASE_MEASUREMENT_ID || "G-38YSZKVXDC"
 };
 
 // Initialize Firebase only if it hasn't been initialized already

@@ -52,15 +52,15 @@ import { getAnalytics, logEvent, Analytics } from "firebase/analytics";
 import { useEmulators, getEmulatorConfig } from "./utils/environment";
 import logger from "./utils/logger";
 
-// Configurație Firebase
+// Configurație Firebase - folosind environment variables
 const firebaseConfig = {
-  apiKey: "AIzaSyCZEWoZn-c7NSH1AGbetWEbtxwEz-iaMR4",
-  authDomain: "lupulcorbul.firebaseapp.com",
-  projectId: "lupulcorbul",
-  storageBucket: "lupulcorbul.firebasestorage.app",
-  messagingSenderId: "312943074536",
-  appId: "1:312943074536:web:13fc0660014bc58c5c7d5d",
-  measurementId: "G-38YSZKVXDC",
+  apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
+  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN || "lupulcorbul.firebaseapp.com",
+  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID || "lupulcorbul", 
+  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET || "lupulcorbul.firebasestorage.app",
+  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID || "312943074536",
+  appId: import.meta.env.VITE_FIREBASE_APP_ID || "1:312943074536:web:13fc0660014bc58c5c7d5d",
+  measurementId: import.meta.env.VITE_FIREBASE_MEASUREMENT_ID || "G-38YSZKVXDC",
 };
 
 // Inițializare Firebase

@@ -203,7 +203,7 @@ const SideNavigation: React.FC = () => {
             )}
           </div>
 
-          <Link to="/servicii" onClick={closeSideNav} className="nav-item">
+          <Link to="/services" onClick={closeSideNav} className="nav-item">
             <span className="nav-icon">⚕️</span>
             <span>Servicii</span>
           </Link>
@@ -226,6 +226,11 @@ const SideNavigation: React.FC = () => {
           <Link to="/cart" onClick={closeSideNav} className="nav-item">
             <span className="nav-icon">🛍️</span>
             <span>Coș de cumpărături</span>
+          </Link>
+
+          <Link to="/contact" onClick={closeSideNav} className="nav-item">
+            <span className="nav-icon">📞</span>
+            <span>Contact</span>
           </Link>
 
           {/* Secțiunea pentru utilizatori autentificați */}

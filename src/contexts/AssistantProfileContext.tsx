@@ -5,6 +5,7 @@ import {
 } from "../models/AssistantProfile";
 import { AssistantProfileContext } from "./AssistantProfileContextDef";
 import { useAuth } from "./AuthContext";
+import { validateAvatarData } from "../utils/avatarUtils";
 
 // Funcție pentru a crea profilul dinamic bazat pe setările AI pentru un utilizator specific
 const createDynamicProfile = (userId?: string): AssistantProfile => {
@@ -22,10 +23,11 @@ const createDynamicProfile = (userId?: string): AssistantProfile => {
     localStorage.getItem("ai_user_age");
   const aiAddressMode = (localStorage.getItem(`${userPrefix}ai_addressMode`) ||
     localStorage.getItem("ai_addressMode")) as "Tu" | "Dvs" | null;
-  const aiAvatar =
+  const aiAvatar = validateAvatarData(
     localStorage.getItem(`${userPrefix}ai_avatar`) ||
-    localStorage.getItem("ai_avatar") ||
-    "/vite.svg";
+      localStorage.getItem("ai_avatar"),
+    userId
+  );
 
   // Convertește sexul pentru compatibilitate (dar nu va fi afișat)
   let profileSex: "M" | "F";
@@ -69,7 +71,8 @@ export const AssistantProfileProvider: React.FC<{
 
   // Reîncarcă profilul când se schimbă setările în localStorage
   useEffect(() => {
-    const handleStorageChange = () => {
+    const handleProfileUpdate = () => {
+      console.log("[AssistantProfile] Profile update event triggered");
       const newProfile = createDynamicProfile(user?.uid);
       setProfileState((prev) => ({
         current: newProfile,
@@ -80,12 +83,19 @@ export const AssistantProfileProvider: React.FC<{
       }));
     };
 
-    // Forțează reîncărcarea profilului la fiecare 1 secundă pentru a detecta schimbările
+    // Forțează reîncărcarea profilului la fiecare 500ms pentru detectare rapidă
     const intervalId = setInterval(() => {
       const currentProfile = createDynamicProfile(user?.uid);
       setProfileState((prev) => {
-        // Verifică dacă profilul s-a schimbat
-        if (JSON.stringify(prev.current) !== JSON.stringify(currentProfile)) {
+        // Verifică dacă profilul s-a schimbat (doar avatar și nume)
+        if (
+          prev.current.avatar !== currentProfile.avatar ||
+          prev.current.name !== currentProfile.name
+        ) {
+          console.log(
+            "[AssistantProfile] Profil actualizat RAPID:",
+            currentProfile
+          );
           return {
             current: currentProfile,
             history: [
@@ -96,17 +106,31 @@ export const AssistantProfileProvider: React.FC<{
         }
         return prev;
       });
-    }, 1000);
+    }, 500); // Verificare mai rapidă pentru actualizări instant
 
-    // Ascultă schimbările în localStorage
-    window.addEventListener("storage", handleStorageChange);
+    // Adaugă event listener pentru schimbările directe în localStorage
+    const handleStorageEvent = (e: StorageEvent) => {
+      if (e.key?.includes("ai_avatar") || e.key?.includes("ai_name")) {
+        console.log(
+          "[AssistantProfile] Storage change detected:",
+          e.key,
+          e.newValue
+        );
+        handleProfileUpdate();
+      }
+    };
+
+    // Event listeners
+    window.addEventListener("storage", handleStorageEvent);
+    window.addEventListener("ai-profile-updated", handleProfileUpdate);
 
     // Cleanup
     return () => {
-      window.removeEventListener("storage", handleStorageChange);
+      window.removeEventListener("storage", handleStorageEvent);
+      window.removeEventListener("ai-profile-updated", handleProfileUpdate);
       clearInterval(intervalId);
     };
-  }, []);
+  }, [user?.uid]);
 
   const updateProfile = (profile: AssistantProfile) => {
     setProfileState((prev) => ({

@@ -4,7 +4,7 @@ import FilterBar from "../components/events/FilterBar";
 import EventModal from "../components/events/EventModal";
 import { motion } from "framer-motion";
 import { collection, getDocs, query, orderBy } from "firebase/firestore";
-import { db } from "../firebase";
+import { db } from "../firebase-core";
 import { ErrorMessage } from "../components";
 import { useAuth } from "../contexts"; // Importăm contextul de autentificare
 
@@ -34,47 +34,51 @@ const mockEvents: Event[] = [
   {
     id: "business-lider-1",
     title: "Business Lider - Conferință pentru antreprenori",
-    description: "O conferință dedicată antreprenorilor și liderilor de afaceri, unde veți învăța strategii de succes de la experți în domeniu și veți avea oportunitatea de networking cu alți profesioniști.",
+    description:
+      "O conferință dedicată antreprenorilor și liderilor de afaceri, unde veți învăța strategii de succes de la experți în domeniu și veți avea oportunitatea de networking cu alți profesioniști.",
     date: "2025-05-15",
     time: "10:00",
     location: "Petroșani, Hotel Rusu, Sala de conferințe",
     imageUrl: "/images/BussinesLider.jpg",
     capacity: 50,
-    registeredUsers: []
+    registeredUsers: [],
   },
   {
     id: "mock-event-1",
     title: "Workshop de terapie prin artă",
-    description: "Un workshop interactiv dedicat terapiei prin artă, unde participanții vor avea ocazia să exploreze diferite tehnici artistice ca metode de vindecare emoțională și dezvoltare personală.",
+    description:
+      "Un workshop interactiv dedicat terapiei prin artă, unde participanții vor avea ocazia să exploreze diferite tehnici artistice ca metode de vindecare emoțională și dezvoltare personală.",
     date: "2025-06-10",
     time: "14:00",
     location: "Petroșani, Centrul Cultural Drăgan, Sala Studio",
     imageUrl: "/images/AdobeStock_370191089.jpeg",
     capacity: 20,
-    registeredUsers: []
+    registeredUsers: [],
   },
   {
     id: "mock-event-2",
     title: "Conferință: Echilibrul interior în lumea modernă",
-    description: "O conferință despre găsirea și menținerea echilibrului interior într-o lume în continuă schimbare, cu sfaturi practice și exerciții de mindfulness.",
+    description:
+      "O conferință despre găsirea și menținerea echilibrului interior într-o lume în continuă schimbare, cu sfaturi practice și exerciții de mindfulness.",
     date: "2025-07-22",
     time: "18:30",
     location: "Petroșani, Teatrul Dramatic I.D. Sîrbu",
     imageUrl: "/images/AdobeStock_217770381.jpeg",
     capacity: 50,
-    registeredUsers: []
+    registeredUsers: [],
   },
   {
     id: "mock-event-past",
     title: "Workshop: Tehnici de mindfulness și relaxare",
-    description: "Un workshop practic unde veți învăța tehnici de mindfulness și relaxare pentru a reduce stresul și a îmbunătăți calitatea vieții.",
+    description:
+      "Un workshop practic unde veți învăța tehnici de mindfulness și relaxare pentru a reduce stresul și a îmbunătăți calitatea vieții.",
     date: "2024-03-15",
     time: "16:00",
     location: "Petroșani, Centrul de Sănătate Mintală",
     imageUrl: "/images/AdobeStock_367103665.jpeg",
     capacity: 30,
-    registeredUsers: ["user1", "user2", "user3"]
-  }
+    registeredUsers: ["user1", "user2", "user3"],
+  },
 ];
 
 const EventsPage: React.FC = () => {
@@ -84,7 +88,9 @@ const EventsPage: React.FC = () => {
   };
 
   const { currentUser } = useAuth(); // Obținem utilizatorul curent din contextul de autentificare
-  const [filter, setFilter] = useState<"all" | "upcoming" | "past">(getSavedFilter);
+  const [filter, setFilter] = useState<"all" | "upcoming" | "past">(
+    getSavedFilter
+  );
   const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
   const [events, setEvents] = useState<Event[]>([]);
   const [loading, setLoading] = useState(true);
@@ -105,7 +111,11 @@ const EventsPage: React.FC = () => {
 
   useEffect(() => {
     const checkIfMobile = () => {
-      setIsMobile(/Android|iPhone|iPad|iPod|Opera Mini|IEMobile/i.test(navigator.userAgent));
+      setIsMobile(
+        /Android|iPhone|iPad|iPod|Opera Mini|IEMobile/i.test(
+          navigator.userAgent
+        )
+      );
     };
 
     checkIfMobile();
@@ -119,11 +129,14 @@ const EventsPage: React.FC = () => {
   useEffect(() => {
     const fetchEvents = async () => {
       try {
-        const timeoutId = setTimeout(() => {
-          console.log("Loading timeout reached, using mock data");
-          setEvents(mockEvents);
-          setLoading(false);
-        }, isMobile ? 5000 : 10000);
+        const timeoutId = setTimeout(
+          () => {
+            console.log("Loading timeout reached, using mock data");
+            setEvents(mockEvents);
+            setLoading(false);
+          },
+          isMobile ? 5000 : 10000
+        );
 
         try {
           const eventsCollection = collection(db, "events");
@@ -138,8 +151,8 @@ const EventsPage: React.FC = () => {
               (doc) =>
                 ({
                   id: doc.id,
-                  ...doc.data()
-                } as Event)
+                  ...doc.data(),
+                }) as Event
             );
 
             setEvents(eventsList.length > 0 ? eventsList : mockEvents);
@@ -169,7 +182,7 @@ const EventsPage: React.FC = () => {
       const options: Intl.DateTimeFormatOptions = {
         year: "numeric",
         month: "long",
-        day: "numeric"
+        day: "numeric",
       };
       return new Date(dateString).toLocaleDateString("ro-RO", options);
     } catch (err) {
@@ -191,7 +204,11 @@ const EventsPage: React.FC = () => {
   });
 
   const filteredEvents =
-    filter === "upcoming" ? upcomingEvents : filter === "past" ? pastEvents : events;
+    filter === "upcoming"
+      ? upcomingEvents
+      : filter === "past"
+        ? pastEvents
+        : events;
 
   const isEventPast = (eventDate: string): boolean => {
     return new Date(eventDate) < today;
@@ -212,7 +229,9 @@ const EventsPage: React.FC = () => {
     <div className="min-h-screen bg-gray-100 dark:bg-gray-900">
       <div className="bg-white dark:bg-gray-800 shadow-md p-4 md:p-6 mb-6">
         <div className="container mx-auto">
-          <h1 className="text-2xl md:text-3xl font-bold text-center mb-6">Evenimente</h1>
+          <h1 className="text-2xl md:text-3xl font-bold text-center mb-6">
+            Evenimente
+          </h1>
 
           <FilterBar filter={filter} setFilter={setFilter} />
 
@@ -222,10 +241,12 @@ const EventsPage: React.FC = () => {
                 <span className="font-medium">Toate:</span> {events.length}
               </div>
               <div>
-                <span className="font-medium">Viitoare:</span> {upcomingEvents.length}
+                <span className="font-medium">Viitoare:</span>{" "}
+                {upcomingEvents.length}
               </div>
               <div>
-                <span className="font-medium">Trecute:</span> {pastEvents.length}
+                <span className="font-medium">Trecute:</span>{" "}
+                {pastEvents.length}
               </div>
             </div>
           </div>
@@ -234,7 +255,10 @@ const EventsPage: React.FC = () => {
 
       {error ? (
         <div className="container mx-auto px-4 py-8">
-          <ErrorMessage message={error} onRetry={() => window.location.reload()} />
+          <ErrorMessage
+            message={error}
+            onRetry={() => window.location.reload()}
+          />
         </div>
       ) : filteredEvents.length === 0 ? (
         <div className="container mx-auto px-4 py-8 text-center">
@@ -261,7 +285,10 @@ const EventsPage: React.FC = () => {
                     alt={event.title}
                     className={`w-full h-full object-cover ${isEventPast(event.date) ? "opacity-80" : ""}`}
                     onError={(e) => {
-                      console.error("Eroare la încărcarea imaginii:", event.imageUrl);
+                      console.error(
+                        "Eroare la încărcarea imaginii:",
+                        event.imageUrl
+                      );
                       e.currentTarget.src = "/images/BussinesLider.jpg";
                     }}
                   />
@@ -281,19 +308,24 @@ const EventsPage: React.FC = () => {
 
                 <div className="p-4">
                   <div className="text-blue-600 text-sm font-medium mb-2">
-                    {formatDate(event.date)} • {event.time || "Ora indisponibilă"}
+                    {formatDate(event.date)} •{" "}
+                    {event.time || "Ora indisponibilă"}
                   </div>
 
                   <h3 className="text-lg font-bold text-gray-800 dark:text-gray-200 mb-2">
                     {event.title}
                   </h3>
 
-                  <p className="text-sm text-gray-600 dark:text-gray-400 mb-2">{event.location}</p>
+                  <p className="text-sm text-gray-600 dark:text-gray-400 mb-2">
+                    {event.location}
+                  </p>
 
                   <div className="h-20 overflow-hidden mb-4">
                     <p className="text-gray-600 dark:text-gray-400 text-sm line-clamp-4">
                       {event.description?.substring(0, 150)}
-                      {event.description && event.description.length > 150 ? "..." : ""}
+                      {event.description && event.description.length > 150
+                        ? "..."
+                        : ""}
                     </p>
                   </div>
 
@@ -301,7 +333,8 @@ const EventsPage: React.FC = () => {
                     <div className="text-sm text-gray-500 dark:text-gray-400">
                       {event.registeredUsers ? (
                         <span>
-                          {event.registeredUsers.length}/{event.capacity} participanți
+                          {event.registeredUsers.length}/{event.capacity}{" "}
+                          participanți
                         </span>
                       ) : (
                         <span>0/{event.capacity || "?"} participanți</span>
@@ -311,14 +344,16 @@ const EventsPage: React.FC = () => {
                     <Link
                       to={`/events/${event.id}`}
                       className={`px-4 py-2 rounded-md transition-colors text-sm 
-                        ${isEventPast(event.date) 
-                          ? "bg-gray-600 hover:bg-gray-700 text-white" 
-                          : isUserRegistered(event)
-                            ? "bg-green-600 hover:bg-green-700 text-white" 
-                            : "bg-blue-600 hover:bg-blue-700 text-white"}`}
+                        ${
+                          isEventPast(event.date)
+                            ? "bg-gray-600 hover:bg-gray-700 text-white"
+                            : isUserRegistered(event)
+                              ? "bg-green-600 hover:bg-green-700 text-white"
+                              : "bg-blue-600 hover:bg-blue-700 text-white"
+                        }`}
                     >
-                      {isEventPast(event.date) 
-                        ? "Vezi detalii" 
+                      {isEventPast(event.date)
+                        ? "Vezi detalii"
                         : isUserRegistered(event)
                           ? "Ești înscris"
                           : "Înscrie-te acum"}

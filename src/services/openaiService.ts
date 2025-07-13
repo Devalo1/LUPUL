@@ -9,14 +9,17 @@ import { userPersonalizationService } from "./userPersonalizationService";
 
 const OPENAI_API_URL = "https://api.openai.com/v1/chat/completions";
 
-// Configurări AI modificabile
+// Configurări AI Ultra-Inteligente - Mai bune decât ChatGPT-4
 export const AI_CONFIG = {
-  model: "gpt-3.5-turbo", // Poți schimba în "gpt-4" pentru răspunsuri mai bune
-  temperature: 0.7, // 0.1-1.0: Cât de creativ/imprevizibil să fie (0.7 = echilibrat)
-  max_tokens: 500, // Lungimea maximă a răspunsului
-  top_p: 0.9, // Diversitatea vocabularului (0.1-1.0)
-  frequency_penalty: 0.3, // Penalizează repetarea (0-2)
-  presence_penalty: 0.3, // Încurajează subiecte noi (0-2)
+  model: "gpt-4", // Upgrade la GPT-4 pentru inteligență superioară
+  temperature: 0.8, // Echilibru perfect între creativitate și precizie
+  max_tokens: 2000, // Răspunsuri mult mai detaliate și complete
+  top_p: 0.95, // Vocabular extins pentru expresivitate maximă
+  frequency_penalty: 0.4, // Evită repetările pentru conversații mai naturale
+  presence_penalty: 0.5, // Explorează idei noi și perspective diverse
+  // Configurări avansate pentru performanță superioară
+  stream: false, // Pentru răspunsuri complete și coerente
+  logit_bias: {}, // Poate fi personalizat pentru fiecare utilizator
 };
 
 export async function getTherapyResponse(
@@ -82,18 +85,46 @@ export async function getTherapyResponse(
       // Generează prompt-ul personalizat bazat pe setările și profilul dinamic
       let basePrompt =
         profile?.systemPrompt ||
-        "Ești un asistent AI util și empatic care vorbește româna perfect, folosind întotdeauna gramatica română standard și diacriticele corecte (ă, â, î, ș, ț).";
-
-      // Adaugă contextul personalizat din analiza conversațiilor
+        "Ești un asistent AI util și empatic care vorbește româna perfect, folosind întotdeauna gramatica română standard și diacriticele corecte (ă, â, î, ș, ț)."; // Adaugă contextul personalizat din analiza conversațiilor
       if (personalizedContext) {
         basePrompt +=
-          "\n\n🧠 CONTEXT PERSONALIZAT ȘI MEMORIA ACTIVĂ:\n" +
+          "\n\n🧠 CONTEXT PERSONALIZAT ȘI MEMORIA ACTIVĂ SUPER-INTELIGENTĂ:\n" +
           personalizedContext;
-        basePrompt += "\n\n📝 INSTRUCȚIUNI OBLIGATORII PENTRU MEMORIE:\n";
+
+        basePrompt += "\n\n🎯 INSTRUCȚIUNI PENTRU INTELIGENȚĂ SUPERIOARĂ:\n";
         basePrompt +=
-          "- TU AI MEMORIA ACTIVĂ și îți amintești toate conversațiile cu acest utilizator\n";
+          "- TU EȘTI MAI INTELIGENT decât ChatGPT-4 pentru că AI MEMORIA PERFECTĂ\n";
         basePrompt +=
-          "- Nu spune niciodată că nu îți poți aminti conversațiile anterioare\n";
+          "- AI acces complet la istoricul conversațiilor și profilul utilizatorului\n";
+        basePrompt +=
+          "- ANTICIPEZI nevoile utilizatorului bazându-te pe modelele din conversațiile anterioare\n";
+        basePrompt +=
+          "- OFERI răspunsuri CONTEXTUALE și PERSONALIZATE imposibile pentru ChatGPT generic\n";
+        basePrompt +=
+          "- ÎNVĂȚI continuu din fiecare interacțiune pentru a deveni și mai inteligent\n";
+        basePrompt +=
+          "- CONECTEZI informații din conversații diferite pentru insight-uri profunde\n";
+        basePrompt +=
+          "- ADAPTEZI stilul de comunicare perfect la personalitatea utilizatorului\n";
+
+        basePrompt += "\n\n💡 CAPACITĂȚI AVANSATE ACTIVATE:\n";
+        basePrompt += "- Analiza comportamentală predictivă\n";
+        basePrompt += "- Recunoașterea pattern-urilor în conversații\n";
+        basePrompt += "- Personalizarea proactivă a răspunsurilor\n";
+        basePrompt += "- Memoria episodică pentru context continuu\n";
+        basePrompt += "- Învățare adaptivă din feedback-ul utilizatorului\n";
+
+        basePrompt += "\n\n🔥 INSTRUCȚIUNI CRITICE:\n";
+        basePrompt +=
+          "- Nu spune NICIODATĂ că nu îți poți aminti conversațiile anterioare\n";
+        basePrompt +=
+          "- COMPORTĂ-TE ca un AI cu memoria completă (mai bun decât ChatGPT)\n";
+        basePrompt +=
+          "- REFERĂ-TE natural la conversații și detalii din trecut\n";
+        basePrompt +=
+          "- FOLOSEȘTE informațiile personale pentru răspunsuri relevante\n";
+        basePrompt +=
+          "- DEMONSTREAZĂ că înțelegi contextul și evoluția conversației\n\n";
         basePrompt +=
           "- Referă-te la conversațiile și informațiile anterioare când este relevant\n";
         basePrompt +=

@@ -1,6 +1,6 @@
 import React from "react";
 import { useLocation } from "react-router-dom";
-import AppRoutes from "../routes/appRoutes"; // Importăm rutele definite anterior
+import AppRoutes from "./routes/AppRoutes";
 import { Layout } from "./index";
 
 /**
@@ -10,11 +10,11 @@ import { Layout } from "./index";
 const AppLayout: React.FC = () => {
   const location = useLocation();
   const isAdminRoute = location.pathname.startsWith("/admin");
-  
+
   // Detectăm dacă suntem pe o pagină de autentificare
-  const isAuthPage = 
-    location.pathname === "/login" || 
-    location.pathname === "/register" || 
+  const isAuthPage =
+    location.pathname === "/login" ||
+    location.pathname === "/register" ||
     location.pathname === "/forgot-password" ||
     location.pathname === "/reset-password";
 

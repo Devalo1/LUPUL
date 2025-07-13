@@ -2,7 +2,7 @@ import React, { ReactNode } from "react";
 import Header from "./Header";
 import Footer from "./Footer";
 import AdminNavigation from "../AdminNavigation";
-import AIAssistantWidget from "../AIAssistantWidget";
+import AIAssistantWidget from "../AIAssistantWidget_Modern";
 
 interface LayoutProps {
   children: ReactNode;

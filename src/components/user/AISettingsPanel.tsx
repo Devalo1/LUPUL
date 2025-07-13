@@ -10,6 +10,10 @@ import "./AISettingsPanel.css";
 import "./AISettingsForm.css";
 import { userAIManager } from "../../services/userAIManager";
 import { useAuth } from "../../contexts/AuthContext";
+import {
+  processAvatarImage,
+  validateAvatarData,
+} from "../../utils/avatarUtils";
 
 interface AISettingsPanelProps {
   onClose: () => void;
@@ -364,6 +368,10 @@ const AISettingsPanel: React.FC<AISettingsPanelProps> = ({ onClose }) => {
 
       if (saved) {
         setSuccess("Setările au fost salvate cu succes!");
+
+        // Forțează reîncărcarea profilului prin eveniment custom
+        window.dispatchEvent(new CustomEvent("ai-profile-updated"));
+
         setTimeout(() => {
           setSuccess(null);
         }, 3000);
@@ -632,14 +640,45 @@ const AISettingsPanel: React.FC<AISettingsPanelProps> = ({ onClose }) => {
                       onChange={async (e) => {
                         const file = e.target.files && e.target.files[0];
                         if (!file) return;
-                        const reader = new FileReader();
-                        reader.onload = (ev) => {
-                          if (ev.target?.result) {
-                            const avatarData = ev.target.result as string;
-                            handleSettingChange("avatar", avatarData);
-                          }
-                        };
-                        reader.readAsDataURL(file);
+
+                        try {
+                          // Afișează mesaj de încărcare
+                          setError(null);
+                          setSuccess("Se procesează imaginea...");
+
+                          // Procesează imaginea pentru a o optimiza
+                          const optimizedImage = await processAvatarImage(
+                            file,
+                            128,
+                            0.8
+                          );
+
+                          // Validează rezultatul
+                          const validatedAvatar =
+                            validateAvatarData(optimizedImage);
+
+                          handleSettingChange("avatar", validatedAvatar);
+                          setSuccess("Imaginea a fost încărcată cu succes!");
+
+                          // Forțează reîncărcarea profilului prin eveniment custom
+                          window.dispatchEvent(new Event("ai-profile-updated"));
+
+                          // Curăță mesajul după 3 secunde
+                          setTimeout(() => {
+                            setSuccess(null);
+                          }, 3000);
+                        } catch (error) {
+                          console.error(
+                            "Eroare la procesarea imaginii:",
+                            error
+                          );
+                          setError(
+                            "Nu s-a putut procesa imaginea. Încearcă o altă imagine."
+                          );
+                          setTimeout(() => {
+                            setError(null);
+                          }, 5000);
+                        }
                       }}
                       title="Încarcă o poză de profil din calculator"
                       aria-label="Încarcă poză de profil"

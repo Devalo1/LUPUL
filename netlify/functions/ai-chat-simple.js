@@ -52,7 +52,7 @@ export const handler = async (event, context) => {
     // Pregătește mesajele pentru conversație
     const messages = [
       { role: "system", content: systemPrompt },
-      { role: "user", content: prompt }
+      { role: "user", content: prompt },
     ];
 
     console.log(`[AI CHAT SIMPLE] Apelează OpenAI API...`);
@@ -101,7 +101,8 @@ export const handler = async (event, context) => {
       statusCode: 500,
       headers,
       body: JSON.stringify({
-        error: "Eroare la răspunsul AI. Verifică conexiunea și încearcă din nou.",
+        error:
+          "Eroare la răspunsul AI. Verifică conexiunea și încearcă din nou.",
         details: error.message,
       }),
     };

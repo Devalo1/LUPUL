@@ -1,0 +1,487 @@
+/* EmblemDashboard.css */
+.emblem-dashboard {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 20px;
+  background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+  min-height: 100vh;
+  color.progress-fill {
+    height: 100%;
+    background: linear-gradient(45deg, #ffd700, #ffa500);
+    width: 0%;
+    transition: width 0.3s ease;
+    border-radius: 10px;
+  }
+}
+
+.emblem-dashboard.loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.loading-spinner {
+  font-size: 1.5rem;
+  text-align: center;
+}
+
+.emblem-dashboard.no-emblem {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.no-emblem-message {
+  text-align: center;
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
+  border-radius: 20px;
+  padding: 50px;
+  max-width: 600px;
+}
+
+.no-emblem-message h2 {
+  font-size: 2rem;
+  margin-bottom: 20px;
+  color: #ffd700;
+}
+
+.no-emblem-message p {
+  font-size: 1.2rem;
+  line-height: 1.6;
+  margin-bottom: 30px;
+}
+
+.get-emblem-btn {
+  background: linear-gradient(45deg, #ffd700, #ffa500);
+  color: #333;
+  border: none;
+  padding: 15px 30px;
+  border-radius: 30px;
+  font-weight: bold;
+  font-size: 1.1rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.get-emblem-btn:hover {
+  background: linear-gradient(45deg, #ffa500, #ff8c00);
+  transform: translateY(-2px);
+  box-shadow: 0 10px 20px rgba(255, 165, 0, 0.3);
+}
+
+.dashboard-header {
+  text-align: center;
+  margin-bottom: 40px;
+  padding: 30px 0;
+}
+
+.dashboard-header h1 {
+  font-size: 2.5rem;
+  margin-bottom: 15px;
+  background: linear-gradient(45deg, #ffd700, #ffa500);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.dashboard-header p {
+  font-size: 1.2rem;
+  opacity: 0.9;
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+/* Emblem Status Card */
+.emblem-status-card {
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
+  border-radius: 20px;
+  padding: 30px;
+  margin-bottom: 30px;
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 30px;
+  align-items: center;
+  border: 2px solid rgba(255, 215, 0, 0.3);
+}
+
+.emblem-visual {
+  text-align: center;
+}
+
+.emblem-icon {
+  font-size: 4rem;
+  margin-bottom: 15px;
+  color: #ffd700;
+}
+
+.emblem-icon.lupul_intelepta {
+  color: #ffd700;
+}
+
+.emblem-icon.corbul_mistic {
+  color: #9b59b6;
+}
+
+.emblem-icon.gardianul_wellness {
+  color: #e74c3c;
+}
+
+.emblem-icon.cautatorul_lumina {
+  color: #3498db;
+}
+
+.emblem-level {
+  background: linear-gradient(45deg, #ffd700, #ffa500);
+  color: #333;
+  padding: 8px 16px;
+  border-radius: 20px;
+  font-weight: bold;
+  font-size: 0.9rem;
+  text-transform: uppercase;
+}
+
+.emblem-details h3 {
+  font-size: 1.8rem;
+  margin-bottom: 20px;
+  color: #ffd700;
+}
+
+.emblem-stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 20px;
+}
+
+.stat {
+  text-align: center;
+  background: rgba(255, 255, 255, 0.05);
+  padding: 15px;
+  border-radius: 10px;
+}
+
+.stat-label {
+  display: block;
+  font-size: 0.9rem;
+  opacity: 0.8;
+  margin-bottom: 5px;
+}
+
+.stat-value {
+  display: block;
+  font-size: 1.5rem;
+  font-weight: bold;
+  color: #ffd700;
+}
+
+/* Evolution Card */
+.evolution-card {
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
+  border-radius: 20px;
+  padding: 30px;
+  margin-bottom: 30px;
+}
+
+.evolution-card h3 {
+  font-size: 1.5rem;
+  margin-bottom: 20px;
+  color: #ffd700;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.evolution-progress {
+  margin-bottom: 20px;
+}
+
+.progress-bar {
+  width: 100%;
+  height: 20px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 10px;
+  overflow: hidden;
+  margin-bottom: 10px;
+}
+
+.progress-fill {
+  height: 100%;
+  background: linear-gradient(45deg, #ffd700, #ffa500);
+  width: var(--progress-width, 0%);
+  transition: width 0.3s ease;
+  border-radius: 10px;
+}
+
+.progress-text {
+  text-align: center;
+  font-weight: bold;
+  color: #ffd700;
+}
+
+.evolution-info p {
+  margin-bottom: 15px;
+  font-size: 1.1rem;
+}
+
+.next-level-benefits h4 {
+  color: #ffd700;
+  margin-bottom: 10px;
+}
+
+.next-level-benefits ul {
+  list-style: none;
+  padding: 0;
+}
+
+.next-level-benefits li {
+  padding: 5px 0;
+  position: relative;
+  padding-left: 20px;
+}
+
+.next-level-benefits li::before {
+  content: "🌟";
+  position: absolute;
+  left: 0;
+}
+
+/* Benefits Card */
+.benefits-card {
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
+  border-radius: 20px;
+  padding: 30px;
+  margin-bottom: 30px;
+}
+
+.benefits-card h3 {
+  font-size: 1.5rem;
+  margin-bottom: 20px;
+  color: #ffd700;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.benefits-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 15px;
+}
+
+.benefit-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 15px;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 10px;
+}
+
+.benefit-icon {
+  color: #ffd700;
+  font-size: 1.2rem;
+}
+
+/* Events Card */
+.events-card {
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
+  border-radius: 20px;
+  padding: 30px;
+  margin-bottom: 30px;
+}
+
+.events-card h3 {
+  font-size: 1.5rem;
+  margin-bottom: 20px;
+  color: #ffd700;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.events-list {
+  display: grid;
+  gap: 20px;
+}
+
+.event-item {
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 15px;
+  padding: 20px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.event-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.event-header h4 {
+  font-size: 1.2rem;
+  color: #ffd700;
+  margin: 0;
+}
+
+.event-date {
+  font-size: 0.9rem;
+  opacity: 0.8;
+  background: rgba(255, 255, 255, 0.1);
+  padding: 5px 10px;
+  border-radius: 8px;
+}
+
+.event-description {
+  margin-bottom: 15px;
+  line-height: 1.5;
+  opacity: 0.9;
+}
+
+.event-meta {
+  display: flex;
+  gap: 20px;
+  margin-bottom: 15px;
+  font-size: 0.9rem;
+  opacity: 0.8;
+}
+
+.event-duration,
+.event-participants {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.event-actions {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.register-btn {
+  background: linear-gradient(45deg, #2ecc71, #27ae60);
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 20px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.register-btn:hover:not(:disabled) {
+  background: linear-gradient(45deg, #27ae60, #229954);
+  transform: translateY(-2px);
+  box-shadow: 0 5px 15px rgba(46, 204, 113, 0.3);
+}
+
+.register-btn:disabled {
+  background: #666;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+.registered-badge {
+  background: linear-gradient(45deg, #2ecc71, #27ae60);
+  color: white;
+  padding: 8px 16px;
+  border-radius: 15px;
+  font-weight: bold;
+  font-size: 0.9rem;
+}
+
+.tier-required {
+  background: #e74c3c;
+  color: white;
+  padding: 8px 16px;
+  border-radius: 15px;
+  font-weight: bold;
+  font-size: 0.9rem;
+}
+
+/* Insights Card */
+.insights-card {
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
+  border-radius: 20px;
+  padding: 30px;
+}
+
+.insights-card h3 {
+  font-size: 1.5rem;
+  margin-bottom: 20px;
+  color: #ffd700;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.insights-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 20px;
+}
+
+.insight-item {
+  text-align: center;
+  background: rgba(255, 255, 255, 0.05);
+  padding: 20px;
+  border-radius: 15px;
+}
+
+.insight-number {
+  font-size: 2.5rem;
+  font-weight: bold;
+  color: #ffd700;
+  margin-bottom: 10px;
+}
+
+.insight-label {
+  font-size: 0.9rem;
+  opacity: 0.8;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .emblem-dashboard {
+    padding: 15px;
+  }
+
+  .dashboard-header h1 {
+    font-size: 2rem;
+  }
+
+  .emblem-status-card {
+    grid-template-columns: 1fr;
+    text-align: center;
+    gap: 20px;
+  }
+
+  .emblem-stats {
+    grid-template-columns: 1fr;
+  }
+
+  .benefits-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .insights-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .event-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+  }
+
+  .event-meta {
+    flex-direction: column;
+    gap: 10px;
+  }
+}

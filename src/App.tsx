@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useEffect, Suspense } from "react";
 import { BrowserRouter as Router } from "react-router-dom";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
@@ -44,11 +44,18 @@ const App: React.FC = () => {
               <CategoryProvider>
                 <AssistantProfileProvider>
                   <ConversationsProvider>
-                    {" "}
-                    {/* Componenta care inițializează datele în Firestore */}
-                    <DataInitializer />{" "}
-                    {/* Toate rutele sunt gestionate în AppLayout */}{" "}
-                    <AppLayout />
+                    <Suspense
+                      fallback={
+                        <div className="min-h-screen flex items-center justify-center">
+                          <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-600"></div>
+                        </div>
+                      }
+                    >
+                      {/* Componenta care inițializează datele în Firestore */}
+                      <DataInitializer />
+                      {/* Toate rutele sunt gestionate în AppLayout */}
+                      <AppLayout />
+                    </Suspense>
                     <ToastContainer
                       position="top-right"
                       autoClose={4000}

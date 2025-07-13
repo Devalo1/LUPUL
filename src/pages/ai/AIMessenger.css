@@ -457,15 +457,26 @@
     width: 100%;
   }
 }
-  content: '';
+
+/* Decorative Background Effects */
+.ai-messenger__container::before {
+  content: "";
   position: absolute;
   top: 0;
   left: 0;
   right: 0;
   bottom: 0;
-  background: 
-    radial-gradient(ellipse at top, rgba(240, 147, 251, 0.1) 0%, transparent 60%),
-    radial-gradient(ellipse at bottom, rgba(102, 126, 234, 0.1) 0%, transparent 60%);
+  background:
+    radial-gradient(
+      ellipse at top,
+      rgba(240, 147, 251, 0.1) 0%,
+      transparent 60%
+    ),
+    radial-gradient(
+      ellipse at bottom,
+      rgba(102, 126, 234, 0.1) 0%,
+      transparent 60%
+    );
   pointer-events: none;
   z-index: 1;
 }
@@ -491,7 +502,11 @@
 
 /* Header */
 .ai-messenger-header {
-  background: linear-gradient(135deg, rgba(102, 126, 234, 0.9) 0%, rgba(118, 75, 162, 0.9) 100%);
+  background: linear-gradient(
+    135deg,
+    rgba(102, 126, 234, 0.9) 0%,
+    rgba(118, 75, 162, 0.9) 100%
+  );
   backdrop-filter: blur(20px);
   color: white;
   padding: 20px 30px;
@@ -524,8 +539,15 @@
 }
 
 @keyframes avatarPulse {
-  0%, 100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(255, 255, 255, 0.7); }
-  50% { transform: scale(1.05); box-shadow: 0 0 0 10px rgba(255, 255, 255, 0); }
+  0%,
+  100% {
+    transform: scale(1);
+    box-shadow: 0 0 0 0 rgba(255, 255, 255, 0.7);
+  }
+  50% {
+    transform: scale(1.05);
+    box-shadow: 0 0 0 10px rgba(255, 255, 255, 0);
+  }
 }
 
 .ai-avatar-circle::before {
@@ -559,8 +581,13 @@
 }
 
 @keyframes statusPulse {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.5; }
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
 }
 
 /* Chat Container */
@@ -576,7 +603,11 @@
   flex: 1;
   padding: 30px;
   overflow-y: auto;
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0.05) 100%);
+  background: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0.1) 0%,
+    rgba(255, 255, 255, 0.05) 100%
+  );
 }
 
 /* Custom Scrollbar */
@@ -607,8 +638,14 @@
 }
 
 @keyframes messageSlideIn {
-  from { opacity: 0; transform: translateY(20px); }
-  to { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .message-bubble.user {
@@ -666,12 +703,24 @@
   animation: typingBounce 1.4s ease-in-out infinite both;
 }
 
-.typing-dot:nth-child(1) { animation-delay: -0.32s; }
-.typing-dot:nth-child(2) { animation-delay: -0.16s; }
+.typing-dot:nth-child(1) {
+  animation-delay: -0.32s;
+}
+.typing-dot:nth-child(2) {
+  animation-delay: -0.16s;
+}
 
 @keyframes typingBounce {
-  0%, 80%, 100% { transform: scale(0); opacity: 0.5; }
-  40% { transform: scale(1); opacity: 1; }
+  0%,
+  80%,
+  100% {
+    transform: scale(0);
+    opacity: 0.5;
+  }
+  40% {
+    transform: scale(1);
+    opacity: 1;
+  }
 }
 
 /* Input Area */
@@ -707,7 +756,7 @@
 /* Input focus glow effect */
 .ai-messenger-input:focus {
   border-color: #667eea;
-  box-shadow: 
+  box-shadow:
     0 0 0 3px rgba(102, 126, 234, 0.1),
     0 0 20px rgba(102, 126, 234, 0.2);
   background: white;
@@ -751,19 +800,28 @@
 
 /* Header gradient animation */
 .ai-messenger-header::after {
-  content: '';
+  content: "";
   position: absolute;
   top: 0;
   left: -100%;
   width: 100%;
   height: 100%;
-  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.1),
+    transparent
+  );
   animation: headerShine 3s ease-in-out infinite;
 }
 
 @keyframes headerShine {
-  0% { left: -100%; }
-  100% { left: 100%; }
+  0% {
+    left: -100%;
+  }
+  100% {
+    left: 100%;
+  }
 }
 
 /* Empty State */
@@ -813,23 +871,23 @@
     margin-left: 0;
     border-radius: 0;
   }
-  
+
   .conversation-history.expanded ~ .ai-messenger-main {
     margin-left: 280px;
   }
-  
+
   .ai-messenger-header {
     padding: 15px 20px;
   }
-  
+
   .ai-messenger-messages {
     padding: 20px;
   }
-  
+
   .ai-messenger-input-area {
     padding: 15px 20px;
   }
-  
+
   .message-bubble {
     max-width: 85%;
     font-size: 15px;
@@ -840,16 +898,16 @@
   .ai-messenger-header-content {
     gap: 15px;
   }
-  
+
   .ai-avatar-circle {
     width: 50px;
     height: 50px;
   }
-  
+
   .ai-messenger-header-info h1 {
     font-size: 20px;
   }
-  
+
   .message-bubble {
     max-width: 90%;
     padding: 12px 16px;

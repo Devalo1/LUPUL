@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect, startTransition } from "react";
 import "./AIAssistantWidget.css";
 import { useAssistantProfile } from "../contexts/useAssistantProfile";
 import { useAuth } from "../contexts/AuthContext";
@@ -8,6 +8,7 @@ import { useConversations } from "../hooks/useConversations";
 import { Timestamp } from "firebase/firestore";
 import { fetchAIResponseSafe } from "../utils/aiApiUtils";
 import { getTherapyResponse } from "../services/openaiService";
+import { validateAvatarData } from "../utils/avatarUtils";
 
 // Folosește funcția sigură pentru AI Response (adaptată pentru producție)
 const fetchAIResponse = fetchAIResponseSafe;
@@ -47,58 +48,27 @@ const AIAssistantWidget: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [aiTyping, setAiTyping] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
-  // Enhanced drag handlers with viewport constraints  // Handler pentru deschiderea AI Messenger pe tot ecranul
-  const handleFullscreen = () => {
-    console.log("[AIWidget] Buton fullscreen apăsat");
-    console.log("[AIWidget] User autentificat:", !!user);
-    console.log("[AIWidget] User ID:", user?.uid);
-    console.log("[AIWidget] Current location:", window.location.href);
-
-    if (!user) {
-      alert("Trebuie să te autentifici pentru a accesa această funcție.");
-      return;
-    } // Adaugă feedback vizual
-    const button = document.querySelector(
-      ".ai-assistant-widget__fullscreen-btn"
-    );
-    if (button) {
-      button.textContent = "⏳";
-      button.setAttribute("disabled", "true");
-    }
-    console.log("[AIWidget] Navighez către AI Messenger folosind React Router");
-
-    try {
-      handleClose();
-
-      // Folosește React Router pentru navigare pe același port
-      // Aceasta va funcționa corect atât pe Vite (5173) cât și pe Netlify (8888)
-      console.log("[AIWidget] Navighez către /ai-messenger pe portul curent");
-
-      // Mică întârziere pentru feedback vizual
-      setTimeout(() => {
-        // Folosește React Router navigate pentru navigare pe același server
-        navigate("/ai-messenger");
-      }, 200);
-    } catch (error) {
-      console.error("Eroare la navigarea către AI Messenger:", error); // Resetează butonul în caz de eroare
-      if (button) {
-        button.textContent = "⬜";
-        button.removeAttribute("disabled");
-      } // Fallback cu React Router
-      setTimeout(() => {
-        navigate("/ai-messenger");
-      }, 300);
-    }
-  };
 
   // Enhanced drag handlers with improved mobile detection and constraints
   const handleDragStart = (e: React.MouseEvent | React.TouchEvent) => {
-    // Disable dragging on mobile devices
-    if (window.innerWidth <= 768) {
+    // Enable dragging on desktop and large tablets (>900px)
+    if (window.innerWidth <= 900) {
+      console.log(
+        `[AI Widget] Drag disabled - screen width: ${window.innerWidth}px`
+      );
       return;
     }
 
+    console.log(
+      `[AI Widget] Drag started - screen width: ${window.innerWidth}px`
+    );
     setDragging(true);
+
+    // Add dragging class for visual feedback
+    if (modalRef.current) {
+      modalRef.current.classList.add("ai-assistant-widget__modal--dragging");
+    }
+
     let clientX = 0,
       clientY = 0;
     if ("touches" in e && e.touches.length > 0) {
@@ -117,7 +87,13 @@ const AIAssistantWidget: React.FC = () => {
   };
 
   const handleDrag = (e: MouseEvent | TouchEvent) => {
-    if (!dragging || window.innerWidth <= 768) return;
+    if (!dragging || window.innerWidth <= 900) return;
+
+    // Throttle drag events for better performance
+    const now = Date.now();
+    const windowWithCache = window as typeof window & { lastDragTime?: number };
+    if (now - (windowWithCache.lastDragTime || 0) < 16) return; // ~60fps
+    windowWithCache.lastDragTime = now;
 
     let clientX = 0,
       clientY = 0;
@@ -156,16 +132,13 @@ const AIAssistantWidget: React.FC = () => {
 
     setModalPos({ x: constrainedX, y: constrainedY });
   };
-  const handleDragEnd = () => setDragging(false);
+  const handleDragEnd = () => {
+    setDragging(false);
 
-  // Enhanced close handler for better UX
-  const handleClose = () => {
-    setOpen(false);
-    // Reset position for next opening
-    setTimeout(() => {
-      const optimalPosition = calculateOptimalPosition();
-      setModalPos({ x: optimalPosition.x, y: optimalPosition.y });
-    }, 300);
+    // Remove dragging class for visual feedback
+    if (modalRef.current) {
+      modalRef.current.classList.remove("ai-assistant-widget__modal--dragging");
+    }
   };
 
   useEffect(() => {
@@ -187,43 +160,59 @@ const AIAssistantWidget: React.FC = () => {
       window.removeEventListener("touchend", handleDragEnd);
     };
   }, [dragging, dragOffset]);
-  // Enhanced body scroll management and modal state
+  // Enhanced body scroll management WITHOUT position fixed (care blurează)
   useEffect(() => {
     if (open) {
-      // Prevent body scroll and fix position for mobile
+      // Prevent body scroll FĂRĂ position fixed
       document.body.classList.add("modal-open");
       document.body.style.overflow = "hidden";
-      // Store current scroll position
-      const scrollTop =
-        window.pageYOffset || document.documentElement.scrollTop;
-      document.body.style.position = "fixed";
-      document.body.style.top = `-${scrollTop}px`;
-      document.body.style.width = "100%";
+      // Nu mai setăm position fixed și top - acestea blurează pagina
     } else {
       // Restore body scroll
       document.body.classList.remove("modal-open");
-      const scrollTop = Math.abs(parseInt(document.body.style.top || "0"));
       document.body.style.overflow = "";
-      document.body.style.position = "";
-      document.body.style.top = "";
-      document.body.style.width = "";
-      if (scrollTop > 0) {
-        window.scrollTo(0, scrollTop);
-      }
     }
     return () => {
       // Cleanup on unmount
       document.body.classList.remove("modal-open");
       document.body.style.overflow = "";
-      document.body.style.position = "";
-      document.body.style.top = "";
-      document.body.style.width = "";
     };
   }, [open]); // Enhanced positioning logic with intelligent viewport adaptation
   const [modalDimensions, setModalDimensions] = useState({
     width: 450,
     height: 600,
   });
+
+  // Initialize modal dimensions on component mount
+  useEffect(() => {
+    const initDimensions = () => {
+      const viewport = {
+        width: window.innerWidth,
+        height: window.innerHeight,
+      };
+
+      // Mobile/tablet specific dimensions
+      if (viewport.width <= 768) {
+        setModalDimensions({
+          width: Math.min(viewport.width - 20, 420),
+          height: Math.min(viewport.height - 20, viewport.height * 0.9),
+        });
+      } else if (viewport.width <= 1024) {
+        setModalDimensions({
+          width: Math.min(400, viewport.width - 40),
+          height: Math.min(550, viewport.height - 40),
+        });
+      } else {
+        // Desktop dimensions
+        setModalDimensions({
+          width: 450,
+          height: 600,
+        });
+      }
+    };
+
+    initDimensions();
+  }, []);
 
   // Intelligent positioning system with enhanced mobile support
   const calculateOptimalPosition = () => {
@@ -358,14 +347,14 @@ const AIAssistantWidget: React.FC = () => {
     }
   }, [open]);
 
-  // Apply positioning via DOM manipulation (to avoid inline styles lint warning)
+  // Apply positioning via direct inline styles pentru drag & drop stabil
   useEffect(() => {
     if (modalRef.current && open) {
       const modal = modalRef.current;
-      modal.style.setProperty("--modal-x", `${modalPos.x}px`);
-      modal.style.setProperty("--modal-y", `${modalPos.y}px`);
-      modal.style.setProperty("--modal-width", `${modalDimensions.width}px`);
-      modal.style.setProperty("--modal-height", `${modalDimensions.height}px`);
+      modal.style.top = `${modalPos.y}px`;
+      modal.style.left = `${modalPos.x}px`;
+      modal.style.width = `${modalDimensions.width}px`;
+      modal.style.height = `${modalDimensions.height}px`;
     }
   }, [modalPos, modalDimensions, open]);
 
@@ -519,14 +508,18 @@ const AIAssistantWidget: React.FC = () => {
     <>
       <div
         className="ai-assistant-widget__button"
-        onClick={() => setOpen(true)}
+        onClick={() => startTransition(() => setOpen(true))}
         title={`Deschide chatul cu ${assistantName}`}
       >
         <div className="ai-assistant-widget__button-content">
           <img
-            src={assistantProfile.avatar}
+            src={validateAvatarData(assistantProfile.avatar)}
             alt="AI Assistant"
             className="ai-assistant-widget__button-img"
+            onError={(e) => {
+              const target = e.target as HTMLImageElement;
+              target.src = "/default-ai-avatar.svg";
+            }}
           />
         </div>
       </div>{" "}
@@ -545,25 +538,48 @@ const AIAssistantWidget: React.FC = () => {
             >
               <div className="ai-assistant-widget__modal-title">
                 <img
-                  src={assistantProfile.avatar}
+                  src={validateAvatarData(assistantProfile.avatar)}
                   alt="AI"
                   className="ai-assistant-widget__modal-avatar"
+                  onError={(e) => {
+                    const target = e.target as HTMLImageElement;
+                    target.src = "/default-ai-avatar.svg";
+                  }}
                 />
                 <span>{assistantName}</span>
               </div>{" "}
               <div className="ai-assistant-widget__modal-actions">
-                {" "}
+                {/* Window controls for desktop */}
+                <div className="ai-assistant-widget__window-controls">
+                  <button
+                    className="ai-assistant-widget__window-btn ai-assistant-widget__window-btn--minimize"
+                    onClick={() => setOpen(false)}
+                    title="Minimizează"
+                  >
+                    −
+                  </button>
+                  <button
+                    className="ai-assistant-widget__window-btn ai-assistant-widget__window-btn--maximize"
+                    onClick={() =>
+                      startTransition(() => navigate("/ai-messenger"))
+                    }
+                    title="Deschide pe tot ecranul"
+                  >
+                    □
+                  </button>
+                  <button
+                    className="ai-assistant-widget__window-btn ai-assistant-widget__window-btn--close"
+                    onClick={() => setOpen(false)}
+                    title="Închide"
+                  >
+                    ×
+                  </button>
+                </div>
+                {/* Mobile close button */}
                 <button
-                  className="ai-assistant-widget__fullscreen-btn"
-                  onClick={handleFullscreen}
-                  title="Deschide pe tot ecranul"
-                >
-                  ⬜
-                </button>
-                <button
-                  className="ai-assistant-widget__close"
-                  onClick={handleClose}
-                  title="Închide chat-ul"
+                  className="ai-assistant-widget__close ai-assistant-widget__close--mobile"
+                  onClick={() => setOpen(false)}
+                  title="Închide chatul"
                 >
                   ✕
                 </button>
@@ -733,8 +749,12 @@ const AIAssistantWidget: React.FC = () => {
                         <div className="ai-assistant-widget__welcome-message">
                           <div className="ai-assistant-widget__welcome-avatar">
                             <img
-                              src={assistantProfile.avatar}
+                              src={validateAvatarData(assistantProfile.avatar)}
                               alt="AI Assistant"
+                              onError={(e) => {
+                                const target = e.target as HTMLImageElement;
+                                target.src = "/default-ai-avatar.svg";
+                              }}
                             />
                           </div>
                           <div className="ai-assistant-widget__welcome-content">
@@ -759,10 +779,19 @@ const AIAssistantWidget: React.FC = () => {
                               <img
                                 src={
                                   message.sender === "ai"
-                                    ? assistantProfile.avatar
-                                    : user.photoURL || "/default-user.png"
+                                    ? validateAvatarData(
+                                        assistantProfile.avatar
+                                      )
+                                    : user?.photoURL || "/default-user.svg"
                                 }
                                 alt={message.sender}
+                                onError={(e) => {
+                                  const target = e.target as HTMLImageElement;
+                                  target.src =
+                                    message.sender === "ai"
+                                      ? "/default-ai-avatar.svg"
+                                      : "/default-user.svg";
+                                }}
                               />
                             </div>
                             <div className="ai-assistant-widget__message-bubble">
@@ -788,8 +817,11 @@ const AIAssistantWidget: React.FC = () => {
                         <div className="ai-assistant-widget__message ai-assistant-widget__message--ai">
                           <div className="ai-assistant-widget__message-avatar">
                             <img
-                              src={assistantProfile.avatar}
+                              src={validateAvatarData(assistantProfile.avatar)}
                               alt="AI Assistant"
+                              onError={(e) => {
+                                e.currentTarget.src = "/default-ai-avatar.svg";
+                              }}
                             />
                           </div>
                           <div className="ai-assistant-widget__message-bubble">

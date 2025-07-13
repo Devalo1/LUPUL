@@ -7,12 +7,12 @@ export default [
   {
     ignores: [
       ".netlify/**/*",
-      "dist/**/*", 
+      "dist/**/*",
       "build/**/*",
       "node_modules/**/*",
       "**/*.min.js",
-      "**/functions-serve/**/*"
-    ]
+      "**/functions-serve/**/*",
+    ],
   },
   {
     files: ["**/*.ts", "**/*.tsx"],
@@ -50,11 +50,7 @@ export default [
   },
   // Disable console warnings for components and pages during development
   {
-    files: [
-      "**/components/**/*",
-      "**/pages/**/*",
-      "**/main.tsx",
-    ],
+    files: ["**/components/**/*", "**/pages/**/*", "**/main.tsx"],
     rules: {
       "no-console": "off",
     },

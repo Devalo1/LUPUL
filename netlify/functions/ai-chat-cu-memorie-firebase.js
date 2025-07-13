@@ -42,7 +42,8 @@ export const handler = async (event, context) => {
             "Missing required fields: prompt, assistantName, addressMode, userId",
         }),
       };
-    }    console.log(
+    }
+    console.log(
       `[AI CHAT FIREBASE] Procesez mesajul pentru utilizatorul: ${userId}`
     );
 
@@ -81,7 +82,10 @@ export const handler = async (event, context) => {
       // Generează contextul complet din Firebase
       personalizedContext = await profileManager.generateContextForAI();
     } catch (firebaseError) {
-      console.warn("[AI CHAT] Firebase temporar indisponibil:", firebaseError.message);
+      console.warn(
+        "[AI CHAT] Firebase temporar indisponibil:",
+        firebaseError.message
+      );
       // Continuă fără Firebase - AI-ul va funcționa fără memorie
       extractedInfo = {};
       personalizedContext = "";
@@ -99,7 +103,7 @@ export const handler = async (event, context) => {
     }
 
     // Pregătește mesajele pentru conversație
-    const messages = [{ role: "system", content: systemPrompt }];    // Adaugă ultimele conversații din Firebase pentru context
+    const messages = [{ role: "system", content: systemPrompt }]; // Adaugă ultimele conversații din Firebase pentru context
     let recentConversations = [];
     if (profileManager) {
       try {
@@ -113,12 +117,15 @@ export const handler = async (event, context) => {
           }
         });
       } catch (err) {
-        console.warn("[AI CHAT] Nu pot încărca conversații anterioare:", err.message);
+        console.warn(
+          "[AI CHAT] Nu pot încărca conversații anterioare:",
+          err.message
+        );
       }
     }
 
     // Adaugă mesajul curent
-    messages.push({ role: "user", content: prompt });    // Verifică API key
+    messages.push({ role: "user", content: prompt }); // Verifică API key
     const apiKey = process.env.OPENAI_API_KEY;
     if (!apiKey) {
       throw new Error("OPENAI_API_KEY nu este setat în environment variables");
@@ -149,14 +156,17 @@ export const handler = async (event, context) => {
       throw new Error(
         `OpenAI API error: ${data.error?.message || "Unknown error"}`
       );
-    }    const aiReply =
+    }
+    const aiReply =
       data.choices?.[0]?.message?.content?.trim() || "(Fără răspuns AI)";
 
     // Salvează conversația în Firebase
     if (profileManager) {
       try {
         await profileManager.saveConversation(prompt, aiReply, extractedInfo);
-        console.log(`[AI CHAT] Conversație salvată în Firebase pentru ${userId}`);
+        console.log(
+          `[AI CHAT] Conversație salvată în Firebase pentru ${userId}`
+        );
       } catch (err) {
         console.warn("[AI CHAT] Nu pot salva conversația:", err.message);
       }
@@ -169,9 +179,13 @@ export const handler = async (event, context) => {
         const profile = await profileManager.getProfile();
         updatedProfile = profile?.profile || null;
       } catch (err) {
-        console.warn("[AI CHAT] Nu pot încărca profilul actualizat:", err.message);
+        console.warn(
+          "[AI CHAT] Nu pot încărca profilul actualizat:",
+          err.message
+        );
       }
-    }    return {
+    }
+    return {
       statusCode: 200,
       headers,
       body: JSON.stringify({

@@ -2,7 +2,8 @@
   "projects": {
     "default": "lupulcorbul",
     "LUPUL": "lupulcorbul",
-    "lupul": "lupulcorbul"
+    "lupul": "lupulcorbul",
+    "Dimi": "lupulcorbul"
   },
   "targets": {},
   "etags": {}

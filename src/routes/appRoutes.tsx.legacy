@@ -1,0 +1,391 @@
+import React from "react";
+import { Routes, Route, Navigate } from "react-router-dom";
+import { ProtectedRoute, AdminRoute } from "../components";
+import { lazyLoad } from "../utils/lazyLoad";
+import SpecialistRoute from "../components/routes/SpecialistRoute";
+import AccountantRoute from "../components/routes/AccountantRoute";
+
+// Import lazy pentru paginile publice
+const TestPage = lazyLoad(() => import("../pages/TestPage"));
+const HomePage = lazyLoad(() => import("../pages/HomePage"));
+const AboutUs = lazyLoad(() => import("../pages/AboutUs"));
+const Contact = lazyLoad(() => import("../pages/Contact"));
+const LoginPage = lazyLoad(() => import("../pages/LoginPage"));
+const RegisterPage = lazyLoad(() => import("../pages/RegisterPage"));
+const ForgotPassword = lazyLoad(() => import("../pages/ForgotPassword"));
+const ResetPassword = lazyLoad(() => import("../pages/ResetPassword"));
+const EventsPage = lazyLoad(() => import("../pages/EventsPage"));
+const EventDetails = lazyLoad(() => import("../pages/EventDetails"));
+const Shop = lazyLoad(() => import("../pages/Shop"));
+const ProductDetails = lazyLoad(() => import("../pages/ProductDetails"));
+const Cart = lazyLoad(() => import("../pages/Cart"));
+const NotFound = lazyLoad(() => import("../pages/NotFound"));
+const Services = lazyLoad(() => import("../pages/Services"));
+const PrivacyPolicy = lazyLoad(() => import("../pages/PrivacyPolicy"));
+const CookiePolicy = lazyLoad(() => import("../pages/CookiePolicy"));
+const Ong = lazyLoad(() => import("../pages/Ong"));
+const Formular230Page = lazyLoad(() => import("../pages/Formular230Page"));
+const Terapie = lazyLoad(() => import("../pages/Terapie"));
+const TerapiePsihica = lazyLoad(() => import("../pages/terapie/Psihica"));
+const TerapieFizica = lazyLoad(() => import("../pages/terapie/Fizica"));
+
+// Import lazy pentru paginile ce necesită autentificare
+const Dashboard = lazyLoad(() => import("../pages/Dashboard"));
+const DashboardAISettings = lazyLoad(
+  () => import("../pages/dashboard/AIsettings")
+);
+const AIMessenger = lazyLoad(() => import("../pages/ai/AIMessengerAdvanced"));
+const UserHome = lazyLoad(() => import("../pages/UserHome"));
+const Profile = lazyLoad(() => import("../pages/Profile"));
+const ProfileInfo = lazyLoad(() => import("../pages/ProfileInfo"));
+const Checkout = lazyLoad(() => import("../pages/Checkout"));
+const CheckoutSuccess = lazyLoad(() => import("../pages/CheckoutSuccess"));
+const Appointments = lazyLoad(() => import("../pages/Appointments"));
+
+// Import lazy pentru paginile administrative
+const AdminPanel = lazyLoad(() => import("../pages/AdminPanel"));
+const AdminInventory = lazyLoad(() => import("../pages/AdminInventory"));
+const AdminUsers = lazyLoad(() => import("../pages/AdminUsers"));
+const AdminCategories = lazyLoad(() => import("../pages/AdminCategories"));
+const AddProduct = lazyLoad(() => import("../pages/AddProduct"));
+const EditProduct = lazyLoad(() => import("../pages/EditProduct"));
+const AddEvent = lazyLoad(() => import("../pages/AddEvent"));
+const AdminAppointments = lazyLoad(() => import("../pages/AdminAppointments"));
+// Import pentru noile pagini admin create
+const AdminEvents = lazyLoad(() => import("../pages/AdminEvents"));
+const AdminArticles = lazyLoad(() => import("../pages/AdminArticles"));
+const ArticleEdit = lazyLoad(() => import("../pages/ArticleEdit")); // Adăugăm componenta ArticleEdit
+const AdminSettings = lazyLoad(() => import("../pages/AdminSettings"));
+// Import pentru pagina de administrare comenzi
+const AdminOrders = lazyLoad(() => import("../pages/AdminOrders"));
+const AdminAccounting = lazyLoad(() => import("../pages/AdminAccounting"));
+const AdminAnalytics = lazyLoad(() => import("../pages/AdminAnalytics"));
+// Import for specialist panel
+const SpecialistPanel = lazyLoad(() => import("../pages/SpecialistPanel"));
+// Import for user profiles admin
+const UserProfilesAdmin = lazyLoad(() => import("../pages/UserProfilesAdmin"));
+
+/**
+ * Componenta principală pentru definirea rutelor aplicației
+ * Toate componentele sunt încărcate lazy pentru performanță optimizată
+ */
+const AppRoutes: React.FC = () => {
+  return (
+    <Routes>
+      {/* Rute publice */}
+      <Route path="/test" element={<TestPage />} />
+      <Route path="/" element={<HomePage />} />
+      <Route path="/about" element={<AboutUs />} />
+      <Route path="/contact" element={<Contact />} />
+      <Route path="/login" element={<LoginPage />} />
+      <Route path="/register" element={<RegisterPage />} />
+      <Route path="/forgot-password" element={<ForgotPassword />} />
+      <Route path="/reset-password" element={<ResetPassword />} />
+      <Route path="/events" element={<EventsPage />} />
+      <Route path="/events/:id" element={<EventDetails />} />
+      {/* Redirecționăm /products către /magazin pentru a unifica experiența */}
+      <Route path="/products" element={<Navigate replace to="/magazin" />} />
+      <Route
+        path="/products/:categorySlug"
+        element={<Navigate replace to="/magazin?category=:categorySlug" />}
+      />
+      {/* Magazin rămâne ruta principală pentru vizualizarea produselor */}
+      <Route path="/magazin" element={<Shop />} />
+      <Route path="/cart" element={<Cart />} />
+      <Route path="/servicii" element={<Services />} />
+      <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+      <Route path="/cookie-policy" element={<CookiePolicy />} />
+      {/* Rută alternativă pentru detalii produs la singular */}
+      <Route path="/product/:id" element={<ProductDetails />} />{" "}
+      {/* Rută pentru ONG */}
+      <Route path="/ong" element={<Ong />} />
+      {/* Rută pentru Formularul 230 */}
+      <Route path="/formular-230" element={<Formular230Page />} />
+      {/* Rută pentru Terapie */}
+      <Route path="/terapie" element={<Terapie />} />
+      <Route path="/terapie/psihica" element={<TerapiePsihica />} />{" "}
+      <Route path="/terapie/fizica" element={<TerapieFizica />} />
+      {/* Rute protejate (necesită autentificare) */}
+      <Route
+        path="/dashboard"
+        element={
+          <ProtectedRoute>
+            <Dashboard />
+          </ProtectedRoute>
+        }
+      />{" "}
+      <Route
+        path="/dashboard/AIsettings"
+        element={
+          <ProtectedRoute>
+            <DashboardAISettings />
+          </ProtectedRoute>
+        }
+      />{" "}
+      <Route
+        path="/ai-messenger"
+        element={
+          <ProtectedRoute>
+            <AIMessenger />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/profile"
+        element={
+          <ProtectedRoute>
+            <Profile />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/profile/info"
+        element={
+          <ProtectedRoute>
+            <ProfileInfo />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/checkout"
+        element={
+          <ProtectedRoute>
+            <Checkout />
+          </ProtectedRoute>
+        }
+      />
+      {/* Pagina de confirmare comandă - accesibilă fără autentificare */}
+      <Route path="/checkout/success" element={<CheckoutSuccess />} />
+      {/* Rută alternativă pentru checkout success (cu liniuță) */}
+      <Route path="/checkout-success" element={<CheckoutSuccess />} />
+      <Route
+        path="/user-home"
+        element={
+          <ProtectedRoute>
+            <UserHome />
+          </ProtectedRoute>
+        }
+      />
+      {/* Rută pentru programări */}
+      <Route
+        path="/appointments"
+        element={
+          <ProtectedRoute>
+            <Appointments />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/programari"
+        element={
+          <ProtectedRoute>
+            <Appointments />
+          </ProtectedRoute>
+        }
+      />
+      {/* Rută pentru panoul de specialist */}
+      <Route
+        path="/specialist"
+        element={
+          <SpecialistRoute>
+            <SpecialistPanel />
+          </SpecialistRoute>
+        }
+      />
+      <Route
+        path="/specialist/dashboard"
+        element={
+          <SpecialistRoute>
+            <SpecialistPanel />
+          </SpecialistRoute>
+        }
+      />
+      {/* Rută pentru panoul de contabilitate */}
+      <Route
+        path="/accounting/:panel"
+        element={
+          <AccountantRoute>
+            <AdminAccounting />
+          </AccountantRoute>
+        }
+      />
+      <Route
+        path="/accounting"
+        element={<Navigate to="/accounting/dashboard" replace />}
+      />
+      {/* Rute administrative (necesită rol de admin) */}
+      <Route
+        path="/admin"
+        element={
+          <AdminRoute>
+            <AdminPanel />
+          </AdminRoute>
+        }
+      />
+      <Route
+        path="/admin/dashboard"
+        element={
+          <AdminRoute>
+            <AdminPanel />
+          </AdminRoute>
+        }
+      />
+      <Route
+        path="/admin/inventory"
+        element={
+          <AdminRoute>
+            <AdminInventory />
+          </AdminRoute>
+        }
+      />
+      <Route
+        path="/admin/users"
+        element={
+          <AdminRoute>
+            <AdminUsers />
+          </AdminRoute>
+        }
+      />
+      <Route
+        path="/admin/categories"
+        element={
+          <AdminRoute>
+            <AdminCategories />
+          </AdminRoute>
+        }
+      />
+      <Route
+        path="/admin/products/add"
+        element={
+          <AdminRoute>
+            <AddProduct />
+          </AdminRoute>
+        }
+      />
+      <Route
+        path="/admin/products/edit/:id"
+        element={
+          <AdminRoute>
+            <EditProduct />
+          </AdminRoute>
+        }
+      />
+      <Route
+        path="/admin/events/add"
+        element={
+          <AdminRoute>
+            <AddEvent />
+          </AdminRoute>
+        }
+      />
+      {/* Rută alternativă pentru adăugarea produselor */}
+      <Route
+        path="/admin/add-product"
+        element={
+          <AdminRoute>
+            <AddProduct />
+          </AdminRoute>
+        }
+      />
+      {/* Rută pentru programări admin */}
+      <Route
+        path="/admin/appointments"
+        element={
+          <AdminRoute>
+            <AdminAppointments />
+          </AdminRoute>
+        }
+      />
+      {/* Rută alternativă pentru adăugarea evenimentelor */}
+      <Route
+        path="/admin/add-event"
+        element={
+          <AdminRoute>
+            <AddEvent />
+          </AdminRoute>
+        }
+      />
+      {/* Rută pentru comenzi admin */}
+      <Route
+        path="/admin/orders"
+        element={
+          <AdminRoute>
+            <AdminOrders />
+          </AdminRoute>
+        }
+      />
+      <Route
+        path="/admin/accounting"
+        element={
+          <AdminRoute>
+            <AdminAccounting />
+          </AdminRoute>
+        }
+      />
+      {/* Rute pentru noile pagini admin create */}
+      <Route
+        path="/admin/events"
+        element={
+          <AdminRoute>
+            <AdminEvents />
+          </AdminRoute>
+        }
+      />
+      <Route
+        path="/admin/articles"
+        element={
+          <AdminRoute>
+            <AdminArticles />
+          </AdminRoute>
+        }
+      />
+      {/* Adăugăm rutele pentru adăugarea și editarea articolelor */}
+      <Route
+        path="/admin/articles/add"
+        element={
+          <AdminRoute>
+            <ArticleEdit />
+          </AdminRoute>
+        }
+      />
+      <Route
+        path="/admin/articles/edit/:id"
+        element={
+          <AdminRoute>
+            <ArticleEdit />
+          </AdminRoute>
+        }
+      />
+      <Route
+        path="/admin/settings"
+        element={
+          <AdminRoute>
+            <AdminSettings />
+          </AdminRoute>
+        }
+      />{" "}
+      {/* Ruta pentru profilurile utilizatorilor cu analytics */}
+      <Route
+        path="/admin/users-profiles"
+        element={
+          <AdminRoute>
+            <UserProfilesAdmin />
+          </AdminRoute>
+        }
+      />
+      {/* Ruta pentru analytics/info utilizatori */}
+      <Route
+        path="/admin/userinfo"
+        element={
+          <AdminRoute>
+            <AdminAnalytics />
+          </AdminRoute>
+        }
+      />
+      {/* Ruta pentru pagini inexistente */}
+      <Route path="*" element={<NotFound />} />
+    </Routes>
+  );
+};
+
+export default AppRoutes;

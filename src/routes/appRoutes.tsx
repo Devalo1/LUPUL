@@ -27,6 +27,12 @@ const Terapie = lazyLoad(() => import("../pages/Terapie"));
 const TerapiePsihica = lazyLoad(() => import("../pages/terapie/Psihica"));
 const TerapieFizica = lazyLoad(() => import("../pages/terapie/Fizica"));
 
+// Import lazy pentru pagina de plată NETOPIA
+const PaymentPage = lazyLoad(() => import("../pages/PaymentPage"));
+const OrderConfirmationPage = lazyLoad(
+  () => import("../pages/OrderConfirmationPage")
+);
+
 // Import lazy pentru paginile legale necesare pentru Netopia
 const TermsAndConditions = lazyLoad(
   () => import("../pages/TermsAndConditions")
@@ -107,6 +113,9 @@ const AppRoutes: React.FC = () => {
       <Route path="/shop" element={<Shop />} />
       <Route path="/product/:id" element={<ProductDetails />} />
       <Route path="/cart" element={<Cart />} />
+      {/* Rută pentru plata NETOPIA */}
+      <Route path="/payment" element={<PaymentPage />} />
+      <Route path="/order-confirmation" element={<OrderConfirmationPage />} />
       <Route path="/services" element={<Services />} />
       <Route path="/privacy-policy" element={<PrivacyPolicy />} />
       <Route path="/ong" element={<Ong />} />

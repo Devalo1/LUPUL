@@ -4,7 +4,9 @@
   top: 0;
   z-index: 40;
   width: 100%;
-  min-height: 64px; /* Înălțimea minimă a header-ului */
+  min-height: 80px; /* Înălțimea minimă sporită pentru navbar complet */
+  padding-top: 8px; /* Padding pentru a nu acoperi partea de sus */
+  padding-bottom: 8px; /* Padding pentru completitudine */
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
 
   /* Fundal cu temă românească care umple tot header-ul - softened colors */

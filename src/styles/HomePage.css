@@ -1,15 +1,62 @@
-/* HomePage Styles - Modern Version */
+/* HomePage Styles - Mobile-First Responsive Version */
 
 /* Main container styles */
 .homepage-container {
   min-height: 100vh;
-  background-image:
-    linear-gradient(rgba(0, 0, 0, 0.3), rgba(0, 0, 0, 0.4)),
-    url("/images/background.jpeg");
-  background-size: cover;
-  background-position: center;
-  background-attachment: fixed;
+  background-image: url("/images/background.jpeg");
+  background-size: contain;
+  background-position: center center;
+  background-repeat: no-repeat;
+  background-attachment: scroll;
   font-family: "Inter", system-ui, sans-serif;
+  overflow-x: hidden;
+  background-color: #0f172a;
+}
+
+/* Mobile-specific background optimization */
+@media (max-width: 768px) {
+  .homepage-container {
+    background-attachment: scroll;
+    background-position: center center;
+    background-size: contain;
+    background-image: url("/images/background.jpeg");
+    background-color: #1e293b;
+  }
+}
+
+/* Small mobile devices */
+@media (max-width: 480px) {
+  .homepage-container {
+    background-size: contain; /* Show entire image smaller */
+    background-position: center center; /* Center the complete image */
+    background-color: #334155; /* Texture-matching fallback */
+    background-image: url("/images/background.jpeg"); /* No gradient for small screens */
+  }
+}
+
+/* Tablet adjustments */
+@media (min-width: 769px) and (max-width: 1024px) {
+  .homepage-container {
+    background-size: contain; /* Show entire image on tablet */
+    background-position: center center;
+    background-color: #0f172a;
+  }
+}
+
+/* Desktop adjustments */
+@media (min-width: 1025px) {
+  .homepage-container {
+    background-size: contain; /* Show entire image on desktop */
+    background-position: center center; /* Center the complete image */
+  }
+}
+
+/* Very large screens */
+@media (min-width: 1600px) {
+  .homepage-container {
+    background-size: contain; /* Show entire image even on large screens */
+    background-position: center center;
+  }
 }
 
 /* Hero section */
@@ -20,6 +67,32 @@
   align-items: center;
   justify-content: center;
   overflow: hidden;
+  padding: 1rem;
+  box-sizing: border-box;
+  padding-top: 90px; /* Account for fixed header */
+}
+
+/* Mobile hero adjustments */
+@media (max-width: 768px) {
+  .hero-section {
+    min-height: calc(100vh - 70px); /* Account for fixed header */
+    padding: 2rem 1rem;
+    align-items: flex-start;
+    padding-top: 90px; /* More space for mobile header */
+  }
+}
+
+@media (min-width: 769px) and (max-width: 1024px) {
+  .hero-section {
+    padding: 2rem;
+    padding-top: 100px; /* Account for header on tablet */
+  }
+}
+
+@media (min-width: 1025px) {
+  .hero-section {
+    padding-top: 120px; /* More space on desktop */
+  }
 }
 
 /* Background decorative elements */
@@ -67,27 +140,97 @@
   z-index: 10;
   text-align: center;
   padding: 0 1rem;
-  max-width: 96rem;
+  max-width: 90%;
+  width: 100%;
   margin: 0 auto;
+}
+
+/* Mobile hero content adjustments */
+@media (max-width: 640px) {
+  .hero-content {
+    max-width: 95%;
+    padding: 0 0.5rem;
+  }
+}
+
+@media (min-width: 641px) and (max-width: 1024px) {
+  .hero-content {
+    max-width: 85%;
+    padding: 0 1.5rem;
+  }
+}
+
+@media (min-width: 1025px) {
+  .hero-content {
+    max-width: 80%;
+    padding: 0 2rem;
+  }
+}
+
+@media (min-width: 1280px) {
+  .hero-content {
+    max-width: 75%;
+  }
 }
 
 /* Brand section */
 .brand-section {
-  margin-bottom: 2rem;
+  margin-bottom: 1.5rem;
+}
+
+@media (min-width: 640px) {
+  .brand-section {
+    margin-bottom: 2rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  .brand-section {
+    margin-bottom: 2.5rem;
+  }
 }
 
 .brand-logo {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 8rem;
-  height: 8rem;
+  width: 6rem;
+  height: 6rem;
   border-radius: 50%;
-  background: rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.15);
   backdrop-filter: blur(10px);
-  margin-bottom: 1.5rem;
+  margin-bottom: 1rem;
   box-shadow: 0 25px 50px rgba(0, 0, 0, 0.25);
   padding: 0.5rem;
+  margin-top: 1rem; /* Extra space from top */
+  position: relative;
+  z-index: 10; /* Ensure it's above other elements */
+}
+
+@media (max-width: 640px) {
+  .brand-logo {
+    width: 5rem;
+    height: 5rem;
+    margin-top: 1.5rem; /* More space on mobile */
+  }
+}
+
+@media (min-width: 640px) {
+  .brand-logo {
+    width: 7rem;
+    height: 7rem;
+    margin-bottom: 1.25rem;
+    margin-top: 1.25rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  .brand-logo {
+    width: 8rem;
+    height: 8rem;
+    margin-bottom: 1.5rem;
+    margin-top: 1.5rem;
+  }
 }
 
 .brand-logo-image {
@@ -104,15 +247,26 @@
 }
 
 .brand-title {
-  font-size: clamp(3rem, 8vw, 4.5rem);
+  font-size: clamp(2rem, 6vw, 3.5rem); /* Reduced size for better fit */
   font-weight: bold;
   background: linear-gradient(to right, #fbbf24, #f59e0b, #d97706);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
-  margin-bottom: 1.5rem;
+  margin-bottom: 1rem;
   animation: fade-in 1s ease-out;
   text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+  position: relative;
+  z-index: 10;
+  line-height: 1.2;
+}
+
+/* Mobile adjustments for brand title */
+@media (max-width: 640px) {
+  .brand-title {
+    font-size: clamp(1.5rem, 5vw, 2.5rem);
+    margin-bottom: 0.75rem;
+  }
 }
 
 /* Tagline section */
@@ -121,12 +275,30 @@
   flex-wrap: wrap;
   justify-content: center;
   align-items: center;
-  gap: 2rem;
-  margin-bottom: 2rem;
-  font-size: clamp(1.25rem, 3vw, 1.875rem);
+  gap: 1.5rem;
+  margin-bottom: 1.5rem;
+  font-size: clamp(1rem, 2.5vw, 1.5rem); /* Adjusted size */
   font-weight: 600;
   color: #f9fafb;
   text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
+  position: relative;
+  z-index: 10;
+}
+
+/* Mobile adjustments for tagline */
+@media (max-width: 640px) {
+  .tagline-section {
+    gap: 1rem;
+    margin-bottom: 1rem;
+    font-size: clamp(0.875rem, 2vw, 1.125rem);
+  }
+}
+
+@media (min-width: 1024px) {
+  .tagline-section {
+    gap: 2rem;
+    margin-bottom: 2rem;
+  }
 }
 
 .tagline-item {
@@ -663,4 +835,33 @@ html {
 .footer-copyright {
   color: #9ca3af;
   font-size: 0.9rem;
+}
+
+/* ========================================
+   OPTIMIZED IMAGE SIZING FOR COMPLETE VISIBILITY
+   ======================================== */
+
+/* Ensure complete image visibility across all devices */
+@media (max-width: 600px) {
+  .homepage-container {
+    background-size: contain !important;
+    background-position: center center !important;
+    background-repeat: no-repeat !important;
+  }
+}
+
+/* Complete image scaling for portrait orientation on mobile */
+@media (max-width: 768px) and (orientation: portrait) {
+  .homepage-container {
+    background-size: contain !important;
+    background-position: center center !important;
+  }
+}
+
+/* Landscape orientation on mobile/tablet */
+@media (max-width: 1024px) and (orientation: landscape) {
+  .homepage-container {
+    background-size: contain !important;
+    background-position: center center !important;
+  }
 }

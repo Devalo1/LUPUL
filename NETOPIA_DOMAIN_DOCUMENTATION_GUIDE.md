@@ -6,7 +6,7 @@
 
 - Intră în contul tău de la furnizorul de domeniu (GoDaddy, Namecheap, etc.)
 - Descarcă factura pentru domeniul `lupulsicorbul.com`
-- Asigură-te că factura este pe numele companiei "Lupul și Corbul SRL"
+- Asigură-te că factura este pe numele companiei "HIFITBOX SRL"
 
 ### 2. **Contract de Găzduire Web**
 
@@ -30,8 +30,8 @@
 ### Date de Completat:
 
 ```
-Nume companie: Lupul și Corbul SRL
-CUI: RO12345678 (înlocuiește cu CUI-ul real)
+Nume companie: HIFITBOX SRL
+CUI: RO41039008
 Adresa: Str. Exemplu nr. 123, București (înlocuiește cu adresa reală)
 Website: https://lupulsicorbul.com
 Platformă: Website personalizat / Altă platformă

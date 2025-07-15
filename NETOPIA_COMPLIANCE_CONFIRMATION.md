@@ -32,9 +32,9 @@ All legal pages are now linked in the footer (`src/components/layout/Footer.tsx`
 
 Footer contains required company information:
 
-- Company name: Lupul și Corbul SRL
-- CUI (Tax ID): RO12345678
-- Registration: J12/345/2023
+- Company name: HIFITBOX SRL
+- CUI (Tax ID): RO41039008
+- Registration: J17/926/2019
 - Address: Str. Exemplu nr. 123, București, România
 - Contact: lupulsicorbul@gmail.com, 0734 931 703
 
@@ -52,7 +52,7 @@ Footer includes links to consumer protection organizations:
 
 - Apply for Netopia merchant account at https://admin.netopia-payments.com
 - Use the following information:
-  - **Merchant Name**: "Lupul și Corbul SRL"
+  - **Merchant Name**: "HIFITBOX SRL"
   - **Website URL**: Your production domain
   - **Activity Domain**: "Vânzarea de produse digitale și organizarea de evenimente"
   - **Description**: "Platformă pentru vânzarea de embleme digitale și organizarea de evenimente private în comunitatea Lupul și Corbul"

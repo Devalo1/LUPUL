@@ -132,8 +132,8 @@ const Formular230: React.FC = () => {
     pdf.setFont("helvetica", "bold");
     pdf.text("CĂTRE:", 20, 60);
     pdf.setFont("helvetica", "normal");
-    pdf.text("Asociația \"Făuritorii de Destin\"", 20, 70);
-    pdf.text("Cod Fiscal: RO12345678", 20, 80);
+    pdf.text("HIFITBOX SRL", 20, 70);
+    pdf.text("Cod Fiscal: RO41039008", 20, 80);
     pdf.text("Cont IBAN: RO98BTRL12345678901234567", 20, 90);
 
     // Datele contribuabilului

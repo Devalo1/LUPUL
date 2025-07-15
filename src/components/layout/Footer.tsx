@@ -35,14 +35,17 @@ const Footer: React.FC = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-8">
           {/* Brand Section */}
-          <div className="lg:col-span-1">
+          <div className="lg:col-span-1 footer-brand-section">
             <div className="mb-6">
               <h3 className="text-2xl font-bold text-white mb-3">
                 Lupul și Corbul
               </h3>
-              <p className="text-slate-300 text-sm leading-relaxed">
+              <p className="text-slate-300 text-sm leading-relaxed footer-brand-description">
                 Descoperă valorile autentice românești prin produsele și
                 evenimentele noastre care îmbină tradiția cu inovația modernă.
+                Fiecare aspect al platformei noastre este construit pe aceste
+                principii esențiale care ne ghidează în misiunea de a crea o
+                lume mai conectată și echilibrată.
               </p>
             </div>
 
@@ -95,9 +98,9 @@ const Footer: React.FC = () => {
           </div>
 
           {/* Quick Links */}
-          <div>
+          <div className="footer-navigation-section">
             <h4 className="text-lg font-semibold text-white mb-4">Navigare</h4>
-            <ul className="space-y-2">
+            <ul className="space-y-2 footer-navigation-links">
               <li>
                 <Link
                   to="/"
@@ -150,11 +153,11 @@ const Footer: React.FC = () => {
           </div>
 
           {/* Legal Links */}
-          <div>
+          <div className="footer-legal-section">
             <h4 className="text-lg font-semibold text-white mb-4">
               Informații Legale
             </h4>
-            <ul className="space-y-2">
+            <ul className="space-y-2 footer-legal-links">
               <li>
                 <Link
                   to="/privacy-policy"
@@ -286,11 +289,11 @@ const Footer: React.FC = () => {
           </div>
 
           {/* Informații Suplimentare de Conformitate */}
-          <div>
+          <div className="footer-compliance-section">
             <h4 className="text-lg font-semibold text-white mb-4">
               Conformitate & Siguranță
             </h4>
-            <ul className="space-y-2">
+            <ul className="space-y-2 footer-compliance-links">
               <li>
                 <Link
                   to="/cookie-policy"
@@ -339,11 +342,24 @@ const Footer: React.FC = () => {
           </div>
 
           {/* Newsletter */}
-          <div>
-            <h4 className="text-lg font-semibold text-white mb-4">
+          <div className="newsletter-section bg-slate-800/50 p-6 rounded-lg border border-slate-700">
+            <h4 className="text-lg font-semibold text-white mb-4 flex items-center">
+              <svg
+                className="w-5 h-5 mr-2 text-blue-400"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
+                />
+              </svg>
               Newsletter
             </h4>
-            <p className="text-slate-300 text-sm mb-4">
+            <p className="text-slate-200 text-sm mb-4 font-medium">
               Abonează-te pentru cele mai noi actualizări și oferte exclusive.
             </p>
             <div className="space-y-3">
@@ -353,21 +369,25 @@ const Footer: React.FC = () => {
                   placeholder="Adresa ta de email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="flex-1 px-4 py-2 bg-slate-700 border border-slate-600 rounded-l-lg text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="newsletter-input flex-1 px-4 py-3 bg-white border-2 border-slate-300 rounded-l-lg text-slate-900 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 font-medium"
                 />
                 <button
                   onClick={handleNewsletterSubmit}
-                  className="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-r-lg transition-colors duration-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-slate-900"
+                  className="newsletter-button px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-r-lg transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-slate-800 shadow-lg hover:shadow-xl"
                 >
                   Abonează-te
                 </button>
               </div>
               {message && (
-                <p
-                  className={`text-sm ${message.includes("succes") ? "text-green-400" : "text-red-400"}`}
+                <div
+                  className={`newsletter-message text-sm font-medium px-3 py-2 rounded-md ${
+                    message.includes("succes")
+                      ? "success text-green-900 bg-green-100 border border-green-300"
+                      : "error text-red-900 bg-red-100 border border-red-300"
+                  }`}
                 >
                   {message}
-                </p>
+                </div>
               )}
             </div>
           </div>

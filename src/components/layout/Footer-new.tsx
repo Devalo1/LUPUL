@@ -263,7 +263,7 @@ const Footer: React.FC = () => {
 
           {/* Company info - more compact */}
           <div className="footer-company-info">
-            <p>Lupul și Corbul SRL | CUI: RO12345678 | J12/345/2023</p>
+            <p>HIFITBOX SRL | CUI: RO41039008 | J17/926/2019</p>
             <p>Str. Exemplu nr. 123, București, România</p>
           </div>
         </div>

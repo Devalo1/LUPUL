@@ -211,8 +211,8 @@ const Ong: React.FC = () => {
               noastre:
             </p>
             <div className="bg-white p-4 rounded border mb-4">
-              <p className="font-semibold">Asociația "Făuritorii de Destin"</p>
-              <p>Cod Fiscal: RO12345678</p>
+              <p className="font-semibold">HIFITBOX SRL</p>
+              <p>Cod Fiscal: RO41039008</p>
               <p>Cont IBAN: RO98BTRL12345678901234567</p>
             </div>
             <div className="flex justify-center">

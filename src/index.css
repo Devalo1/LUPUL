@@ -1,5 +1,6 @@
 @import "./styles/variables.css";
 @import "./assets/styles/main.css";
+@import "./styles/HomePage.css";
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -185,6 +186,70 @@ a:hover {
   color: #3b5bdb;
 }
 
+/* Footer-specific link overrides pentru vizibilitate optimă */
+footer a {
+  color: inherit !important;
+  font-weight: inherit !important;
+}
+
+footer .text-slate-300 {
+  color: #cbd5e1 !important;
+}
+
+footer .text-slate-300:hover {
+  color: #ffffff !important;
+}
+
+footer .text-white {
+  color: #ffffff !important;
+}
+
+/* Asigură vizibilitate pentru toate elementele din footer */
+footer ul li a,
+footer ul li Link {
+  color: #cbd5e1 !important;
+  transition: color 0.3s ease !important;
+}
+
+footer ul li a:hover,
+footer ul li Link:hover {
+  color: #ffffff !important;
+}
+
+/* Super override pentru toate problemele de vizibilitate footer */
+footer * {
+  color: inherit !important;
+}
+
+footer h4 {
+  color: #ffffff !important;
+  font-weight: 600 !important;
+}
+
+footer a,
+footer a:link,
+footer a:visited {
+  color: #e2e8f0 !important;
+  text-decoration: none !important;
+}
+
+footer a:hover,
+footer a:focus,
+footer a:active {
+  color: #ffffff !important;
+}
+
+/* Specific pentru componentele React Router Link */
+footer Link,
+footer [class*="Link"] {
+  color: #e2e8f0 !important;
+}
+
+footer Link:hover,
+footer [class*="Link"]:hover {
+  color: #ffffff !important;
+}
+
 /* Headings */
 h1 {
   font-size: 3.2em;
@@ -368,16 +433,28 @@ button:focus-visible {
 .admin-form input,
 .admin-form textarea,
 .admin-form select,
-input[type="text"],
-input[type="number"],
-input[type="email"],
-input[type="password"],
-input[type="url"],
-textarea,
-select {
+.admin-page input[type="text"],
+.admin-page input[type="number"],
+.admin-page input[type="email"],
+.admin-page input[type="password"],
+.admin-page input[type="url"],
+.admin-page textarea,
+.admin-page select {
   color: #333333 !important;
   background-color: #ffffff !important;
   border: 1px solid #d1d5db !important;
+}
+
+/* Footer newsletter styling - override global styles */
+footer input[type="email"] {
+  color: #1f2937 !important;
+  background-color: #ffffff !important;
+  border: 2px solid #d1d5db !important;
+}
+
+footer input[type="email"]:focus {
+  border-color: #3b82f6 !important;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1) !important;
 }
 
 .admin-form label,
@@ -525,4 +602,280 @@ label {
 
 .text-center {
   text-align: center;
+}
+
+/* Newsletter specific styles pentru maximă vizibilitate */
+.newsletter-section {
+  background-color: rgba(51, 65, 85, 0.5) !important;
+  backdrop-filter: blur(4px);
+  border: 1px solid rgba(148, 163, 184, 0.3) !important;
+}
+
+.newsletter-section h4 {
+  color: #ffffff !important;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+}
+
+.newsletter-section p {
+  color: #e2e8f0 !important;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+}
+
+.newsletter-input {
+  color: #1f2937 !important;
+  background-color: #ffffff !important;
+  border: 2px solid #d1d5db !important;
+  font-weight: 500 !important;
+}
+
+.newsletter-input:focus {
+  border-color: #3b82f6 !important;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1) !important;
+  outline: none !important;
+}
+
+.newsletter-input::placeholder {
+  color: #6b7280 !important;
+  opacity: 1 !important;
+}
+
+.newsletter-button {
+  background-color: #3b82f6 !important;
+  color: #ffffff !important;
+  font-weight: 600 !important;
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3) !important;
+}
+
+.newsletter-button:hover {
+  background-color: #2563eb !important;
+  box-shadow: 0 6px 16px rgba(59, 130, 246, 0.4) !important;
+  transform: translateY(-1px);
+}
+
+.newsletter-message {
+  font-weight: 500 !important;
+  padding: 8px 12px !important;
+  border-radius: 6px !important;
+  border: 1px solid !important;
+}
+
+.newsletter-message.success {
+  color: #065f46 !important;
+  background-color: #d1fae5 !important;
+  border-color: #a7f3d0 !important;
+}
+
+.newsletter-message.error {
+  color: #991b1b !important;
+  background-color: #fee2e2 !important;
+  border-color: #fecaca !important;
+}
+
+/* Conformitate section specific styles */
+.footer-compliance-section {
+  background-color: rgba(30, 41, 59, 0.3);
+  padding: 1.5rem;
+  border-radius: 0.5rem;
+  border: 1px solid rgba(71, 85, 105, 0.3);
+}
+
+.footer-compliance-section h4 {
+  color: #ffffff !important;
+  font-weight: 600 !important;
+  margin-bottom: 1rem !important;
+}
+
+.footer-compliance-links li a {
+  color: #cbd5e1 !important;
+  font-weight: 500 !important;
+  transition: all 0.3s ease !important;
+  text-decoration: none !important;
+  display: flex !important;
+  align-items: center !important;
+  padding: 0.25rem 0 !important;
+}
+
+.footer-compliance-links li a:hover {
+  color: #ffffff !important;
+  text-shadow: 0 0 4px rgba(255, 255, 255, 0.3) !important;
+  transform: translateX(2px) !important;
+}
+
+/* Legal section specific styles pentru vizibilitate maximă */
+.footer-legal-section {
+  background-color: rgba(30, 41, 59, 0.4);
+  padding: 1.5rem;
+  border-radius: 0.5rem;
+  border: 1px solid rgba(71, 85, 105, 0.4);
+  backdrop-filter: blur(2px);
+}
+
+.footer-legal-section h4 {
+  color: #ffffff !important;
+  font-weight: 600 !important;
+  margin-bottom: 1rem !important;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+}
+
+.footer-legal-links li a {
+  color: #e2e8f0 !important;
+  font-weight: 500 !important;
+  transition: all 0.3s ease !important;
+  text-decoration: none !important;
+  display: flex !important;
+  align-items: center !important;
+  padding: 0.5rem 0 !important;
+  border-radius: 4px !important;
+}
+
+.footer-legal-links li a:hover {
+  color: #ffffff !important;
+  background-color: rgba(59, 130, 246, 0.2) !important;
+  text-shadow: 0 0 4px rgba(255, 255, 255, 0.3) !important;
+  transform: translateX(4px) !important;
+  padding-left: 0.5rem !important;
+}
+
+.footer-legal-links li a svg {
+  color: #cbd5e1 !important;
+  transition: color 0.3s ease !important;
+}
+
+.footer-legal-links li a:hover svg {
+  color: #ffffff !important;
+}
+
+/* Override pentru toate linkurile din footer pentru consistență */
+footer .footer-legal-links a,
+footer .footer-compliance-links a {
+  color: #e2e8f0 !important;
+}
+
+/* Brand section specific styles pentru vizibilitate maximă */
+.footer-brand-section {
+  background-color: rgba(30, 41, 59, 0.25);
+  padding: 1.5rem;
+  border-radius: 0.75rem;
+  border: 1px solid rgba(71, 85, 105, 0.3);
+}
+
+.footer-brand-section h3 {
+  color: #ffffff !important;
+  font-weight: 700 !important;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+  margin-bottom: 1rem !important;
+}
+
+.footer-brand-description {
+  color: #f1f5f9 !important;
+  font-weight: 500 !important;
+  line-height: 1.6 !important;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3) !important;
+  font-size: 0.875rem !important;
+  margin-bottom: 1.5rem !important;
+}
+
+/* Navigation section specific styles */
+.footer-navigation-section {
+  background-color: rgba(30, 41, 59, 0.25);
+  padding: 1.5rem;
+  border-radius: 0.5rem;
+  border: 1px solid rgba(71, 85, 105, 0.3);
+}
+
+.footer-navigation-section h4 {
+  color: #ffffff !important;
+  font-weight: 600 !important;
+  margin-bottom: 1rem !important;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+}
+
+.footer-navigation-links li a {
+  color: #e2e8f0 !important;
+  font-weight: 500 !important;
+  transition: all 0.3s ease !important;
+  text-decoration: none !important;
+  display: block !important;
+  padding: 0.25rem 0 !important;
+}
+
+.footer-navigation-links li a:hover {
+  color: #ffffff !important;
+  text-shadow: 0 0 4px rgba(255, 255, 255, 0.3) !important;
+  transform: translateX(2px) !important;
+}
+
+/* Universal footer sections styling pentru consistență */
+.footer-navigation-section,
+.footer-legal-section,
+.footer-compliance-section {
+  transition: all 0.3s ease;
+}
+
+.footer-navigation-section:hover,
+.footer-legal-section:hover,
+.footer-compliance-section:hover {
+  background-color: rgba(30, 41, 59, 0.6) !important;
+  border-color: rgba(71, 85, 105, 0.6) !important;
+}
+
+/* Asigură că toate linkurile din footer sunt vizibile */
+footer .footer-navigation-links a,
+footer .footer-legal-links a,
+footer .footer-compliance-links a {
+  color: #e2e8f0 !important;
+  font-weight: 500 !important;
+}
+
+footer .footer-navigation-links a:hover,
+footer .footer-legal-links a:hover,
+footer .footer-compliance-links a:hover {
+  color: #ffffff !important;
+  background-color: rgba(59, 130, 246, 0.2) !important;
+}
+
+/* Override final pentru vizibilitate completă footer */
+footer {
+  color: #ffffff !important;
+}
+
+footer h3,
+footer h4,
+footer h5,
+footer h6 {
+  color: #ffffff !important;
+  font-weight: 600 !important;
+}
+
+footer p {
+  color: #e2e8f0 !important;
+}
+
+footer span {
+  color: #cbd5e1 !important;
+}
+
+/* Ensure all text elements in footer sections are visible */
+.footer-brand-section *,
+.footer-navigation-section *,
+.footer-legal-section *,
+.footer-compliance-section *,
+.newsletter-section * {
+  color: inherit !important;
+}
+
+/* Special handling pentru toate tipurile de linkuri din footer */
+footer a[href],
+footer Link,
+footer [class*="Link"],
+footer .text-slate-300 {
+  color: #e2e8f0 !important;
+  text-decoration: none !important;
+}
+
+footer a[href]:hover,
+footer Link:hover,
+footer [class*="Link"]:hover,
+footer .text-slate-300:hover {
+  color: #ffffff !important;
 }

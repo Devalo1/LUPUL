@@ -1,265 +1,295 @@
-import React, { useState, useEffect } from "react";
+﻿import React from "react";
 import { useNavigate } from "react-router-dom";
-import { motion } from "framer-motion";
-import "../styles/HomePage.css";
-import { useNavigation } from "../hooks/useNavigation";
-
-// Import icons
-import { FaLeaf, FaHandHoldingHeart, FaBalanceScale, FaShieldAlt, FaAward, FaUsers } from "react-icons/fa";
+import {
+  FaHeart,
+  FaUsers,
+  FaBalanceScale,
+  FaShoppingCart,
+  FaCalendarAlt,
+  FaHandsHelping,
+  FaStar,
+  FaShieldAlt,
+  FaRocket,
+  FaLeaf,
+} from "react-icons/fa";
 
 const HomePage: React.FC = () => {
-  const [scrolled, setScrolled] = useState(false);
   const navigate = useNavigate();
-  const { toggleSideNav } = useNavigation(); // Folosim hook-ul useNavigation pentru a controla meniul lateral
 
-  // Handling scroll effects
-  useEffect(() => {
-    const handleScroll = () => {
-      setScrolled(window.scrollY > 50);
-    };
-    window.addEventListener("scroll", handleScroll);
-    return () => window.removeEventListener("scroll", handleScroll);
-  }, []);
-
-  const handleLoginClick = () => {
-    // Salvăm intenția de redirecționare către dashboard după login
-    sessionStorage.setItem("afterLoginRedirect", "/dashboard");
+  const handleGetStarted = () => {
     navigate("/login");
   };
 
-  const handleRegisterClick = () => {
-    // Salvăm intenția de redirecționare către dashboard după înregistrare
-    sessionStorage.setItem("afterLoginRedirect", "/dashboard");
-    navigate("/register");
+  const handleExploreServices = () => {
+    navigate("/services");
   };
 
-  const handleProductsClick = () => {
-    navigate("/products");
+  const handleShop = () => {
+    navigate("/magazin");
   };
 
-  // Animation variants
-  const fadeIn = {
-    hidden: { opacity: 0, y: 20 },
-    visible: { opacity: 1, y: 0, transition: { duration: 0.8 } }
+  const handleEvents = () => {
+    navigate("/events");
   };
-
-  const testimonials = [
-    {
-      name: "Maria Popescu",
-      text: "Produsele lor m-au ajutat să regăsesc echilibrul interior de care aveam atât de multă nevoie.",
-      role: "Client"
-    },
-    {
-      name: "Alexandru Ionescu",
-      text: "Am descoperit în acest brand nu doar produse, ci o întreagă filozofie care rezonează cu valorile mele.",
-      role: "Client fidel"
-    },
-    {
-      name: "Elena Dumitrescu",
-      text: "Calitatea și atenția la detalii m-au convins. Recomand cu încredere!",
-      role: "Ambasador brand"
-    }
-  ];
 
   return (
-    <div className="home-page">
-      {/* Hero Section with Parallax Effect */}
-      <div className={`hero-section ${scrolled ? "scrolled" : ""}`}>
-        <div className="background-parallax"></div>
-        <div className="overlay-gradient"></div>
+    <div className="homepage-container">
+      {/* Hero Section */}
+      <section className="hero-section">
+        {/* Background decorative elements */}
+        <div className="background-decoration">
+          <div className="decoration-blob decoration-blob-1"></div>
+          <div className="decoration-blob decoration-blob-2"></div>
+          <div className="decoration-blob decoration-blob-3"></div>
+        </div>
 
-        <motion.div 
-          className="hero-content"
-          initial="hidden"
-          animate="visible"
-          variants={fadeIn}
-          style={{ paddingTop: "60px" }} // Add padding to prevent content from being hidden behind navbar
-        >
-          <div className="brand-logo">
-            <img src="/images/LC.png" alt="Lupul și Corbul Logo" className="logo-image" />
-          </div>
-          
-          <motion.h1 
-            className="brand-title"
-            initial={{ opacity: 0, scale: 0.8 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 0.8 }}
-          >
-            Lupul și Corbul
-          </motion.h1>
-          
-          <motion.h2 
-            className="brand-tagline"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.3, duration: 0.8 }}
-          >
-            Empatie · Conexiune · Echilibru
-          </motion.h2>
-          
-          <motion.div 
-            className="trust-badges"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.5 }}
-          >
-            <div className="badge"><FaShieldAlt /> Calitate garantată</div>
-            <div className="badge"><FaAward /> Brand 100% românesc</div>
-            <div className="badge"><FaUsers /> Peste 1,000 clienți mulțumiți</div>
-          </motion.div>
-          
-          <motion.div 
-            className="action-container"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.7, duration: 0.5 }}
-          >
-            <div className="auth-buttons">
-              <button 
-                onClick={handleLoginClick} 
-                className="btn-primary pulsate"
-              >
-                Contul meu
-              </button>
-              <button 
-                onClick={handleRegisterClick} 
-                className="btn-secondary glow"
-              >
-                Creează cont
-              </button>
-            </div>
-            
-            <div className="nav-buttons">
-              <button 
-                onClick={() => {
-                  console.log("Buton \"Descoperă serviciile noastre\" apăsat");
-                  toggleSideNav();
-                }} 
-                className="btn-discover"
-              >
-                Descoperă serviciile noastre
-              </button>
-              <button onClick={handleProductsClick} className="btn-products">
-                Explorează produsele
-              </button>
-            </div>
-          </motion.div>
-          
-          {/* Romanian Brand Banner with improved styling */}
-          <motion.div 
-            className="romanian-brand-banner"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 1, duration: 0.8 }}
-          >
-            <span className="blue-text">UN </span>
-            <span className="yellow-text">BRAND ROMÂNESC </span>
-            <span className="red-text">PENTRU TOȚI OAMENII</span>
-            <span className="eu-symbol">
-              <img 
-                src="https://upload.wikimedia.org/wikipedia/commons/thumb/b/b7/Flag_of_Europe.svg/1024px-Flag_of_Europe.svg.png" 
-                alt="European Union Flag" 
-                style={{ 
-                  width: "60px", 
-                  height: "auto", 
-                  marginLeft: "15px",
-                  verticalAlign: "middle",
-                  display: "inline-block",
-                  borderRadius: "4px",
-                  opacity: 0.85,
-                  boxShadow: "0 2px 4px rgba(0,0,0,0.15)"
-                }} 
+        <div className="hero-content">
+          {/* Logo/Brand */}
+          <div className="brand-section">
+            <div className="brand-logo">
+              <img
+                src="/images/LC.png"
+                alt="Lupul și Corbul Logo"
+                className="brand-logo-image"
               />
-            </span>
-          </motion.div>
-        </motion.div>
-      </div>
+            </div>
+            <h1 className="brand-title">Lupul și Corbul</h1>
+          </div>
 
-      {/* Value Proposition Section */}
-      <section className="values-section">
-        <h2 className="section-title">De ce să ne alegi</h2>
-        
-        <div className="values-grid">
-          <motion.div 
-            className="value-card"
-            whileHover={{ scale: 1.05 }}
-            transition={{ type: "spring", stiffness: 300 }}
-          >
-            <div className="icon-container">
-              <FaLeaf />
+          {/* Main tagline with icons */}
+          <div className="tagline-section">
+            <div className="tagline-item">
+              <FaHeart className="tagline-icon-red" />
+              <span>Empatie</span>
             </div>
-            <h3>Produse naturale</h3>
-            <p>Folosim doar ingrediente naturale și sustenabile în toate produsele noastre.</p>
-          </motion.div>
-          
-          <motion.div 
-            className="value-card"
-            whileHover={{ scale: 1.05 }}
-            transition={{ type: "spring", stiffness: 300 }}
-          >
-            <div className="icon-container">
-              <FaHandHoldingHeart />
+            <div className="tagline-item delay-1">
+              <FaUsers className="tagline-icon-blue" />
+              <span>Conexiune</span>
             </div>
-            <h3>Grijă autentică</h3>
-            <p>Fiecare produs este creat cu atenție și responsabilitate față de tine și natură.</p>
-          </motion.div>
-          
-          <motion.div 
-            className="value-card"
-            whileHover={{ scale: 1.05 }}
-            transition={{ type: "spring", stiffness: 300 }}
-          >
-            <div className="icon-container">
-              <FaBalanceScale />
+            <div className="tagline-item delay-2">
+              <FaBalanceScale className="tagline-icon-green" />
+              <span>Echilibru</span>
             </div>
-            <h3>Echilibru și armonie</h3>
-            <p>Susținem o filozofie bazată pe echilibrul dintre corp, minte și spiritul naturii.</p>
-          </motion.div>
-        </div>
-      </section>
+          </div>
 
-      {/* Testimonials Section */}
-      <section className="testimonials-section">
-        <h2 className="section-title">Ce spun clienții noștri</h2>
-        
-        <div className="testimonials-container">
-          {testimonials.map((testimonial, index) => (
-            <motion.div 
-              key={index}
-              className="testimonial-card"
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ delay: index * 0.2 }}
+          <p className="hero-description">
+            O platformă holistică care îmbină terapia, comerțul etic,
+            evenimentele comunitare și tehnologia modernă pentru a crea
+            conexiuni autentice și echilibru în viața ta.
+          </p>
+
+          {/* CTA Buttons */}
+          <div className="cta-buttons">
+            <button onClick={handleGetStarted} className="cta-button-primary">
+              <FaRocket />
+              Începe Călătoria Ta
+            </button>
+            <button
+              onClick={handleExploreServices}
+              className="cta-button-secondary"
             >
-              <div className="quote-mark">"</div>
-              <p className="testimonial-text">{testimonial.text}</p>
-              <div className="testimonial-author">
-                <strong>{testimonial.name}</strong>
-                <span>{testimonial.role}</span>
+              Explorează Serviciile
+            </button>
+          </div>
+        </div>
+      </section>
+
+      {/* Features Section */}
+      <section className="features-section py-20">
+        <div className="section-content max-w-7xl mx-auto px-4">
+          <div className="text-center mb-16">
+            <h2 className="section-title-dark text-4xl md:text-5xl font-bold mb-6">
+              Ce Oferim Pentru Tine
+            </h2>
+            <p className="section-description-dark text-xl max-w-3xl mx-auto">
+              Descoperă o gamă completă de servicii și produse concepute pentru
+              a-ți îmbunătăți calitatea vieții și a te conecta cu o comunitate
+              care înțelege nevoile tale.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+            {/* Terapie și Wellness */}
+            <div
+              onClick={() => navigate("/services")}
+              className="bg-gradient-to-br from-pink-50 to-red-50 p-8 rounded-2xl shadow-lg hover:shadow-2xl transform hover:-translate-y-2 transition-all duration-300 cursor-pointer group"
+            >
+              <div className="text-pink-600 text-4xl mb-4 group-hover:scale-110 transition-transform duration-300">
+                <FaHeart />
               </div>
-            </motion.div>
-          ))}
+              <h3 className="dark-text text-xl font-bold mb-3">
+                Terapie & Wellness
+              </h3>
+              <p className="medium-text leading-relaxed">
+                Servicii terapeutice personalizate pentru sănătatea mentală și
+                emoțională, cu specialiști dedicați dezvoltării tale personale.
+              </p>
+            </div>
+
+            {/* Magazin */}
+            <div
+              onClick={handleShop}
+              className="bg-gradient-to-br from-blue-50 to-indigo-50 p-8 rounded-2xl shadow-lg hover:shadow-2xl transform hover:-translate-y-2 transition-all duration-300 cursor-pointer group"
+            >
+              <div className="text-blue-600 text-4xl mb-4 group-hover:scale-110 transition-transform duration-300">
+                <FaShoppingCart />
+              </div>
+              <h3 className="dark-text text-xl font-bold mb-3">Magazin Etic</h3>
+              <p className="medium-text leading-relaxed">
+                Produse artizanale și naturale, create cu grijă pentru mediu și
+                comunitate. Fiecare achiziție susține economia locală.
+              </p>
+            </div>
+
+            {/* Evenimente */}
+            <div
+              onClick={handleEvents}
+              className="bg-gradient-to-br from-green-50 to-emerald-50 p-8 rounded-2xl shadow-lg hover:shadow-2xl transform hover:-translate-y-2 transition-all duration-300 cursor-pointer group"
+            >
+              <div className="text-green-600 text-4xl mb-4 group-hover:scale-110 transition-transform duration-300">
+                <FaCalendarAlt />
+              </div>
+              <h3 className="dark-text text-xl font-bold mb-3">
+                Evenimente Comunitare
+              </h3>
+              <p className="medium-text leading-relaxed">
+                Ateliere, întâlniri și activități care aduc oamenii împreună
+                pentru a crea legături autentice și memorii de durată.
+              </p>
+            </div>
+
+            {/* Suport Comunitar */}
+            <div
+              onClick={() => navigate("/ong")}
+              className="bg-gradient-to-br from-yellow-50 to-amber-50 p-8 rounded-2xl shadow-lg hover:shadow-2xl transform hover:-translate-y-2 transition-all duration-300 cursor-pointer group"
+            >
+              <div className="text-yellow-600 text-4xl mb-4 group-hover:scale-110 transition-transform duration-300">
+                <FaHandsHelping />
+              </div>
+              <h3 className="dark-text text-xl font-bold mb-3">
+                Suport Comunitar
+              </h3>
+              <p className="medium-text leading-relaxed">
+                Proiecte sociale și initiative comunitare care fac diferența în
+                viețile oamenilor și în societate.
+              </p>
+            </div>
+          </div>
         </div>
       </section>
 
-      {/* Call to Action */}
-      <section className="cta-section">
-        <div className="cta-content">
-          <h2>Începe călătoria ta către echilibru</h2>
-          <p>Alătură-te comunității noastre și descoperă produse care îți transformă viața.</p>
-          <button onClick={handleRegisterClick} className="cta-button">
-            Creează cont acum
-          </button>
+      {/* Values Section */}
+      <section className="values-section-bg py-20">
+        <div className="section-content max-w-6xl mx-auto px-4 text-center">
+          <h2 className="section-title-dark text-4xl md:text-5xl font-bold mb-6">
+            Valorile Noastre Fundamentale
+          </h2>
+          <p className="section-description-dark text-xl mb-12 max-w-3xl mx-auto">
+            Fiecare aspect al platformei noastre este construit pe aceste
+            principii esențiale care ne ghidează în misiunea de a crea o lume
+            mai conectată și echilibrată.
+          </p>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            <div className="bg-white p-8 rounded-2xl shadow-lg">
+              <div className="text-amber-600 text-5xl mb-4">
+                <FaStar />
+              </div>
+              <h3 className="dark-text text-2xl font-bold mb-4">
+                Autenticitate
+              </h3>
+              <p className="medium-text leading-relaxed">
+                Promovăm relații genuine și experiențe autentice, fără artificii
+                sau falsitate. Credem în puterea adevărului și a transparenței.
+              </p>
+            </div>
+
+            <div className="bg-white p-8 rounded-2xl shadow-lg">
+              <div className="text-green-600 text-5xl mb-4">
+                <FaLeaf />
+              </div>
+              <h3 className="text-2xl font-bold text-gray-800 mb-4">
+                Sustenabilitate
+              </h3>
+              <p className="text-gray-600 leading-relaxed">
+                Respectul pentru natură și generațiile viitoare ghidează toate
+                deciziile noastre. Creăm soluții care protejează mediul.
+              </p>
+            </div>
+
+            <div className="bg-white p-8 rounded-2xl shadow-lg">
+              <div className="text-blue-600 text-5xl mb-4">
+                <FaShieldAlt />
+              </div>
+              <h3 className="text-2xl font-bold text-gray-800 mb-4">
+                Încredere
+              </h3>
+              <p className="text-gray-600 leading-relaxed">
+                Construim relații bazate pe respect mutual și încredere.
+                Securitatea și confidențialitatea tale sunt prioritatea noastră
+                absolută.
+              </p>
+            </div>
+          </div>
         </div>
       </section>
 
-      {/* Enhanced Footer - Simplified to avoid duplication */}
+      {/* Payment Security Section */}
+      <section className="py-16 bg-gray-50">
+        <div className="max-w-4xl mx-auto px-4 text-center">
+          <div className="bg-white p-8 rounded-2xl shadow-xl">
+            <div className="flex items-center justify-center mb-6">
+              <img
+                src="/images/NP.svg"
+                alt="NETOPIA Logo"
+                className="h-12 mr-4"
+              />
+              <h3 className="text-2xl font-bold text-gray-800">
+                Plăți Securizate NETOPIA
+              </h3>
+            </div>
+            <p className="text-gray-600 mb-6 leading-relaxed">
+              Toate tranzacțiile sunt procesate prin sistemul securizat NETOPIA
+              Payments, cu certificare PCI DSS și protecție bancară completă.
+            </p>
+            <div className="flex flex-wrap justify-center gap-4">
+              <button
+                onClick={() => navigate("/payment")}
+                className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white px-6 py-3 rounded-lg font-semibold hover:shadow-lg transition-all duration-300"
+              >
+                Testează Plățile
+              </button>
+              <button
+                onClick={() => navigate("/netopia-verification")}
+                className="bg-gradient-to-r from-orange-600 to-red-600 text-white px-6 py-3 rounded-lg font-semibold hover:shadow-lg transition-all duration-300"
+              >
+                Verificare Merchant
+              </button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Footer */}
       <footer className="homepage-footer">
-        <div className="footer-social">
-          <a href="#" aria-label="Facebook"><i className="fab fa-facebook-f"></i></a>
-          <a href="#" aria-label="Instagram"><i className="fab fa-instagram"></i></a>
-          <a href="#" aria-label="Twitter"><i className="fab fa-twitter"></i></a>
+        <div className="footer-content">
+          <div className="footer-logo-section">
+            <div className="footer-logo">
+              <img src="/images/LC.png" alt="Lupul și Corbul Logo" />
+            </div>
+            <h4 className="footer-title">Lupul și Corbul</h4>
+            <p className="footer-description">
+              O comunitate dedicată creșterii personale, conexiunilor autentice
+              și echilibrului în viață.
+            </p>
+          </div>
+
+          <div className="footer-divider">
+            <p className="footer-copyright">
+              © 2024 Lupul și Corbul. Toate drepturile rezervate. | Powered by
+              NETOPIA Payments
+            </p>
+          </div>
         </div>
       </footer>
     </div>

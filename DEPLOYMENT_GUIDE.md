@@ -30,7 +30,7 @@ In Netlify Dashboard → Site Settings → Environment Variables, add:
 #### Firebase Configuration
 
 ```
-VITE_FIREBASE_API_KEY=your-firebase-api-key-from-console
+VITE_FIREBASE_API_KEY=AIzaSyCZEWoZn-c7NSH1AGbetWEbtxwEz-iaMR4
 VITE_FIREBASE_AUTH_DOMAIN=lupulcorbul.firebaseapp.com
 VITE_FIREBASE_PROJECT_ID=lupulcorbul
 VITE_FIREBASE_STORAGE_BUCKET=lupulcorbul.appspot.com

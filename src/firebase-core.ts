@@ -9,28 +9,20 @@ import {
 import {
   getFirestore,
   connectFirestoreEmulator,
-  collection,
-  doc,
-  getDoc,
-  getDocs,
-  setDoc,
-  updateDoc,
-  deleteDoc,
-  addDoc,
-  query,
-  where,
-  orderBy,
-  limit,
-  startAfter,
-  startAt,
-  endAt,
-  endBefore,
-  writeBatch,
-  increment,
-  arrayUnion,
-  arrayRemove,
-  serverTimestamp,
-  onSnapshot,
+  DocumentReference,
+  CollectionReference,
+  Query,
+  WhereFilterOp,
+  DocumentData,
+  QueryConstraint,
+  OrderByDirection,
+  Firestore,
+  SetOptions,
+  WriteBatch,
+  FieldValue,
+  QuerySnapshot,
+  DocumentSnapshot,
+  Unsubscribe,
 } from "firebase/firestore";
 import {
   getStorage,
@@ -40,27 +32,31 @@ import {
   uploadString,
   getDownloadURL,
   deleteObject,
-  listAll,
+  StorageReference,
+  UploadMetadata,
+  StringFormat,
+  UploadResult,
+  ListResult,
 } from "firebase/storage";
 import {
   getFunctions,
   connectFunctionsEmulator,
   httpsCallable,
 } from "firebase/functions";
-import { getAnalytics, logEvent, Analytics } from "firebase/analytics";
+import { getAnalytics, Analytics } from "firebase/analytics";
 
 import { useEmulators, getEmulatorConfig } from "./utils/environment";
 import logger from "./utils/logger";
 
-// Configurație Firebase - folosind environment variables
+// Configurație Firebase
 const firebaseConfig = {
-  apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
-  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN || "lupulcorbul.firebaseapp.com",
-  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID || "lupulcorbul", 
-  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET || "lupulcorbul.firebasestorage.app",
-  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID || "312943074536",
-  appId: import.meta.env.VITE_FIREBASE_APP_ID || "1:312943074536:web:13fc0660014bc58c5c7d5d",
-  measurementId: import.meta.env.VITE_FIREBASE_MEASUREMENT_ID || "G-38YSZKVXDC",
+  apiKey: "AIzaSyCZEWoZn-c7NSH1AGbetWEbtxwEz-iaMR4",
+  authDomain: "lupulcorbul.firebaseapp.com",
+  projectId: "lupulcorbul",
+  storageBucket: "lupulcorbul.firebasestorage.app",
+  messagingSenderId: "312943074536",
+  appId: "1:312943074536:web:13fc0660014bc58c5c7d5d",
+  measurementId: "G-38YSZKVXDC",
 };
 
 // Inițializare Firebase
@@ -109,6 +105,11 @@ export {
   isInitialized,
 };
 
+// Interfețe pentru tipuri de date Firestore
+interface FirestoreDocumentData {
+  [key: string]: unknown;
+}
+
 // Exportăm API-urile pentru a fi utilizate de alte module
 export const authAPI = {
   GoogleAuthProvider,
@@ -120,40 +121,163 @@ export const authAPI = {
 
 export const firestoreAPI = {
   connectFirestoreEmulator,
+  // Adăugăm și alte metode pentru compatibilitate
   getFirestore,
-  collection,
-  doc,
-  getDoc,
-  getDocs,
-  setDoc,
-  updateDoc,
-  deleteDoc,
-  addDoc,
-  query,
-  where,
-  orderBy,
-  limit,
-  startAfter,
-  startAt,
-  endAt,
-  endBefore,
-  writeBatch,
-  increment,
-  arrayUnion,
-  arrayRemove,
-  serverTimestamp,
-  onSnapshot,
+  collection: (
+    db: Firestore,
+    path: string
+  ): CollectionReference<DocumentData> => {
+    const { collection } = require("firebase/firestore");
+    return collection(db, path);
+  },
+  doc: (
+    db: Firestore,
+    path: string,
+    ...pathSegments: string[]
+  ): DocumentReference<DocumentData> => {
+    const { doc } = require("firebase/firestore");
+    return doc(db, path, ...pathSegments);
+  },
+  getDoc: async (
+    docRef: DocumentReference<DocumentData>
+  ): Promise<DocumentSnapshot<DocumentData>> => {
+    const { getDoc } = require("firebase/firestore");
+    return getDoc(docRef);
+  },
+  getDocs: async (
+    query: Query<DocumentData>
+  ): Promise<QuerySnapshot<DocumentData>> => {
+    const { getDocs } = require("firebase/firestore");
+    return getDocs(query);
+  },
+  setDoc: async (
+    docRef: DocumentReference<DocumentData>,
+    data: FirestoreDocumentData,
+    options?: SetOptions
+  ): Promise<void> => {
+    const { setDoc } = require("firebase/firestore");
+    return setDoc(docRef, data, options || { merge: false });
+  },
+  updateDoc: async (
+    docRef: DocumentReference<DocumentData>,
+    data: FirestoreDocumentData
+  ): Promise<void> => {
+    const { updateDoc } = require("firebase/firestore");
+    return updateDoc(docRef, data);
+  },
+  deleteDoc: async (docRef: DocumentReference<DocumentData>): Promise<void> => {
+    const { deleteDoc } = require("firebase/firestore");
+    return deleteDoc(docRef);
+  },
+  addDoc: async (
+    collectionRef: CollectionReference<DocumentData>,
+    data: FirestoreDocumentData
+  ): Promise<DocumentReference<DocumentData>> => {
+    const { addDoc } = require("firebase/firestore");
+    return addDoc(collectionRef, data);
+  },
+  query: (
+    collectionRef: CollectionReference<DocumentData> | Query<DocumentData>,
+    ...queryConstraints: QueryConstraint[]
+  ): Query<DocumentData> => {
+    const { query } = require("firebase/firestore");
+    return query(collectionRef, ...queryConstraints);
+  },
+  where: (
+    field: string,
+    opStr: WhereFilterOp,
+    value: unknown
+  ): QueryConstraint => {
+    const { where } = require("firebase/firestore");
+    return where(field, opStr, value);
+  },
+  orderBy: (field: string, direction?: OrderByDirection): QueryConstraint => {
+    const { orderBy } = require("firebase/firestore");
+    return orderBy(field, direction);
+  },
+  limit: (limit: number): QueryConstraint => {
+    const { limit: limitFn } = require("firebase/firestore");
+    return limitFn(limit);
+  },
+  startAfter: (...fieldValues: unknown[]): QueryConstraint => {
+    const { startAfter } = require("firebase/firestore");
+    return startAfter(...fieldValues);
+  },
+  startAt: (...fieldValues: unknown[]): QueryConstraint => {
+    const { startAt } = require("firebase/firestore");
+    return startAt(...fieldValues);
+  },
+  endAt: (...fieldValues: unknown[]): QueryConstraint => {
+    const { endAt } = require("firebase/firestore");
+    return endAt(...fieldValues);
+  },
+  endBefore: (...fieldValues: unknown[]): QueryConstraint => {
+    const { endBefore } = require("firebase/firestore");
+    return endBefore(...fieldValues);
+  },
+  writeBatch: (db: Firestore): WriteBatch => {
+    const { writeBatch } = require("firebase/firestore");
+    return writeBatch(db);
+  },
+  increment: (amount: number): FieldValue => {
+    const { increment } = require("firebase/firestore");
+    return increment(amount);
+  },
+  arrayUnion: (...elements: unknown[]): FieldValue => {
+    const { arrayUnion } = require("firebase/firestore");
+    return arrayUnion(...elements);
+  },
+  arrayRemove: (...elements: unknown[]): FieldValue => {
+    const { arrayRemove } = require("firebase/firestore");
+    return arrayRemove(...elements);
+  },
+  serverTimestamp: (): FieldValue => {
+    const { serverTimestamp } = require("firebase/firestore");
+    return serverTimestamp();
+  },
+  onSnapshot: (
+    target: Query<DocumentData> | DocumentReference<DocumentData>,
+    ...args: unknown[]
+  ): Unsubscribe => {
+    const { onSnapshot } = require("firebase/firestore");
+    return onSnapshot(target, ...args);
+  },
 };
 
 export const storageAPI = {
   connectStorageEmulator,
   getStorage,
-  ref,
-  uploadBytes,
-  uploadString,
-  getDownloadURL,
-  deleteObject,
-  listAll,
+  ref: (
+    storage: ReturnType<typeof getStorage>,
+    path: string
+  ): StorageReference => {
+    return ref(storage, path);
+  },
+  uploadBytes: async (
+    storageRef: StorageReference,
+    data: ArrayBuffer | Uint8Array | Blob,
+    metadata?: UploadMetadata
+  ): Promise<UploadResult> => {
+    return uploadBytes(storageRef, data, metadata);
+  },
+  uploadString: async (
+    storageRef: StorageReference,
+    data: string,
+    format?: StringFormat,
+    metadata?: UploadMetadata
+  ): Promise<UploadResult> => {
+    return uploadString(storageRef, data, format, metadata);
+  },
+  getDownloadURL: async (storageRef: StorageReference): Promise<string> => {
+    return getDownloadURL(storageRef);
+  },
+  deleteObject: async (storageRef: StorageReference): Promise<void> => {
+    return deleteObject(storageRef);
+  },
+  listAll: async (storageRef: StorageReference): Promise<ListResult> => {
+    const { listAll } = require("firebase/storage");
+    return listAll(storageRef);
+  },
 };
 
 export const functionsAPI = {
@@ -164,7 +288,16 @@ export const functionsAPI = {
 
 export const analyticsAPI = {
   getAnalytics,
-  logEvent,
+  logEvent: (
+    analyticsInstance: Analytics | null,
+    eventName: string,
+    eventParams?: Record<string, unknown>
+  ): void => {
+    if (analyticsInstance) {
+      const { logEvent } = require("firebase/analytics");
+      return logEvent(analyticsInstance, eventName, eventParams);
+    }
+  },
 };
 
 // Funcția de inițializare pentru compatibilitate cu codul existent

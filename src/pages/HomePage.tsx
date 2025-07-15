@@ -5,14 +5,7 @@ import "../styles/HomePage.css";
 import { useNavigation } from "../hooks/useNavigation";
 
 // Import icons
-import {
-  FaLeaf,
-  FaHandHoldingHeart,
-  FaBalanceScale,
-  FaShieldAlt,
-  FaAward,
-  FaUsers,
-} from "react-icons/fa";
+import { FaLeaf, FaHandHoldingHeart, FaBalanceScale, FaShieldAlt, FaAward, FaUsers } from "react-icons/fa";
 
 const HomePage: React.FC = () => {
   const [scrolled, setScrolled] = useState(false);
@@ -47,25 +40,25 @@ const HomePage: React.FC = () => {
   // Animation variants
   const fadeIn = {
     hidden: { opacity: 0, y: 20 },
-    visible: { opacity: 1, y: 0, transition: { duration: 0.8 } },
+    visible: { opacity: 1, y: 0, transition: { duration: 0.8 } }
   };
 
   const testimonials = [
     {
       name: "Maria Popescu",
       text: "Produsele lor m-au ajutat să regăsesc echilibrul interior de care aveam atât de multă nevoie.",
-      role: "Client",
+      role: "Client"
     },
     {
       name: "Alexandru Ionescu",
       text: "Am descoperit în acest brand nu doar produse, ci o întreagă filozofie care rezonează cu valorile mele.",
-      role: "Client fidel",
+      role: "Client fidel"
     },
     {
       name: "Elena Dumitrescu",
       text: "Calitatea și atenția la detalii m-au convins. Recomand cu încredere!",
-      role: "Ambasador brand",
-    },
+      role: "Ambasador brand"
+    }
   ];
 
   return (
@@ -75,7 +68,7 @@ const HomePage: React.FC = () => {
         <div className="background-parallax"></div>
         <div className="overlay-gradient"></div>
 
-        <motion.div
+        <motion.div 
           className="hero-content"
           initial="hidden"
           animate="visible"
@@ -83,14 +76,10 @@ const HomePage: React.FC = () => {
           style={{ paddingTop: "60px" }} // Add padding to prevent content from being hidden behind navbar
         >
           <div className="brand-logo">
-            <img
-              src="/images/LC.png"
-              alt="Lupul și Corbul Logo"
-              className="logo-image"
-            />
+            <img src="/images/LC.png" alt="Lupul și Corbul Logo" className="logo-image" />
           </div>
-
-          <motion.h1
+          
+          <motion.h1 
             className="brand-title"
             initial={{ opacity: 0, scale: 0.8 }}
             animate={{ opacity: 1, scale: 1 }}
@@ -98,8 +87,8 @@ const HomePage: React.FC = () => {
           >
             Lupul și Corbul
           </motion.h1>
-
-          <motion.h2
+          
+          <motion.h2 
             className="brand-tagline"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -107,51 +96,45 @@ const HomePage: React.FC = () => {
           >
             Empatie · Conexiune · Echilibru
           </motion.h2>
-
-          <motion.div
+          
+          <motion.div 
             className="trust-badges"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.5 }}
           >
-            <div className="badge">
-              <FaShieldAlt /> Calitate garantată
-            </div>
-            <div className="badge">
-              <FaAward /> Brand 100% românesc
-            </div>
-            <div className="badge">
-              <FaUsers /> Peste 1,000 clienți mulțumiți
-            </div>
+            <div className="badge"><FaShieldAlt /> Calitate garantată</div>
+            <div className="badge"><FaAward /> Brand 100% românesc</div>
+            <div className="badge"><FaUsers /> Peste 1,000 clienți mulțumiți</div>
           </motion.div>
-
-          <motion.div
+          
+          <motion.div 
             className="action-container"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.7, duration: 0.5 }}
           >
             <div className="auth-buttons">
-              <button
-                onClick={handleLoginClick}
+              <button 
+                onClick={handleLoginClick} 
                 className="btn-primary pulsate"
               >
                 Contul meu
               </button>
-              <button
-                onClick={handleRegisterClick}
+              <button 
+                onClick={handleRegisterClick} 
                 className="btn-secondary glow"
               >
                 Creează cont
               </button>
             </div>
-
+            
             <div className="nav-buttons">
-              <button
+              <button 
                 onClick={() => {
-                  console.log('Buton "Descoperă serviciile noastre" apăsat');
+                  console.log("Buton \"Descoperă serviciile noastre\" apăsat");
                   toggleSideNav();
-                }}
+                }} 
                 className="btn-discover"
               >
                 Descoperă serviciile noastre
@@ -159,23 +142,11 @@ const HomePage: React.FC = () => {
               <button onClick={handleProductsClick} className="btn-products">
                 Explorează produsele
               </button>
-              <button
-                onClick={() => navigate("/payment")}
-                className="btn-payment"
-              >
-                💳 Testează plățile Netopia
-              </button>
-              <button
-                onClick={() => navigate("/netopia-verification")}
-                className="btn-verification"
-              >
-                🔍 Verificare Netopia
-              </button>
             </div>
           </motion.div>
-
+          
           {/* Romanian Brand Banner with improved styling */}
-          <motion.div
+          <motion.div 
             className="romanian-brand-banner"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -185,19 +156,19 @@ const HomePage: React.FC = () => {
             <span className="yellow-text">BRAND ROMÂNESC </span>
             <span className="red-text">PENTRU TOȚI OAMENII</span>
             <span className="eu-symbol">
-              <img
-                src="https://upload.wikimedia.org/wikipedia/commons/thumb/b/b7/Flag_of_Europe.svg/1024px-Flag_of_Europe.svg.png"
-                alt="European Union Flag"
-                style={{
-                  width: "60px",
-                  height: "auto",
+              <img 
+                src="https://upload.wikimedia.org/wikipedia/commons/thumb/b/b7/Flag_of_Europe.svg/1024px-Flag_of_Europe.svg.png" 
+                alt="European Union Flag" 
+                style={{ 
+                  width: "60px", 
+                  height: "auto", 
                   marginLeft: "15px",
                   verticalAlign: "middle",
                   display: "inline-block",
                   borderRadius: "4px",
                   opacity: 0.85,
-                  boxShadow: "0 2px 4px rgba(0,0,0,0.15)",
-                }}
+                  boxShadow: "0 2px 4px rgba(0,0,0,0.15)"
+                }} 
               />
             </span>
           </motion.div>
@@ -207,9 +178,9 @@ const HomePage: React.FC = () => {
       {/* Value Proposition Section */}
       <section className="values-section">
         <h2 className="section-title">De ce să ne alegi</h2>
-
+        
         <div className="values-grid">
-          <motion.div
+          <motion.div 
             className="value-card"
             whileHover={{ scale: 1.05 }}
             transition={{ type: "spring", stiffness: 300 }}
@@ -218,13 +189,10 @@ const HomePage: React.FC = () => {
               <FaLeaf />
             </div>
             <h3>Produse naturale</h3>
-            <p>
-              Folosim doar ingrediente naturale și sustenabile în toate
-              produsele noastre.
-            </p>
+            <p>Folosim doar ingrediente naturale și sustenabile în toate produsele noastre.</p>
           </motion.div>
-
-          <motion.div
+          
+          <motion.div 
             className="value-card"
             whileHover={{ scale: 1.05 }}
             transition={{ type: "spring", stiffness: 300 }}
@@ -233,13 +201,10 @@ const HomePage: React.FC = () => {
               <FaHandHoldingHeart />
             </div>
             <h3>Grijă autentică</h3>
-            <p>
-              Fiecare produs este creat cu atenție și responsabilitate față de
-              tine și natură.
-            </p>
+            <p>Fiecare produs este creat cu atenție și responsabilitate față de tine și natură.</p>
           </motion.div>
-
-          <motion.div
+          
+          <motion.div 
             className="value-card"
             whileHover={{ scale: 1.05 }}
             transition={{ type: "spring", stiffness: 300 }}
@@ -248,10 +213,7 @@ const HomePage: React.FC = () => {
               <FaBalanceScale />
             </div>
             <h3>Echilibru și armonie</h3>
-            <p>
-              Susținem o filozofie bazată pe echilibrul dintre corp, minte și
-              spiritul naturii.
-            </p>
+            <p>Susținem o filozofie bazată pe echilibrul dintre corp, minte și spiritul naturii.</p>
           </motion.div>
         </div>
       </section>
@@ -259,10 +221,10 @@ const HomePage: React.FC = () => {
       {/* Testimonials Section */}
       <section className="testimonials-section">
         <h2 className="section-title">Ce spun clienții noștri</h2>
-
+        
         <div className="testimonials-container">
           {testimonials.map((testimonial, index) => (
-            <motion.div
+            <motion.div 
               key={index}
               className="testimonial-card"
               initial={{ opacity: 0, y: 20 }}
@@ -285,10 +247,7 @@ const HomePage: React.FC = () => {
       <section className="cta-section">
         <div className="cta-content">
           <h2>Începe călătoria ta către echilibru</h2>
-          <p>
-            Alătură-te comunității noastre și descoperă produse care îți
-            transformă viața.
-          </p>
+          <p>Alătură-te comunității noastre și descoperă produse care îți transformă viața.</p>
           <button onClick={handleRegisterClick} className="cta-button">
             Creează cont acum
           </button>
@@ -298,15 +257,9 @@ const HomePage: React.FC = () => {
       {/* Enhanced Footer - Simplified to avoid duplication */}
       <footer className="homepage-footer">
         <div className="footer-social">
-          <a href="#" aria-label="Facebook">
-            <i className="fab fa-facebook-f"></i>
-          </a>
-          <a href="#" aria-label="Instagram">
-            <i className="fab fa-instagram"></i>
-          </a>
-          <a href="#" aria-label="Twitter">
-            <i className="fab fa-twitter"></i>
-          </a>
+          <a href="#" aria-label="Facebook"><i className="fab fa-facebook-f"></i></a>
+          <a href="#" aria-label="Instagram"><i className="fab fa-instagram"></i></a>
+          <a href="#" aria-label="Twitter"><i className="fab fa-twitter"></i></a>
         </div>
       </footer>
     </div>

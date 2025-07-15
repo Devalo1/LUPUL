@@ -2,7 +2,7 @@ const { initializeApp } = require('firebase/app');
 const { getFirestore, collection, getDocs } = require('firebase/firestore');
 
 const firebaseConfig = {
-  apiKey: 'your-firebase-api-key-here',
+  apiKey: 'AIzaSyDdBgqV1Y0WEDLpqLKKr9BZHWn8tU5yZ-g',
   authDomain: 'dani-cu-daniel.firebaseapp.com',
   projectId: 'dani-cu-daniel',
   storageBucket: 'dani-cu-daniel.appspot.com',

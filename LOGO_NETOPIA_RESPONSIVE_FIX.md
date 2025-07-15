@@ -9,15 +9,13 @@ Pe ecrane mari (desktop), logo-ul NETOPIA nu era încadrat corespunzător și pu
 ### 🖼️ **1. Container Responsive pentru Logo**
 
 **Înainte:**
+
 ```tsx
-<img
-  src="/images/NP.svg"
-  alt="NETOPIA Payments"
-  className="h-16 w-auto"
-/>
+<img src="/images/NP.svg" alt="NETOPIA Payments" className="h-16 w-auto" />
 ```
 
 **Acum:**
+
 ```tsx
 <div className="flex-shrink-0 bg-white rounded-lg p-2 shadow-sm border border-gray-200">
   <img
@@ -30,12 +28,12 @@ Pe ecrane mari (desktop), logo-ul NETOPIA nu era încadrat corespunzător și pu
 
 ### 📱 **2. Mărimi Responsive Scalabile**
 
-| Breakpoint | Înălțime | Lățime Max | Descriere |
-|------------|----------|------------|-----------|
-| **Mobile** | `h-10` | `max-w-[100px]` | Compact pentru ecrane mici |
-| **MD (768px+)** | `h-12` | `max-w-[120px]` | Mărit pentru tablete |
-| **LG (1024px+)** | `h-14` | `max-w-[140px]` | Optim pentru laptop-uri |
-| **XL (1280px+)** | `h-16` | `max-w-[160px]` | Perfect pentru desktop mari |
+| Breakpoint       | Înălțime | Lățime Max      | Descriere                   |
+| ---------------- | -------- | --------------- | --------------------------- |
+| **Mobile**       | `h-10`   | `max-w-[100px]` | Compact pentru ecrane mici  |
+| **MD (768px+)**  | `h-12`   | `max-w-[120px]` | Mărit pentru tablete        |
+| **LG (1024px+)** | `h-14`   | `max-w-[140px]` | Optim pentru laptop-uri     |
+| **XL (1280px+)** | `h-16`   | `max-w-[160px]` | Perfect pentru desktop mari |
 
 ### 🎨 **3. Container Visual Îmbunătățit**
 
@@ -55,25 +53,29 @@ Pe ecrane mari (desktop), logo-ul NETOPIA nu era încadrat corespunzător și pu
 ### 📝 **5. Titlu Responsive Coordonat**
 
 Titlul crește proporțional cu logo-ul:
+
 - **Mobile**: `text-2xl`
-- **MD**: `text-3xl` 
+- **MD**: `text-3xl`
 - **LG**: `text-4xl`
 - **XL**: `text-5xl`
 
 ## 🚀 **REZULTATUL FINAL**
 
 ### ✅ **Pe Toate Ecranele:**
+
 - Logo-ul NETOPIA este perfect încadrat
 - Mărimea se adaptează elegant la dimensiunea ecranului
 - Container-ul oferă contrast și definire clară
 - Proporțiile sunt păstrate pe toate device-urile
 
 ### ✅ **Design Professional:**
+
 - Logo-ul are un fundal curat și definit
 - Aspectul este consistent pe toate breakpoint-urile
 - Integrarea vizuală este perfectă cu restul design-ului
 
 ### ✅ **Experiență Optimizată:**
+
 - Vizibilitate excelentă pe orice ecran
 - Aspecte proporționale și plăcute vizual
 - Logo-ul nu mai pare "plutitor" sau neîncadrat
@@ -81,6 +83,7 @@ Titlul crește proporțional cu logo-ul:
 ## 📱 **TESTARE RESPONSIVE**
 
 Pentru a testa pe diferite mărimi de ecran:
+
 1. Deschide `http://localhost:5173/payment`
 2. Redimensionează browser-ul sau folosește dev tools
 3. Observă cum logo-ul se adaptează elegant la fiecare breakpoint

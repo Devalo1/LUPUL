@@ -4,9 +4,7 @@
   top: 0;
   z-index: 40;
   width: 100%;
-  min-height: 80px; /* Înălțimea minimă sporită pentru navbar complet */
-  padding-top: 8px; /* Padding pentru a nu acoperi partea de sus */
-  padding-bottom: 8px; /* Padding pentru completitudine */
+  min-height: 64px; /* Înălțimea minimă a header-ului */
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
 
   /* Fundal cu temă românească care umple tot header-ul - softened colors */
@@ -515,28 +513,37 @@
     justify-content: center !important;
     align-items: center !important;
     width: 100% !important;
-    max-width: 800px !important;
+    max-width: 900px !important;
     margin: 0 auto !important;
-    gap: 1rem !important;
+    gap: 1.5rem !important;
   }
 
-  /* Ascunde tot textul din nav-link-uri exceptând iconițele și badge-urile */
+  /* Păstrează textele pe tablet și desktop pentru claritate */
   .nav-link {
-    font-size: 0 !important;
-    line-height: 0 !important;
+    font-size: 0.9rem !important;
+    line-height: 1.2 !important;
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    gap: 0.25rem !important;
   }
 
   .auth-button {
-    font-size: 0 !important;
-    line-height: 0 !important;
+    font-size: 0.9rem !important;
+    line-height: 1.2 !important;
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    gap: 0.25rem !important;
   }
 
-  /* Ascunde toate textele din nav-link și auth-button */
+  /* Păstrează textele vizibile pe desktop pentru o mai bună UX */
   .nav-link .nav-text-label,
-  .auth-button .nav-text-label,
-  .nav-link > *:not(.lucide):not(.cart-badge):not(svg),
-  .auth-button > *:not(.lucide):not(.cart-badge):not(svg) {
-    display: none !important;
+  .auth-button .nav-text-label {
+    display: block !important;
+    font-size: 0.75rem !important;
+    font-weight: 600 !important;
+    color: rgba(255, 255, 255, 0.9) !important;
   }
 
   /* Asigură-te că iconițele Lucide rămân vizibile și centrate */
@@ -552,21 +559,48 @@
     margin: 0 auto !important;
   }
 
-  /* Ajustează padding-ul pentru a fi mai compact fără text */
+  /* Ajustează padding-ul pentru a fi mai compact cu text */
   .nav-link,
   .auth-button {
-    padding: 12px !important;
-    min-width: 60px !important;
-    height: 60px !important;
+    padding: 0.75rem 1rem !important;
+    min-width: 80px !important;
+    height: auto !important;
     justify-content: center !important;
     align-items: center !important;
     flex-direction: column !important;
+    border-radius: 0.5rem !important;
   }
 
   /* Stilizează iconițele pentru a fi uniforme */
   .nav-link .lucide,
   .auth-button .lucide {
-    width: 28px !important;
-    height: 28px !important;
+    width: 1.5rem !important;
+    height: 1.5rem !important;
+    margin-bottom: 0.25rem !important;
+  }
+}
+
+/* Large desktop optimizations */
+@media (min-width: 1200px) {
+  .header-container nav > div.flex.items-center {
+    max-width: 1000px !important;
+    gap: 2rem !important;
+  }
+
+  .nav-link,
+  .auth-button {
+    padding: 1rem 1.5rem !important;
+    min-width: 100px !important;
+  }
+
+  .nav-link .lucide,
+  .auth-button .lucide {
+    width: 1.75rem !important;
+    height: 1.75rem !important;
+  }
+
+  .nav-link .nav-text-label,
+  .auth-button .nav-text-label {
+    font-size: 0.875rem !important;
   }
 }

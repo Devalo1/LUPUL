@@ -57,9 +57,10 @@
   box-sizing: border-box;
 }
 
-/* Full page background setup - high quality but softer */
+/* Full page background setup - mobile optimized */
 body {
   margin: 0;
+  padding: 0;
   font-family:
     "Inter",
     -apple-system,
@@ -76,16 +77,30 @@ body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 
-  /* Fundal simplificat și optimizat */
+  /* Fundal optimizat pentru mobile */
   background-image:
     linear-gradient(rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.4)),
     url("/images/background.jpeg");
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
-  background-attachment: scroll; /* Schimbat din fixed pentru a evita problemele pe mobile */
+  background-attachment: scroll;
   color: #f5f5f5;
   min-height: 100vh;
+  overflow-x: hidden; /* Previne scroll-ul orizontal */
+}
+
+/* Mobile-specific background optimizations */
+@media (max-width: 768px) {
+  body {
+    background-attachment: scroll;
+    background-size: cover;
+    background-position: center top;
+    /* Reduce background complexity on mobile for better performance */
+    background-image:
+      linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)),
+      url("/images/background.jpeg");
+  }
 }
 
 /* Make the root container full height */

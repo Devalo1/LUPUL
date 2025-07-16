@@ -30,15 +30,16 @@ export const ConversationsProvider = ({
       });
     }
   }, [user]);
+
+  // Sincronizează mereu activeConversation cu obiectul actualizat din conversations
   useEffect(() => {
-    if (activeConversationId && user?.uid) {
-      conversationService
-        .getConversation(activeConversationId, user.uid)
-        .then(setActiveConversation);
+    if (activeConversationId) {
+      const found = conversations.find((c) => c.id === activeConversationId) || null;
+      setActiveConversation(found);
     } else {
       setActiveConversation(null);
     }
-  }, [activeConversationId, user?.uid]);
+  }, [activeConversationId, conversations]);
 
   const createConversation = async (
     subject: string
@@ -53,15 +54,31 @@ export const ConversationsProvider = ({
   };
   const addMessage = async (message: Message) => {
     if (!activeConversationId || !user?.uid) return;
+    // Optimistic update: adaugă mesajul local înainte de backend
+    setActiveConversation((prev) => {
+      if (!prev) return prev;
+      const updated = {
+        ...prev,
+        messages: [...(prev.messages || []), message],
+      };
+      console.log("[ConversationsContext] Optimistic update activeConversation:", updated);
+      return updated;
+    });
+    setConversations((prev) => {
+      const updated = prev.map((conv) =>
+        conv.id === activeConversationId
+          ? { ...conv, messages: [...(conv.messages || []), message] }
+          : conv
+      );
+      console.log("[ConversationsContext] Optimistic update conversations:", updated);
+      return updated;
+    });
     await conversationService.addMessage(
       activeConversationId,
       message,
       user.uid
     );
-    await refreshConversations();
-    setActiveConversation(
-      await conversationService.getConversation(activeConversationId, user?.uid)
-    );
+    // Nu reseta conversația imediat după, lăsăm mesajul optimist vizibil
   };
   const renameConversation = async (id: string, newSubject: string) => {
     if (!user?.uid) return;

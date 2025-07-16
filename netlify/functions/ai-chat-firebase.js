@@ -83,6 +83,44 @@ export const handler = async (event, context) => {
         }
       }
 
+      // Adaugă plăceri
+      if (extractedInfo.pleasures && extractedInfo.pleasures.length > 0) {
+        for (const pleasure of extractedInfo.pleasures) {
+          await profileManager.addPleasure(pleasure);
+        }
+      }
+
+      // Adaugă dorințe
+      if (extractedInfo.desires && extractedInfo.desires.length > 0) {
+        for (const desire of extractedInfo.desires) {
+          await profileManager.addDesire(desire);
+        }
+      }
+
+      // Adaugă probleme de sănătate
+      if (
+        extractedInfo.healthConditions &&
+        extractedInfo.healthConditions.length > 0
+      ) {
+        for (const condition of extractedInfo.healthConditions) {
+          await profileManager.addHealthCondition(condition);
+        }
+      }
+
+      // Adaugă medicamentația
+      if (extractedInfo.medications && extractedInfo.medications.length > 0) {
+        for (const medication of extractedInfo.medications) {
+          await profileManager.addMedication(medication);
+        }
+      }
+
+      // Adaugă preocupări
+      if (extractedInfo.concerns && extractedInfo.concerns.length > 0) {
+        for (const concern of extractedInfo.concerns) {
+          await profileManager.addConcern(concern);
+        }
+      }
+
       // Adaugă obiective
       if (extractedInfo.goals && extractedInfo.goals.length > 0) {
         const currentProfile = await profileManager.getProfile();

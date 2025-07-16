@@ -76,6 +76,41 @@ export const handler = async (event, context) => {
           }
         }
 
+        // Adaugă plăceri
+        if (extractedInfo.pleasures) {
+          for (const pleasure of extractedInfo.pleasures) {
+            await profileManager.addPleasure(pleasure);
+          }
+        }
+
+        // Adaugă dorințe
+        if (extractedInfo.desires) {
+          for (const desire of extractedInfo.desires) {
+            await profileManager.addDesire(desire);
+          }
+        }
+
+        // Adaugă probleme de sănătate
+        if (extractedInfo.healthConditions) {
+          for (const condition of extractedInfo.healthConditions) {
+            await profileManager.addHealthCondition(condition);
+          }
+        }
+
+        // Adaugă medicamentația
+        if (extractedInfo.medications) {
+          for (const medication of extractedInfo.medications) {
+            await profileManager.addMedication(medication);
+          }
+        }
+
+        // Adaugă preocupări
+        if (extractedInfo.concerns) {
+          for (const concern of extractedInfo.concerns) {
+            await profileManager.addConcern(concern);
+          }
+        }
+
         console.log(`[AI CHAT] Profil actualizat pentru ${userId}`);
       }
 

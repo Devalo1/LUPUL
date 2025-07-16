@@ -246,6 +246,7 @@ import ReactDOM from "react-dom/client";
 import App from "./App";
 import "./index.css";
 import "./assets/styles/main.css"; // Stiluri principale
+import "./assets/styles/mobile-galaxy-fix.css"; // Fix pentru Galaxy S24 FE și mobile
 import { reportWebVitals } from "./utils/webVitals"; // Importăm utilitar pentru Web Vitals
 
 // Declarații pentru TypeScript

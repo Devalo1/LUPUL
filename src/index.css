@@ -50,6 +50,60 @@
   --accent-color: #60a5fa;
 }
 
+/* Galaxy device specific optimizations */
+.galaxy-device {
+  /* Îmbunătățiri specifice pentru Galaxy */
+  -webkit-tap-highlight-color: transparent;
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+.galaxy-device .galaxy-touch-target {
+  min-height: 48px !important;
+  min-width: 48px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  padding: 0.875rem 1.5rem !important;
+}
+
+.galaxy-device .touch-active {
+  transform: scale(0.95) !important;
+  transition: transform 0.1s ease !important;
+}
+
+.mobile-device {
+  /* Optimizări generale pentru mobile */
+  touch-action: pan-x pan-y;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Fix pentru height pe mobile folosind CSS custom properties */
+.mobile-device #root {
+  min-height: 100vh;
+  min-height: calc(var(--vh, 1vh) * 100);
+}
+
+/* Fallback pentru background pe Galaxy */
+.bg-fallback {
+  background: linear-gradient(135deg, #1a202c 0%, #2d3748 100%) !important;
+}
+
+.bg-loaded {
+  /* Stiluri când background-ul s-a încărcat cu succes */
+  animation: fadeIn 0.5s ease-in;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
 /* Reset CSS */
 * {
   margin: 0;
@@ -96,10 +150,21 @@ body {
     background-attachment: scroll;
     background-size: cover;
     background-position: center top;
-    /* Reduce background complexity on mobile for better performance */
+    /* Optimizat special pentru Galaxy S24 FE */
     background-image:
-      linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)),
+      linear-gradient(rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.6)),
       url("/images/background.jpeg");
+    /* Previne problemele de zoom */
+    touch-action: pan-x pan-y;
+    -webkit-text-size-adjust: 100%;
+    font-size: 16px; /* Previne zoom-ul automat pe iOS */
+  }
+
+  /* Îmbunătățiri pentru Galaxy S24 FE */
+  #root {
+    min-height: 100vh;
+    min-height: 100dvh; /* Dynamic viewport height */
+    overflow-x: hidden;
   }
 }
 

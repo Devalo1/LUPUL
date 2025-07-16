@@ -1,0 +1,165 @@
+<!doctype html>
+<html lang="ro">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Test AI Assistant Widget</title>
+    <style>
+      body {
+        font-family:
+          -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        line-height: 1.6;
+        margin: 0;
+        padding: 20px;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        min-height: 100vh;
+        color: white;
+      }
+      .container {
+        max-width: 800px;
+        margin: 0 auto;
+        background: rgba(255, 255, 255, 0.1);
+        backdrop-filter: blur(20px);
+        border-radius: 20px;
+        padding: 40px;
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+      }
+      h1 {
+        text-align: center;
+        margin-bottom: 30px;
+        font-size: 2.5em;
+        text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+      }
+      .status {
+        background: rgba(255, 255, 255, 0.2);
+        border-radius: 12px;
+        padding: 20px;
+        margin: 20px 0;
+        border-left: 4px solid #4caf50;
+      }
+      .status.warning {
+        border-left-color: #ff9800;
+      }
+      .status.error {
+        border-left-color: #f44336;
+      }
+      .status.info {
+        border-left-color: #2196f3;
+      }
+      .test-link {
+        display: inline-block;
+        background: rgba(255, 255, 255, 0.2);
+        color: white;
+        text-decoration: none;
+        padding: 15px 30px;
+        border-radius: 10px;
+        margin: 10px 5px;
+        border: 1px solid rgba(255, 255, 255, 0.3);
+        transition: all 0.3s ease;
+        backdrop-filter: blur(10px);
+      }
+      .test-link:hover {
+        background: rgba(255, 255, 255, 0.3);
+        transform: translateY(-2px);
+        box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+      }
+      .instructions {
+        background: rgba(0, 0, 0, 0.1);
+        border-radius: 12px;
+        padding: 25px;
+        margin: 20px 0;
+      }
+      .instructions h3 {
+        margin-top: 0;
+        color: #ffd700;
+      }
+      .checklist {
+        list-style: none;
+        padding: 0;
+      }
+      .checklist li {
+        padding: 8px 0;
+        position: relative;
+        padding-left: 30px;
+      }
+      .checklist li:before {
+        content: "✓";
+        position: absolute;
+        left: 0;
+        color: #4caf50;
+        font-weight: bold;
+        font-size: 1.2em;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h1>🤖 Test AI Assistant Widget</h1>
+
+      <div class="status">
+        ✅ Widget-ul AI Assistant este acum reparat și funcțional
+      </div>
+
+      <div class="status info">
+        ℹ️ Problemele identificate și rezolvate:
+        <ul>
+          <li>Corectare exporturi în aiApiUtils.ts</li>
+          <li>Fixare logica de trimitere mesaje (input resetat prematur)</li>
+          <li>Îmbunătățire afișare mesaje în widget</li>
+          <li>Optimizare poziționare modal</li>
+        </ul>
+      </div>
+
+      <div class="instructions">
+        <h3>📋 Pași pentru testare:</h3>
+        <ol class="checklist">
+          <li>Deschide aplicația principală</li>
+          <li>Autentifică-te în aplicație</li>
+          <li>Găsește butonul floating AI din colțul din dreapta jos</li>
+          <li>Click pe buton pentru a deschide widget-ul</li>
+          <li>Testează trimiterea unor mesaje</li>
+          <li>Verifică dacă mesajele tale și răspunsurile AI apar corect</li>
+          <li>Testează drag & drop pentru a muta widget-ul</li>
+        </ol>
+      </div>
+
+      <h2>🔗 Test Links:</h2>
+      <a href="http://localhost:3001/" class="test-link" target="_blank">
+        🚀 Deschide Aplicația Principală
+      </a>
+
+      <a
+        href="http://localhost:3001/ai-messenger"
+        class="test-link"
+        target="_blank"
+      >
+        💬 AI Messenger (Full Page)
+      </a>
+
+      <div class="status warning">
+        ⚠️ Notă: Widget-ul nu va apărea pe pagina AI Messenger (este ascuns prin
+        design)
+      </div>
+
+      <div class="instructions">
+        <h3>🔍 Ce să verifici:</h3>
+        <ul class="checklist">
+          <li>Widget-ul floating apare în colțul din dreapta jos</li>
+          <li>La click se deschide un modal cu două coloane</li>
+          <li>Coloana din stânga arată istoricul conversațiilor</li>
+          <li>Coloana din dreapta este zona de chat</li>
+          <li>Mesajele tale apar cu bule albastre pe dreapta</li>
+          <li>Răspunsurile AI apar cu bule gri pe stânga</li>
+          <li>Indicator de typing când AI "scrie"</li>
+          <li>Modalul poate fi tras cu mouse-ul (drag & drop)</li>
+          <li>Butoanele pentru minimizare/maximizare/închidere funcționează</li>
+        </ul>
+      </div>
+
+      <div class="status">
+        ✅ În cazul în care întâmpini probleme, verifică consola browser-ului
+        pentru erori
+      </div>
+    </div>
+  </body>
+</html>

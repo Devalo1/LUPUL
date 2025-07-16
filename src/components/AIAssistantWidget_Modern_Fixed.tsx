@@ -20,6 +20,34 @@ import {
 
 // Modern AI Assistant Widget with Gen Z/Millennial appeal
 const AIAssistantWidget: React.FC = () => {
+  // State (redeclared după eliminarea dublurilor)
+  const [input, setInput] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [aiTyping, setAiTyping] = useState(false);
+  const [unreadCount, setUnreadCount] = useState(0);
+  const [voiceRecording, setVoiceRecording] = useState(false);
+  const [currentMood, setCurrentMood] = useState<string>("");
+  const [moodHistory, setMoodHistory] = useState<MoodEntry[]>([]);
+  const [personalizedResponses, setPersonalizedResponses] = useState(
+    QUICK_RESPONSES.slice(0, 6)
+  );
+  const [contextualSuggestions, setContextualSuggestions] = useState<string[]>([]);
+  const [showInsights, setShowInsights] = useState(false);
+  const [insights, setInsights] = useState<string[]>([]);
+  const [showConversations, setShowConversations] = useState(false);
+  const [quickActions] = useState([
+    "💡 Ajută-mă cu o idee creativă",
+    "😊 Cum să mă simt mai bine astăzi",
+    "🎯 Planuri cool pentru weekend",
+    "📚 Vreau să învăț ceva nou și interesant",
+    "🎵 Recomandă-mi muzică bună",
+    "🎮 Ce activități fun pot face?",
+  ]);
+  // Refs
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLTextAreaElement>(null);
+  const modalRef = useRef<HTMLDivElement>(null);
+  // Contexts & hooks
   const { profileState } = useAssistantProfile();
   const { user } = useAuth();
   const navigate = useNavigate();
@@ -30,50 +58,33 @@ const AIAssistantWidget: React.FC = () => {
     user ? { name: user.displayName || undefined } : undefined,
     user?.uid
   );
-
   const {
     conversations,
     activeConversation,
     setActiveConversationId,
     createConversation,
-    renameConversation: _renameConversation,
-    deleteConversation: _deleteConversation,
     addMessage,
   } = useConversations();
 
   // State management
   const [open, setOpen] = useState(false);
-  const [input, setInput] = useState("");
-  const [loading, setLoading] = useState(false);
-  const [aiTyping, setAiTyping] = useState(false);
-  // Enhanced state for modern features
-  const [unreadCount, setUnreadCount] = useState(0);
-  const [voiceRecording, setVoiceRecording] = useState(false);
-  const [currentMood, setCurrentMood] = useState<string>("");
-  const [moodHistory, setMoodHistory] = useState<MoodEntry[]>([]);
-  const [personalizedResponses, setPersonalizedResponses] = useState(
-    QUICK_RESPONSES.slice(0, 6)
-  );
-  const [contextualSuggestions, setContextualSuggestions] = useState<string[]>(
-    []
-  );
-  const [showInsights, setShowInsights] = useState(false);
-  const [insights, setInsights] = useState<string[]>([]);
-  // Conversations sidebar state
-  const [showConversations, setShowConversations] = useState(false);
-  const [quickActions] = useState([
-    "💡 Ajută-mă cu o idee creativă",
-    "😊 Cum să mă simt mai bine astăzi",
-    "🎯 Planuri cool pentru weekend",
-    "📚 Vreau să învăț ceva nou și interesant",
-    "🎵 Recomandă-mi muzică bună",
-    "🎮 Ce activități fun pot face?",
-  ]);
+  // (state moved up, dublurile eliminate)
 
   // Refs
-  const messagesEndRef = useRef<HTMLDivElement>(null);
-  const inputRef = useRef<HTMLTextAreaElement>(null);
-  const modalRef = useRef<HTMLDivElement>(null);
+
+  // Creează automat o conversație nouă la deschiderea widgetului dacă nu există una activă
+  useEffect(() => {
+    if (open && !activeConversation?.id && user) {
+      (async () => {
+        const newId = await createConversation(`Chat ${new Date().toLocaleTimeString()}`);
+        if (newId) setActiveConversationId(newId);
+      })();
+    }
+  }, [open, activeConversation?.id, user, createConversation, setActiveConversationId]);
+
+
+  // Refs
+
 
   // Auto-scroll to bottom
   const scrollToBottom = useCallback(() => {

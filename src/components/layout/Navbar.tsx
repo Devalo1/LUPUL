@@ -161,7 +161,7 @@ const Navbar: React.FC = () => {
               title="Coș de cumpărături"
             >
               <ShoppingCart className="w-9 h-9 mb-1 text-blue-200 cart-icon" />
-              Coș
+              {/* doar icon, fără text */}
               {totalItems > 0 && (
                 <span className="cart-badge">{totalItems}</span>
               )}
@@ -197,7 +197,7 @@ const Navbar: React.FC = () => {
               title="Acasă"
             >
               <Home className="w-9 h-9 mb-1 text-blue-200 nav-icon" />
-              <span className="nav-text-label">Acasă</span>
+              {/* doar icon, fără text */}
             </a>
             <div className="relative group" ref={shopMenuRef}>
               {" "}
@@ -207,7 +207,7 @@ const Navbar: React.FC = () => {
                 title="Magazin"
               >
                 <Store className="w-9 h-9 mb-1 text-blue-200 nav-icon" />
-                <span className="nav-text-label">Magazin</span>
+                {/* doar icon, fără text */}
                 <svg
                   className={`ml-1 h-4 w-4 transition-transform ${shopMenuOpen ? "rotate-180" : ""}`}
                   fill="none"
@@ -259,7 +259,7 @@ const Navbar: React.FC = () => {
               title="Coș de cumpărături"
             >
               <ShoppingCart className="w-9 h-9 mb-1 text-blue-200 cart-icon" />
-              <span className="nav-text-label">Coș</span>
+              {/* doar icon, fără text */}
               {totalItems > 0 && (
                 <span className="cart-badge">{totalItems}</span>
               )}
@@ -270,7 +270,7 @@ const Navbar: React.FC = () => {
               title="Evenimente"
             >
               <CalendarHeart className="w-9 h-9 mb-1 text-blue-200 nav-icon" />
-              <span className="nav-text-label">Evenimente</span>
+              {/* doar icon, fără text */}
             </Link>{" "}
             <Link
               to="/about"
@@ -278,7 +278,7 @@ const Navbar: React.FC = () => {
               title="Despre Noi"
             >
               <UsersRound className="w-9 h-9 mb-1 text-blue-200 nav-icon" />
-              <span className="nav-text-label">Despre Noi</span>
+              {/* doar icon, fără text */}
             </Link>{" "}
             {isAccountant && (
               <Link
@@ -287,7 +287,7 @@ const Navbar: React.FC = () => {
                 title="Contabilitate"
               >
                 <FileText className="w-9 h-9 mb-1 text-blue-200 nav-icon" />
-                <span className="nav-text-label">Contabilitate</span>
+                {/* doar icon, fără text */}
               </Link>
             )}{" "}
             {isAdmin && (
@@ -297,7 +297,7 @@ const Navbar: React.FC = () => {
                 title="Panou Admin"
               >
                 <Settings className="w-9 h-9 mb-1 text-blue-200 nav-icon" />
-                <span className="nav-text-label">Panou Admin</span>
+                {/* doar icon, fără text */}
               </Link>
             )}{" "}
             <button
@@ -306,7 +306,7 @@ const Navbar: React.FC = () => {
               title="Servicii"
             >
               <BriefcaseBusiness className="w-9 h-9 mb-1 text-blue-200 nav-icon" />
-              <span className="nav-text-label">Servicii</span>
+              {/* doar icon, fără text */}
             </button>
             {user ? (
               <>
@@ -317,7 +317,7 @@ const Navbar: React.FC = () => {
                   title="Contul Meu"
                 >
                   <UserCircle2 className="w-9 h-9 mb-1 text-blue-200 nav-icon" />
-                  <span className="nav-text-label">Contul Meu</span>
+                  {/* doar icon, fără text */}
                 </Link>
                 <button
                   onClick={handleLogout}
@@ -325,7 +325,7 @@ const Navbar: React.FC = () => {
                   title="Deconectare"
                 >
                   <LogOut className="w-9 h-9 mb-1 text-blue-200 nav-icon" />
-                  <span className="nav-text-label">Deconectare</span>
+                  {/* doar icon, fără text */}
                 </button>
               </>
             ) : (
@@ -335,7 +335,7 @@ const Navbar: React.FC = () => {
                 title="Autentificare"
               >
                 <UserCircle2 className="w-9 h-9 mb-1 text-blue-200 nav-icon" />
-                <span className="nav-text-label">Autentificare</span>
+                {/* doar icon, fără text */}
               </Link>
             )}
           </div>

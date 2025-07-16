@@ -1,0 +1,408 @@
+<!doctype html>
+<html lang="ro">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, viewport-fit=cover"
+    />
+    <title>Test Galaxy S24 FE - Lupul și Corbul</title>
+    <style>
+      body {
+        margin: 0;
+        padding: 20px;
+        font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+        background: linear-gradient(135deg, #1a202c 0%, #2d3748 100%);
+        color: white;
+        min-height: 100vh;
+      }
+
+      .test-container {
+        max-width: 400px;
+        margin: 0 auto;
+        background: rgba(255, 255, 255, 0.1);
+        backdrop-filter: blur(10px);
+        border-radius: 15px;
+        padding: 20px;
+        border: 1px solid rgba(255, 255, 255, 0.2);
+      }
+
+      .test-item {
+        background: rgba(255, 255, 255, 0.05);
+        border-radius: 8px;
+        padding: 15px;
+        margin-bottom: 15px;
+        border-left: 4px solid #3b82f6;
+      }
+
+      .test-status {
+        display: inline-block;
+        padding: 5px 10px;
+        border-radius: 20px;
+        font-size: 12px;
+        font-weight: bold;
+        margin-left: 10px;
+      }
+
+      .status-pass {
+        background: #10b981;
+        color: white;
+      }
+
+      .status-fail {
+        background: #ef4444;
+        color: white;
+      }
+
+      .status-loading {
+        background: #f59e0b;
+        color: white;
+      }
+
+      .test-button {
+        background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+        color: white;
+        border: none;
+        border-radius: 8px;
+        padding: 12px 24px;
+        font-size: 16px;
+        font-weight: 600;
+        cursor: pointer;
+        width: 100%;
+        margin-top: 20px;
+        min-height: 48px;
+      }
+
+      .test-button:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(59, 130, 246, 0.3);
+      }
+
+      .device-info {
+        background: rgba(255, 255, 255, 0.05);
+        border-radius: 8px;
+        padding: 15px;
+        margin-bottom: 20px;
+        font-size: 14px;
+      }
+
+      .info-row {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 8px;
+      }
+
+      .info-label {
+        color: #94a3b8;
+      }
+
+      .info-value {
+        color: #f8fafc;
+        font-weight: 500;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="test-container">
+      <h1 style="text-align: center; margin-bottom: 30px">
+        🔍 Test Galaxy S24 FE
+      </h1>
+
+      <div class="device-info">
+        <h3 style="margin-top: 0">Informații Dispozitiv</h3>
+        <div class="info-row">
+          <span class="info-label">Rezoluție:</span>
+          <span class="info-value" id="resolution">-</span>
+        </div>
+        <div class="info-row">
+          <span class="info-label">DPI:</span>
+          <span class="info-value" id="dpi">-</span>
+        </div>
+        <div class="info-row">
+          <span class="info-label">User Agent:</span>
+          <span class="info-value" id="userAgent">-</span>
+        </div>
+        <div class="info-row">
+          <span class="info-label">Viewport:</span>
+          <span class="info-value" id="viewport">-</span>
+        </div>
+      </div>
+
+      <div class="test-item">
+        <strong>📱 Detectare Galaxy Device</strong>
+        <span class="test-status status-loading" id="status-galaxy"
+          >Loading...</span
+        >
+        <div
+          style="margin-top: 10px; font-size: 14px; color: #cbd5e0"
+          id="galaxy-details"
+        ></div>
+      </div>
+
+      <div class="test-item">
+        <strong>🖼️ Încărcare Background</strong>
+        <span class="test-status status-loading" id="status-background"
+          >Loading...</span
+        >
+        <div
+          style="margin-top: 10px; font-size: 14px; color: #cbd5e0"
+          id="background-details"
+        ></div>
+      </div>
+
+      <div class="test-item">
+        <strong>📐 Viewport Dinamic</strong>
+        <span class="test-status status-loading" id="status-viewport"
+          >Loading...</span
+        >
+        <div
+          style="margin-top: 10px; font-size: 14px; color: #cbd5e0"
+          id="viewport-details"
+        ></div>
+      </div>
+
+      <div class="test-item">
+        <strong>👆 Touch Optimizations</strong>
+        <span class="test-status status-loading" id="status-touch"
+          >Loading...</span
+        >
+        <div
+          style="margin-top: 10px; font-size: 14px; color: #touch-details"
+        ></div>
+      </div>
+
+      <div class="test-item">
+        <strong>⚡ Performance</strong>
+        <span class="test-status status-loading" id="status-performance"
+          >Loading...</span
+        >
+        <div
+          style="margin-top: 10px; font-size: 14px; color: #cbd5e0"
+          id="performance-details"
+        ></div>
+      </div>
+
+      <button class="test-button" onclick="runAllTests()">
+        🔄 Rulează Teste
+      </button>
+      <button class="test-button" onclick="window.location.href='/'">
+        🏠 Înapoi la Aplicație
+      </button>
+    </div>
+
+    <script>
+      function updateDeviceInfo() {
+        document.getElementById("resolution").textContent =
+          `${window.screen.width}x${window.screen.height}`;
+        document.getElementById("dpi").textContent =
+          window.devicePixelRatio || 1;
+        document.getElementById("userAgent").textContent =
+          navigator.userAgent.substring(0, 50) + "...";
+        document.getElementById("viewport").textContent =
+          `${window.innerWidth}x${window.innerHeight}`;
+      }
+
+      function isSamsungGalaxy() {
+        const userAgent = navigator.userAgent;
+        return (
+          /Samsung|SM-|Galaxy/i.test(userAgent) ||
+          /Android.*Chrome/i.test(userAgent)
+        );
+      }
+
+      function isGalaxyS24FE() {
+        return window.innerWidth <= 428 && window.innerHeight >= 800;
+      }
+
+      function testGalaxyDetection() {
+        const isGalaxy = isSamsungGalaxy();
+        const isS24FE = isGalaxyS24FE();
+
+        if (isGalaxy) {
+          document.getElementById("status-galaxy").className =
+            "test-status status-pass";
+          document.getElementById("status-galaxy").textContent = "PASS";
+          document.getElementById("galaxy-details").innerHTML =
+            `✅ Dispozitiv Samsung detectat<br>` +
+            `${isS24FE ? "✅" : "⚠️"} Galaxy S24 FE: ${isS24FE ? "DA" : "NU"}`;
+        } else {
+          document.getElementById("status-galaxy").className =
+            "test-status status-fail";
+          document.getElementById("status-galaxy").textContent = "FAIL";
+          document.getElementById("galaxy-details").innerHTML =
+            "❌ Nu este un dispozitiv Samsung Galaxy";
+        }
+      }
+
+      function testBackgroundLoading() {
+        const img = new Image();
+        img.onload = function () {
+          document.getElementById("status-background").className =
+            "test-status status-pass";
+          document.getElementById("status-background").textContent = "PASS";
+          document.getElementById("background-details").innerHTML =
+            `✅ Background încărcat cu succes<br>` +
+            `📐 Dimensiuni: ${img.width}x${img.height}`;
+        };
+        img.onerror = function () {
+          document.getElementById("status-background").className =
+            "test-status status-fail";
+          document.getElementById("status-background").textContent = "FAIL";
+          document.getElementById("background-details").innerHTML =
+            "❌ Background nu s-a putut încărca";
+        };
+        img.src = "/images/background.jpeg";
+      }
+
+      function testViewportOptimizations() {
+        const hasVH = CSS.supports("height", "100dvh");
+        const hasSafeArea = CSS.supports("padding", "env(safe-area-inset-top)");
+        const hasViewportFit = document
+          .querySelector('meta[name="viewport"]')
+          .content.includes("viewport-fit");
+
+        let passCount = 0;
+        let details = "";
+
+        if (hasVH) {
+          passCount++;
+          details += "✅ Suport 100dvh<br>";
+        } else {
+          details += "❌ Nu suportă 100dvh<br>";
+        }
+
+        if (hasSafeArea) {
+          passCount++;
+          details += "✅ Suport safe-area-insets<br>";
+        } else {
+          details += "⚠️ Nu suportă safe-area-insets<br>";
+        }
+
+        if (hasViewportFit) {
+          passCount++;
+          details += "✅ Viewport-fit configurat<br>";
+        } else {
+          details += "❌ Viewport-fit lipsește<br>";
+        }
+
+        if (passCount >= 2) {
+          document.getElementById("status-viewport").className =
+            "test-status status-pass";
+          document.getElementById("status-viewport").textContent = "PASS";
+        } else {
+          document.getElementById("status-viewport").className =
+            "test-status status-fail";
+          document.getElementById("status-viewport").textContent = "FAIL";
+        }
+
+        document.getElementById("viewport-details").innerHTML = details;
+      }
+
+      function testTouchOptimizations() {
+        const hasTouchAction = CSS.supports("touch-action", "pan-x pan-y");
+        const hasUserSelect = CSS.supports("user-select", "none");
+        const hasTransform3d = CSS.supports("transform", "translateZ(0)");
+
+        let passCount = 0;
+        let details = "";
+
+        if (hasTouchAction) {
+          passCount++;
+          details += "✅ Touch-action suportat<br>";
+        } else {
+          details += "❌ Touch-action nu este suportat<br>";
+        }
+
+        if (hasUserSelect) {
+          passCount++;
+          details += "✅ User-select suportat<br>";
+        } else {
+          details += "❌ User-select nu este suportat<br>";
+        }
+
+        if (hasTransform3d) {
+          passCount++;
+          details += "✅ Hardware acceleration disponibilă<br>";
+        } else {
+          details += "❌ Hardware acceleration indisponibilă<br>";
+        }
+
+        if (passCount >= 2) {
+          document.getElementById("status-touch").className =
+            "test-status status-pass";
+          document.getElementById("status-touch").textContent = "PASS";
+        } else {
+          document.getElementById("status-touch").className =
+            "test-status status-fail";
+          document.getElementById("status-touch").textContent = "FAIL";
+        }
+
+        document.getElementById("touch-details").innerHTML = details;
+      }
+
+      function testPerformance() {
+        const start = performance.now();
+
+        // Test de performanță simplu
+        for (let i = 0; i < 10000; i++) {
+          const div = document.createElement("div");
+          div.style.transform = "translateZ(0)";
+        }
+
+        const end = performance.now();
+        const duration = end - start;
+
+        let details = `⏱️ Test performanță: ${duration.toFixed(2)}ms<br>`;
+
+        if ("requestIdleCallback" in window) {
+          details += "✅ RequestIdleCallback disponibil<br>";
+        } else {
+          details += "❌ RequestIdleCallback indisponibil<br>";
+        }
+
+        if ("serviceWorker" in navigator) {
+          details += "✅ Service Worker suportat<br>";
+        } else {
+          details += "❌ Service Worker nu este suportat<br>";
+        }
+
+        if (duration < 50) {
+          document.getElementById("status-performance").className =
+            "test-status status-pass";
+          document.getElementById("status-performance").textContent = "PASS";
+        } else {
+          document.getElementById("status-performance").className =
+            "test-status status-fail";
+          document.getElementById("status-performance").textContent = "FAIL";
+        }
+
+        document.getElementById("performance-details").innerHTML = details;
+      }
+
+      function runAllTests() {
+        // Reset toate statusurile
+        document.querySelectorAll(".test-status").forEach((status) => {
+          status.className = "test-status status-loading";
+          status.textContent = "Loading...";
+        });
+
+        // Rulează testele cu delay pentru feedback vizual
+        setTimeout(testGalaxyDetection, 200);
+        setTimeout(testBackgroundLoading, 400);
+        setTimeout(testViewportOptimizations, 600);
+        setTimeout(testTouchOptimizations, 800);
+        setTimeout(testPerformance, 1000);
+      }
+
+      // Inițializare
+      updateDeviceInfo();
+      runAllTests();
+
+      // Update info la resize
+      window.addEventListener("resize", updateDeviceInfo);
+      window.addEventListener("orientationchange", () => {
+        setTimeout(updateDeviceInfo, 300);
+      });
+    </script>
+  </body>
+</html>

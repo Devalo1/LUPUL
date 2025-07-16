@@ -405,31 +405,56 @@ const AIAssistantWidget: React.FC = () => {
   // Trimitere mesaj user + răspuns AI dummy cu indicator typing
   const handleSendMessage = async () => {
     if (!input.trim()) return;
+
+    const userMessage = input.trim(); // Salvează mesajul înainte de a reseta input-ul
     setLoading(true);
     setAiTyping(true);
+    setInput(""); // Resetează input-ul imediat pentru UX mai bun
+
     try {
       let convId = activeConversation?.id;
       // Dacă nu există conversație activă, creez una nouă fără subiect
       if (!convId) {
+        console.log(
+          "[AIWidget] Creating new conversation for user:",
+          user?.uid
+        );
         convId = await createConversation("");
-        if (convId) setActiveConversationId(convId);
+        if (convId) {
+          setActiveConversationId(convId);
+          console.log("[AIWidget] New conversation created:", convId);
+        }
       }
+
+      // Adaugă mesajul utilizatorului
+      console.log("[AIWidget] Adding user message:", userMessage);
       await addMessage({
         id: Date.now().toString(),
         sender: "user",
-        content: input.trim(),
+        content: userMessage,
         timestamp: Timestamp.now(),
       });
-      setInput(""); // Răspuns real AI via openaiService (ca la terapie)
+
+      // Răspuns real AI via openaiService (ca la terapie)
       setTimeout(async () => {
         console.log(
-          `[AIWidget] Calling fetchAIResponse with userId: ${user?.uid}`
+          `[AIWidget] Calling fetchAIResponse with userId: ${user?.uid} and message: ${userMessage}`
         );
         const aiReply = await fetchAIResponse(
-          input.trim(),
+          userMessage, // Folosește mesajul salvat, nu input-ul resetat
           assistantProfile,
           user?.uid
         );
+
+        console.log(
+          "[AIWidget] AI response received:",
+          aiReply?.substring(0, 100)
+        );
+        console.log(
+          "[AIWidget] AI response received:",
+          aiReply?.substring(0, 100)
+        );
+
         await addMessage({
           id: (Date.now() + 1).toString(),
           sender: "ai",
@@ -468,7 +493,7 @@ const AIAssistantWidget: React.FC = () => {
             },
             {
               role: "user",
-              content: `Creează un titlu în română perfectă pentru această conversație:\nUtilizator: "${input.trim()}"\nAsistent: "${aiReply}"\n\nTitlu:`,
+              content: `Creează un titlu în română perfectă pentru această conversație:\nUtilizator: "${userMessage}"\nAsistent: "${aiReply}"\n\nTitlu:`,
             },
           ];
 
@@ -486,7 +511,7 @@ const AIAssistantWidget: React.FC = () => {
             console.error("Eroare la generarea titlului:", err);
             // Fallback: folosește primele cuvinte din întrebarea utilizatorului
             const fallbackTitle =
-              input.trim().split(" ").slice(0, 4).join(" ") ||
+              userMessage.split(" ").slice(0, 4).join(" ") ||
               "Conversație generală";
             await renameConversation(convId, fallbackTitle);
           }
@@ -495,6 +520,7 @@ const AIAssistantWidget: React.FC = () => {
         setAiTyping(false);
       }, 1200);
     } catch (e) {
+      console.error("[AIWidget] Error in handleSendMessage:", e);
       setLoading(false);
       setAiTyping(false);
     }

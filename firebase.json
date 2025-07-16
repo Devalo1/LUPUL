@@ -13,7 +13,7 @@
     },
     "firestore": {
       "host": "127.0.0.1",
-      "port": 8083
+      "port": 8081
     },
     "functions": {
       "host": "127.0.0.1",
@@ -28,7 +28,7 @@
     },
     "ui": {
       "enabled": true,
-      "port": 4000
+      "port": 4400
     },
     "singleProjectMode": true
   },

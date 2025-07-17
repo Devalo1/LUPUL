@@ -267,7 +267,7 @@ export default defineConfig(({ mode }) => {
                 return "vendor-utils";
               }
               // Adaugă un chunk suplimentar pentru TDZ prevention
-              if (id.includes("src/utils/tdz-prevention")) {
+              if (id.includes("src/utils/tdz-prevention") || id.includes("src/utils/emotion")) {
                 return "vendor-tdz-prevention";
               }
               return "vendor-others";
@@ -276,14 +276,41 @@ export default defineConfig(({ mode }) => {
               return "styles";
             }
           },
-          // Adăugăm inițializare TDZ înainte de conținutul chunk-urilor
+          // Adăugăm inițializare TDZ AGRESIVĂ înainte de conținutul chunk-urilor
           intro: `
-                        // TDZ prevention
-                        var __tdz_e;
-                        var __tdz_handlers = [];
-                        var __tdz_cache = new Map();
-                        var __tdz_load_promises = {};
-                        // End TDZ prevention
+                        // AGGRESSIVE TDZ prevention pentru Emotion
+                        (function() {
+                          if (typeof globalThis !== 'undefined') {
+                            var g = globalThis;
+                            if (!g.R) g.R = function() { return function() {}; };
+                            if (!g.e) g.e = {};
+                            if (!g.t) g.t = {};
+                            if (!g.n) g.n = {};
+                            if (!g.r) g.r = {};
+                            if (!g.o) g.o = {};
+                            if (!g.i) g.i = {};
+                            if (!g.a) g.a = {};
+                            if (!g.u) g.u = {};
+                            if (!g.c) g.c = {};
+                            if (!g.s) g.s = {};
+                            if (!g.l) g.l = {};
+                            if (!g.f) g.f = {};
+                            if (!g.d) g.d = {};
+                            if (!g.p) g.p = {};
+                            if (!g.h) g.h = {};
+                            if (!g.v) g.v = {};
+                            if (!g.g) g.g = {};
+                            if (!g.m) g.m = {};
+                            if (!g.y) g.y = {};
+                            if (!g.b) g.b = {};
+                            if (!g.w) g.w = {};
+                            if (!g.x) g.x = {};
+                            g.__emotion_cache__ = g.__emotion_cache__ || new Map();
+                            g.__emotion_styles__ = g.__emotion_styles__ || new Map();
+                            g.$RefreshReg$ = g.$RefreshReg$ || function() {};
+                            g.$RefreshSig$ = g.$RefreshSig$ || function() { return function() {}; };
+                          }
+                        })();
                     `,
         },
         external: [

@@ -1,8 +1,8 @@
 // Importăm mai întâi shim-ul pentru React Refresh (Edge compatibility)
 import "./utils/react-refresh-shim";
 
-// Import TDZ fix pentru Emotion ÎNAINTE de orice altceva
-import "./utils/emotion-tdz-fix";
+// Import TDZ fix AGRESIV pentru Emotion ÎNAINTE de orice altceva
+import "./utils/emotion-tdz-fix-aggressive";
 
 // Importăm mai întâi firebase-init pentru a asigura inițializarea
 import { ensureFirebaseInitialized } from "./firebase-init";

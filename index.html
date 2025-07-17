@@ -21,59 +21,99 @@
       content="same-origin-allow-popups"
     />
     <title>Lupul și Corbul - Empatie, Conexiune, Echilibru</title>
-    <!-- Fix pentru TDZ errors cu Emotion -->
+    <!-- Fix agresiv pentru TDZ errors cu Emotion -->
     <script>
-      // Preventive script pentru Emotion TDZ errors
-      window.__EMOTION_TDZ_FIX__ = true;
-
-      // Pre-load critical variables pentru a preveni TDZ errors
-      try {
-        if (typeof window !== "undefined") {
-          window.__emotion_cache__ = {};
-          window.__emotion_initialized__ = false;
-
-          // Pre-define variabila 'R' care cauzează eroarea TDZ
-          if (typeof window.R === "undefined") {
-            window.R = function defaultReactRefresh() {
-              return function () {};
-            };
-          }
-
-          // Pre-define alte variabile care pot cauza TDZ
-          const emotionVars = [
-            "e",
-            "t",
-            "n",
-            "r",
-            "o",
-            "i",
-            "a",
-            "u",
-            "c",
-            "s",
-            "l",
-            "f",
-            "d",
-            "p",
-            "h",
-            "v",
-            "g",
-            "m",
-            "y",
-            "b",
-            "w",
-            "x",
-          ];
-          emotionVars.forEach(function (varName) {
-            if (typeof window[varName] === "undefined") {
-              window[varName] = {};
+      // GLOBAL TDZ Prevention - execută înainte de orice modul
+      (function() {
+        'use strict';
+        
+        if (typeof window === "undefined") return;
+        
+        // Flag pentru debug
+        window.__EMOTION_TDZ_AGGRESSIVE_FIX__ = true;
+        
+        // Pre-definire agresivă a TUTUROR variabilelor care pot cauza TDZ
+        const globalVars = {
+          'R': function() { return function() {}; },
+          'e': {},
+          't': {},
+          'n': {},
+          'r': {},
+          'o': {},
+          'i': {},
+          'a': {},
+          'u': {},
+          'c': {},
+          's': {},
+          'l': {},
+          'f': {},
+          'd': {},
+          'p': {},
+          'h': {},
+          'v': {},
+          'g': {},
+          'm': {},
+          'y': {},
+          'b': {},
+          'w': {},
+          'x': {},
+          'k': {},
+          'j': {},
+          'q': {},
+          'z': {}
+        };
+        
+        // Aplicăm variabilele global
+        Object.keys(globalVars).forEach(function(key) {
+          if (typeof window[key] === "undefined") {
+            try {
+              Object.defineProperty(window, key, {
+                value: globalVars[key],
+                writable: true,
+                configurable: true,
+                enumerable: false
+              });
+            } catch(e) {
+              window[key] = globalVars[key];
             }
+          }
+        });
+        
+        // Emotion cache pre-initialization
+        window.__emotion_cache__ = window.__emotion_cache__ || new Map();
+        window.__emotion_styles__ = window.__emotion_styles__ || new Map();
+        window.__emotion_inserted__ = window.__emotion_inserted__ || new Set();
+        window.__emotion_sheet__ = window.__emotion_sheet__ || null;
+        window.__emotion_global__ = window.__emotion_global__ || {};
+        
+        // React Refresh compatibility
+        window.$RefreshReg$ = window.$RefreshReg$ || function() {};
+        window.$RefreshSig$ = window.$RefreshSig$ || function() { return function() {}; };
+        
+        console.info("[AGGRESSIVE TDZ Fix] Initialized all potential TDZ variables");
+      })();
+    </script>
+    <!-- Preload Emotion modules -->
+    <script>
+      // Preload și cache Emotion modules pentru a evita lazy loading TDZ
+      if (typeof window !== "undefined" && 'import' in window.HTMLScriptElement.prototype) {
+        try {
+          // Force preload Emotion
+          const emotionModules = [
+            './node_modules/@emotion/react/dist/emotion-react.browser.esm.js',
+            './node_modules/@emotion/styled/dist/emotion-styled.browser.esm.js',
+            './node_modules/@emotion/use-insertion-effect-with-fallbacks/dist/emotion-use-insertion-effect-with-fallbacks.browser.esm.js'
+          ];
+          
+          emotionModules.forEach(function(modulePath) {
+            const link = document.createElement('link');
+            link.rel = 'modulepreload';
+            link.href = modulePath;
+            document.head.appendChild(link);
           });
-
-          console.info("[HTML TDZ Fix] Pre-initialized Emotion variables");
+        } catch(e) {
+          console.warn("Emotion preload failed:", e);
         }
-      } catch (e) {
-        console.warn("Emotion TDZ fix initialization failed:", e);
       }
     </script>
   </head>

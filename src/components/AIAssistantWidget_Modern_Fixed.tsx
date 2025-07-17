@@ -31,7 +31,9 @@ const AIAssistantWidget: React.FC = () => {
   const [personalizedResponses, setPersonalizedResponses] = useState(
     QUICK_RESPONSES.slice(0, 6)
   );
-  const [contextualSuggestions, setContextualSuggestions] = useState<string[]>([]);
+  const [contextualSuggestions, setContextualSuggestions] = useState<string[]>(
+    []
+  );
   const [showInsights, setShowInsights] = useState(false);
   const [insights, setInsights] = useState<string[]>([]);
   const [showConversations, setShowConversations] = useState(false);
@@ -76,15 +78,21 @@ const AIAssistantWidget: React.FC = () => {
   useEffect(() => {
     if (open && !activeConversation?.id && user) {
       (async () => {
-        const newId = await createConversation(`Chat ${new Date().toLocaleTimeString()}`);
+        const newId = await createConversation(
+          `Chat ${new Date().toLocaleTimeString()}`
+        );
         if (newId) setActiveConversationId(newId);
       })();
     }
-  }, [open, activeConversation?.id, user, createConversation, setActiveConversationId]);
-
+  }, [
+    open,
+    activeConversation?.id,
+    user,
+    createConversation,
+    setActiveConversationId,
+  ]);
 
   // Refs
-
 
   // Auto-scroll to bottom
   const scrollToBottom = useCallback(() => {

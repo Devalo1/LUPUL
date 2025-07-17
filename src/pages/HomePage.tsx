@@ -234,42 +234,6 @@ const HomePage: React.FC = () => {
         </div>
       </section>
 
-      {/* Payment Security Section */}
-      <section className="py-16 bg-gray-50">
-        <div className="max-w-4xl mx-auto px-4 text-center">
-          <div className="bg-white p-8 rounded-2xl shadow-xl">
-            <div className="flex items-center justify-center mb-6">
-              <img
-                src="/images/NP.svg"
-                alt="NETOPIA Logo"
-                className="h-12 mr-4"
-              />
-              <h3 className="text-2xl font-bold text-gray-800">
-                Plăți Securizate NETOPIA
-              </h3>
-            </div>
-            <p className="text-gray-600 mb-6 leading-relaxed">
-              Toate tranzacțiile sunt procesate prin sistemul securizat NETOPIA
-              Payments, cu certificare PCI DSS și protecție bancară completă.
-            </p>
-            <div className="flex flex-wrap justify-center gap-4">
-              <button
-                onClick={() => navigate("/payment")}
-                className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white px-6 py-3 rounded-lg font-semibold hover:shadow-lg transition-all duration-300"
-              >
-                Testează Plățile
-              </button>
-              <button
-                onClick={() => navigate("/netopia-verification")}
-                className="bg-gradient-to-r from-orange-600 to-red-600 text-white px-6 py-3 rounded-lg font-semibold hover:shadow-lg transition-all duration-300"
-              >
-                Verificare Merchant
-              </button>
-            </div>
-          </div>
-        </div>
-      </section>
-
       {/* Footer */}
       <footer className="homepage-footer">
         <div className="footer-content">

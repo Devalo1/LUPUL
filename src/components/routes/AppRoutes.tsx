@@ -35,6 +35,7 @@ import CancellationPolicy from "../../pages/CancellationPolicy";
 import DataProtection from "../../pages/DataProtection";
 import Accessibility from "../../pages/Accessibility";
 import ANPCConsumerInfo from "../../pages/ANPCConsumerInfo";
+import PaymentSecurityPage from "../../pages/PaymentSecurityPage";
 import Ong from "../../pages/Ong";
 import Partners from "../../pages/Partners";
 
@@ -53,6 +54,9 @@ import Appointments from "../../pages/Appointments";
 
 // Pagini AI
 import AIMessenger from "../../pages/ai/AIMessenger";
+
+// Pagini medicale AI
+import MedicalRoutes from "../../routes/MedicalRoutes";
 
 // Pagini embleme
 import { EmblemMintingPage, EmblemDashboard } from "../../components/emblems";
@@ -88,6 +92,7 @@ const AppRoutes = () => {
         <Route path="/data-protection" element={<DataProtection />} />
         <Route path="/accessibility" element={<Accessibility />} />
         <Route path="/anpc-consumer-info" element={<ANPCConsumerInfo />} />
+        <Route path="/payment-security" element={<PaymentSecurityPage />} />
         <Route path="/ong" element={<Ong />} />
         <Route path="/partners" element={<Partners />} />
         {/* Rute protejate (necesită autentificare) */}
@@ -188,6 +193,17 @@ const AppRoutes = () => {
             </ProtectedRoute>
           }
         />
+
+        {/* Rute sistem medical AI (necesită autentificare) */}
+        <Route
+          path="/medical/*"
+          element={
+            <ProtectedRoute>
+              <MedicalRoutes />
+            </ProtectedRoute>
+          }
+        />
+
         {/* Rute embleme (necesită autentificare) */}
         <Route
           path="/emblems/mint"

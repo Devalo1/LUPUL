@@ -1,19 +1,25 @@
 import React, { useState, useRef, useEffect } from "react";
 import { useAuth } from "../../contexts/AuthContext";
-import { useConversations } from "../../hooks/useConversations";
 import { useAssistantProfile } from "../../contexts/useAssistantProfile";
-import { fetchAIResponseSafe } from "../../utils/aiApiUtils";
+import { useConversations } from "../../hooks/useConversations";
+import { getAIAssistantName } from "../../utils/aiNameUtils";
 import { getTherapyResponse } from "../../services/openaiService";
+import { fetchAIResponseSafe } from "../../utils/aiApiUtils";
 import { Timestamp } from "firebase/firestore";
 import "./AIMessenger.css";
 
+// Folosește funcția sigură pentru AI Response (adaptată pentru producție)
 const fetchAIResponse = fetchAIResponseSafe;
 
 const AIMessenger: React.FC = () => {
   const { user } = useAuth();
   const { profileState } = useAssistantProfile();
   const assistantProfile = profileState.current;
-  const assistantName = assistantProfile?.name || "Dum";
+  const assistantName = getAIAssistantName(
+    undefined,
+    user ? { name: user.displayName || undefined } : undefined,
+    user?.uid
+  );
   const {
     conversations,
     activeConversation,
@@ -26,7 +32,6 @@ const AIMessenger: React.FC = () => {
 
   const [input, setInput] = useState("");
   const [aiTyping, setAiTyping] = useState(false);
-  const [forceUpdate, setForceUpdate] = useState(0);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   // Auto-scroll to bottom when new messages arrive
@@ -42,18 +47,15 @@ const AIMessenger: React.FC = () => {
         block: "end",
       });
     }, 50);
-  }, [activeConversation?.messages, aiTyping, forceUpdate]);
-
+  }, [activeConversation?.messages, aiTyping]);
   const handleSendMessage = async () => {
     if (!input.trim() || !user?.uid) return;
 
     const userMessage = input.trim();
-    console.log("[AIMessenger] 🚀 ÎNCEPE TRIMITEREA:", userMessage);
-    console.log("[AIMessenger] 📝 Input înainte de clear:", input);
+    console.log("[AIMessenger] Sending message:", userMessage);
 
     // Clear input BEFORE processing to show immediate feedback
     setInput("");
-    console.log("[AIMessenger] ✅ Input cleared, ar trebui să fie gol acum");
 
     try {
       let convId = activeConversation?.id;
@@ -70,14 +72,16 @@ const AIMessenger: React.FC = () => {
         setActiveConversationId(convId);
         console.log("[AIMessenger] New conversation created:", convId);
 
-        // Wait a bit for conversation to be set as active
-        await new Promise((resolve) => setTimeout(resolve, 100));
+        // Wait for conversation to be properly set
+        let attempts = 0;
+        while (!activeConversation && attempts < 10) {
+          await new Promise((resolve) => setTimeout(resolve, 50));
+          attempts++;
+        }
+        console.log("[AIMessenger] Conversation ready after", attempts * 50, "ms");
       }
 
-      console.log(
-        "[AIMessenger] 📋 Adding user message to conversation:",
-        convId
-      );
+      console.log("[AIMessenger] Adding user message to conversation:", convId);
 
       // Create message object
       const userMsg = {
@@ -87,19 +91,13 @@ const AIMessenger: React.FC = () => {
         timestamp: Timestamp.now(),
       };
 
-      console.log("[AIMessenger] 📨 Mesaj utilizator creat:", userMsg);
-
       // Add user message with immediate UI update
       await addMessage(userMsg);
-      console.log("[AIMessenger] ✅ Mesaj utilizator adăugat în context");
 
-      // Force immediate re-render to show user message
-      setForceUpdate((prev) => prev + 1);
-      console.log("[AIMessenger] 🔄 ForceUpdate triggered");
+      // Force a tiny delay to ensure UI update is processed
+      await new Promise((resolve) => setTimeout(resolve, 10));
 
-      console.log(
-        "[AIMessenger] 🤖 User message added, getting AI response..."
-      );
+      console.log("[AIMessenger] User message added, getting AI response...");
 
       // Set typing indicator AFTER user message is visible
       setAiTyping(true);
@@ -174,7 +172,6 @@ const AIMessenger: React.FC = () => {
     } catch (error) {
       console.error("Eroare la trimiterea mesajului:", error);
       setAiTyping(false);
-      setInput(userMessage); // Restore input on error
     }
   };
 
@@ -206,15 +203,15 @@ const AIMessenger: React.FC = () => {
               }}
               title="Conversație nouă"
             >
-              ➕ Nou
+              + Nouă
             </button>
           </div>
 
           <div className="ai-messenger__conversations">
             {conversations.length === 0 ? (
-              <div className="ai-messenger__no-conversations">
-                <p>Nu există conversații încă.</p>
-                <p>Începe o conversație nouă! 🚀</p>
+              <div className="ai-messenger__empty">
+                <div className="ai-messenger__empty-icon">💭</div>
+                <small>Începe prima ta conversație!</small>
               </div>
             ) : (
               <div className="ai-messenger__conversations-list">
@@ -254,18 +251,16 @@ const AIMessenger: React.FC = () => {
                         </div>
                       </div>
                     </button>
-
                     <div className="ai-messenger__conversation-actions">
                       <button
                         className="ai-messenger__conversation-action"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          const newName = prompt(
-                            "Introdu un nume nou pentru conversație:",
-                            conv.subject
+                        onClick={() => {
+                          const newSubject = prompt(
+                            "Numele conversației:",
+                            conv.subject || ""
                           );
-                          if (newName) {
-                            renameConversation(conv.id, newName);
+                          if (newSubject) {
+                            renameConversation(conv.id, newSubject);
                           }
                         }}
                         title="Redenumește conversația"
@@ -274,8 +269,7 @@ const AIMessenger: React.FC = () => {
                       </button>
                       <button
                         className="ai-messenger__conversation-action"
-                        onClick={(e) => {
-                          e.stopPropagation();
+                        onClick={() => {
                           if (
                             confirm(
                               "Ești sigur că vrei să ștergi această conversație?"
@@ -315,75 +309,104 @@ const AIMessenger: React.FC = () => {
             </div>
           </div>
 
-          <div
-            className="ai-messenger__messages"
-            key={`messages-${forceUpdate}`}
-          >
+          <div className="ai-messenger__messages">
             {(() => {
-              console.log(
-                "[AIMessenger] Conversation state (forceUpdate=" +
-                  forceUpdate +
-                  "):",
-                {
-                  hasActiveConversation: !!activeConversation,
-                  conversationId: activeConversation?.id,
-                  messagesLength: activeConversation?.messages?.length || 0,
-                  messages:
-                    activeConversation?.messages?.map((m) => ({
-                      id: m.id,
-                      sender: m.sender,
-                      contentPreview: m.content?.substring(0, 30),
-                    })) || [],
-                }
-              );
+              console.log("[AIMessenger] Conversation state:", {
+                hasActiveConversation: !!activeConversation,
+                conversationId: activeConversation?.id,
+                messagesLength: activeConversation?.messages?.length,
+                messages: activeConversation?.messages?.map((m) => ({
+                  id: m.id,
+                  sender: m.sender,
+                  contentPreview: m.content?.substring(0, 30),
+                })),
+              });
               return null;
             })()}
 
-            {!activeConversation ||
-            activeConversation?.messages?.length === 0 ? (
-              <div className="ai-messenger__welcome">
-                <div className="ai-messenger__welcome-avatar">
-                  <img
-                    src="https://via.placeholder.com/80x80/667eea/ffffff?text=AI"
-                    alt={assistantName}
-                  />
-                </div>
-                <h3>Bună ziua! Sunt {assistantName}</h3>
-                <p>
-                  Sunt aici să te ajut cu orice întrebări sau sarcini ai. Cum te
-                  pot ajuta astăzi?
-                </p>
-              </div>
-            ) : (
-              activeConversation?.messages?.map((message, index) => {
-                console.log(
-                  `[AIMessenger] Rendering message ${index}:`,
-                  message.sender,
-                  message.content?.substring(0, 50)
-                );
+          <div className="ai-messenger__messages">
+            {(() => {
+              // Get messages from both activeConversation and conversations for immediate display
+              const activeConvId = activeConversation?.id;
+              const currentConv = activeConversation || 
+                (activeConvId ? conversations.find(c => c.id === activeConvId) : null);
+              const messages = currentConv?.messages || [];
+              
+              console.log("[AIMessenger] Conversation state:", {
+                hasActiveConversation: !!activeConversation,
+                conversationId: currentConv?.id,
+                messagesLength: messages.length,
+                messages: messages.map((m) => ({
+                  id: m.id,
+                  sender: m.sender,
+                  contentPreview: m.content?.substring(0, 30),
+                })),
+              });
+              return null;
+            })()}
+
+            {(() => {
+              // Use the most up-to-date conversation data
+              const activeConvId = activeConversation?.id;
+              const currentConv = activeConversation || 
+                (activeConvId ? conversations.find(c => c.id === activeConvId) : null);
+              const messages = currentConv?.messages || [];
+              
+              if (messages.length === 0) {
                 return (
-                  <div
-                    key={message.id}
-                    className={`ai-messenger__message ai-messenger__message--${message.sender} debug-message`}
-                  >
-                    <div className="ai-messenger__message-content">
-                      {message.content}
+                  <div className="ai-messenger__welcome">
+                    <div className="ai-messenger__welcome-avatar">
+                      <img
+                        src="https://via.placeholder.com/80x80/667eea/ffffff?text=AI"
+                        alt={assistantName}
+                      />
                     </div>
-                    <div className="ai-messenger__message-time">
-                      {message.timestamp &&
-                      message.timestamp instanceof Timestamp
-                        ? message.timestamp
-                            .toDate()
-                            .toLocaleTimeString("ro-RO", {
-                              hour: "2-digit",
-                              minute: "2-digit",
-                            })
-                        : ""}
-                    </div>
+                    <h3>Bună ziua! Sunt {assistantName}</h3>
+                    <p>
+                      Sunt aici să te ajut cu orice întrebări sau sarcini ai. Cum te
+                      pot ajuta astăzi?
+                    </p>
                   </div>
                 );
-              })
-            )}
+              }
+
+              return (
+                <>
+                  {(() => {
+                    console.log("[AIMessenger] Rendering messages:", messages.length);
+                    return null;
+                  })()}
+                  {messages.map((message, index) => {
+                    console.log(
+                      `[AIMessenger] Rendering message ${index}:`,
+                      message.sender,
+                      message.content?.substring(0, 50)
+                    );
+                    return (
+                      <div
+                        key={message.id}
+                        className={`ai-messenger__message ai-messenger__message--${message.sender} debug-message`}
+                      >
+                        <div className="ai-messenger__message-content">
+                          {message.content}
+                        </div>
+                        <div className="ai-messenger__message-time">
+                          {message.timestamp &&
+                          message.timestamp instanceof Timestamp
+                            ? message.timestamp
+                                .toDate()
+                                .toLocaleTimeString("ro-RO", {
+                                  hour: "2-digit",
+                                  minute: "2-digit",
+                                })
+                            : ""}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </>
+              );
+            })()}
             {aiTyping && (
               <div className="ai-messenger__message ai-messenger__message--assistant">
                 <div className="ai-messenger__typing">

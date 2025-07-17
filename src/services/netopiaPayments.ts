@@ -1,7 +1,25 @@
+/**
+ * Serviciu NETOPIA Payments - Integrator de soluții de plată
+ *
+ * Conform contractului NETOPIA FINANCIAL SERVICES S.A. semnat de HIFITBOX S.R.L.
+ * Toate tranzacțiile sunt procesate prin platforma securizată NETOPIA Payments
+ * cu certificare PCI DSS și protecție bancară completă.
+ *
+ * CUI Merchant: RO41039008
+ * Contract NETOPIA: În conformitate cu prevederile contractuale
+ *
+ * @author HIFITBOX SRL
+ * @license Proprietar - Conform contract NETOPIA
+ */
+
+/**
+ * Interfață pentru datele de plată NETOPIA
+ * Conform cerințelor contractuale pentru procesarea plăților la distanță
+ */
 interface NetopiaPaymentData {
   orderId: string;
-  amount: number;
-  currency: string;
+  amount: number; // Suma în bani (RON * 100)
+  currency: string; // RON conform contractului
   description: string;
   customerInfo: {
     firstName: string;
@@ -13,11 +31,15 @@ interface NetopiaPaymentData {
     county: string;
     postalCode: string;
   };
-  language?: string;
-  returnUrl?: string;
-  confirmUrl?: string;
+  language?: string; // ro pentru platformă românească
+  returnUrl?: string; // URL pentru redirecționare după plată
+  confirmUrl?: string; // URL pentru notificări IPN
 }
 
+/**
+ * Configurația pentru conexiunea NETOPIA
+ * Integrarea tehnică conform standardelor NETOPIA
+ */
 interface NetopiaConfig {
   posSignature: string;
   baseUrl: string;
@@ -25,6 +47,18 @@ interface NetopiaConfig {
   publicKey?: string;
 }
 
+/**
+ * Clasa NetopiaPayments - Integrator oficial NETOPIA
+ *
+ * Implementează serviciile conform contractului:
+ * - Servicii de consultanță și asistență tehnică
+ * - Servicii de încasare și administrare plăți
+ * - Servicii de decontare conform instrucțiunilor
+ * - Servicii antifraudă și monitorizare
+ *
+ * NETOPIA acționează ca integrator tehnic și agent încasator
+ * în numele HIFITBOX S.R.L. (PARTENER)
+ */
 class NetopiaPayments {
   private config: NetopiaConfig;
 
@@ -33,9 +67,16 @@ class NetopiaPayments {
   }
 
   /**
-   * Inițiază o plată NETOPIA
-   * @param paymentData Datele de plată
-   * @returns URL pentru redirecționarea la NETOPIA
+   * Inițiază o plată prin platforma NETOPIA Payments
+   *
+   * Procesul respectă standardele PCI DSS și implementează:
+   * - Verificări antifraudă conform contractului
+   * - Autorizare bancară 3D Secure
+   * - Monitorizare tranzacții în timp real
+   *
+   * @param paymentData Datele de plată validate
+   * @returns URL pentru redirecționarea securizată la NETOPIA
+   * @throws Error În cazul eșecului inițializării
    */
   async initiatePayment(paymentData: NetopiaPaymentData): Promise<string> {
     try {

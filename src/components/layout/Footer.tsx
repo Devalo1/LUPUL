@@ -317,8 +317,16 @@ const Footer: React.FC = () => {
                   rel="noopener noreferrer"
                   className="text-slate-300 hover:text-white transition-colors duration-300"
                 >
-                  💳 Securitate Plăți
+                  💳 Securitate Plăți NETOPIA
                 </a>
+              </li>
+              <li>
+                <Link
+                  to="/payment-security"
+                  className="text-slate-300 hover:text-white transition-colors duration-300"
+                >
+                  🔒 Informații Plăți și Securitate
+                </Link>
               </li>
               <li>
                 <Link
@@ -464,15 +472,19 @@ const Footer: React.FC = () => {
                 href="https://netopia-payments.com/"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="w-12 h-12 bg-slate-800 rounded-lg flex items-center justify-center mb-2 hover:bg-slate-700 transition-colors duration-300 group"
-                title="NETOPIA Payments - Plăți securizate"
+                className="w-16 h-12 bg-white rounded-lg flex items-center justify-center mb-2 hover:bg-gray-100 transition-colors duration-300 group p-1"
+                title="NETOPIA Payments - Plăți securizate prin platformă licențiată"
               >
-                {/* NETOPIA Logo oficial */}
-                <div className="w-10 h-6 group-hover:scale-110 transition-transform duration-300">
-                  <NTPLogo color="#3B82F6" version="vertical" secret="153287" />
+                {/* NETOPIA Logo oficial conform contractului */}
+                <div className="w-12 h-8 group-hover:scale-105 transition-transform duration-300">
+                  <NTPLogo
+                    color="#1E40AF"
+                    version="horizontal"
+                    secret="153287"
+                  />
                 </div>
               </a>
-              <span className="text-xs text-slate-400 text-center">
+              <span className="text-xs text-slate-400 text-center font-medium">
                 NETOPIA
               </span>
             </div>
@@ -555,7 +567,16 @@ const Footer: React.FC = () => {
                 Dezvoltat cu ❤️ pentru comunitatea românească
               </p>
               <p className="text-xs text-slate-500 mt-1">
-                Plăți securizate prin NETOPIA Payments
+                Plăți procesate prin{" "}
+                <a
+                  href="https://netopia-payments.com/"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-blue-400 hover:text-blue-300 transition-colors duration-300 font-medium"
+                >
+                  NETOPIA Payments
+                </a>{" "}
+                - Platformă licențiată și securizată
               </p>
             </div>
           </div>

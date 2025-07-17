@@ -26,7 +26,6 @@ const AIMessenger: React.FC = () => {
 
   const [input, setInput] = useState("");
   const [aiTyping, setAiTyping] = useState(false);
-  const [forceUpdate, setForceUpdate] = useState(0);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   // Auto-scroll to bottom when new messages arrive
@@ -42,18 +41,16 @@ const AIMessenger: React.FC = () => {
         block: "end",
       });
     }, 50);
-  }, [activeConversation?.messages, aiTyping, forceUpdate]);
+  }, [activeConversation?.messages, aiTyping]);
 
   const handleSendMessage = async () => {
     if (!input.trim() || !user?.uid) return;
 
     const userMessage = input.trim();
-    console.log("[AIMessenger] 🚀 ÎNCEPE TRIMITEREA:", userMessage);
-    console.log("[AIMessenger] 📝 Input înainte de clear:", input);
+    console.log("[AIMessenger] Sending message:", userMessage);
 
     // Clear input BEFORE processing to show immediate feedback
     setInput("");
-    console.log("[AIMessenger] ✅ Input cleared, ar trebui să fie gol acum");
 
     try {
       let convId = activeConversation?.id;
@@ -74,10 +71,7 @@ const AIMessenger: React.FC = () => {
         await new Promise((resolve) => setTimeout(resolve, 100));
       }
 
-      console.log(
-        "[AIMessenger] 📋 Adding user message to conversation:",
-        convId
-      );
+      console.log("[AIMessenger] Adding user message to conversation:", convId);
 
       // Create message object
       const userMsg = {
@@ -87,19 +81,10 @@ const AIMessenger: React.FC = () => {
         timestamp: Timestamp.now(),
       };
 
-      console.log("[AIMessenger] 📨 Mesaj utilizator creat:", userMsg);
-
       // Add user message with immediate UI update
       await addMessage(userMsg);
-      console.log("[AIMessenger] ✅ Mesaj utilizator adăugat în context");
 
-      // Force immediate re-render to show user message
-      setForceUpdate((prev) => prev + 1);
-      console.log("[AIMessenger] 🔄 ForceUpdate triggered");
-
-      console.log(
-        "[AIMessenger] 🤖 User message added, getting AI response..."
-      );
+      console.log("[AIMessenger] User message added, getting AI response...");
 
       // Set typing indicator AFTER user message is visible
       setAiTyping(true);
@@ -315,27 +300,19 @@ const AIMessenger: React.FC = () => {
             </div>
           </div>
 
-          <div
-            className="ai-messenger__messages"
-            key={`messages-${forceUpdate}`}
-          >
+          <div className="ai-messenger__messages">
             {(() => {
-              console.log(
-                "[AIMessenger] Conversation state (forceUpdate=" +
-                  forceUpdate +
-                  "):",
-                {
-                  hasActiveConversation: !!activeConversation,
-                  conversationId: activeConversation?.id,
-                  messagesLength: activeConversation?.messages?.length || 0,
-                  messages:
-                    activeConversation?.messages?.map((m) => ({
-                      id: m.id,
-                      sender: m.sender,
-                      contentPreview: m.content?.substring(0, 30),
-                    })) || [],
-                }
-              );
+              console.log("[AIMessenger] Conversation state:", {
+                hasActiveConversation: !!activeConversation,
+                conversationId: activeConversation?.id,
+                messagesLength: activeConversation?.messages?.length || 0,
+                messages:
+                  activeConversation?.messages?.map((m) => ({
+                    id: m.id,
+                    sender: m.sender,
+                    contentPreview: m.content?.substring(0, 30),
+                  })) || [],
+              });
               return null;
             })()}
 

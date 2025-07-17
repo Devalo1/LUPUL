@@ -101,7 +101,9 @@
     "serve": "vite preview",
     "emulators": "firebase emulators:start",
     "dev:all": "concurrently \"npm run dev\" \"npm run emulators\"",
-    "check-emulators": "node scripts/check-emulators.js"
+    "check-emulators": "node scripts/check-emulators.js",
+    "init-medical-system": "node scripts/init-medical-system.cjs",
+    "test-medical-ai": "node scripts/test-medical-system.js"
   },
   "eslintConfig": {
     "extends": [

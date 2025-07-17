@@ -9,16 +9,20 @@ const Services: React.FC = () => {
     email: "",
     phone: "",
     service: "",
-    message: ""
+    message: "",
   });
   const [gdprConsent, setGdprConsent] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitSuccess, setSubmitSuccess] = useState(false);
   const [submitError, setSubmitError] = useState("");
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+  const handleChange = (
+    e: React.ChangeEvent<
+      HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
+    >
+  ) => {
     const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
+    setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
   const handleConsent = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -27,7 +31,7 @@ const Services: React.FC = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     // Validare
     if (!formData.name || !formData.email || !formData.message) {
       setSubmitError("Te rugăm să completezi toate câmpurile obligatorii.");
@@ -35,7 +39,9 @@ const Services: React.FC = () => {
     }
 
     if (!gdprConsent) {
-      setSubmitError("Te rugăm să confirmi acordul cu politica de confidențialitate.");
+      setSubmitError(
+        "Te rugăm să confirmi acordul cu politica de confidențialitate."
+      );
       return;
     }
 
@@ -44,10 +50,11 @@ const Services: React.FC = () => {
 
     try {
       // Endpoint-ul Cloud Function
-      const cloudFunctionUrl = "https://us-central1-lupul-si-corbul.cloudfunctions.net/sendContactFormEmail";
-      
+      const cloudFunctionUrl =
+        "https://us-central1-lupul-si-corbul.cloudfunctions.net/sendContactFormEmail";
+
       const response = await axios.post(cloudFunctionUrl, formData);
-      
+
       if (response.data.success) {
         setSubmitSuccess(true);
         setFormData({
@@ -55,15 +62,19 @@ const Services: React.FC = () => {
           email: "",
           phone: "",
           service: "",
-          message: ""
+          message: "",
         });
         setGdprConsent(false);
       } else {
-        throw new Error(response.data.message || "A apărut o eroare la trimiterea mesajului.");
+        throw new Error(
+          response.data.message || "A apărut o eroare la trimiterea mesajului."
+        );
       }
     } catch (error) {
       console.error("Eroare la trimiterea formularului:", error);
-      setSubmitError("Nu am putut trimite mesajul tău. Te rugăm să încerci din nou sau să ne contactezi direct la lupulsicorbul@gmail.com.");
+      setSubmitError(
+        "Nu am putut trimite mesajul tău. Te rugăm să încerci din nou sau să ne contactezi direct la lupulsicorbul@gmail.com."
+      );
     } finally {
       setIsSubmitting(false);
     }
@@ -77,7 +88,7 @@ const Services: React.FC = () => {
       email: "",
       phone: "",
       service: "",
-      message: ""
+      message: "",
     });
     setGdprConsent(false);
   };
@@ -87,42 +98,50 @@ const Services: React.FC = () => {
       <div className="container mx-auto px-4">
         {/* Header */}
         <div className="max-w-3xl mx-auto text-center mb-16">
-          <h1 className="text-4xl font-bold text-gray-800 mb-4">Serviciile Lupul și Corbul</h1>
+          <h1 className="text-4xl font-bold text-gray-800 mb-4">
+            Serviciile Lupul și Corbul
+          </h1>
           <p className="text-xl text-gray-600">
-            Mai mult decât un simplu magazin, suntem o platformă socială care aduce valoare 
-            comunității din Valea Jiului prin diverse inițiative și servicii.
+            Mai mult decât un simplu magazin, suntem o platformă socială care
+            aduce valoare comunității din Valea Jiului prin diverse inițiative
+            și servicii.
           </p>
         </div>
-        
+
         {/* Secțiuni de servicii */}
         <div className="space-y-20">
           {/* Secțiunea 1: Gusturi din rulota */}
           <section className="bg-white rounded-xl shadow-lg overflow-hidden">
-            <div className="md:flex">
-              <div className="md:w-2/5 relative">
-                <div 
-                  className="h-72 md:h-full w-full bg-cover bg-center"
-                  style={{ backgroundImage: "url('/images/van.jpeg')" }}
-                >
-                </div>
+            <div className="flex flex-col md:flex-row">
+              <div className="w-full md:w-2/5 relative">
+                <img
+                  src="/images/van.jpeg"
+                  alt="Rulota Lupul și Corbul cu gogoși și cafea"
+                  className="w-full h-72 md:h-full object-cover block"
+                />
                 <div className="absolute inset-0 bg-gradient-to-r from-black/40 to-transparent md:hidden"></div>
               </div>
-              
-              <div className="md:w-3/5 p-8 md:p-12">
-                <h2 className="text-3xl font-bold text-amber-700 mb-4">Gusturi din rulota Lupul și Corbul</h2>
+
+              <div className="w-full md:w-3/5 p-8 md:p-12">
+                <h2 className="text-3xl font-bold text-amber-700 mb-4">
+                  Gusturi din rulota Lupul și Corbul
+                </h2>
                 <p className="text-gray-700 text-lg mb-6">
-                  Gogoși calde, cafea de specialitate, shake-uri cu ingrediente locale și gustări cu suflet. 
-                  Tot ce servim e făcut cu grijă și nume. Vino să guști povești pregătite cu ingrediente 
-                  locale, pasiune autentică și rețete care aduc aminte de gustul copilăriei.
+                  Gogoși calde, cafea de specialitate, shake-uri cu ingrediente
+                  locale și gustări cu suflet. Tot ce servim e făcut cu grijă și
+                  nume. Vino să guști povești pregătite cu ingrediente locale,
+                  pasiune autentică și rețete care aduc aminte de gustul
+                  copilăriei.
                 </p>
                 <p className="text-gray-700 text-lg mb-8">
-                  Te invităm să descoperi rulota noastră mobilă la evenimente locale sau să ne vizitezi 
-                  la locația noastră permanentă din centrul orașului.
+                  Te invităm să descoperi rulota noastră mobilă la evenimente
+                  locale sau să ne vizitezi la locația noastră permanentă din
+                  centrul orașului.
                 </p>
                 <div className="flex flex-wrap gap-4">
                   <Menu />
-                  <Link 
-                    to="/magazin?tab=menu" 
+                  <Link
+                    to="/magazin?tab=menu"
                     className="inline-block px-6 py-3 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition duration-300 shadow-md"
                   >
                     Comandă online
@@ -131,32 +150,36 @@ const Services: React.FC = () => {
               </div>
             </div>
           </section>
-          
+
           {/* Secțiunea 2: Evenimente locale & comunitare */}
           <section className="bg-white rounded-xl shadow-lg overflow-hidden">
-            <div className="md:flex md:flex-row-reverse">
-              <div className="md:w-2/5 relative">
-                <div 
-                  className="h-72 md:h-full w-full bg-cover bg-center"
-                  style={{ backgroundImage: "url('/images/Events.jpeg')" }}
-                >
-                </div>
+            <div className="flex flex-col md:flex-row-reverse">
+              <div className="w-full md:w-2/5 relative">
+                <img
+                  src="/images/Events.jpeg"
+                  alt="Evenimente locale și comunitare"
+                  className="w-full h-72 md:h-full object-cover block"
+                />
                 <div className="absolute inset-0 bg-gradient-to-l from-black/40 to-transparent md:hidden"></div>
               </div>
-              
-              <div className="md:w-3/5 p-8 md:p-12">
-                <h2 className="text-3xl font-bold text-blue-700 mb-4">Evenimente locale & comunitare</h2>
+
+              <div className="w-full md:w-3/5 p-8 md:p-12">
+                <h2 className="text-3xl font-bold text-blue-700 mb-4">
+                  Evenimente locale & comunitare
+                </h2>
                 <p className="text-gray-700 text-lg mb-6">
-                  Organizăm și susținem evenimente care pun în mișcare Valea Jiului: de la târguri cu 
-                  producători locali până la seri culturale și ateliere creative. Credem în puterea 
-                  comunității de a se reinventa și de a crea conexiuni autentice.
+                  Organizăm și susținem evenimente care pun în mișcare Valea
+                  Jiului: de la târguri cu producători locali până la seri
+                  culturale și ateliere creative. Credem în puterea comunității
+                  de a se reinventa și de a crea conexiuni autentice.
                 </p>
                 <p className="text-gray-700 text-lg mb-8">
-                  Fie că ești interesat să participi la un eveniment, să fii voluntar sau partener, 
-                  te invităm să descoperi calendarul nostru de activități și să te alături mișcării.
+                  Fie că ești interesat să participi la un eveniment, să fii
+                  voluntar sau partener, te invităm să descoperi calendarul
+                  nostru de activități și să te alături mișcării.
                 </p>
-                <Link 
-                  to="/events" 
+                <Link
+                  to="/events"
                   className="inline-block px-6 py-3 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition duration-300 shadow-md"
                 >
                   Vezi calendarul evenimentelor
@@ -164,32 +187,55 @@ const Services: React.FC = () => {
               </div>
             </div>
           </section>
-          
+
           {/* Secțiunea 3: Terapie și reconectare */}
           <section className="bg-white rounded-xl shadow-lg overflow-hidden">
-            <div className="md:flex">
-              <div className="md:w-2/5 relative">
-                <div 
-                  className="h-72 md:h-full w-full bg-cover bg-center"
-                  style={{ backgroundImage: "url('/images/Therapy.jpeg')" }}
-                >
-                </div>
+            <div className="flex flex-col md:flex-row">
+              <div className="w-full md:w-2/5 relative">
+                <img
+                  src="/images/Therapy.jpeg"
+                  alt="Terapie și reconectare"
+                  className="w-full h-72 md:h-full object-cover block"
+                />
                 <div className="absolute inset-0 bg-gradient-to-r from-black/40 to-transparent md:hidden"></div>
               </div>
-              <div className="md:w-3/5 p-8 md:p-12">
-                <h2 className="text-3xl font-bold text-green-700 mb-4">Terapie, reconectare și sprijin</h2>
+              <div className="w-full md:w-3/5 p-8 md:p-12">
+                <h2 className="text-3xl font-bold text-green-700 mb-4">
+                  Terapie, reconectare și sprijin
+                </h2>
                 <p className="text-gray-700 text-lg mb-4">
-                  Oferim un spațiu sigur pentru suflet și corp – ședințe de terapie holistică, reconectare cu natura, discuții deschise și grupuri de sprijin. Pentru cei care vor mai mult decât un simplu „e ok".
+                  Oferim un spațiu sigur pentru suflet și corp – ședințe de
+                  terapie holistică, reconectare cu natura, discuții deschise și
+                  grupuri de sprijin. Pentru cei care vor mai mult decât un
+                  simplu „e ok".
                 </p>
                 <p className="text-gray-700 text-lg mb-4">
-                  <span className="font-semibold text-green-700">Terapie personalizată cu AI și specialiști</span><br/>
-                  <span className="font-medium">Terapie psihică</span> – Sprijin pentru suflet, consiliere, gestionarea stresului, anxietății, depresiei și dezvoltare personală.<br/>
-                  <span className="font-medium">Terapie fizică pentru corp</span> – Recomandări pentru relaxare, exerciții, somn, respirație, mișcare și recuperare fizică, adaptate stilului tău de viață și nevoilor tale. AI-ul nostru analizează răspunsurile tale și îți oferă un diagnostic orientativ și un plan de tratament personalizat, iar dacă este nevoie, vei fi direcționat către un specialist uman.
+                  <span className="font-semibold text-green-700">
+                    Terapie personalizată cu AI și specialiști
+                  </span>
+                  <br />
+                  <span className="font-medium">Terapie psihică</span> – Sprijin
+                  pentru suflet, consiliere, gestionarea stresului, anxietății,
+                  depresiei și dezvoltare personală.
+                  <br />
+                  <span className="font-medium">
+                    Terapie fizică pentru corp
+                  </span>{" "}
+                  – Recomandări pentru relaxare, exerciții, somn, respirație,
+                  mișcare și recuperare fizică, adaptate stilului tău de viață
+                  și nevoilor tale. AI-ul nostru analizează răspunsurile tale și
+                  îți oferă un diagnostic orientativ și un plan de tratament
+                  personalizat, iar dacă este nevoie, vei fi direcționat către
+                  un specialist uman.
                 </p>
                 <p className="text-gray-700 text-lg mb-8">
-                  Prin abordarea noastră integrativă, te ajutăm să găsești echilibrul și să descoperi resursele interioare necesare pentru a face față provocărilor vieții moderne. Toate recomandările sunt confidențiale, rapide și pot fi ajustate împreună cu un expert.
+                  Prin abordarea noastră integrativă, te ajutăm să găsești
+                  echilibrul și să descoperi resursele interioare necesare
+                  pentru a face față provocărilor vieții moderne. Toate
+                  recomandările sunt confidențiale, rapide și pot fi ajustate
+                  împreună cu un expert.
                 </p>
-                <Link 
+                <Link
                   to="/terapie"
                   className="inline-block px-6 py-3 bg-green-600 text-white font-medium rounded-lg hover:bg-green-700 transition duration-300 shadow-md"
                 >
@@ -198,31 +244,35 @@ const Services: React.FC = () => {
               </div>
             </div>
           </section>
-          
+
           {/* Secțiunea 4: Platformă socială & ONG */}
           <section className="bg-white rounded-xl shadow-lg overflow-hidden">
-            <div className="md:flex md:flex-row-reverse">
-              <div className="md:w-2/5 relative">
-                <div 
-                  className="h-72 md:h-full w-full bg-cover bg-center"
-                  style={{ backgroundImage: "url('/images/AdobeStock_217770381.jpeg')" }}
-                >
-                </div>
+            <div className="flex flex-col md:flex-row-reverse">
+              <div className="w-full md:w-2/5 relative">
+                <img
+                  src="/images/AdobeStock_217770381.jpeg"
+                  alt="Platformă socială și ONG"
+                  className="w-full h-72 md:h-full object-cover block"
+                />
                 <div className="absolute inset-0 bg-gradient-to-l from-black/40 to-transparent md:hidden"></div>
               </div>
-              
-              <div className="md:w-3/5 p-8 md:p-12">
-                <h2 className="text-3xl font-bold text-purple-700 mb-4">Platformă socială & ONG</h2>
+
+              <div className="w-full md:w-3/5 p-8 md:p-12">
+                <h2 className="text-3xl font-bold text-purple-700 mb-4">
+                  Platformă socială & ONG
+                </h2>
                 <p className="text-gray-700 text-lg mb-6">
-                  Lucrăm cu oameni din zonă, susținem inițiative locale și punem umărul la cauze care chiar contează. 
-                  Dacă vrei să te implici sau să ceri ajutor – e locul tău.
+                  Lucrăm cu oameni din zonă, susținem inițiative locale și punem
+                  umărul la cauze care chiar contează. Dacă vrei să te implici
+                  sau să ceri ajutor – e locul tău.
                 </p>
                 <p className="text-gray-700 text-lg mb-8">
-                  Credem în puterea comunității de a aduce schimbare reală și suntem dedicați facilitării 
-                  acestui proces prin resurse, expertiză și conectarea oamenilor potriviți.
+                  Credem în puterea comunității de a aduce schimbare reală și
+                  suntem dedicați facilitării acestui proces prin resurse,
+                  expertiză și conectarea oamenilor potriviți.
                 </p>
-                <Link 
-                  to="/ong" 
+                <Link
+                  to="/ong"
                   className="inline-block px-6 py-3 bg-purple-600 text-white font-medium rounded-lg hover:bg-purple-700 transition duration-300 shadow-md"
                 >
                   Află cum te poți implica
@@ -231,25 +281,47 @@ const Services: React.FC = () => {
             </div>
           </section>
         </div>
-        
+
         {/* Formular de contact */}
-        <div id="contact-form" className="mt-20 bg-white p-8 md:p-12 rounded-xl shadow-lg">
-          <h2 className="text-3xl font-bold mb-6 text-gray-800">Contactează-ne pentru orice întrebare</h2>
+        <div
+          id="contact-form"
+          className="mt-20 bg-white p-8 md:p-12 rounded-xl shadow-lg"
+        >
+          <h2 className="text-3xl font-bold mb-6 text-gray-800">
+            Contactează-ne pentru orice întrebare
+          </h2>
           <p className="text-gray-700 text-lg mb-8">
-            Fie că dorești să afli mai multe despre serviciile noastre, să programezi o sesiune de terapie, 
-            sau să te implici în inițiativele comunitare, completează formularul și te vom contacta în curând.
+            Fie că dorești să afli mai multe despre serviciile noastre, să
+            programezi o sesiune de terapie, sau să te implici în inițiativele
+            comunitare, completează formularul și te vom contacta în curând.
           </p>
-          
+
           {submitSuccess ? (
             <div className="bg-green-50 border border-green-200 rounded-lg p-6 text-center">
               <div className="flex justify-center mb-4">
-                <svg className="w-16 h-16 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                <svg
+                  className="w-16 h-16 text-green-500"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth="2"
+                    d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+                  ></path>
                 </svg>
               </div>
-              <h3 className="text-2xl font-bold text-gray-800 mb-2">Mesajul tău a fost trimis!</h3>
-              <p className="text-gray-600 mb-6">Îți mulțumim pentru mesaj. Te vom contacta în cel mai scurt timp posibil.</p>
-              <button 
+              <h3 className="text-2xl font-bold text-gray-800 mb-2">
+                Mesajul tău a fost trimis!
+              </h3>
+              <p className="text-gray-600 mb-6">
+                Îți mulțumim pentru mesaj. Te vom contacta în cel mai scurt timp
+                posibil.
+              </p>
+              <button
                 onClick={resetForm}
                 className="px-6 py-3 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition duration-300"
               >
@@ -263,52 +335,72 @@ const Services: React.FC = () => {
                   <p>{submitError}</p>
                 </div>
               )}
-              
+
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
-                  <label htmlFor="name" className="block text-gray-700 font-medium mb-2">Nume complet*</label>
-                  <input 
-                    type="text" 
+                  <label
+                    htmlFor="name"
+                    className="block text-gray-700 font-medium mb-2"
+                  >
+                    Nume complet*
+                  </label>
+                  <input
+                    type="text"
                     id="name"
                     name="name"
                     value={formData.name}
                     onChange={handleChange}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500" 
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                     placeholder="Numele și prenumele tău"
                     required
                   />
                 </div>
                 <div>
-                  <label htmlFor="email" className="block text-gray-700 font-medium mb-2">Email*</label>
-                  <input 
-                    type="email" 
+                  <label
+                    htmlFor="email"
+                    className="block text-gray-700 font-medium mb-2"
+                  >
+                    Email*
+                  </label>
+                  <input
+                    type="email"
                     id="email"
                     name="email"
                     value={formData.email}
                     onChange={handleChange}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500" 
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                     placeholder="adresa@email.com"
                     required
                   />
                 </div>
               </div>
-              
+
               <div>
-                <label htmlFor="phone" className="block text-gray-700 font-medium mb-2">Număr de telefon</label>
-                <input 
-                  type="tel" 
+                <label
+                  htmlFor="phone"
+                  className="block text-gray-700 font-medium mb-2"
+                >
+                  Număr de telefon
+                </label>
+                <input
+                  type="tel"
                   id="phone"
                   name="phone"
                   value={formData.phone}
                   onChange={handleChange}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500" 
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                   placeholder="07xx xxx xxx"
                 />
               </div>
-              
+
               <div>
-                <label htmlFor="service" className="block text-gray-700 font-medium mb-2">Serviciul care te interesează</label>
-                <select 
+                <label
+                  htmlFor="service"
+                  className="block text-gray-700 font-medium mb-2"
+                >
+                  Serviciul care te interesează
+                </label>
+                <select
                   id="service"
                   name="service"
                   value={formData.service}
@@ -323,36 +415,47 @@ const Services: React.FC = () => {
                   <option value="altele">Altele</option>
                 </select>
               </div>
-              
+
               <div>
-                <label htmlFor="message" className="block text-gray-700 font-medium mb-2">Mesajul tău*</label>
-                <textarea 
+                <label
+                  htmlFor="message"
+                  className="block text-gray-700 font-medium mb-2"
+                >
+                  Mesajul tău*
+                </label>
+                <textarea
                   id="message"
                   name="message"
                   value={formData.message}
                   onChange={handleChange}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500" 
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                   rows={5}
                   placeholder="Descrie-ne cum te putem ajuta sau ce întrebări ai..."
                   required
                 ></textarea>
               </div>
-              
+
               <div className="flex items-center">
-                <input 
-                  type="checkbox" 
-                  id="gdpr" 
+                <input
+                  type="checkbox"
+                  id="gdpr"
                   checked={gdprConsent}
                   onChange={handleConsent}
-                  className="mr-2 h-5 w-5" 
+                  className="mr-2 h-5 w-5"
                   required
                 />
                 <label htmlFor="gdpr" className="text-gray-700">
-                  Sunt de acord cu prelucrarea datelor mele personale conform <Link to="/privacy-policy" className="text-blue-600 hover:underline">Politicii de confidențialitate</Link>
+                  Sunt de acord cu prelucrarea datelor mele personale conform{" "}
+                  <Link
+                    to="/privacy-policy"
+                    className="text-blue-600 hover:underline"
+                  >
+                    Politicii de confidențialitate
+                  </Link>
                 </label>
               </div>
-              
-              <button 
+
+              <button
                 type="submit"
                 disabled={isSubmitting}
                 className={`px-8 py-4 bg-blue-600 text-white font-semibold rounded-lg transition shadow-md 

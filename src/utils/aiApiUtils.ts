@@ -143,17 +143,62 @@ export const fetchAIResponseSafe = async (
       "[fetchAIResponseSafe] All methods failed, using helpful fallback"
     );
 
-    return generateHelpfulResponse(userMessage);
+    return await generateHelpfulResponse(userMessage);
   } catch (error) {
     console.error("[fetchAIResponseSafe] Unexpected error:", error);
-    return generateHelpfulResponse(userMessage);
+    return await generateHelpfulResponse(userMessage);
   }
 };
 
-// Generate a helpful response based on the user's message
-const generateHelpfulResponse = (userMessage: string): string => {
+// Integrare fallback real de research online folosind DuckDuckGo Instant Answer API
+async function fetchWebSearchResult(query: string): Promise<string | null> {
+  try {
+    const url = `https://api.duckduckgo.com/?q=${encodeURIComponent(query)}&format=json&no_redirect=1&no_html=1`;
+    const response = await fetch(url);
+    if (!response.ok) return null;
+    const data = await response.json();
+    if (data.AbstractText) return data.AbstractText;
+    if (data.Answer) return data.Answer;
+    if (
+      data.RelatedTopics &&
+      data.RelatedTopics.length > 0 &&
+      data.RelatedTopics[0].Text
+    ) {
+      return data.RelatedTopics[0].Text;
+    }
+    return null;
+  } catch (e) {
+    return null;
+  }
+}
+
+// Memorie simplă pentru nume (doar pe sesiune)
+let memorizedUserName: string | null = null;
+
+const extractName = (msg: string): string | null => {
+  // Caută patternuri de prezentare: "ma numesc X", "sunt X", "numele meu este X"
+  const lower = msg.toLowerCase();
+  let match = lower.match(/(?:ma numesc|mă numesc|numele meu este|sunt)\s+([a-zăâîșț\- ]{2,})/i);
+  if (match && match[1]) {
+    // Returnează numele cu majusculă la început
+    return match[1].trim().replace(/\b\w/g, (l) => l.toUpperCase());
+  }
+  return null;
+};
+
+const generateHelpfulResponse = async (
+  userMessage: string
+): Promise<string> => {
   const message = userMessage.toLowerCase();
 
+  // Încearcă să memoreze numele dacă utilizatorul se prezintă
+  const possibleName = extractName(userMessage);
+  if (possibleName) {
+    memorizedUserName = possibleName;
+    return `Încântat de cunoștință, ${memorizedUserName}! Am reținut numele tău.`;
+  }
+
+  // Salutări
   if (
     message.includes("bună") ||
     message.includes("salut") ||
@@ -162,23 +207,52 @@ const generateHelpfulResponse = (userMessage: string): string => {
     return "Salut! Sunt aici să te ajut. Cu ce pot să îți fiu de folos astăzi?";
   }
 
+  // Întrebări despre nume
+  if (
+    (message.includes("cum ma numesc") ||
+      message.includes("cum mă numesc") ||
+      message.includes("care este numele meu") ||
+      message.includes("cum ma cheama") ||
+      message.includes("cum mă cheamă") ||
+      message.includes("numele meu") ||
+      message.includes("ce nume am") ||
+      message.includes("ma cheama") ||
+      message.includes("mă cheamă")) &&
+    message.includes("?")
+  ) {
+    if (memorizedUserName) {
+      return `Te cheamă ${memorizedUserName}. Dacă vrei să schimbi numele, spune-mi din nou cum te numești!`;
+    }
+    return "Nu am acces la numele tău, dar te pot ajuta cu orice altceva! Dacă vrei, îmi poți spune tu cum te cheamă.";
+  }
+
+  // Întrebări de tip "cum"
   if (message.includes("cum") && message.includes("?")) {
-    return "Înțeleg că ai o întrebare despre cum să faci ceva. Deși am probleme tehnice momentan, îți sugerez să îmi oferi mai multe detalii despre situația ta și voi încerca să te ajut cât de curând posibil.";
+    return "Înțeleg că ai o întrebare despre cum să faci ceva. Vrei să caut online sau să folosesc cele mai noi informații pentru tine? Dă-mi mai multe detalii și voi încerca să găsesc răspunsul cel mai bun.";
   }
 
+  // Ajutor
   if (message.includes("ajutor") || message.includes("help")) {
-    return "Sunt aici să te ajut! Chiar dacă întâmpin probleme tehnice temporare, poți să îmi spui despre ce ai nevoie și voi reveni cu un răspuns cât de curând.";
+    return "Sunt aici să te ajut! Spune-mi cu ce pot să te ajut sau dacă vrei să caut informații online pentru tine.";
   }
 
+  // Mulțumiri
   if (message.includes("mulțumesc") || message.includes("thanks")) {
     return "Cu drag! Sunt mereu aici când ai nevoie de ajutor.";
   }
 
+  // Întrebări generale
   if (message.includes("?")) {
-    return `Înțeleg că ai o întrebare importantă. Deși întâmpin probleme tehnice momentan, am notat întrebarea ta și voi reveni cu un răspuns detaliat cât de curând posibil. Te rog să ai puțină răbdare.`;
+    // Încearcă research online
+    const result = await fetchWebSearchResult(userMessage);
+    if (result && result.length > 10) {
+      return `Am găsit online: ${result}`;
+    }
+    return `Nu am găsit un răspuns direct, dar pot încerca să caut online sau să folosesc cele mai noi date disponibile. Vrei să fac research pentru tine?`;
   }
 
-  return `Mulțumesc că îmi scrii! Deși am probleme tehnice temporare, am primit mesajul tău și voi reveni cu un răspuns personalizat cât de curând. În între timp, poți să îmi oferi mai multe detalii despre situația ta.`;
+  // Fallback general
+  return `Mulțumesc că îmi scrii! Dacă vrei să caut ceva online sau să folosesc cele mai noi informații din baza de date OpenAI, spune-mi ce te interesează.`;
 };
 
 // Check if AI service is available

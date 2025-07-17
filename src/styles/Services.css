@@ -1,0 +1,62 @@
+/* Services.tsx custom styles for mobile image optimization */
+
+.service-image-force {
+  display: block !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+  border: none !important;
+  outline: none !important;
+  max-width: 100% !important;
+  width: 100% !important;
+  height: 18rem !important;
+  object-fit: cover !important;
+}
+
+@media (min-width: 768px) {
+  .service-image-force {
+    height: 100% !important;
+    min-height: 24rem !important;
+  }
+}
+
+@media (min-width: 1024px) {
+  .service-image-force {
+    min-height: 30rem !important;
+  }
+}
+
+.service-image-amber {
+  background-image: url("/images/van.jpeg") !important;
+  background-color: #fef3c7 !important;
+}
+
+.service-image-blue {
+  background-image: url("/images/Events.jpeg") !important;
+  background-color: #dbeafe !important;
+}
+
+.service-image-green {
+  background-image: url("/images/Therapy.jpeg") !important;
+  background-color: #dcfce7 !important;
+}
+
+.service-image-purple {
+  background-image: url("/images/AdobeStock_217770381.jpeg") !important;
+  background-color: #faf5ff !important;
+}
+
+.service-image-fallback-amber {
+  background-color: #fef3c7 !important;
+}
+
+.service-image-fallback-blue {
+  background-color: #dbeafe !important;
+}
+
+.service-image-fallback-green {
+  background-color: #dcfce7 !important;
+}
+
+.service-image-fallback-purple {
+  background-color: #faf5ff !important;
+}

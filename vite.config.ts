@@ -4,6 +4,8 @@ import path from "path";
 import { visualizer } from "rollup-plugin-visualizer";
 import compression from "vite-plugin-compression";
 import type { ProxyOptions } from "vite";
+import { emotionTdzFixPlugin } from "./plugins/emotion-tdz-fix-plugin";
+import { emotionImportFixPlugin } from "./plugins/emotion-import-fix-simple";
 /// <reference types="vitest" />
 
 export default defineConfig(({ mode }) => {
@@ -66,6 +68,9 @@ export default defineConfig(({ mode }) => {
           ],
         },
       }),
+      // Plugin-uri custom pentru fix-ul TDZ al Emotion
+      emotionTdzFixPlugin(),
+      emotionImportFixPlugin(),
       {
         name: "edge-hmr-fix",
         configureServer(server) {
@@ -139,6 +144,8 @@ export default defineConfig(({ mode }) => {
     resolve: {
       alias: {
         "@": path.resolve(__dirname, "./src"),
+        // Fix pentru hoist-non-react-statics export issue
+        "hoist-non-react-statics": "hoist-non-react-statics/dist/hoist-non-react-statics.cjs.js",
       },
     },
     esbuild: {
@@ -250,9 +257,21 @@ export default defineConfig(({ mode }) => {
               if (id.includes("firebase/")) {
                 return "vendor-firebase-core";
               }
-              // Separăm Emotion în propriul chunk pentru a evita TDZ errors
+              // CRITICAL: Separăm fiecare modul Emotion în propriul sub-chunk pentru control total
+              if (id.includes("@emotion/use-insertion-effect-with-fallbacks")) {
+                return "emotion-insertion-effect";
+              }
+              if (id.includes("@emotion/styled")) {
+                return "emotion-styled";
+              }
+              if (id.includes("@emotion/react")) {
+                return "emotion-react";
+              }
+              if (id.includes("@emotion/cache")) {
+                return "emotion-cache";
+              }
               if (id.includes("@emotion/")) {
-                return "vendor-emotion";
+                return "emotion-utils";
               }
               if (id.includes("@mui/")) {
                 return "vendor-ui-libs";
@@ -286,8 +305,16 @@ export default defineConfig(({ mode }) => {
                             if (!g.e) g.e = {};
                             if (!g.t) g.t = {};
                             if (!g.n) g.n = {};
-                            if (!g.r) g.r = {};
-                            if (!g.o) g.o = {};
+                            if (!g.r) g.r = {
+                              useLayoutEffect: function(effect, deps) { return function() {}; },
+                              useEffect: function(effect, deps) { return function() {}; },
+                              useState: function(initial) { return [initial, function() {}]; }
+                            };
+                            if (!g.o) g.o = {
+                              useLayoutEffect: function(effect, deps) { return function() {}; },
+                              useEffect: function(effect, deps) { return function() {}; },
+                              useState: function(initial) { return [initial, function() {}]; }
+                            };
                             if (!g.i) g.i = {};
                             if (!g.a) g.a = {};
                             if (!g.u) g.u = {};
@@ -327,6 +354,19 @@ export default defineConfig(({ mode }) => {
         esmExternals: true,
         transformMixedEsModules: true,
         strictRequires: false,
+        // Fix pentru hoist-non-react-statics export compatibility
+        defaultIsModuleExports: (id) => {
+          if (id.includes("hoist-non-react-statics")) {
+            return true;
+          }
+          return false;
+        },
+        requireReturnsDefault: (id) => {
+          if (id.includes("hoist-non-react-statics")) {
+            return "auto";
+          }
+          return false;
+        },
       },
       chunkSizeWarningLimit: 1000,
       assetsInlineLimit: 4096,
@@ -342,6 +382,18 @@ export default defineConfig(({ mode }) => {
         "safe-buffer",
         "@firebase/logger",
         "@firebase/webchannel-wrapper",
+        // Exclude toate modulele Emotion pentru a evita TDZ errors
+        "@emotion/react",
+        "@emotion/styled",
+        "@emotion/cache",
+        "@emotion/utils", 
+        "@emotion/use-insertion-effect-with-fallbacks",
+        "@emotion/serialize",
+        "@emotion/hash",
+        "@emotion/weak-memoize",
+        "@emotion/sheet",
+        "@emotion/unitless",
+        "@emotion/memoize"
       ],
       include: [
         "react",
@@ -359,6 +411,7 @@ export default defineConfig(({ mode }) => {
         "@mui/material/Button",
         "@mui/material/TextField",
         "@mui/material/Typography",
+        "hoist-non-react-statics",
         "@mui/material/Box",
         "@mui/material/Container",
         "@mui/material/Grid",
@@ -396,11 +449,7 @@ export default defineConfig(({ mode }) => {
         "react-redux",
         "framer-motion",
         "react-toastify",
-        "@emotion/react",
-        "@emotion/styled",
-        "@emotion/cache",
-        "@emotion/utils",
-        "@emotion/use-insertion-effect-with-fallbacks",
+        // Eliminăm Emotion din include pentru a-l lăsa să se încarce natural
       ],
       esbuildOptions: {
         target: "es2020",

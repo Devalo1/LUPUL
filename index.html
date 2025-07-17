@@ -2,6 +2,111 @@
 <html lang="ro">
   <head>
     <meta charset="UTF-8" />
+    <!-- ULTIMATE TDZ FIX - PRIMUL SCRIPT DIN DOCUMENT -->
+    <script>
+      // AGGRESSIVE TDZ FIX - execută SINCRON și PRIMUL
+      (function() {
+        'use strict';
+        
+        // Definim variabilele pe window IMEDIAT și le protejăm
+        const protectedVars = {
+          R: function() { return function() {}; },
+          e: {},
+          t: {},
+          n: {},
+          r: {},
+          o: {},
+          i: {},
+          a: {},
+          u: {},
+          c: {},
+          s: {},
+          l: {},
+          f: {},
+          d: {},
+          p: {},
+          h: {},
+          v: {},
+          g: {},
+          m: {},
+          y: {},
+          b: {},
+          w: {},
+          x: {},
+          k: {},
+          j: {},
+          q: {},
+          z: {}
+        };
+        
+        // Aplicăm variabilele cu setare simplă (evităm defineProperty)
+        Object.keys(protectedVars).forEach(function(key) {
+          if (!(key in window)) {
+            // Setare directă - cea mai sigură metodă
+            window[key] = protectedVars[key];
+          }
+        });
+        
+        // Emotion și React specifics
+        window.__emotion_cache__ = new Map();
+        window.__emotion_styles__ = new Map();
+        window.__emotion_inserted__ = new Set();
+        window.__emotion_sheet__ = null;
+        window.__emotion_global__ = {};
+        window.$RefreshReg$ = function() {};
+        window.$RefreshSig$ = function() { return function() {}; };
+        
+        // Pre-definim React hooks pentru compatibility
+        if (!window.React) {
+          window.React = {
+            useInsertionEffect: undefined,
+            useLayoutEffect: function useLayoutEffect(effect, deps) { 
+              // Fallback pentru useLayoutEffect
+              return function() {};
+            },
+            useEffect: function useEffect(effect, deps) { 
+              return function() {};
+            },
+            useState: function useState(initial) { 
+              return [initial, function() {}]; 
+            },
+            useCallback: function useCallback(fn, deps) { 
+              return fn; 
+            },
+            useMemo: function useMemo(fn, deps) { 
+              try {
+                return fn();
+              } catch(e) {
+                return null;
+              }
+            },
+            createElement: function createElement() {
+              return null;
+            },
+            createContext: function createContext() {
+              return {};
+            }
+          };
+        }
+        
+        // Asigurăm că variabila 'r' (care va fi React în vendor-react) este disponibilă global
+        if (!window.r) {
+          window.r = {
+            useLayoutEffect: function useLayoutEffect(effect, deps) { 
+              return function() {};
+            },
+            useEffect: function useEffect(effect, deps) { 
+              return function() {};
+            },
+            useState: function useState(initial) { 
+              return [initial, function() {}]; 
+            }
+          };
+        }
+        
+        console.info('[TDZ Fix] Variables initialized and ready for Emotion override');
+      })();
+    </script>
     <link rel="icon" type="image/png" href="/images/LC.png" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta
@@ -21,101 +126,6 @@
       content="same-origin-allow-popups"
     />
     <title>Lupul și Corbul - Empatie, Conexiune, Echilibru</title>
-    <!-- Fix agresiv pentru TDZ errors cu Emotion -->
-    <script>
-      // GLOBAL TDZ Prevention - execută înainte de orice modul
-      (function() {
-        'use strict';
-        
-        if (typeof window === "undefined") return;
-        
-        // Flag pentru debug
-        window.__EMOTION_TDZ_AGGRESSIVE_FIX__ = true;
-        
-        // Pre-definire agresivă a TUTUROR variabilelor care pot cauza TDZ
-        const globalVars = {
-          'R': function() { return function() {}; },
-          'e': {},
-          't': {},
-          'n': {},
-          'r': {},
-          'o': {},
-          'i': {},
-          'a': {},
-          'u': {},
-          'c': {},
-          's': {},
-          'l': {},
-          'f': {},
-          'd': {},
-          'p': {},
-          'h': {},
-          'v': {},
-          'g': {},
-          'm': {},
-          'y': {},
-          'b': {},
-          'w': {},
-          'x': {},
-          'k': {},
-          'j': {},
-          'q': {},
-          'z': {}
-        };
-        
-        // Aplicăm variabilele global
-        Object.keys(globalVars).forEach(function(key) {
-          if (typeof window[key] === "undefined") {
-            try {
-              Object.defineProperty(window, key, {
-                value: globalVars[key],
-                writable: true,
-                configurable: true,
-                enumerable: false
-              });
-            } catch(e) {
-              window[key] = globalVars[key];
-            }
-          }
-        });
-        
-        // Emotion cache pre-initialization
-        window.__emotion_cache__ = window.__emotion_cache__ || new Map();
-        window.__emotion_styles__ = window.__emotion_styles__ || new Map();
-        window.__emotion_inserted__ = window.__emotion_inserted__ || new Set();
-        window.__emotion_sheet__ = window.__emotion_sheet__ || null;
-        window.__emotion_global__ = window.__emotion_global__ || {};
-        
-        // React Refresh compatibility
-        window.$RefreshReg$ = window.$RefreshReg$ || function() {};
-        window.$RefreshSig$ = window.$RefreshSig$ || function() { return function() {}; };
-        
-        console.info("[AGGRESSIVE TDZ Fix] Initialized all potential TDZ variables");
-      })();
-    </script>
-    <!-- Preload Emotion modules -->
-    <script>
-      // Preload și cache Emotion modules pentru a evita lazy loading TDZ
-      if (typeof window !== "undefined" && 'import' in window.HTMLScriptElement.prototype) {
-        try {
-          // Force preload Emotion
-          const emotionModules = [
-            './node_modules/@emotion/react/dist/emotion-react.browser.esm.js',
-            './node_modules/@emotion/styled/dist/emotion-styled.browser.esm.js',
-            './node_modules/@emotion/use-insertion-effect-with-fallbacks/dist/emotion-use-insertion-effect-with-fallbacks.browser.esm.js'
-          ];
-          
-          emotionModules.forEach(function(modulePath) {
-            const link = document.createElement('link');
-            link.rel = 'modulepreload';
-            link.href = modulePath;
-            document.head.appendChild(link);
-          });
-        } catch(e) {
-          console.warn("Emotion preload failed:", e);
-        }
-      }
-    </script>
   </head>
   <body>
     <div id="root"></div>

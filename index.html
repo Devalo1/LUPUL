@@ -26,11 +26,51 @@
       // Preventive script pentru Emotion TDZ errors
       window.__EMOTION_TDZ_FIX__ = true;
 
-      // Pre-load critical variables
+      // Pre-load critical variables pentru a preveni TDZ errors
       try {
         if (typeof window !== "undefined") {
           window.__emotion_cache__ = {};
           window.__emotion_initialized__ = false;
+
+          // Pre-define variabila 'R' care cauzează eroarea TDZ
+          if (typeof window.R === "undefined") {
+            window.R = function defaultReactRefresh() {
+              return function () {};
+            };
+          }
+
+          // Pre-define alte variabile care pot cauza TDZ
+          const emotionVars = [
+            "e",
+            "t",
+            "n",
+            "r",
+            "o",
+            "i",
+            "a",
+            "u",
+            "c",
+            "s",
+            "l",
+            "f",
+            "d",
+            "p",
+            "h",
+            "v",
+            "g",
+            "m",
+            "y",
+            "b",
+            "w",
+            "x",
+          ];
+          emotionVars.forEach(function (varName) {
+            if (typeof window[varName] === "undefined") {
+              window[varName] = {};
+            }
+          });
+
+          console.info("[HTML TDZ Fix] Pre-initialized Emotion variables");
         }
       } catch (e) {
         console.warn("Emotion TDZ fix initialization failed:", e);

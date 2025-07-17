@@ -1,5 +1,5 @@
 import { defineConfig, loadEnv } from "vite";
-import react from "@vitejs/plugin-react-swc";
+import react from "@vitejs/plugin-react";
 import path from "path";
 import { visualizer } from "rollup-plugin-visualizer";
 import compression from "vite-plugin-compression";
@@ -50,8 +50,21 @@ export default defineConfig(({ mode }) => {
   return {
     plugins: [
       react({
-        // Configurație minimală pentru a evita $RefreshSig$ error
+        // Configurație pentru a evita $RefreshSig$ error și TDZ errors cu Emotion
         jsxImportSource: "react",
+        babel: {
+          plugins: [
+            [
+              "@emotion/babel-plugin",
+              {
+                sourceMap: !isProd,
+                autoLabel: "dev-only",
+                labelFormat: "[local]",
+                cssPropOptimization: false,
+              },
+            ],
+          ],
+        },
       }),
       {
         name: "edge-hmr-fix",
@@ -356,6 +369,11 @@ export default defineConfig(({ mode }) => {
         "react-redux",
         "framer-motion",
         "react-toastify",
+        "@emotion/react",
+        "@emotion/styled",
+        "@emotion/cache",
+        "@emotion/utils",
+        "@emotion/use-insertion-effect-with-fallbacks",
       ],
       esbuildOptions: {
         target: "es2020",

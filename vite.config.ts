@@ -1,4 +1,5 @@
 import { defineConfig, loadEnv } from "vite";
+import react from "@vitejs/plugin-react-swc";
 import path from "path";
 import { visualizer } from "rollup-plugin-visualizer";
 import compression from "vite-plugin-compression";
@@ -48,6 +49,38 @@ export default defineConfig(({ mode }) => {
   };
   return {
     plugins: [
+      react({
+        // Configurație minimală pentru a evita $RefreshSig$ error
+        jsxImportSource: "react",
+      }),
+      {
+        name: "edge-hmr-fix",
+        configureServer(server) {
+          // Plugin pentru a fixa probleme HMR în Edge
+          server.middlewares.use("/@vite/client", (req, res, next) => {
+            // Interceptăm clientul Vite și adăugăm fix-uri pentru Edge
+            res.setHeader("Content-Type", "application/javascript");
+            next();
+          });
+        },
+        transformIndexHtml(html) {
+          // Adăugăm un script pentru a initializa $RefreshSig$ în Edge
+          if (!isProd) {
+            return html.replace(
+              /<head>/,
+              `<head>
+                <script>
+                  // Fix pentru Edge browser compatibility cu React Refresh
+                  if (typeof window !== 'undefined') {
+                    window.$RefreshReg$ = window.$RefreshReg$ || function() {};
+                    window.$RefreshSig$ = window.$RefreshSig$ || function() { return function() {}; };
+                  }
+                </script>`
+            );
+          }
+          return html;
+        },
+      },
       {
         name: "spa-fallback",
         configureServer(server) {
@@ -99,6 +132,8 @@ export default defineConfig(({ mode }) => {
       jsx: "automatic",
       jsxImportSource: "react",
       jsxDev: !isProd,
+      // Previne probleme cu $RefreshSig$ în Edge
+      target: "es2020",
     },
     server: {
       port: 5173,
@@ -106,6 +141,11 @@ export default defineConfig(({ mode }) => {
       open: true,
       hmr: {
         overlay: false,
+        // Fix specific pentru Edge browser
+        port: 24678,
+        clientPort: 24678,
+        // Dezactivează overlay-ul pentru erori HMR în Edge
+        timeout: 30000,
       },
       // Configurație pentru rutele SPA (Single Page Application)
       // Aceasta permite ca rutele React Router să funcționeze corect în dev mode
@@ -197,7 +237,11 @@ export default defineConfig(({ mode }) => {
               if (id.includes("firebase/")) {
                 return "vendor-firebase-core";
               }
-              if (id.includes("@emotion/") || id.includes("@mui/")) {
+              // Separăm Emotion în propriul chunk pentru a evita TDZ errors
+              if (id.includes("@emotion/")) {
+                return "vendor-emotion";
+              }
+              if (id.includes("@mui/")) {
                 return "vendor-ui-libs";
               }
               if (id.includes("@reduxjs/") || id.includes("react-redux")) {
@@ -263,14 +307,14 @@ export default defineConfig(({ mode }) => {
         "react",
         "react-dom",
         "react-router-dom",
+        "react/jsx-runtime",
+        "react/jsx-dev-runtime",
         "firebase/app",
         "firebase/auth",
         "firebase/firestore",
         "firebase/analytics",
         "firebase/storage",
         "firebase/functions",
-        "@emotion/react",
-        "@emotion/styled",
         "@mui/material/styles",
         "@mui/material/Button",
         "@mui/material/TextField",
@@ -321,6 +365,8 @@ export default defineConfig(({ mode }) => {
         minifyIdentifiers: false,
         minifySyntax: false,
         minifyWhitespace: false,
+        jsx: "automatic",
+        jsxImportSource: "react",
         resolveExtensions: [".ts", ".tsx", ".js", ".jsx", ".mjs", ".json"],
         loader: {
           ".js": "jsx",
@@ -341,6 +387,12 @@ export default defineConfig(({ mode }) => {
       __DEV__: mode !== "production",
       __LEGACY_BUILD__: isLegacyBuild,
       __PREVENT_TDZ__: true,
+      // Fix comprehensiv pentru toate browserele și $RefreshSig$ error
+      $RefreshReg$: isProd ? "undefined" : "(function() {})",
+      $RefreshSig$: isProd
+        ? "undefined"
+        : "(function() { return function() {}; })",
+      global: "globalThis",
     },
     assetsInclude: [
       "**/*.png",

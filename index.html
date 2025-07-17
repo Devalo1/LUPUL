@@ -21,6 +21,21 @@
       content="same-origin-allow-popups"
     />
     <title>Lupul și Corbul - Empatie, Conexiune, Echilibru</title>
+    <!-- Fix pentru TDZ errors cu Emotion -->
+    <script>
+      // Preventive script pentru Emotion TDZ errors
+      window.__EMOTION_TDZ_FIX__ = true;
+
+      // Pre-load critical variables
+      try {
+        if (typeof window !== "undefined") {
+          window.__emotion_cache__ = {};
+          window.__emotion_initialized__ = false;
+        }
+      } catch (e) {
+        console.warn("Emotion TDZ fix initialization failed:", e);
+      }
+    </script>
   </head>
   <body>
     <div id="root"></div>

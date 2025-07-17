@@ -18,15 +18,24 @@ interface GridProps {
   [key: string]: unknown;
 }
 
-export const GridItem: React.FC<CustomGridProps> = (props) => {
+export const GridItem: React.FC<CustomGridProps> = ({
+  css: _css,
+  ...props
+}) => {
   return <MuiGrid component="div" item {...props} />;
 };
 
-export const GridContainer: React.FC<CustomGridProps> = (props) => {
+export const GridContainer: React.FC<CustomGridProps> = ({
+  css: _css,
+  ...props
+}) => {
   return <MuiGrid component="div" container {...props} />;
 };
 
-export const GridContainerItem: React.FC<CustomGridProps> = (props) => {
+export const GridContainerItem: React.FC<CustomGridProps> = ({
+  css: _css,
+  ...props
+}) => {
   return <MuiGrid component="div" container item {...props} />;
 };
 

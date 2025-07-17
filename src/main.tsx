@@ -1,3 +1,6 @@
+// Importăm mai întâi shim-ul pentru React Refresh (Edge compatibility)
+import "./utils/react-refresh-shim";
+
 // Importăm mai întâi firebase-init pentru a asigura inițializarea
 import { ensureFirebaseInitialized } from "./firebase-init";
 import { isProd } from "./utils/environment";

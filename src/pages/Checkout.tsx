@@ -216,6 +216,80 @@ const Checkout: React.FC = () => {
     try {
       console.log("Inițierea trimiterii comenzii:", { ...formData, items });
       
+      // Dacă utilizatorul a ales plata cu cardul, redirectăm către Netopia
+      if (formData.paymentMethod === "card") {
+        console.log("Plată cu cardul selectată, inițializăm Netopia...");
+        
+        // Salvăm datele comenzii în localStorage pentru după plată
+        const orderData = {
+          orderNumber: `LC-${Date.now()}`,
+          customerName: formData.name,
+          customerEmail: formData.email,
+          customerPhone: formData.phone,
+          customerAddress: formData.address,
+          totalAmount: finalTotal,
+          items: items,
+          paymentMethod: "card",
+          date: new Date().toISOString()
+        };
+        
+        localStorage.setItem("pendingOrder", JSON.stringify(orderData));
+        
+        try {
+          // Importăm și inițializăm Netopia
+          const NetopiaPayments = (await import("../services/netopiaPayments")).default;
+          
+          const netopiaConfig = {
+            posSignature: process.env.REACT_APP_NETOPIA_POS_SIGNATURE || "SANDBOX",
+            baseUrl: process.env.REACT_APP_NETOPIA_BASE_URL || "https://secure.mobilpay.ro",
+            live: process.env.NODE_ENV === "production"
+          };
+          
+          const netopia = new NetopiaPayments(netopiaConfig);
+          
+          const [firstName, ...lastNameParts] = formData.name.split(" ");
+          const lastName = lastNameParts.join(" ") || firstName;
+          
+          // Verificăm că finalTotal este definit
+          if (!finalTotal || finalTotal <= 0) {
+            throw new Error("Suma totală nu este validă");
+          }
+          
+          const paymentData = {
+            orderId: orderData.orderNumber,
+            amount: Math.round(finalTotal * 100), // Convertim la bani (RON * 100)
+            currency: "RON",
+            description: `Comandă ${orderData.orderNumber} - ${items.length} produse`,
+            customerInfo: {
+              firstName: firstName,
+              lastName: lastName,
+              email: formData.email,
+              phone: formData.phone,
+              address: formData.address,
+              city: "București", // Poți adăuga un câmp pentru oraș
+              county: "București", // Poți adăuga un câmp pentru județ
+              postalCode: "010000" // Poți adăuga un câmp pentru cod poștal
+            },
+            language: "ro",
+            returnUrl: `${window.location.origin}/checkout-success`,
+            confirmUrl: `${window.location.origin}/api/netopia-confirm`
+          };
+          
+          const paymentUrl = await netopia.initiatePayment(paymentData);
+          
+          // Redirectăm către pagina de plată Netopia
+          window.location.href = paymentUrl;
+          return;
+          
+        } catch (netopiaError) {
+          console.error("Eroare la inițializarea Netopia:", netopiaError);
+          setError("Nu am putut inițializa plata cu cardul. Te rugăm să încerci din nou sau să alegi plata ramburs.");
+          setIsSubmitting(false);
+          return;
+        }
+      }
+      
+      // Pentru plata ramburs, continuăm cu logica existentă
       let result;
       
       if (isDevelopment) {
@@ -353,8 +427,22 @@ const Checkout: React.FC = () => {
                 onChange={handleInputChange}
                 className="w-full border border-gray-300 rounded px-3 py-2 text-gray-800"
               >
-                <option value="cash">Ramburs</option>
+                <option value="cash">Ramburs la livrare</option>
+                <option value="card">Card bancar (Netopia Payments)</option>
               </select>
+              
+              {formData.paymentMethod === "card" && (
+                <div className="mt-3 p-3 bg-blue-50 border border-blue-200 rounded">
+                  <p className="text-sm text-blue-800 mb-2">
+                    <strong>Plată securizată cu cardul</strong>
+                  </p>
+                  <p className="text-xs text-gray-600">
+                    Vei fi redirecționat către platforma securizată Netopia Payments pentru a finaliza plata cu cardul bancar.
+                    Acceptăm Visa, Mastercard și alte carduri bancare emise în România și UE.
+                  </p>
+                </div>
+              )}
+              
               <div className="mt-4">
                 <p className="text-sm text-gray-600 mb-2">Metode de plată acceptate:</p>
                 <img 

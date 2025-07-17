@@ -8,6 +8,8 @@ interface LocationState {
   customerEmail?: string;
   totalAmount?: number;
   items?: number;
+  paymentMethod?: string;
+  paymentStatus?: string;
 }
 
 interface OrderDetails extends LocationState {
@@ -26,6 +28,55 @@ const CheckoutSuccess: React.FC = () => {
       // Avem detalii în state-ul de navigare
       setOrderDetails(state);
     } else {
+      // Verificăm dacă utilizatorul revine de la plata Netopia
+      const urlParams = new URLSearchParams(location.search);
+      const netopiaOrderId = urlParams.get("orderId");
+      const paymentStatus = urlParams.get("status");
+      
+      if (netopiaOrderId) {
+        console.log("Utilizator revine de la Netopia cu orderID:", netopiaOrderId);
+        
+        // Încercăm să găsim comanda în localStorage
+        const pendingOrder = localStorage.getItem("pendingOrder");
+        if (pendingOrder) {
+          try {
+            const orderData = JSON.parse(pendingOrder);
+            if (orderData.orderNumber === netopiaOrderId) {
+              console.log("Comandă găsită în localStorage pentru Netopia:", orderData);
+              
+              // Adăugăm statusul plății
+              const orderWithPaymentStatus = {
+                ...orderData,
+                paymentStatus: paymentStatus === "confirmed" ? "paid" : "pending",
+                paymentMethod: orderData.paymentMethod || "card"
+              };
+              
+              setOrderDetails(orderWithPaymentStatus);
+              
+              // Curățăm localStorage
+              localStorage.removeItem("pendingOrder");
+              
+              // Salvăm comanda finalizată
+              localStorage.setItem("lastOrderDetails", JSON.stringify(orderWithPaymentStatus));
+              
+              return;
+            }
+          } catch (e) {
+            console.error("Eroare la parsarea comenzii din localStorage:", e);
+          }
+        }
+        
+        // Dacă nu găsim comanda în localStorage, creăm una basic cu datele de la Netopia
+        setOrderDetails({
+          orderNumber: netopiaOrderId,
+          paymentStatus: paymentStatus === "confirmed" ? "paid" : "pending",
+          paymentMethod: "card",
+          date: new Date().toISOString()
+        });
+        
+        return;
+      }
+      
       // Verificăm dacă există detalii salvate în localStorage
       const savedOrderDetails = localStorage.getItem("lastOrderDetails");
       if (savedOrderDetails) {
@@ -50,7 +101,7 @@ const CheckoutSuccess: React.FC = () => {
         });
       }
     }
-  }, [state]);
+  }, [state, location.search]);
 
   if (!orderDetails) {
     return (
@@ -82,7 +133,9 @@ const CheckoutSuccess: React.FC = () => {
         minute: "2-digit"
       });
 
-  const isDevelopment = window.location.hostname === "localhost";
+  // Afișăm secțiunea de dezvoltare doar în mediul de dezvoltare (nu în preview)
+  const isDevelopment = window.location.hostname === "localhost" && 
+                        window.location.port !== "5174"; // Nu afișa în preview mode
   
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100 py-12 px-4">
@@ -127,6 +180,22 @@ const CheckoutSuccess: React.FC = () => {
                 <div className="pt-2 border-t border-blue-100">
                   <p className="text-gray-700 mb-1 font-medium">Număr produse:</p>
                   <p className="text-gray-800">{orderDetails.items}</p>
+                </div>
+              )}
+              
+              {orderDetails.paymentMethod && (
+                <div className="pt-2 border-t border-blue-100">
+                  <p className="text-gray-700 mb-1 font-medium">Metoda de plată:</p>
+                  <p className="text-gray-800">
+                    {orderDetails.paymentMethod === "card" ? "Card bancar (Netopia Payments)" : 
+                     orderDetails.paymentMethod === "cash" ? "Ramburs la livrare" : 
+                     orderDetails.paymentMethod}
+                  </p>
+                  {orderDetails.paymentStatus && orderDetails.paymentMethod === "card" && (
+                    <p className={`text-sm mt-1 ${orderDetails.paymentStatus === "paid" ? "text-green-600" : "text-yellow-600"}`}>
+                      {orderDetails.paymentStatus === "paid" ? "✓ Plata a fost procesată cu succes" : "⏳ Plata este în curs de verificare"}
+                    </p>
+                  )}
                 </div>
               )}
               

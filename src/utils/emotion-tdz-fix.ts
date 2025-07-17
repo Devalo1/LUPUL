@@ -8,40 +8,42 @@
 // IMMEDIATE EXECUTION - nu așteaptă module loading
 (function aggressiveTdzFix() {
   if (typeof globalThis === "undefined") return;
-  
+
   const global = globalThis as any;
-  
+
   // Forțăm inițializarea ÎNAINTE de orice modul
   const criticalVars = {
-    'R': function() { return function() {}; },
-    'e': {},
-    't': {},
-    'n': {},
-    'r': {},
-    'o': {},
-    'i': {},
-    'a': {},
-    'u': {},
-    'c': {},
-    's': {},
-    'l': {},
-    'f': {},
-    'd': {},
-    'p': {},
-    'h': {},
-    'v': {},
-    'g': {},
-    'm': {},
-    'y': {},
-    'b': {},
-    'w': {},
-    'x': {},
-    'k': {},
-    'j': {},
-    'q': {},
-    'z': {}
+    R: function () {
+      return function () {};
+    },
+    e: {},
+    t: {},
+    n: {},
+    r: {},
+    o: {},
+    i: {},
+    a: {},
+    u: {},
+    c: {},
+    s: {},
+    l: {},
+    f: {},
+    d: {},
+    p: {},
+    h: {},
+    v: {},
+    g: {},
+    m: {},
+    y: {},
+    b: {},
+    w: {},
+    x: {},
+    k: {},
+    j: {},
+    q: {},
+    z: {},
   };
-  
+
   // Aplicăm cu forță toate variabilele
   Object.keys(criticalVars).forEach((varName) => {
     try {
@@ -50,7 +52,7 @@
           value: (criticalVars as any)[varName],
           writable: true,
           configurable: true,
-          enumerable: false
+          enumerable: false,
         });
       }
     } catch (e) {
@@ -74,11 +76,13 @@
 
   // React Refresh globals
   if (!global.$RefreshReg$) {
-    global.$RefreshReg$ = function() {};
+    global.$RefreshReg$ = function () {};
   }
-  
+
   if (!global.$RefreshSig$) {
-    global.$RefreshSig$ = function() { return function() {}; };
+    global.$RefreshSig$ = function () {
+      return function () {};
+    };
   }
 
   // Mark that TDZ fix has been applied

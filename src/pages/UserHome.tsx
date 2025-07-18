@@ -470,6 +470,61 @@ const ArticleDisplay = ({
                 )}
               </div>
 
+              {/* Display existing feedback */}
+              {article.feedback && article.feedback.length > 0 && (
+                <div className="mt-6 pt-6 border-t border-gray-200">
+                  <h5 className="font-semibold text-gray-800 mb-4 flex items-center">
+                    <FaThumbsUp className="mr-2" /> Feedback-uri (
+                    {article.feedback.length})
+                  </h5>
+                  <div className="space-y-4 max-h-96 overflow-y-auto">
+                    {article.feedback.map((feedbackItem, index) => (
+                      <div
+                        key={index}
+                        className="bg-gray-50 rounded-lg border border-gray-200 p-4"
+                      >
+                        <div className="flex items-center justify-between mb-2">
+                          <div className="flex items-center gap-2">
+                            <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
+                              <FaUser className="text-blue-600 text-sm" />
+                            </div>
+                            <span className="font-medium text-gray-800">
+                              {feedbackItem.userName}
+                            </span>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <div className="flex">
+                              {[1, 2, 3, 4, 5].map((star) => (
+                                <span key={star} className="text-sm">
+                                  {star <= feedbackItem.rating ? (
+                                    <FaStar className="text-yellow-400" />
+                                  ) : (
+                                    <FaRegStar className="text-gray-300" />
+                                  )}
+                                </span>
+                              ))}
+                            </div>
+                            <span className="text-xs text-gray-500">
+                              {feedbackItem.createdAt
+                                ?.toDate?.()
+                                ?.toLocaleDateString("ro-RO") ||
+                                (feedbackItem.createdAt instanceof Date
+                                  ? feedbackItem.createdAt.toLocaleDateString(
+                                      "ro-RO"
+                                    )
+                                  : new Date().toLocaleDateString("ro-RO"))}
+                            </span>
+                          </div>
+                        </div>
+                        <p className="text-gray-700 text-sm leading-relaxed">
+                          {feedbackItem.comment}
+                        </p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
               {/* Lightbox for gallery images */}
               {showLightbox && article.galleryImages && (
                 <div
@@ -725,6 +780,61 @@ const ArticleDisplay = ({
                   </button>
                 </>
               )}
+
+              {/* Display existing feedback */}
+              {article.feedback && article.feedback.length > 0 && (
+                <div className="mt-6 pt-6 border-t border-amber-200">
+                  <h5 className="font-serif font-semibold text-xl text-amber-900 mb-4 flex items-center">
+                    <FaThumbsUp className="mr-2" /> Feedback-uri (
+                    {article.feedback.length})
+                  </h5>
+                  <div className="space-y-4 max-h-96 overflow-y-auto">
+                    {article.feedback.map((feedbackItem, index) => (
+                      <div
+                        key={index}
+                        className="bg-white rounded-lg border border-amber-100 p-4 shadow-sm"
+                      >
+                        <div className="flex items-center justify-between mb-2">
+                          <div className="flex items-center gap-2">
+                            <div className="w-8 h-8 bg-amber-100 rounded-full flex items-center justify-center">
+                              <FaUser className="text-amber-600 text-sm" />
+                            </div>
+                            <span className="font-medium text-gray-800">
+                              {feedbackItem.userName}
+                            </span>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <div className="flex">
+                              {[1, 2, 3, 4, 5].map((star) => (
+                                <span key={star} className="text-sm">
+                                  {star <= feedbackItem.rating ? (
+                                    <FaStar className="text-yellow-400" />
+                                  ) : (
+                                    <FaRegStar className="text-gray-300" />
+                                  )}
+                                </span>
+                              ))}
+                            </div>
+                            <span className="text-xs text-gray-500">
+                              {feedbackItem.createdAt
+                                ?.toDate?.()
+                                ?.toLocaleDateString("ro-RO") ||
+                                (feedbackItem.createdAt instanceof Date
+                                  ? feedbackItem.createdAt.toLocaleDateString(
+                                      "ro-RO"
+                                    )
+                                  : new Date().toLocaleDateString("ro-RO"))}
+                            </span>
+                          </div>
+                        </div>
+                        <p className="text-gray-700 text-sm leading-relaxed">
+                          {feedbackItem.comment}
+                        </p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
           </div>
           {/* Lightbox for gallery images */}
@@ -879,7 +989,7 @@ const UserHome: React.FC = () => {
               const personalizedArticles = fetchedArticles.map((article) => {
                 let personalizedContent = article.content;
                 personalizedContent = personalizedContent.replace(
-                  "${user?.displayName || \"prieten\"}",
+                  '${user?.displayName || "prieten"}',
                   userDisplayName
                 );
 

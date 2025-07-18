@@ -145,7 +145,8 @@ export default defineConfig(({ mode }) => {
       alias: {
         "@": path.resolve(__dirname, "./src"),
         // Fix pentru hoist-non-react-statics export issue
-        "hoist-non-react-statics": "hoist-non-react-statics/dist/hoist-non-react-statics.cjs.js",
+        "hoist-non-react-statics":
+          "hoist-non-react-statics/dist/hoist-non-react-statics.cjs.js",
       },
     },
     esbuild: {
@@ -176,6 +177,11 @@ export default defineConfig(({ mode }) => {
       },
       proxy: {
         "/api/analytics-proxy": analyticsProxyConfig,
+        "/.netlify/functions": {
+          target: "http://localhost:8888",
+          changeOrigin: true,
+          secure: false,
+        },
       },
     },
 
@@ -183,6 +189,11 @@ export default defineConfig(({ mode }) => {
       port: 5174,
       proxy: {
         "/api/analytics-proxy": analyticsProxyConfig,
+        "/.netlify/functions": {
+          target: "http://localhost:8888",
+          changeOrigin: true,
+          secure: false,
+        },
       },
     },
 
@@ -286,7 +297,10 @@ export default defineConfig(({ mode }) => {
                 return "vendor-utils";
               }
               // Adaugă un chunk suplimentar pentru TDZ prevention
-              if (id.includes("src/utils/tdz-prevention") || id.includes("src/utils/emotion")) {
+              if (
+                id.includes("src/utils/tdz-prevention") ||
+                id.includes("src/utils/emotion")
+              ) {
                 return "vendor-tdz-prevention";
               }
               return "vendor-others";
@@ -386,14 +400,14 @@ export default defineConfig(({ mode }) => {
         "@emotion/react",
         "@emotion/styled",
         "@emotion/cache",
-        "@emotion/utils", 
+        "@emotion/utils",
         "@emotion/use-insertion-effect-with-fallbacks",
         "@emotion/serialize",
         "@emotion/hash",
         "@emotion/weak-memoize",
         "@emotion/sheet",
         "@emotion/unitless",
-        "@emotion/memoize"
+        "@emotion/memoize",
       ],
       include: [
         "react",

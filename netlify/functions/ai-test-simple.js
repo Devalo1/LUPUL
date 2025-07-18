@@ -1,7 +1,7 @@
 // Funcție simplă de test pentru OpenAI API
-const fetch = require("node-fetch");
+import fetch from "node-fetch";
 
-exports.handler = async (event, context) => {
+export const handler = async (event, context) => {
   // Headers pentru CORS
   const headers = {
     "Access-Control-Allow-Origin": "*",

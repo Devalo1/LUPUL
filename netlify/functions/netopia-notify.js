@@ -78,7 +78,7 @@ async function processNetopiaNotification(notification) {
 /**
  * Handler principal pentru endpoint-ul de notificare
  */
-exports.handler = async (event, context) => {
+export const handler = async (event, context) => {
   // Headers CORS
   const headers = {
     "Access-Control-Allow-Origin": "*",

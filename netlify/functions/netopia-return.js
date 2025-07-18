@@ -6,7 +6,7 @@
 /**
  * Handler principal pentru endpoint-ul de return
  */
-exports.handler = async (event, context) => {
+export const handler = async (event, context) => {
   // Headers CORS
   const headers = {
     "Access-Control-Allow-Origin": "*",

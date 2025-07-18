@@ -94,7 +94,7 @@ async function checkNetopiaStatus(orderId, config) {
 /**
  * Handler principal pentru endpoint-ul de status
  */
-exports.handler = async (event, context) => {
+export const handler = async (event, context) => {
   // Headers CORS
   const headers = {
     "Access-Control-Allow-Origin": "*",

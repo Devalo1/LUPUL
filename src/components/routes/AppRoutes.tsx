@@ -38,6 +38,7 @@ import ANPCConsumerInfo from "../../pages/ANPCConsumerInfo";
 import PaymentSecurityPage from "../../pages/PaymentSecurityPage";
 import Ong from "../../pages/Ong";
 import Partners from "../../pages/Partners";
+import PaymentSimulation from "../../pages/PaymentSimulation";
 
 // Pagini protejate (necesită autentificare)
 import Dashboard from "../../pages/Dashboard";
@@ -93,6 +94,7 @@ const AppRoutes = () => {
         <Route path="/accessibility" element={<Accessibility />} />
         <Route path="/anpc-consumer-info" element={<ANPCConsumerInfo />} />
         <Route path="/payment-security" element={<PaymentSecurityPage />} />
+        <Route path="/payment-simulation" element={<PaymentSimulation />} />
         <Route path="/ong" element={<Ong />} />
         <Route path="/partners" element={<Partners />} />
         {/* Rute protejate (necesită autentificare) */}
@@ -142,6 +144,14 @@ const AppRoutes = () => {
           element={
             <ProtectedRoute>
               <Checkout />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/order-confirmation"
+          element={
+            <ProtectedRoute>
+              <CheckoutSuccess />
             </ProtectedRoute>
           }
         />

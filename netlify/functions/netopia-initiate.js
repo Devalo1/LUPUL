@@ -3,7 +3,7 @@
  * Această funcție creează o nouă sesiune de plată și returnează URL-ul NETOPIA
  */
 
-const crypto = require("crypto");
+import crypto from "crypto";
 
 // Configurație NETOPIA
 const NETOPIA_CONFIG = {
@@ -92,8 +92,10 @@ async function initiateNetopiaPayment(payload, config) {
     if (config.signature === "2ZOW-PJ5X-HYYC-IENE-APZO") {
       console.log("Sandbox mode: Simulating NETOPIA payment initiation");
 
-      // Simulare URL de plată pentru sandbox
-      const simulatedPaymentUrl = `${config.endpoint}?orderId=${payload.payment.data.orderId}&amount=${payload.payment.data.amount}&test=1`;
+      // Creăm un URL local pentru simularea plății
+      // În dezvoltare, folosim portul Vite (5173 sau 5174)
+      const baseUrl = process.env.URL || "http://localhost:5174";
+      const simulatedPaymentUrl = `${baseUrl}/payment-simulation?orderId=${payload.payment.data.orderId}&amount=${payload.payment.data.amount}&currency=RON&test=1`;
 
       return {
         success: true,
@@ -169,7 +171,7 @@ function validatePaymentData(paymentData) {
 /**
  * Handler principal pentru endpoint-ul de inițiere
  */
-exports.handler = async (event, context) => {
+export const handler = async (event, context) => {
   // Headers CORS
   const headers = {
     "Access-Control-Allow-Origin": "*",
@@ -197,31 +199,112 @@ exports.handler = async (event, context) => {
   }
 
   try {
-    // Parse request body
-    const paymentData = JSON.parse(event.body || "{}");
+    // Parse request body with better error handling
+    let paymentData;
 
-    console.log("Initiating NETOPIA payment:", {
+    console.log("🔧 RAW REQUEST BODY:", {
+      length: event.body?.length || 0,
+      type: typeof event.body,
+      preview: event.body?.substring(0, 100) || "empty",
+      fullBody: event.body || "null",
+    });
+
+    try {
+      paymentData = JSON.parse(event.body || "{}");
+    } catch (jsonError) {
+      console.error("❌ JSON Parse Error:", {
+        error: jsonError.message,
+        position: jsonError.message.match(/position (\d+)/)?.[1],
+        bodyLength: event.body?.length,
+        bodyChar11: event.body?.[11],
+        bodySubstring: event.body?.substring(0, 20),
+      });
+
+      return {
+        statusCode: 400,
+        headers,
+        body: JSON.stringify({
+          error: "Invalid JSON in request body",
+          details: jsonError.message,
+          position: jsonError.message.match(/position (\d+)/)?.[1],
+        }),
+      };
+    }
+
+    console.log("🔧 NETOPIA INITIATE - Request received:", {
+      method: event.httpMethod,
+      headers: event.headers,
+      bodyLength: event.body?.length || 0,
+      bodyPreview: event.body?.substring(0, 200) || "empty",
+    });
+
+    console.log("🔧 NETOPIA INITIATE - Payment data:", {
       orderId: paymentData.orderId,
       amount: paymentData.amount,
       currency: paymentData.currency,
+      live: paymentData.live,
+      hasLiveSignature: !!process.env.NETOPIA_LIVE_SIGNATURE,
+      environment: process.env.NODE_ENV,
+      netlifyContext: context.functionName,
     });
 
     // Validează datele de plată
     validatePaymentData(paymentData);
 
-    // Determină configurația (sandbox vs live)
+    // Determină configurația (sandbox vs live) cu fallback logic
     const isLive = paymentData.live === true;
-    const config = isLive ? NETOPIA_CONFIG.live : NETOPIA_CONFIG.sandbox;
+    const hasCustomSignature =
+      paymentData.posSignature &&
+      paymentData.posSignature !== "2ZOW-PJ5X-HYYC-IENE-APZO";
 
-    // Verifică configurația
+    let config = isLive ? NETOPIA_CONFIG.live : NETOPIA_CONFIG.sandbox;
+
+    console.log("🔧 Configuration selection:", {
+      requestedLive: isLive,
+      hasCustomSignature,
+      customSignature: paymentData.posSignature?.substring(0, 10) + "...",
+      hasLiveSignature: !!NETOPIA_CONFIG.live.signature,
+      willUseLive: isLive && !!NETOPIA_CONFIG.live.signature,
+    });
+
+    // Verifică dacă configurația live este disponibilă
     if (isLive && !config.signature) {
-      throw new Error("NETOPIA live configuration not found");
+      console.log(
+        "⚠️  NETOPIA live configuration not found, falling back to sandbox"
+      );
+      config = NETOPIA_CONFIG.sandbox;
+    }
+
+    // Dacă avem o signature customă din frontend, o folosim
+    if (hasCustomSignature) {
+      config = {
+        ...config,
+        signature: paymentData.posSignature,
+      };
+      console.log("🔄 Using custom signature from frontend");
+    }
+
+    console.log(
+      `✅ Using ${config.signature === "2ZOW-PJ5X-HYYC-IENE-APZO" ? "SANDBOX" : "LIVE"} Netopia configuration`
+    );
+
+    // Verifică configurația finală
+    if (!config.signature) {
+      throw new Error("No valid NETOPIA configuration found");
     }
 
     // Creează payload-ul pentru NETOPIA
     const payload = createNetopiaPayload(paymentData, config);
 
     // Inițiază plata la NETOPIA
+    console.log("🚀 Initiating payment with config:", {
+      endpoint: config.endpoint,
+      hasSignature: !!config.signature,
+      signaturePreview: config.signature?.substring(0, 10) + "...",
+      payloadOrderId: payload.payment.data.orderId,
+      payloadAmount: payload.payment.data.amount,
+    });
+
     const result = await initiateNetopiaPayment(payload, config);
 
     return {

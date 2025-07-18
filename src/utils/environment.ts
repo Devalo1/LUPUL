@@ -21,7 +21,10 @@ export const isBrowser = typeof window !== "undefined";
 export const APP_VERSION = import.meta.env.VITE_APP_VERSION || "1.0.0";
 
 // Data build-ului (definită în vite.config.ts)
-export const BUILD_DATE = typeof __BUILD_DATE__ !== "undefined" ? __BUILD_DATE__ : new Date().toISOString();
+export const BUILD_DATE =
+  typeof __BUILD_DATE__ !== "undefined"
+    ? __BUILD_DATE__
+    : new Date().toISOString();
 
 /**
  * Verifică dacă debugging-ul este activat
@@ -32,7 +35,7 @@ export const isDebugEnabled = (): boolean => {
   if (isProd) {
     return import.meta.env.VITE_DEBUG === "true";
   }
-  
+
   // În development valoarea default este true
   return import.meta.env.VITE_DEBUG !== "false";
 };
@@ -46,7 +49,7 @@ export const useEmulators = (): boolean => {
   if (isProd) {
     return false;
   }
-  
+
   // Verificăm dacă există configurare specifică
   return import.meta.env.VITE_USE_EMULATORS !== "false";
 };
@@ -63,11 +66,17 @@ export const getEmulatorConfig = () => {
     },
     firestore: {
       host: import.meta.env.VITE_FIRESTORE_EMULATOR_HOST || "localhost",
-      port: parseInt(import.meta.env.VITE_FIRESTORE_EMULATOR_PORT || "8080", 10),
+      port: parseInt(
+        import.meta.env.VITE_FIRESTORE_EMULATOR_PORT || "8080",
+        10
+      ),
     },
     functions: {
       host: import.meta.env.VITE_FUNCTIONS_EMULATOR_HOST || "localhost",
-      port: parseInt(import.meta.env.VITE_FUNCTIONS_EMULATOR_PORT || "5001", 10),
+      port: parseInt(
+        import.meta.env.VITE_FUNCTIONS_EMULATOR_PORT || "5001",
+        10
+      ),
     },
     storage: {
       host: import.meta.env.VITE_STORAGE_EMULATOR_HOST || "localhost",
@@ -85,16 +94,16 @@ export const getApiBaseUrl = (): string => {
   if (import.meta.env.VITE_API_BASE_URL) {
     return import.meta.env.VITE_API_BASE_URL;
   }
-  
+
   // Altfel, folosim valori implicite bazate pe mediu
   if (isProd) {
     return "https://us-central1-lupul-si-corbul.cloudfunctions.net";
   }
-  
+
   if (isTest) {
     return "http://localhost:5001/lupul-si-corbul/us-central1";
   }
-  
+
   return "http://localhost:5001/lupul-si-corbul/us-central1";
 };
 
@@ -107,17 +116,17 @@ export const getSiteBaseUrl = (): string => {
   if (import.meta.env.VITE_SITE_URL) {
     return import.meta.env.VITE_SITE_URL;
   }
-  
+
   // Altfel, folosim valori implicite bazate pe mediu
   if (isProd) {
     return "https://lupulsicorbul.com";
   }
-  
+
   if (isTest) {
-    return "http://localhost:5173";
+    return "http://localhost:8888";
   }
-  
-  return "http://localhost:5173";
+
+  return "http://localhost:8888";
 };
 
 /**

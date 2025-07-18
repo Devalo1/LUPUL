@@ -80,28 +80,67 @@ class NetopiaPayments {
    */
   async initiatePayment(paymentData: NetopiaPaymentData): Promise<string> {
     try {
-      const response = await fetch("/netlify/functions/netopia-initiate", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          ...paymentData,
-          posSignature: this.config.posSignature,
-          live: this.config.live,
-        }),
+      console.log("Initiating payment with data:", {
+        orderId: paymentData.orderId,
+        amount: paymentData.amount,
+        live: this.config.live,
+        signature: this.config.posSignature?.substring(0, 10) + "...",
       });
 
-      if (!response.ok) {
-        throw new Error("Eroare la inițierea plății");
-      }
+      const requestPayload = {
+        ...paymentData,
+        posSignature: this.config.posSignature,
+        live: this.config.live,
+      };
 
+      const requestBody = JSON.stringify(requestPayload);
+
+      console.log("🚀 Sending to Netopia backend:", {
+        payloadKeys: Object.keys(requestPayload),
+        bodyLength: requestBody.length,
+        bodyPreview: requestBody.substring(0, 100),
+        posSignature: this.config.posSignature?.substring(0, 10) + "...",
+        live: this.config.live,
+      });
+
+      // Use Netlify Dev functions path; no hardcoded port needed in browser
+      // Always use relative path to Netlify function
+      const netopiaUrl = "/.netlify/functions/netopia-initiate";
+      const response = await fetch(netopiaUrl, {
+        method: "POST",
+        headers: { "Content-Type": "application/json; charset=utf-8" },
+        body: requestBody,
+      });
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error("Netopia API Error:", errorText);
+        throw new Error(`Eroare la inițierea plății: ${response.status}`);
+      }
       const data = await response.json();
+      if (!data.paymentUrl) {
+        console.error("No payment URL received:", data);
+        throw new Error("Nu s-a primit URL-ul de plată de la Netopia");
+      }
+      console.log(
+        "Payment initiated successfully, redirecting to:",
+        data.paymentUrl
+      );
       return data.paymentUrl;
     } catch (error) {
       console.error("Eroare NETOPIA:", error);
+
+      // Mesaj mai specific pentru utilizator
+      const errorMessage =
+        error instanceof Error ? error.message : "Eroare necunoscută";
+
+      if (errorMessage.includes("NETOPIA live configuration not found")) {
+        throw new Error(
+          "Serviciul de plăți temporar indisponibil. Vă rugăm să alegeți plata ramburs."
+        );
+      }
+
       throw new Error(
-        "Nu am putut inițializa plata. Vă rugăm să încercați din nou."
+        "Nu am putut inițializa plata cu cardul. Vă rugăm să încercați din nou sau să alegeți plata ramburs."
       );
     }
   }
@@ -114,7 +153,7 @@ class NetopiaPayments {
   async checkPaymentStatus(orderId: string): Promise<any> {
     try {
       const response = await fetch(
-        `/netlify/functions/netopia-status?orderId=${orderId}`,
+        `/.netlify/functions/netopia-status?orderId=${orderId}`,
         {
           method: "GET",
           headers: {
@@ -236,16 +275,28 @@ class NetopiaPayments {
 // Configurația pentru producție și dezvoltare
 const getNetopiaConfig = (): NetopiaConfig => {
   const isProduction = window.location.hostname !== "localhost";
+  const hasLiveCredentials =
+    process.env.REACT_APP_NETOPIA_SIGNATURE_LIVE &&
+    process.env.REACT_APP_NETOPIA_SIGNATURE_LIVE !== "2ZOW-PJ5X-HYYC-IENE-APZO";
+
+  // Folosește LIVE doar dacă avem credentialele și suntem în producție
+  const useLive = isProduction && hasLiveCredentials;
+
+  console.log("Netopia Config:", {
+    isProduction,
+    hasLiveCredentials,
+    useLive,
+    hostname: window.location.hostname,
+  });
 
   return {
-    posSignature: isProduction
-      ? process.env.REACT_APP_NETOPIA_SIGNATURE_LIVE ||
-        "2ZOW-PJ5X-HYYC-IENE-APZO"
+    posSignature: useLive
+      ? process.env.REACT_APP_NETOPIA_SIGNATURE_LIVE!
       : "2ZOW-PJ5X-HYYC-IENE-APZO", // Sandbox signature
-    baseUrl: isProduction
+    baseUrl: useLive
       ? "https://secure.netopia-payments.com"
       : "https://secure-sandbox.netopia-payments.com",
-    live: isProduction,
+    live: Boolean(useLive),
     publicKey: process.env.REACT_APP_NETOPIA_PUBLIC_KEY,
   };
 };

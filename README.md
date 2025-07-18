@@ -203,6 +203,27 @@ The build is optimized with:
 - CSS and JS minification
 - Tree shaking for smaller bundle sizes
 
+#### 🔧 Emotion TDZ Fix (Iulie 2025)
+
+**IMPORTANT:** Aplicația include un fix pentru eroarea Emotion TDZ:
+```
+emotion-use-insertion-effect-with-fallbacks.browser.esm.js:7 
+Uncaught ReferenceError: Cannot access 'u' before initialization
+```
+
+**Soluția aplicată în `vite.config.ts`:**
+```typescript
+optimizeDeps: {
+  exclude: ["@emotion/use-insertion-effect-with-fallbacks"],
+}
+```
+
+**Status:** ✅ REZOLVAT - Preview mode funcționează perfect
+
+Pentru detalii complete vezi: `EMOTION_TDZ_FIX_DOCUMENTATION.md`
+
+⚠️ **ATENȚIE:** NU șterge exclude-ul din vite.config.ts!
+
 #### Live Demo
 
 🚀 **Production Site**: https://your-netlify-site.netlify.app

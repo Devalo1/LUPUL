@@ -224,6 +224,26 @@ Pentru detalii complete vezi: `EMOTION_TDZ_FIX_DOCUMENTATION.md`
 
 ⚠️ **ATENȚIE:** NU șterge exclude-ul din vite.config.ts!
 
+## 🚨 Known Issues & Fixes
+
+### 🔧 Emotion TDZ Error (REZOLVAT)
+- **Status:** ✅ FIXED
+- **Solution:** `optimizeDeps: { exclude: ["@emotion/use-insertion-effect-with-fallbacks"] }`
+
+### 💳 NETOPIA Production Simulare (PENDING)
+- **Problema:** În producție apare "🧪 SIMULARE TEST" în loc de procesarea reală a plăților
+- **Cauza:** Variabile de mediu NETOPIA LIVE nu sunt setate în Netlify
+- **Soluția:** Vezi `NETOPIA_PRODUCTION_FIX.md` pentru instrucțiuni complete
+- **Status:** ⚠️ PENDING - Necesită setarea variabilelor în Netlify Dashboard
+
+**Quick Fix pentru NETOPIA:**
+```bash
+# Setează în Netlify Environment Variables:
+NETOPIA_LIVE_SIGNATURE=your_live_signature
+VITE_NETOPIA_SIGNATURE_LIVE=your_live_signature
+URL=https://your-site.netlify.app
+```
+
 #### Live Demo
 
 🚀 **Production Site**: https://your-netlify-site.netlify.app

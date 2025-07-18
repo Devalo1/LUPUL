@@ -6,6 +6,8 @@ import compression from "vite-plugin-compression";
 import type { ProxyOptions } from "vite";
 import { emotionTdzFixPlugin } from "./plugins/emotion-tdz-fix-plugin";
 import { emotionImportFixPlugin } from "./plugins/emotion-import-fix-simple";
+import { mimeTypeFixPlugin } from "./plugins/mime-type-fix-plugin";
+import { emotionHashFixPlugin } from "./plugins/emotion-hash-fix-plugin";
 /// <reference types="vitest" />
 
 export default defineConfig(({ mode }) => {
@@ -68,7 +70,9 @@ export default defineConfig(({ mode }) => {
           ],
         },
       }),
-      // Plugin-uri custom pentru fix-ul TDZ al Emotion
+      // Plugin-uri custom pentru fix-ul TDZ al Emotion și MIME type
+      emotionHashFixPlugin(),
+      mimeTypeFixPlugin(),
       emotionTdzFixPlugin(),
       emotionImportFixPlugin(),
       {

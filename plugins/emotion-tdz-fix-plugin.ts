@@ -8,6 +8,7 @@ export function emotionTdzFixPlugin(): Plugin {
   return {
     name: "emotion-tdz-ultimate-fix",
     apply: "build",
+    enforce: "pre",
     generateBundle(_options, bundle) {
       // Cod EXTREM DE SPECIFIC pentru fix-ul TDZ Emotion
       const emotionUltimateFix = `

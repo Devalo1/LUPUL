@@ -206,12 +206,14 @@ The build is optimized with:
 #### 🔧 Emotion TDZ Fix (Iulie 2025)
 
 **IMPORTANT:** Aplicația include un fix pentru eroarea Emotion TDZ:
+
 ```
-emotion-use-insertion-effect-with-fallbacks.browser.esm.js:7 
+emotion-use-insertion-effect-with-fallbacks.browser.esm.js:7
 Uncaught ReferenceError: Cannot access 'u' before initialization
 ```
 
 **Soluția aplicată în `vite.config.ts`:**
+
 ```typescript
 optimizeDeps: {
   exclude: ["@emotion/use-insertion-effect-with-fallbacks"],
@@ -227,16 +229,19 @@ Pentru detalii complete vezi: `EMOTION_TDZ_FIX_DOCUMENTATION.md`
 ## 🚨 Known Issues & Fixes
 
 ### 🔧 Emotion TDZ Error (REZOLVAT)
+
 - **Status:** ✅ FIXED
 - **Solution:** `optimizeDeps: { exclude: ["@emotion/use-insertion-effect-with-fallbacks"] }`
 
 ### 💳 NETOPIA Production Simulare (PENDING)
+
 - **Problema:** În producție apare "🧪 SIMULARE TEST" în loc de procesarea reală a plăților
 - **Cauza:** Variabile de mediu NETOPIA LIVE nu sunt setate în Netlify
 - **Soluția:** Vezi `NETOPIA_PRODUCTION_FIX.md` pentru instrucțiuni complete
 - **Status:** ⚠️ PENDING - Necesită setarea variabilelor în Netlify Dashboard
 
 **Quick Fix pentru NETOPIA:**
+
 ```bash
 # Setează în Netlify Environment Variables:
 NETOPIA_LIVE_SIGNATURE=your_live_signature

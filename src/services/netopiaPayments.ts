@@ -288,12 +288,11 @@ class NetopiaPayments {
 // Configurația pentru producție și dezvoltare
 const getNetopiaConfig = (): NetopiaConfig => {
   const isProduction = window.location.hostname !== "localhost";
-  
+
   // În Vite folosim import.meta.env nu process.env pentru variabile VITE_
   const liveSignature = import.meta.env.VITE_NETOPIA_SIGNATURE_LIVE;
   const hasLiveCredentials =
-    liveSignature &&
-    liveSignature !== "2ZOW-PJ5X-HYYC-IENE-APZO";
+    liveSignature && liveSignature !== "2ZOW-PJ5X-HYYC-IENE-APZO";
 
   // Folosește LIVE doar dacă avem credentialele și suntem în producție
   const useLive = isProduction && hasLiveCredentials;
@@ -308,9 +307,7 @@ const getNetopiaConfig = (): NetopiaConfig => {
   });
 
   return {
-    posSignature: useLive
-      ? liveSignature!
-      : "2ZOW-PJ5X-HYYC-IENE-APZO", // Sandbox signature
+    posSignature: useLive ? liveSignature! : "2ZOW-PJ5X-HYYC-IENE-APZO", // Sandbox signature
     baseUrl: useLive
       ? "https://secure.netopia-payments.com"
       : "https://secure-sandbox.netopia-payments.com",

@@ -271,19 +271,28 @@ export const handler = async (event, context) => {
       hasLiveSignature: !!NETOPIA_CONFIG.live.signature,
       willUseLive: isLive && !!NETOPIA_CONFIG.live.signature,
       envVars: {
-        NETOPIA_LIVE_SIGNATURE: process.env.NETOPIA_LIVE_SIGNATURE ? "SET" : "NOT SET",
-        NETOPIA_LIVE_PUBLIC_KEY: process.env.NETOPIA_LIVE_PUBLIC_KEY ? "SET" : "NOT SET",
+        NETOPIA_LIVE_SIGNATURE: process.env.NETOPIA_LIVE_SIGNATURE
+          ? "SET"
+          : "NOT SET",
+        NETOPIA_LIVE_PUBLIC_KEY: process.env.NETOPIA_LIVE_PUBLIC_KEY
+          ? "SET"
+          : "NOT SET",
         URL: process.env.URL || "NOT SET",
-      }
+      },
     });
 
     // 🚨 PRODUCTION DEBUG: Verifică de ce nu folosește LIVE mode
     if (isLive && !config.signature) {
-      console.error("🚨 PRODUCTION ERROR: Live mode requested but no live signature!");
+      console.error(
+        "🚨 PRODUCTION ERROR: Live mode requested but no live signature!"
+      );
       console.error("Environment check:", {
-        NETOPIA_LIVE_SIGNATURE: process.env.NETOPIA_LIVE_SIGNATURE ? 
-          `SET (${process.env.NETOPIA_LIVE_SIGNATURE.length} chars)` : "MISSING",
-        NETOPIA_LIVE_PUBLIC_KEY: process.env.NETOPIA_LIVE_PUBLIC_KEY ? "SET" : "MISSING",
+        NETOPIA_LIVE_SIGNATURE: process.env.NETOPIA_LIVE_SIGNATURE
+          ? `SET (${process.env.NETOPIA_LIVE_SIGNATURE.length} chars)`
+          : "MISSING",
+        NETOPIA_LIVE_PUBLIC_KEY: process.env.NETOPIA_LIVE_PUBLIC_KEY
+          ? "SET"
+          : "MISSING",
         NODE_ENV: process.env.NODE_ENV,
         URL: process.env.URL,
       });

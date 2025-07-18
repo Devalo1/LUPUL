@@ -5,12 +5,14 @@
 **Eroare:** `emotion-use-insertion-effect-with-fallbacks.browser.esm.js:7 Uncaught ReferenceError: Cannot access 'u' before initialization`
 
 ### Descrierea Problemei
+
 - Eroarea TDZ (Temporal Dead Zone) apărea în preview mode (`npm run preview`)
 - Build-ul se făcea corect, dar aplicația nu se încărca în browser
 - Problema era legată de optimizarea Vite a modulelor Emotion
 - Eroarea se manifesta specific în modulul `@emotion/use-insertion-effect-with-fallbacks`
 
 ### Context Tehnic
+
 - **Framework:** Vite 6.3.5 + React + Emotion CSS-in-JS
 - **Problema:** Vite optimizează dependințele prin pre-bundling, dar Emotion are dependințe circulare interne
 - **Rezultat:** Variabila `u` (minified variable) nu era inițializată înainte de utilizare
@@ -57,6 +59,7 @@ export default defineConfig({
 ### 2. Cheia Soluției
 
 **CRITICAL FIX:**
+
 ```typescript
 optimizeDeps: {
   exclude: ["@emotion/use-insertion-effect-with-fallbacks"],
@@ -64,6 +67,7 @@ optimizeDeps: {
 ```
 
 ### Ce Face Această Configurație:
+
 1. **Exclude from Pre-bundling:** Exclude modulul problematic din optimizarea Vite
 2. **Natural Loading:** Permite modulului să se încarce natural fără optimizare
 3. **Evită TDZ:** Previne reorganizarea codului care cauzează eroarea TDZ
@@ -73,11 +77,13 @@ optimizeDeps: {
 ### ❌ Soluții Complexe Eșuate:
 
 1. **Plugin-uri Custom TDZ:**
+
    - `plugins/emotion-tdz-fix-plugin.ts`
    - `plugins/emotion-import-fix-simple.ts`
    - `plugins/emotion-runtime-fix-plugin.ts`
 
 2. **Configurații Complexe:**
+
    - Manual chunks pentru fiecare modul Emotion
    - Intro scripts cu TDZ prevention
    - Alias-uri și dedupe configurații
@@ -89,6 +95,7 @@ optimizeDeps: {
    - Global variable initialization
 
 ### De Ce Nu Au Funcționat:
+
 - **Over-engineering:** Soluțiile complexe introduceau alte probleme
 - **Timing Issues:** Fix-urile runtime erau prea târzii
 - **Vite Interference:** Plugin-urile custom interferau cu optimizarea Vite
@@ -96,16 +103,19 @@ optimizeDeps: {
 ## ✅ PRINCIPII SOLUȚIEI FINALE
 
 ### 1. **Keep It Simple**
+
 - Configurație minimală Vite
 - Un singur exclude în optimizeDeps
 - Fără plugin-uri custom
 
 ### 2. **Root Cause Fix**
+
 - Atacă problema la sursă (pre-bundling)
 - Nu încearcă să repare efectele (runtime errors)
 - Lasă Emotion să se încarce natural
 
 ### 3. **Vite Best Practices**
+
 - Respectă comportamentul default Vite
 - Minimal intervention principle
 - Clean configuration
@@ -113,7 +123,9 @@ optimizeDeps: {
 ## 🔍 DEBUGGING PENTRU VIITOR
 
 ### Cum să Identifici Problema:
+
 1. **Symptome:**
+
    ```
    - npm run build ✅ (funcționează)
    - npm run preview ❌ (eșuează cu TDZ error)
@@ -121,13 +133,14 @@ optimizeDeps: {
    ```
 
 2. **Verificări:**
+
    ```bash
    # Verifică build-ul
    npm run build
-   
+
    # Testează preview
    npm run preview
-   
+
    # Deschide browser la http://localhost:5174
    # Verifică Network tab pentru failed requests
    ```
@@ -138,6 +151,7 @@ optimizeDeps: {
    - Verifică dacă variabilele sunt undefined
 
 ### Quick Fix Commands:
+
 ```bash
 # Dacă apare din nou problema:
 # 1. Verifică vite.config.ts
@@ -154,18 +168,21 @@ npm run preview
 ## 📋 CHECKLIST PENTRU VIITOR
 
 ### Când Modifici Vite Config:
+
 - [ ] Păstrează `exclude: ["@emotion/use-insertion-effect-with-fallbacks"]`
 - [ ] Nu adăuga plugin-uri custom pentru Emotion
 - [ ] Testează preview mode după orice modificare
 - [ ] Keep configuration minimal
 
 ### Red Flags (Semne de Alarmă):
+
 - ❌ Adăugarea de plugin-uri custom Emotion
 - ❌ Configurații complexe în optimizeDeps
 - ❌ Manual chunks pentru module Emotion
 - ❌ Global variable initialization în index.html
 
 ### Green Flags (Practici Corecte):
+
 - ✅ Configurație Vite minimală
 - ✅ Un singur exclude în optimizeDeps
 - ✅ Standard React + Emotion setup
@@ -174,6 +191,7 @@ npm run preview
 ## 🏆 REZULTATE FINALE
 
 **Înainte:**
+
 ```
 ❌ Preview failed cu TDZ error
 ❌ Aplicația nu se încărca
@@ -181,6 +199,7 @@ npm run preview
 ```
 
 **După:**
+
 ```
 ✅ Preview funcționează perfect
 ✅ Build time: ~24.56s
@@ -192,14 +211,17 @@ npm run preview
 ## 📝 LECȚII ÎNVĂȚATE
 
 1. **Simplitatea Învinge Complexitatea**
+
    - Soluția finală: 26 linii cod
    - Soluția complexă: 500+ linii plugin-uri
 
 2. **Root Cause Analysis**
+
    - Nu repara simptomele, repară cauza
    - Vite pre-bundling era problema, nu Emotion în sine
 
 3. **Respect the Tools**
+
    - Vite știe cum să gestioneze dependințele
    - Intervenia minimă este adesea cea mai bună
 

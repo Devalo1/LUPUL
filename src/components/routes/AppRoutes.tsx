@@ -28,6 +28,7 @@ import ResetPassword from "../../pages/ResetPassword";
 import Contact from "../../pages/Contact";
 import NotFound from "../../pages/NotFound";
 import PrivacyPolicy from "../../pages/PrivacyPolicy";
+import CookiePolicy from "../../pages/CookiePolicy";
 import GDPRPolicy from "../../pages/GDPRPolicy";
 import TermsAndConditions from "../../pages/TermsAndConditions";
 import ShippingPolicy from "../../pages/ShippingPolicy";
@@ -39,6 +40,7 @@ import PaymentSecurityPage from "../../pages/PaymentSecurityPage";
 import Ong from "../../pages/Ong";
 import Partners from "../../pages/Partners";
 import PaymentSimulation from "../../pages/PaymentSimulation";
+import Formular230Page from "../../pages/Formular230Page";
 
 // Pagini protejate (necesită autentificare)
 import Dashboard from "../../pages/Dashboard";
@@ -86,6 +88,7 @@ const AppRoutes = () => {
         <Route path="/reset-password" element={<ResetPassword />} />
         <Route path="/contact" element={<Contact />} />
         <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+        <Route path="/cookie-policy" element={<CookiePolicy />} />
         <Route path="/gdpr-policy" element={<GDPRPolicy />} />
         <Route path="/terms-and-conditions" element={<TermsAndConditions />} />
         <Route path="/shipping-policy" element={<ShippingPolicy />} />
@@ -96,6 +99,7 @@ const AppRoutes = () => {
         <Route path="/payment-security" element={<PaymentSecurityPage />} />
         <Route path="/payment-simulation" element={<PaymentSimulation />} />
         <Route path="/ong" element={<Ong />} />
+        <Route path="/formular-230" element={<Formular230Page />} />
         <Route path="/partners" element={<Partners />} />
         {/* Rute protejate (necesită autentificare) */}
         <Route

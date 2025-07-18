@@ -210,7 +210,12 @@ export const handler = async (event, context) => {
     });
 
     try {
-      paymentData = JSON.parse(event.body || "{}");
+      // Support base64-encoded bodies (e.g., local Netlify dev)
+      let rawBody = event.body || "";
+      if (event.isBase64Encoded) {
+        rawBody = Buffer.from(rawBody, "base64").toString("utf-8");
+      }
+      paymentData = JSON.parse(rawBody || "{}");
     } catch (jsonError) {
       console.error("❌ JSON Parse Error:", {
         error: jsonError.message,

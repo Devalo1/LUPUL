@@ -1,0 +1,223 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Emotion Debug Test</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        margin: 20px;
+        background: #f0f0f0;
+      }
+      .test-section {
+        background: white;
+        padding: 20px;
+        margin: 10px 0;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      }
+      .error {
+        color: red;
+      }
+      .success {
+        color: green;
+      }
+      .warning {
+        color: orange;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>🔍 Emotion TDZ Debug Test</h1>
+
+    <div class="test-section">
+      <h2>1. Global Variables Check</h2>
+      <div id="globals-check"></div>
+    </div>
+
+    <div class="test-section">
+      <h2>2. Emotion Files Loading Test</h2>
+      <div id="emotion-files-check"></div>
+    </div>
+
+    <div class="test-section">
+      <h2>3. Network Requests</h2>
+      <div id="network-check"></div>
+    </div>
+
+    <div class="test-section">
+      <h2>4. Console Errors</h2>
+      <div id="console-errors"></div>
+    </div>
+
+    <script>
+      // Capturează erorile console
+      const originalError = console.error;
+      const errors = [];
+      console.error = function (...args) {
+        errors.push(args.join(" "));
+        originalError.apply(console, args);
+      };
+
+      // Test 1: Global Variables
+      function checkGlobals() {
+        const globalsDiv = document.getElementById("globals-check");
+        const checks = [
+          { name: "globalThis", exists: typeof globalThis !== "undefined" },
+          { name: "window.R", exists: typeof window.R !== "undefined" },
+          {
+            name: "window.$RefreshSig$",
+            exists: typeof window.$RefreshSig$ !== "undefined",
+          },
+          {
+            name: "window.$RefreshReg$",
+            exists: typeof window.$RefreshReg$ !== "undefined",
+          },
+        ];
+
+        let html = "<ul>";
+        checks.forEach((check) => {
+          const status = check.exists
+            ? `<span class="success">✓ EXISTS</span>`
+            : `<span class="error">✗ MISSING</span>`;
+          html += `<li><strong>${check.name}:</strong> ${status}</li>`;
+        });
+        html += "</ul>";
+        globalsDiv.innerHTML = html;
+      }
+
+      // Test 2: Check network requests for emotion files
+      function checkEmotionFiles() {
+        const emotionDiv = document.getElementById("emotion-files-check");
+        emotionDiv.innerHTML =
+          "<p>Monitoring network requests for Emotion files...</p>";
+
+        // Override fetch to monitor requests
+        const originalFetch = window.fetch;
+        const requests = [];
+
+        window.fetch = function (...args) {
+          const url = args[0];
+          if (typeof url === "string" && url.includes("emotion")) {
+            requests.push({
+              url: url,
+              timestamp: new Date().toLocaleTimeString(),
+            });
+          }
+          return originalFetch.apply(this, args);
+        };
+
+        setTimeout(() => {
+          let html =
+            requests.length > 0
+              ? "<h4>Emotion requests detected:</h4><ul>"
+              : '<p class="warning">No Emotion requests detected yet.</p>';
+
+          requests.forEach((req) => {
+            html += `<li>${req.timestamp}: ${req.url}</li>`;
+          });
+
+          if (requests.length > 0) html += "</ul>";
+          emotionDiv.innerHTML = html;
+        }, 2000);
+      }
+
+      // Test 3: Monitor network errors
+      function checkNetwork() {
+        const networkDiv = document.getElementById("network-check");
+        let failedRequests = 0;
+
+        // Monitor failed requests
+        window.addEventListener("error", (e) => {
+          if (e.target.tagName === "SCRIPT") {
+            failedRequests++;
+            const error = `Failed to load: ${e.target.src}`;
+            networkDiv.innerHTML += `<p class="error">${error}</p>`;
+          }
+        });
+
+        setTimeout(() => {
+          if (failedRequests === 0) {
+            networkDiv.innerHTML =
+              '<p class="success">No failed script loads detected.</p>';
+          }
+        }, 3000);
+      }
+
+      // Test 4: Show console errors
+      function showConsoleErrors() {
+        const errorsDiv = document.getElementById("console-errors");
+
+        setTimeout(() => {
+          if (errors.length > 0) {
+            let html = "<h4>Console Errors:</h4><ul>";
+            errors.forEach((error) => {
+              html += `<li class="error">${error}</li>`;
+            });
+            html += "</ul>";
+            errorsDiv.innerHTML = html;
+          } else {
+            errorsDiv.innerHTML =
+              '<p class="success">No console errors detected.</p>';
+          }
+        }, 2000);
+      }
+
+      // Initialize TDZ prevention BEFORE any other scripts
+      (function () {
+        console.log("🔧 Initializing TDZ prevention...");
+
+        if (typeof globalThis !== "undefined") {
+          const g = globalThis;
+
+          // Initialize core variables that might be used by Emotion
+          if (!g.R)
+            g.R = function () {
+              return function () {};
+            };
+          if (!g.e) g.e = {};
+          if (!g.t) g.t = {};
+          if (!g.n) g.n = {};
+          if (!g.r)
+            g.r = {
+              useLayoutEffect: function (effect, deps) {
+                return function () {};
+              },
+              useEffect: function (effect, deps) {
+                return function () {};
+              },
+              useState: function (initial) {
+                return [initial, function () {}];
+              },
+            };
+
+          // React Refresh variables
+          g.$RefreshReg$ = g.$RefreshReg$ || function () {};
+          g.$RefreshSig$ =
+            g.$RefreshSig$ ||
+            function () {
+              return function () {};
+            };
+
+          console.log("✅ TDZ prevention initialized");
+          console.log("R type:", typeof g.R);
+        }
+      })();
+
+      // Run tests
+      document.addEventListener("DOMContentLoaded", () => {
+        checkGlobals();
+        checkEmotionFiles();
+        checkNetwork();
+        showConsoleErrors();
+      });
+
+      // Auto-refresh every 5 seconds
+      setInterval(() => {
+        checkGlobals();
+        showConsoleErrors();
+      }, 5000);
+    </script>
+  </body>
+</html>

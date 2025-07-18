@@ -12,7 +12,7 @@ import {
   Psychology as PsychologyIcon,
   LocalPharmacy as PharmacyIcon,
   Storage as StorageIcon,
-  Emergency as EmergencyIcon,
+  MedicalServices as EmergencyIcon,
   TrendingUp as TrendingUpIcon,
   CheckCircle as CheckCircleIcon,
 } from "@mui/icons-material";

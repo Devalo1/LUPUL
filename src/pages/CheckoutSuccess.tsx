@@ -8,6 +8,7 @@ import {
   FaInfoCircle,
 } from "react-icons/fa";
 import { checkAndNotifyOrderCompletion } from "../utils/orderCompletionNotifier";
+import { netopiaStatusService } from "../services/netopiaStatusService";
 
 interface LocationState {
   orderNumber?: string;
@@ -137,6 +138,28 @@ const CheckoutSuccess: React.FC = () => {
     }
   }, [state, location.search]);
 
+  // Poll payment status for card payments
+  useEffect(() => {
+    if (
+      orderDetails?.paymentMethod === "card" &&
+      orderDetails.paymentStatus === "pending"
+    ) {
+      netopiaStatusService
+        .pollPaymentStatus(orderDetails.orderNumber!) // assume orderNumber defined
+        .then((resp) => {
+          setOrderDetails(
+            (prev) => prev && { ...prev, paymentStatus: resp.status }
+          );
+        })
+        .catch((err) => {
+          console.error("Eroare la verificarea statusului plății:", err);
+          setOrderDetails(
+            (prev) => prev && { ...prev, paymentStatus: "failed" }
+          );
+        });
+    }
+  }, [orderDetails]);
+
   if (!orderDetails) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100 py-12 px-4">
@@ -150,6 +173,42 @@ const CheckoutSuccess: React.FC = () => {
         </div>
       </div>
     );
+  }
+
+  // Handle card payment pending and failure statuses
+  if (orderDetails.paymentMethod === "card") {
+    if (orderDetails.paymentStatus === "pending") {
+      return (
+        <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100 py-12 px-4">
+          <div className="bg-white rounded-lg shadow-xl p-8 max-w-md w-full text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+            <p className="text-gray-700">
+              Se verifică plata. Vă rugăm așteptați...
+            </p>
+          </div>
+        </div>
+      );
+    }
+    if (orderDetails.paymentStatus === "failed") {
+      return (
+        <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100 py-12 px-4">
+          <div className="bg-white rounded-lg shadow-xl p-8 max-w-md w-full border border-red-300">
+            <h2 className="text-2xl font-bold text-red-600 mb-4">
+              Plata nu a fost finalizată cu succes
+            </h2>
+            <p className="text-gray-700 mb-6">
+              Ne pare rău, dar plata cu cardul a eșuat sau a fost anulată.
+            </p>
+            <button
+              onClick={() => (window.location.href = "/checkout")}
+              className="bg-blue-600 text-white py-2 px-4 rounded hover:bg-blue-700"
+            >
+              Încearcă din nou
+            </button>
+          </div>
+        </div>
+      );
+    }
   }
 
   // Format date and time

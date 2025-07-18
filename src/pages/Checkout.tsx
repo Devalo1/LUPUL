@@ -7,7 +7,8 @@ import { useAuth } from "../contexts";
 import "../utils/testNetopia.js";
 import "../utils/netopiaDebug.js";
 
-const FUNCTION_URL = "https://sendorderemail-gcqoxopcwq-uc.a.run.app";
+// Use local Netlify function for order submission (proxied by Vite dev/preview server)
+const FUNCTION_URL = "/.netlify/functions/send-order-email";
 const isDevelopment = window.location.hostname === "localhost";
 
 const Checkout: React.FC = () => {
@@ -15,9 +16,12 @@ const Checkout: React.FC = () => {
   const { currentUser } = useAuth(); // Ensure currentUser is defined in AuthContextType
   const [formData, setFormData] = useState({
     name: "",
-    address: "",
-    phone: "",
     email: "",
+    address: "",
+    city: "",
+    county: "",
+    postalCode: "",
+    phone: "",
     paymentMethod: "cash",
   });
   const [cardData, setCardData] = useState({
@@ -268,17 +272,20 @@ const Checkout: React.FC = () => {
       if (isDevelopment) {
         return await simulateEmailSending();
       }
-
+      // Generate a unique order number for submission
+      const orderNumber = `LC-${Date.now()}`;
       const url = FUNCTION_URL;
-
       console.log(`Trimitere comandă către: ${url}`);
-
+      // Send structured payload expected by Netlify function
+      const payload = {
+        orderData,
+        orderNumber,
+        totalAmount: orderData.totalAmount,
+      };
       const response = await fetch(url, {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(orderData),
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
       });
 
       if (!response.ok) {
@@ -286,8 +293,9 @@ const Checkout: React.FC = () => {
         console.error("Eroare răspuns server:", errorText);
         throw new Error(`Eroare server: ${response.status} - ${errorText}`);
       }
-
-      return await response.json();
+      const resultJson = await response.json();
+      // Include our generated orderNumber for downstream use
+      return { ...resultJson, orderNumber };
     } catch (err) {
       console.error("Eroare în submitOrderWithFetch:", err);
       throw err;
@@ -344,6 +352,22 @@ const Checkout: React.FC = () => {
     }
   };
 
+  // Validate card number using Luhn algorithm
+  const luhnCheck = (num: string): boolean => {
+    let sum = 0;
+    let shouldDouble = false;
+    for (let i = num.length - 1; i >= 0; i--) {
+      let digit = parseInt(num.charAt(i), 10);
+      if (shouldDouble) {
+        digit *= 2;
+        if (digit > 9) digit -= 9;
+      }
+      sum += digit;
+      shouldDouble = !shouldDouble;
+    }
+    return sum % 10 === 0;
+  };
+
   const validateCardData = () => {
     if (!cardData.cardHolderName.trim()) {
       setError("Te rugăm să introduci numele de pe card.");
@@ -357,25 +381,42 @@ const Checkout: React.FC = () => {
       );
       return false;
     }
-
-    if (!cardData.expiryDate || cardData.expiryDate.length !== 5) {
-      setError("Te rugăm să introduci data expirării în formatul MM/YY.");
+    // Check card number validity via Luhn algorithm
+    if (!luhnCheck(cardNumber)) {
+      setError(
+        "Numărul cardului nu este valid conform algoritmului Luhn. Te rugăm să verifici numărul cardului."
+      );
       return false;
     }
 
-    // Verificăm dacă data expirării nu este în trecut
-    const [month, year] = cardData.expiryDate.split("/");
-    const expiryDate = new Date(2000 + parseInt(year), parseInt(month) - 1);
+    // Validate expiry date format MM/YY
+    if (!cardData.expiryDate || !/^\d{2}\/\d{2}$/.test(cardData.expiryDate)) {
+      setError(
+        "Te rugăm să introduci data expirării în formatul MM/YY (ex: 07/25)."
+      );
+      return false;
+    }
+    const [monthStr, yearStr] = cardData.expiryDate.split("/");
+    const monthNum = parseInt(monthStr, 10);
+    const yearNum = parseInt(yearStr, 10);
+    if (isNaN(monthNum) || monthNum < 1 || monthNum > 12) {
+      setError(
+        "Luna expirării nu este validă. Te rugăm să verifici data expirării."
+      );
+      return false;
+    }
+    // Check if expiry date is in the past
+    const expiryDate = new Date(2000 + yearNum, monthNum - 1);
     const currentDate = new Date();
-    currentDate.setDate(1); // Setăm la prima zi a lunii pentru comparație corectă
-
+    currentDate.setDate(1);
     if (expiryDate < currentDate) {
       setError("Cardul a expirat. Te rugăm să folosești un card valid.");
       return false;
     }
 
-    if (!cardData.cvv || cardData.cvv.length < 3 || cardData.cvv.length > 4) {
-      setError("CVV-ul trebuie să aibă 3 sau 4 cifre.");
+    // Validate CVV is numeric and 3-4 digits
+    if (!/^[0-9]{3,4}$/.test(cardData.cvv)) {
+      setError("CVV-ul trebuie să conțină 3 sau 4 cifre numerice.");
       return false;
     }
 
@@ -452,10 +493,23 @@ const Checkout: React.FC = () => {
             `Comandă ${orderData.orderNumber} - ${items.length} produse`
           );
 
-          const paymentUrl = await netopiaService.initiatePayment(paymentData);
-
-          // Redirectăm către pagina de plată Netopia
-          window.location.href = paymentUrl;
+          const paymentResponse =
+            await netopiaService.initiatePayment(paymentData);
+          // Dacă răspunsul este HTML (3DS), deschidem popup și injectăm form-ul
+          if (paymentResponse.trim().startsWith("<")) {
+            const popup = window.open("", "netopia3ds", "width=400,height=600");
+            if (popup) {
+              popup.document.write(paymentResponse);
+              popup.document.close();
+            } else {
+              setError(
+                "Nu s-a putut deschide fereastra de plată securizată. Te rugăm să permiți pop-up-uri și să încerci din nou."
+              );
+            }
+          } else {
+            // Redirect către URL
+            window.location.href = paymentResponse;
+          }
           return;
         } catch (netopiaError) {
           console.error("Eroare la inițializarea Netopia:", netopiaError);
@@ -561,7 +615,7 @@ const Checkout: React.FC = () => {
         <div className="lg:w-1/2">
           <form
             onSubmit={handleSubmit}
-            className="bg-white rounded-lg shadow-md p-8 checkout-form"
+            className="bg-white text-gray-800 rounded-lg shadow-md p-8 checkout-form"
           >
             <h2 className="text-xl font-semibold mb-6 text-gray-800">
               Date comandă
@@ -577,9 +631,10 @@ const Checkout: React.FC = () => {
                 type="text"
                 id="name"
                 name="name"
+                placeholder="Nume complet"
                 value={formData.name}
                 onChange={handleInputChange}
-                className="w-full border border-gray-300 rounded px-3 py-2 text-gray-800 bg-white focus:bg-white focus:text-gray-800 focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
+                className="w-full border border-gray-300 rounded px-3 py-2 text-gray-800 placeholder-gray-400 bg-white focus:bg-white focus:text-gray-800 focus:placeholder-gray-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
                 required
               />
             </div>
@@ -595,9 +650,10 @@ const Checkout: React.FC = () => {
                 type="email"
                 id="email"
                 name="email"
+                placeholder="Email"
                 value={formData.email}
                 onChange={handleInputChange}
-                className="w-full border border-gray-300 rounded px-3 py-2 text-gray-800 bg-white focus:bg-white focus:text-gray-800 focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
+                className="w-full border border-gray-300 rounded px-3 py-2 text-gray-800 placeholder-gray-400 bg-white focus:bg-white focus:text-gray-800 focus:placeholder-gray-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
                 required
               />
             </div>
@@ -613,9 +669,67 @@ const Checkout: React.FC = () => {
                 type="text"
                 id="address"
                 name="address"
+                placeholder="Adresă"
                 value={formData.address}
                 onChange={handleInputChange}
-                className="w-full border border-gray-300 rounded px-3 py-2 text-gray-800 bg-white focus:bg-white focus:text-gray-800 focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
+                className="w-full border border-gray-300 rounded px-3 py-2 text-gray-800 placeholder-gray-400 bg-white focus:bg-white focus:text-gray-800 focus:placeholder-gray-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
+                required
+              />
+            </div>
+            {/* Oraș */}
+            <div className="mb-4">
+              <label
+                htmlFor="city"
+                className="block font-semibold mb-2 text-gray-700"
+              >
+                Oraș
+              </label>
+              <input
+                type="text"
+                id="city"
+                name="city"
+                placeholder="Oraș"
+                value={formData.city}
+                onChange={handleInputChange}
+                className="w-full border border-gray-300 rounded px-3 py-2 text-gray-800 placeholder-gray-400 bg-white focus:bg-white focus:text-gray-800 focus:placeholder-gray-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
+                required
+              />
+            </div>
+            {/* Județ */}
+            <div className="mb-4">
+              <label
+                htmlFor="county"
+                className="block font-semibold mb-2 text-gray-700"
+              >
+                Județ
+              </label>
+              <input
+                type="text"
+                id="county"
+                name="county"
+                placeholder="Județ"
+                value={formData.county}
+                onChange={handleInputChange}
+                className="w-full border border-gray-300 rounded px-3 py-2 text-gray-800 placeholder-gray-400 bg-white focus:bg-white focus:text-gray-800 focus:placeholder-gray-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
+                required
+              />
+            </div>
+            {/* Cod poștal */}
+            <div className="mb-4">
+              <label
+                htmlFor="postalCode"
+                className="block font-semibold mb-2 text-gray-700"
+              >
+                Cod poștal
+              </label>
+              <input
+                type="text"
+                id="postalCode"
+                name="postalCode"
+                placeholder="Cod poștal"
+                value={formData.postalCode}
+                onChange={handleInputChange}
+                className="w-full border border-gray-300 rounded px-3 py-2 text-gray-800 placeholder-gray-400 bg-white focus:bg-white focus:text-gray-800 focus:placeholder-gray-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
                 required
               />
             </div>
@@ -630,9 +744,10 @@ const Checkout: React.FC = () => {
                 type="text"
                 id="phone"
                 name="phone"
+                placeholder="Telefon"
                 value={formData.phone}
                 onChange={handleInputChange}
-                className="w-full border border-gray-300 rounded px-3 py-2 text-gray-800 bg-white focus:bg-white focus:text-gray-800 focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
+                className="w-full border border-gray-300 rounded px-3 py-2 text-gray-800 placeholder-gray-400 bg-white focus:bg-white focus:text-gray-800 focus:placeholder-gray-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
                 required
               />
             </div>

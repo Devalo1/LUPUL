@@ -19,6 +19,74 @@
   to = "/.netlify/functions/:splat"
   status = 200
 
+# CRITICAL: Nu redirecționa fișierele statice
+[[redirects]]
+  from = "/assets/*"
+  to = "/assets/:splat"
+  status = 200
+
+[[redirects]]
+  from = "/*.js"
+  to = "/:splat"
+  status = 200
+  force = true
+  headers = {Content-Type = "application/javascript"}
+
+[[redirects]]
+  from = "/*.mjs"
+  to = "/:splat"
+  status = 200
+  force = true
+  headers = {Content-Type = "application/javascript"}
+
+[[redirects]]
+  from = "/*.css"
+  to = "/:splat"
+  status = 200
+  force = true
+  headers = {Content-Type = "text/css"}
+
+[[redirects]]
+  from = "/*.woff"
+  to = "/:splat"
+  status = 200
+
+[[redirects]]
+  from = "/*.woff2"
+  to = "/:splat"
+  status = 200
+
+[[redirects]]
+  from = "/*.svg"
+  to = "/:splat"
+  status = 200
+
+[[redirects]]
+  from = "/*.png"
+  to = "/:splat"
+  status = 200
+
+[[redirects]]
+  from = "/*.jpg"
+  to = "/:splat"
+  status = 200
+
+[[redirects]]
+  from = "/*.jpeg"
+  to = "/:splat"
+  status = 200
+
+[[redirects]]
+  from = "/*.gif"
+  to = "/:splat"
+  status = 200
+
+[[redirects]]
+  from = "/*.ico"
+  to = "/:splat"
+  status = 200
+
+# Doar DUPĂ toate fișierele statice, redirecționează totul către SPA
 [[redirects]]
   from = "/*"
   to = "/index.html"
@@ -26,7 +94,25 @@
 
 # Cache Control pentru fișierele statice
 [[headers]]
-  for = "/*.(js|css|svg|jpg|jpeg|png|gif|webp|ico|woff|woff2)"
+  for = "/assets/*.js"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+    Content-Type = "application/javascript; charset=utf-8"
+
+[[headers]]
+  for = "/*.js"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+    Content-Type = "application/javascript; charset=utf-8"
+
+[[headers]]
+  for = "/assets/*.css"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+    Content-Type = "text/css; charset=utf-8"
+
+[[headers]]
+  for = "/*.(css|svg|jpg|jpeg|png|gif|webp|ico|woff|woff2)"
   [headers.values]
     Cache-Control = "public, max-age=31536000, immutable"
 

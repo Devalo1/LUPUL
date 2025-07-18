@@ -8,7 +8,8 @@ import { getTherapyResponse } from "../services/openaiService";
 export const fetchAIResponseSafe = async (
   userMessage: string,
   assistantProfile?: AssistantProfile,
-  userId?: string
+  userId?: string,
+  historyMessages?: Array<{ role: string; content: string }>
 ): Promise<string> => {
   console.log("[fetchAIResponseSafe] Starting AI request...");
   console.log("[fetchAIResponseSafe] User ID:", userId);
@@ -17,12 +18,30 @@ export const fetchAIResponseSafe = async (
     userMessage.substring(0, 100)
   );
 
+  // Include user name memory and conversation history in context if available
+  const prefixMessages: Array<{ role: string; content: string }> = [];
+  if (memorizedUserName) {
+    console.log(
+      "[fetchAIResponseSafe] Injecting memorized user name into context:",
+      memorizedUserName
+    );
+    prefixMessages.push({
+      role: "system",
+      content: `Numele utilizatorului este ${memorizedUserName}.`,
+    });
+  }
   try {
-    // Primary: Try local getTherapyResponse first (most reliable)
+    // Primary: Try local getTherapyResponse first (with full context)
     console.log("[fetchAIResponseSafe] Using local therapy response...");
 
+    // Build messages array: memory, history, then current user message
+    const localMessages = [
+      ...prefixMessages,
+      ...(historyMessages || []),
+      { role: "user", content: userMessage },
+    ];
     const localResponse = await getTherapyResponse(
-      [{ role: "user", content: userMessage }],
+      localMessages,
       undefined,
       undefined,
       userId
@@ -178,7 +197,9 @@ let memorizedUserName: string | null = null;
 const extractName = (msg: string): string | null => {
   // Caută patternuri de prezentare: "ma numesc X", "sunt X", "numele meu este X"
   const lower = msg.toLowerCase();
-  let match = lower.match(/(?:ma numesc|mă numesc|numele meu este|sunt)\s+([a-zăâîșț\- ]{2,})/i);
+  let match = lower.match(
+    /(?:ma numesc|mă numesc|numele meu este|sunt)\s+([a-zăâîșț\- ]{2,})/i
+  );
   if (match && match[1]) {
     // Returnează numele cu majusculă la început
     return match[1].trim().replace(/\b\w/g, (l) => l.toUpperCase());

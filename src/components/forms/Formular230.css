@@ -1,0 +1,27 @@
+/* Formular230.css */
+
+.formular-230-container,
+.formular-230-container h2,
+.formular-230-container h3,
+.formular-230-container h4,
+.formular-230-container p,
+.formular-230-container label,
+.formular-230-container li {
+  color: #1f2937 !important; /* !important to override conflicting styles */
+}
+
+.formular-230-container .info-box,
+.formular-230-container .info-box h4,
+.formular-230-container .info-box li {
+  color: #374151 !important;
+}
+
+.formular-230-container input,
+.formular-230-container select {
+  color: #111827 !important;
+  background-color: #ffffff !important;
+}
+
+.formular-230-container input[readonly] {
+  background-color: #f3f4f6 !important;
+}

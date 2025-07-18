@@ -4,6 +4,7 @@ import { doc, getDoc, setDoc } from "firebase/firestore";
 import { db } from "../../firebase";
 import { toast } from "react-toastify";
 import jsPDF from "jspdf";
+import "./Formular230.css";
 
 interface FormData {
   nume: string;
@@ -17,8 +18,8 @@ interface FormData {
   email: string;
   venitAnual: string;
   impozitCalculat: string;
-  procentRedirecționat: string;
-  sumaRedirecționată: string;
+  procentRedirectionat: string;
+  sumaRedirectionata: string;
 }
 
 const Formular230: React.FC = () => {
@@ -35,8 +36,8 @@ const Formular230: React.FC = () => {
     email: "",
     venitAnual: "",
     impozitCalculat: "",
-    procentRedirecționat: "3.5",
-    sumaRedirecționată: "",
+    procentRedirectionat: "3.5",
+    sumaRedirectionata: "",
   });
   const [saving, setSaving] = useState(false);
 
@@ -70,16 +71,16 @@ const Formular230: React.FC = () => {
 
   // Calculează suma redirecționată automat
   useEffect(() => {
-    if (formData.impozitCalculat && formData.procentRedirecționat) {
+    if (formData.impozitCalculat && formData.procentRedirectionat) {
       const impozit = parseFloat(formData.impozitCalculat);
-      const procent = parseFloat(formData.procentRedirecționat);
+      const procent = parseFloat(formData.procentRedirectionat);
       const suma = (impozit * procent) / 100;
       setFormData((prev) => ({
         ...prev,
-        sumaRedirecționată: suma.toFixed(2),
+        sumaRedirectionata: suma.toFixed(2),
       }));
     }
-  }, [formData.impozitCalculat, formData.procentRedirecționat]);
+  }, [formData.impozitCalculat, formData.procentRedirectionat]);
 
   const handleInputChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
@@ -172,13 +173,13 @@ const Formular230: React.FC = () => {
     pdf.text(`Impozitul calculat: ${formData.impozitCalculat} RON`, 20, yPos);
     yPos += lineHeight;
     pdf.text(
-      `Procent redirecționat: ${formData.procentRedirecționat}%`,
+      `Procent redirecționat: ${formData.procentRedirectionat}%`,
       20,
       yPos
     );
     yPos += lineHeight;
     pdf.text(
-      `Suma redirecționată: ${formData.sumaRedirecționată} RON`,
+      `Suma redirecționată: ${formData.sumaRedirectionata} RON`,
       20,
       yPos
     );
@@ -240,11 +241,11 @@ const Formular230: React.FC = () => {
   };
   if (!user) {
     return (
-      <div className="bg-blue-50 p-6 rounded-lg shadow-md border border-blue-200">
+      <div className="bg-gray-50 p-6 rounded-lg shadow-md border border-gray-200">
         <div className="text-center">
           <div className="mb-4">
             <svg
-              className="mx-auto h-16 w-16 text-blue-400"
+              className="mx-auto h-16 w-16 text-gray-400"
               fill="currentColor"
               viewBox="0 0 20 20"
             >
@@ -255,10 +256,10 @@ const Formular230: React.FC = () => {
               />
             </svg>
           </div>
-          <h3 className="text-lg font-semibold text-blue-900 mb-2">
+          <h3 className="text-lg font-semibold text-gray-800 mb-2">
             Autentificare necesară
           </h3>
-          <p className="text-blue-700 mb-4">
+          <p className="text-gray-600 mb-4">
             Pentru a accesa formularul 230, trebuie să te autentifici mai întâi.
           </p>
           <a
@@ -272,16 +273,16 @@ const Formular230: React.FC = () => {
     );
   }
   return (
-    <div className="bg-blue-50 p-6 rounded-lg shadow-md border border-blue-200">
-      <h2 className="text-2xl font-bold mb-6 text-center text-blue-900">
+    <div className="formular-230-container bg-white p-8 rounded-lg shadow-lg border border-gray-200">
+      <h2 className="text-2xl font-bold mb-6 text-center">
         Formular 230 - Redirecționare 3.5%
       </h2>
 
       <form onSubmit={handleSubmit} className="space-y-6">
         {/* Datele personale */}{" "}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div>
-            <label className="block text-sm font-medium text-blue-800 mb-2">
+            <label className="block text-sm font-medium text-gray-700 mb-1">
               Nume *
             </label>
             <input
@@ -289,13 +290,13 @@ const Formular230: React.FC = () => {
               name="nume"
               value={formData.nume}
               onChange={handleInputChange}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 bg-white"
               required
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-blue-800 mb-2">
+            <label className="block text-sm font-medium text-gray-700 mb-1">
               Prenume *
             </label>
             <input
@@ -303,13 +304,13 @@ const Formular230: React.FC = () => {
               name="prenume"
               value={formData.prenume}
               onChange={handleInputChange}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 bg-white"
               required
             />
           </div>
         </div>
         <div>
-          <label className="block text-sm font-medium text-blue-800 mb-2">
+          <label className="block text-sm font-medium text-gray-700 mb-1">
             CNP *
           </label>
           <input
@@ -318,13 +319,13 @@ const Formular230: React.FC = () => {
             value={formData.cnp}
             onChange={handleInputChange}
             maxLength={13}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 bg-white"
             required
           />
         </div>
         {/* Adresa */}
         <div>
-          <label className="block text-sm font-medium text-blue-800 mb-2">
+          <label className="block text-sm font-medium text-gray-700 mb-1">
             Adresa *
           </label>
           <input
@@ -332,13 +333,13 @@ const Formular230: React.FC = () => {
             name="adresa"
             value={formData.adresa}
             onChange={handleInputChange}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 bg-white"
             required
           />
         </div>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <div>
-            <label className="block text-sm font-medium text-blue-800 mb-2">
+            <label className="block text-sm font-medium text-gray-700 mb-1">
               Județul *
             </label>
             <input
@@ -346,13 +347,13 @@ const Formular230: React.FC = () => {
               name="judet"
               value={formData.judet}
               onChange={handleInputChange}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 bg-white"
               required
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-blue-800 mb-2">
+            <label className="block text-sm font-medium text-gray-700 mb-1">
               Orașul *
             </label>
             <input
@@ -360,13 +361,13 @@ const Formular230: React.FC = () => {
               name="oras"
               value={formData.oras}
               onChange={handleInputChange}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 bg-white"
               required
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-blue-800 mb-2">
+            <label className="block text-sm font-medium text-gray-700 mb-1">
               Cod poștal
             </label>
             <input
@@ -374,14 +375,14 @@ const Formular230: React.FC = () => {
               name="codPostal"
               value={formData.codPostal}
               onChange={handleInputChange}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 bg-white"
             />
           </div>
         </div>
         {/* Contact */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div>
-            <label className="block text-sm font-medium text-blue-800 mb-2">
+            <label className="block text-sm font-medium text-gray-700 mb-1">
               Telefon
             </label>
             <input
@@ -389,12 +390,12 @@ const Formular230: React.FC = () => {
               name="telefon"
               value={formData.telefon}
               onChange={handleInputChange}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 bg-white"
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-blue-800 mb-2">
+            <label className="block text-sm font-medium text-gray-700 mb-1">
               Email *
             </label>
             <input
@@ -402,20 +403,20 @@ const Formular230: React.FC = () => {
               name="email"
               value={formData.email}
               onChange={handleInputChange}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 bg-white"
               required
             />
           </div>
         </div>
         {/* Informații financiare */}{" "}
-        <div className="border-t border-blue-300 pt-6">
-          <h3 className="text-lg font-semibold mb-4 text-blue-900">
+        <div className="border-t border-gray-200 pt-6">
+          <h3 className="text-lg font-semibold mb-4 text-gray-900">
             Informații financiare
           </h3>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
-              <label className="block text-sm font-medium text-blue-800 mb-2">
+              <label className="block text-sm font-medium text-gray-700 mb-1">
                 Venitul anual brut (RON)
               </label>
               <input
@@ -423,12 +424,12 @@ const Formular230: React.FC = () => {
                 name="venitAnual"
                 value={formData.venitAnual}
                 onChange={handleInputChange}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 bg-white"
               />
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-blue-800 mb-2">
+              <label className="block text-sm font-medium text-gray-700 mb-1">
                 Impozitul calculat (RON)
               </label>
               <input
@@ -436,21 +437,21 @@ const Formular230: React.FC = () => {
                 name="impozitCalculat"
                 value={formData.impozitCalculat}
                 onChange={handleInputChange}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 bg-white"
               />
             </div>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-4">
             <div>
-              <label className="block text-sm font-medium text-blue-800 mb-2">
+              <label className="block text-sm font-medium text-gray-700 mb-1">
                 Procent redirecționat (%)
               </label>
               <select
-                name="procentRedirecționat"
-                value={formData.procentRedirecționat}
+                name="procentRedirectionat"
+                value={formData.procentRedirectionat}
                 onChange={handleInputChange}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 bg-white"
               >
                 <option value="2">2%</option>
                 <option value="3.5">3.5%</option>
@@ -458,15 +459,15 @@ const Formular230: React.FC = () => {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-blue-800 mb-2">
+              <label className="block text-sm font-medium text-gray-700 mb-1">
                 Suma redirecționată (RON)
               </label>
               <input
                 type="text"
-                name="sumaRedirecționată"
-                value={formData.sumaRedirecționată}
+                name="sumaRedirectionata"
+                value={formData.sumaRedirectionata}
                 readOnly
-                className="w-full px-3 py-2 border border-gray-300 rounded-md bg-blue-100 text-blue-900"
+                className="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-100 text-gray-900 font-medium"
               />
             </div>
           </div>
@@ -491,17 +492,18 @@ const Formular230: React.FC = () => {
         </div>
       </form>
 
-      <div className="mt-6 p-4 bg-blue-50 rounded-lg">
-        <h4 className="font-semibold text-blue-800 mb-2">
+      <div className="mt-8 p-4 bg-gray-50 rounded-lg border border-gray-200">
+        <h4 className="font-semibold text-gray-800 mb-2">
           Informații importante:
         </h4>
-        <ul className="text-sm text-blue-700 space-y-1">
-          <li>• Formularul 230 trebuie depus până la 25 mai</li>
-          <li>• Poți redirecționa până la 3.5% din impozitul pe venit</li>
+        <ul className="text-sm text-gray-600 space-y-1 list-disc list-inside">
+          <li>Formularul 230 trebuie depus până la 25 mai.</li>
+          <li>Puteți redirecționa până la 3.5% din impozitul pe venit.</li>
           <li>
-            • Datele tale sunt salvate în siguranță și pot fi editate oricând
+            Datele dumneavoastră sunt salvate în siguranță și pot fi editate
+            oricând.
           </li>
-          <li>• PDF-ul generat poate fi printat și depus la ANAF</li>
+          <li>PDF-ul generat poate fi printat și depus la ANAF.</li>
         </ul>
       </div>
     </div>

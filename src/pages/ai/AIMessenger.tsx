@@ -108,10 +108,16 @@ const AIMessenger: React.FC = () => {
         console.log(
           `[AIMessenger] Calling fetchAIResponse with userId: ${user?.uid}`
         );
+        // Gather full conversation history
+        const historyMessages = activeConversation?.messages.map((msg) => ({
+          role: msg.sender === "user" ? "user" : "assistant",
+          content: msg.content,
+        }));
         const aiReply = await fetchAIResponse(
           userMessage,
           assistantProfile,
-          user?.uid
+          user?.uid,
+          historyMessages
         );
 
         console.log(

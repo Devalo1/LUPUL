@@ -116,7 +116,20 @@ class NetopiaPayments {
         console.error("Netopia API Error:", errorText);
         throw new Error(`Eroare la inițierea plății: ${response.status}`);
       }
-      const data = await response.json();
+      const contentType = response.headers.get("content-type") || "";
+      const bodyText = await response.text();
+      // If HTML form returned (3DS), return raw HTML
+      if (contentType.includes("text/html") || bodyText.includes("<html")) {
+        return bodyText;
+      }
+      // Otherwise parse JSON for paymentUrl
+      let data;
+      try {
+        data = JSON.parse(bodyText);
+      } catch (e) {
+        console.error("Unexpected Netopia response:", bodyText);
+        throw new Error("Răspuns necunoscut de la Netopia");
+      }
       if (!data.paymentUrl) {
         console.error("No payment URL received:", data);
         throw new Error("Nu s-a primit URL-ul de plată de la Netopia");

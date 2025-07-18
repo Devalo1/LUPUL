@@ -2,133 +2,30 @@
 <html lang="ro">
   <head>
     <meta charset="UTF-8" />
-    <!-- ULTIMATE TDZ FIX - PRIMUL SCRIPT DIN DOCUMENT -->
-    <script>
-      // AGGRESSIVE TDZ FIX - execută SINCRON și PRIMUL
-      (function() {
-        'use strict';
-        
-        // Definim variabilele pe window IMEDIAT și le protejăm
-        const protectedVars = {
-          R: function() { return function() {}; },
-          e: {},
-          t: {},
-          n: {},
-          r: {},
-          o: {},
-          i: {},
-          a: {},
-          u: {},
-          c: {},
-          s: {},
-          l: {},
-          f: {},
-          d: {},
-          p: {},
-          h: {},
-          v: {},
-          g: {},
-          m: {},
-          y: {},
-          b: {},
-          w: {},
-          x: {},
-          k: {},
-          j: {},
-          q: {},
-          z: {}
-        };
-        
-        // Aplicăm variabilele cu setare simplă (evităm defineProperty)
-        Object.keys(protectedVars).forEach(function(key) {
-          if (!(key in window)) {
-            // Setare directă - cea mai sigură metodă
-            window[key] = protectedVars[key];
-          }
-        });
-        
-        // Emotion și React specifics
-        window.__emotion_cache__ = new Map();
-        window.__emotion_styles__ = new Map();
-        window.__emotion_inserted__ = new Set();
-        window.__emotion_sheet__ = null;
-        window.__emotion_global__ = {};
-        window.$RefreshReg$ = function() {};
-        window.$RefreshSig$ = function() { return function() {}; };
-        
-        // Pre-definim React hooks pentru compatibility
-        if (!window.React) {
-          window.React = {
-            useInsertionEffect: undefined,
-            useLayoutEffect: function useLayoutEffect(effect, deps) { 
-              // Fallback pentru useLayoutEffect
-              return function() {};
-            },
-            useEffect: function useEffect(effect, deps) { 
-              return function() {};
-            },
-            useState: function useState(initial) { 
-              return [initial, function() {}]; 
-            },
-            useCallback: function useCallback(fn, deps) { 
-              return fn; 
-            },
-            useMemo: function useMemo(fn, deps) { 
-              try {
-                return fn();
-              } catch(e) {
-                return null;
-              }
-            },
-            createElement: function createElement() {
-              return null;
-            },
-            createContext: function createContext() {
-              return {};
-            }
-          };
-        }
-        
-        // Asigurăm că variabila 'r' (care va fi React în vendor-react) este disponibilă global
-        if (!window.r) {
-          window.r = {
-            useLayoutEffect: function useLayoutEffect(effect, deps) { 
-              return function() {};
-            },
-            useEffect: function useEffect(effect, deps) { 
-              return function() {};
-            },
-            useState: function useState(initial) { 
-              return [initial, function() {}]; 
-            }
-          };
-        }
-        
-        console.info('[TDZ Fix] Variables initialized and ready for Emotion override');
-      })();
-    </script>
-    <link rel="icon" type="image/png" href="/images/LC.png" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Lupul și Corbul - Empatie, Conexiune, Echilibru</title>
+
     <meta
       name="description"
       content="Lupul și Corbul - Empatie, Conexiune, Echilibru. Servicii terapeutice, produse pentru bunăstare și proiecte comunitare."
     />
     <meta name="theme-color" content="#3b82f6" />
+
+    <link rel="icon" type="image/png" href="/images/LC.png" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
       href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap"
       rel="stylesheet"
     />
-    <!-- Allow popups to close windows under cross-origin opener policy -->
+
     <meta
       http-equiv="Cross-Origin-Opener-Policy"
       content="same-origin-allow-popups"
     />
-    <title>Lupul și Corbul - Empatie, Conexiune, Echilibru</title>
   </head>
   <body>
     <div id="root"></div>
-    <script type="module" src="./src/main.tsx"></script>
+    <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>

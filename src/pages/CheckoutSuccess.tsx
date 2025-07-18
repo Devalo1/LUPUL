@@ -7,6 +7,7 @@ import {
   FaUser,
   FaInfoCircle,
 } from "react-icons/fa";
+import { checkAndNotifyOrderCompletion } from "../utils/orderCompletionNotifier";
 
 interface LocationState {
   orderNumber?: string;
@@ -74,6 +75,15 @@ const CheckoutSuccess: React.FC = () => {
                 "lastOrderDetails",
                 JSON.stringify(orderWithPaymentStatus)
               );
+
+              // Trimitem notificarea de finalizare dacă plata este confirmată
+              if (netopiaOrderId && paymentStatus) {
+                checkAndNotifyOrderCompletion(
+                  netopiaOrderId,
+                  paymentStatus,
+                  orderWithPaymentStatus
+                );
+              }
 
               return;
             }

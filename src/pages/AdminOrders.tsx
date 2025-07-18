@@ -1,5 +1,14 @@
 import React, { useState, useEffect } from "react";
-import { collection, getDocs, doc, updateDoc, query, orderBy, where, Timestamp } from "firebase/firestore";
+import {
+  collection,
+  getDocs,
+  doc,
+  updateDoc,
+  query,
+  orderBy,
+  where,
+  Timestamp,
+} from "firebase/firestore";
 import { db } from "../firebase";
 
 interface OrderItem {
@@ -34,7 +43,7 @@ const AdminOrders: React.FC = () => {
   const [filter, setFilter] = useState<string>("all");
   const [searchTerm, setSearchTerm] = useState<string>("");
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
-  
+
   // Modal state
   const [isUpdateModalOpen, setIsUpdateModalOpen] = useState<boolean>(false);
   const [newStatus, setNewStatus] = useState<string>("");
@@ -49,9 +58,12 @@ const AdminOrders: React.FC = () => {
     setLoading(true);
     try {
       let ordersQuery;
-      
+
       if (filter === "all") {
-        ordersQuery = query(collection(db, "orders"), orderBy("orderDate", "desc"));
+        ordersQuery = query(
+          collection(db, "orders"),
+          orderBy("orderDate", "desc")
+        );
       } else {
         ordersQuery = query(
           collection(db, "orders"),
@@ -59,17 +71,20 @@ const AdminOrders: React.FC = () => {
           orderBy("orderDate", "desc")
         );
       }
-      
+
       const snapshot = await getDocs(ordersQuery);
-      
+
       if (snapshot.empty) {
         setOrders([]);
       } else {
-        const ordersList = snapshot.docs.map(doc => ({
-          id: doc.id,
-          ...doc.data()
-        } as Order));
-        
+        const ordersList = snapshot.docs.map(
+          (doc) =>
+            ({
+              id: doc.id,
+              ...doc.data(),
+            }) as Order
+        );
+
         setOrders(ordersList);
       }
     } catch (err) {
@@ -82,7 +97,7 @@ const AdminOrders: React.FC = () => {
 
   const formatDate = (timestamp: any) => {
     if (!timestamp) return "Data necunoscută";
-    
+
     try {
       const date = timestamp.toDate ? timestamp.toDate() : new Date(timestamp);
       return date.toLocaleDateString("ro-RO", {
@@ -90,7 +105,7 @@ const AdminOrders: React.FC = () => {
         month: "long",
         day: "numeric",
         hour: "2-digit",
-        minute: "2-digit"
+        minute: "2-digit",
       });
     } catch (e) {
       return "Format invalid";
@@ -100,7 +115,7 @@ const AdminOrders: React.FC = () => {
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat("ro-RO", {
       style: "currency",
-      currency: "RON"
+      currency: "RON",
     }).format(amount);
   };
 
@@ -123,41 +138,44 @@ const AdminOrders: React.FC = () => {
 
   const getStatusDisplayName = (status: string) => {
     const statusMap: Record<string, string> = {
-      "pending": "În așteptare",
-      "processing": "În procesare",
-      "shipped": "Expediat",
-      "delivered": "Livrat",
-      "cancelled": "Anulat"
+      pending: "În așteptare",
+      processing: "În procesare",
+      shipped: "Expediat",
+      delivered: "Livrat",
+      cancelled: "Anulat",
     };
-    
+
     return statusMap[status] || status;
   };
 
   const handleUpdateStatus = async () => {
     if (!selectedOrder) return;
-    
+
     try {
       const orderRef = doc(db, "orders", selectedOrder.id);
-      
+
       await updateDoc(orderRef, {
         status: newStatus,
-        trackingNumber: trackingNumber.trim() || selectedOrder.trackingNumber || "",
+        trackingNumber:
+          trackingNumber.trim() || selectedOrder.trackingNumber || "",
         notes: notes.trim() || selectedOrder.notes || "",
-        updatedAt: Timestamp.now()
+        updatedAt: Timestamp.now(),
       });
-      
+
       // Update the local state
-      setOrders(orders.map(order => 
-        order.id === selectedOrder.id 
-          ? {
-              ...order,
-              status: newStatus as any,
-              trackingNumber: trackingNumber.trim() || order.trackingNumber,
-              notes: notes.trim() || order.notes
-            } 
-          : order
-      ));
-      
+      setOrders(
+        orders.map((order) =>
+          order.id === selectedOrder.id
+            ? {
+                ...order,
+                status: newStatus as any,
+                trackingNumber: trackingNumber.trim() || order.trackingNumber,
+                notes: notes.trim() || order.notes,
+              }
+            : order
+        )
+      );
+
       setIsUpdateModalOpen(false);
       setSelectedOrder(null);
       alert("Comanda a fost actualizată cu succes!");
@@ -175,11 +193,11 @@ const AdminOrders: React.FC = () => {
     setIsUpdateModalOpen(true);
   };
 
-  const filteredOrders = orders.filter(order => {
+  const filteredOrders = orders.filter((order) => {
     if (!searchTerm.trim()) return true;
-    
+
     const searchLower = searchTerm.toLowerCase();
-    
+
     return (
       order.id.toLowerCase().includes(searchLower) ||
       order.name.toLowerCase().includes(searchLower) ||
@@ -193,59 +211,61 @@ const AdminOrders: React.FC = () => {
     <div className="container mx-auto px-4 py-8">
       <div className="bg-white rounded-lg shadow-md p-6 mt-6">
         <h1 className="text-2xl font-bold mb-6">Gestionare Comenzi</h1>
-        
+
         {error && (
           <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
             {error}
           </div>
         )}
-        
+
         <div className="flex flex-col md:flex-row justify-between mb-6 space-y-3 md:space-y-0">
           <div className="flex space-x-2">
-            <button 
-              onClick={() => setFilter("all")} 
+            <button
+              onClick={() => setFilter("all")}
               className={`px-4 py-2 rounded-md ${filter === "all" ? "bg-blue-600 text-white" : "bg-gray-200 text-gray-800"}`}
             >
               Toate comenzile
             </button>
-            <button 
-              onClick={() => setFilter("pending")} 
+            <button
+              onClick={() => setFilter("pending")}
               className={`px-4 py-2 rounded-md ${filter === "pending" ? "bg-blue-600 text-white" : "bg-gray-200 text-gray-800"}`}
             >
               În așteptare
             </button>
-            <button 
-              onClick={() => setFilter("processing")} 
+            <button
+              onClick={() => setFilter("processing")}
               className={`px-4 py-2 rounded-md ${filter === "processing" ? "bg-blue-600 text-white" : "bg-gray-200 text-gray-800"}`}
             >
               În procesare
             </button>
-            <button 
-              onClick={() => setFilter("shipped")} 
+            <button
+              onClick={() => setFilter("shipped")}
               className={`px-4 py-2 rounded-md ${filter === "shipped" ? "bg-blue-600 text-white" : "bg-gray-200 text-gray-800"}`}
             >
               Expediate
             </button>
           </div>
-          
+
           <div className="w-full md:w-64">
             <input
               type="text"
               placeholder="Caută după nume, email, telefon..."
               className="w-full px-4 py-2 border border-gray-300 rounded-md"
               value={searchTerm}
-              onChange={e => setSearchTerm(e.target.value)}
+              onChange={(e) => setSearchTerm(e.target.value)}
             />
           </div>
         </div>
-        
+
         {loading ? (
           <div className="flex justify-center items-center h-64">
             <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
           </div>
         ) : filteredOrders.length === 0 ? (
           <div className="text-center py-8">
-            <p className="text-gray-600">Nu s-au găsit comenzi pentru filtrele selectate.</p>
+            <p className="text-gray-600">
+              Nu s-au găsit comenzi pentru filtrele selectate.
+            </p>
           </div>
         ) : (
           <div className="overflow-x-auto">
@@ -264,18 +284,24 @@ const AdminOrders: React.FC = () => {
                 {filteredOrders.map((order) => (
                   <tr key={order.id} className="hover:bg-gray-50">
                     <td className="py-4 px-4">
-                      <div className="font-medium text-gray-900">#{order.id.slice(0, 8)}</div>
+                      <div className="font-medium text-gray-900">
+                        #{order.id.slice(0, 8)}
+                      </div>
                       <div className="text-xs text-gray-500">
                         {order.items.length} produs(e)
                       </div>
                     </td>
                     <td className="py-4 px-4">
-                      <div className="text-sm font-medium text-gray-900">{order.name}</div>
+                      <div className="text-sm font-medium text-gray-900">
+                        {order.name}
+                      </div>
                       <div className="text-xs text-gray-500">{order.email}</div>
                       <div className="text-xs text-gray-500">{order.phone}</div>
                     </td>
                     <td className="py-4 px-4">
-                      <div className="text-sm text-gray-900">{formatDate(order.orderDate)}</div>
+                      <div className="text-sm text-gray-900">
+                        {formatDate(order.orderDate)}
+                      </div>
                     </td>
                     <td className="py-4 px-4">
                       <div className="text-sm font-medium text-gray-900">
@@ -283,7 +309,9 @@ const AdminOrders: React.FC = () => {
                       </div>
                     </td>
                     <td className="py-4 px-4 text-center">
-                      <span className={`inline-block px-2 py-1 text-xs rounded ${getStatusBadgeClass(order.status)}`}>
+                      <span
+                        className={`inline-block px-2 py-1 text-xs rounded ${getStatusBadgeClass(order.status)}`}
+                      >
                         {getStatusDisplayName(order.status)}
                       </span>
                     </td>
@@ -302,24 +330,38 @@ const AdminOrders: React.FC = () => {
           </div>
         )}
       </div>
-      
+
       {/* Modal pentru actualizarea statusului comenzii */}
       {isUpdateModalOpen && selectedOrder && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white rounded-lg p-6 max-w-md w-full">
-            <h2 className="text-xl font-bold mb-4">Actualizare Comandă #{selectedOrder.id.slice(0, 8)}</h2>
-            
+            <h2 className="text-xl font-bold mb-4">
+              Actualizare Comandă #{selectedOrder.id.slice(0, 8)}
+            </h2>
+
             <div className="mb-4">
-              <p className="text-sm text-gray-600 mb-1">Client: {selectedOrder.name}</p>
-              <p className="text-sm text-gray-600">Email: {selectedOrder.email}</p>
+              <p className="text-sm text-gray-600 mb-1">
+                Client: {selectedOrder.name}
+              </p>
+              <p className="text-sm text-gray-600">
+                Email: {selectedOrder.email}
+              </p>
             </div>
-            
+
             <div className="mb-4">
-              <label className="block text-sm font-medium text-gray-700 mb-1">Status Comandă</label>
+              <label
+                htmlFor="order-status-select"
+                className="block text-sm font-medium text-gray-700 mb-1"
+              >
+                Status Comandă
+              </label>
               <select
+                id="order-status-select"
                 value={newStatus}
-                onChange={e => setNewStatus(e.target.value)}
+                onChange={(e) => setNewStatus(e.target.value)}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                title="Selectează noul status al comenzii"
+                aria-label="Status comandă - selectează noul status"
               >
                 <option value="pending">În așteptare</option>
                 <option value="processing">În procesare</option>
@@ -328,29 +370,33 @@ const AdminOrders: React.FC = () => {
                 <option value="cancelled">Anulat</option>
               </select>
             </div>
-            
+
             <div className="mb-4">
-              <label className="block text-sm font-medium text-gray-700 mb-1">Număr AWB (opțional)</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Număr AWB (opțional)
+              </label>
               <input
                 type="text"
                 value={trackingNumber}
-                onChange={e => setTrackingNumber(e.target.value)}
+                onChange={(e) => setTrackingNumber(e.target.value)}
                 placeholder="Introduceți numărul AWB"
                 className="w-full px-3 py-2 border border-gray-300 rounded-md"
               />
             </div>
-            
+
             <div className="mb-4">
-              <label className="block text-sm font-medium text-gray-700 mb-1">Note (opțional)</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Note (opțional)
+              </label>
               <textarea
                 value={notes}
-                onChange={e => setNotes(e.target.value)}
+                onChange={(e) => setNotes(e.target.value)}
                 placeholder="Adăugați note despre comandă"
                 className="w-full px-3 py-2 border border-gray-300 rounded-md"
                 rows={3}
               />
             </div>
-            
+
             <div className="flex justify-end space-x-3">
               <button
                 onClick={() => setIsUpdateModalOpen(false)}

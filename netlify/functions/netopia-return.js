@@ -50,26 +50,32 @@ export const handler = async (event, context) => {
     switch (status) {
       case "confirmed":
       case "success":
-        redirectUrl += "/order-confirmation";
+        redirectUrl += "/checkout-success";
         break;
 
       case "pending":
-        redirectUrl += "/order-confirmation?status=pending";
+        redirectUrl += "/checkout-success?status=pending";
         break;
 
       case "canceled":
-        redirectUrl += "/payment?status=canceled";
+        redirectUrl +=
+          "/checkout?status=canceled&message=" +
+          encodeURIComponent("Plata a fost anulată");
         break;
 
       case "failed":
       case "error":
         redirectUrl +=
-          "/payment?status=failed&error=" +
-          encodeURIComponent(errorMessage || "Payment failed");
+          "/checkout?status=failed&error=" +
+          encodeURIComponent(
+            errorMessage || "Plata a eșuat. Vă rugăm să încercați din nou."
+          );
         break;
 
       default:
-        redirectUrl += "/payment?status=unknown";
+        redirectUrl +=
+          "/checkout?status=unknown&message=" +
+          encodeURIComponent("Status plată necunoscut");
     }
 
     // Adaugă orderId la URL pentru tracking

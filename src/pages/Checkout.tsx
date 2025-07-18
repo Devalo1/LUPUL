@@ -20,6 +20,12 @@ const Checkout: React.FC = () => {
     email: "",
     paymentMethod: "cash",
   });
+  const [cardData, setCardData] = useState({
+    cardNumber: "",
+    expiryDate: "",
+    cvv: "",
+    cardHolderName: "",
+  });
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [testResult, setTestResult] = useState<string>("");
@@ -40,6 +46,38 @@ const Checkout: React.FC = () => {
   ) => {
     const { name, value } = e.target;
     setFormData({ ...formData, [name]: value });
+  };
+
+  const handleCardInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    let formattedValue = value;
+
+    // Formatare automată pentru numărul cardului
+    if (name === "cardNumber") {
+      // Eliminăm toate caracterele non-numerice
+      formattedValue = value.replace(/\D/g, "");
+      // Adăugăm spații la fiecare 4 cifre
+      formattedValue = formattedValue.replace(/(\d{4})(?=\d)/g, "$1 ");
+      // Limităm la 19 caractere (16 cifre + 3 spații)
+      formattedValue = formattedValue.substring(0, 19);
+    }
+
+    // Formatare automată pentru data expirării (MM/YY)
+    if (name === "expiryDate") {
+      formattedValue = value.replace(/\D/g, "");
+      if (formattedValue.length >= 2) {
+        formattedValue =
+          formattedValue.substring(0, 2) + "/" + formattedValue.substring(2, 4);
+      }
+      formattedValue = formattedValue.substring(0, 5);
+    }
+
+    // Limitare CVV la 3-4 cifre
+    if (name === "cvv") {
+      formattedValue = value.replace(/\D/g, "").substring(0, 4);
+    }
+
+    setCardData({ ...cardData, [name]: formattedValue });
   };
 
   // Test function for Netopia
@@ -306,6 +344,44 @@ const Checkout: React.FC = () => {
     }
   };
 
+  const validateCardData = () => {
+    if (!cardData.cardHolderName.trim()) {
+      setError("Te rugăm să introduci numele de pe card.");
+      return false;
+    }
+
+    const cardNumber = cardData.cardNumber.replace(/\s/g, "");
+    if (!cardNumber || cardNumber.length < 13 || cardNumber.length > 19) {
+      setError(
+        "Numărul cardului nu este valid. Te rugăm să introduci un număr valid de 13-19 cifre."
+      );
+      return false;
+    }
+
+    if (!cardData.expiryDate || cardData.expiryDate.length !== 5) {
+      setError("Te rugăm să introduci data expirării în formatul MM/YY.");
+      return false;
+    }
+
+    // Verificăm dacă data expirării nu este în trecut
+    const [month, year] = cardData.expiryDate.split("/");
+    const expiryDate = new Date(2000 + parseInt(year), parseInt(month) - 1);
+    const currentDate = new Date();
+    currentDate.setDate(1); // Setăm la prima zi a lunii pentru comparație corectă
+
+    if (expiryDate < currentDate) {
+      setError("Cardul a expirat. Te rugăm să folosești un card valid.");
+      return false;
+    }
+
+    if (!cardData.cvv || cardData.cvv.length < 3 || cardData.cvv.length > 4) {
+      setError("CVV-ul trebuie să aibă 3 sau 4 cifre.");
+      return false;
+    }
+
+    return true;
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
@@ -314,9 +390,17 @@ const Checkout: React.FC = () => {
     try {
       console.log("Inițierea trimiterii comenzii:", { ...formData, items });
 
-      // Dacă utilizatorul a ales plata cu cardul, redirectăm către Netopia
+      // Dacă utilizatorul a ales plata cu cardul, validăm și redirectăm către Netopia
       if (formData.paymentMethod === "card") {
-        console.log("Plată cu cardul selectată, inițializăm Netopia...");
+        console.log("Plată cu cardul selectată, validăm datele...");
+
+        // Validăm datele cardului
+        if (!validateCardData()) {
+          setIsSubmitting(false);
+          return;
+        }
+
+        console.log("✅ Datele cardului sunt valide, inițializăm Netopia...");
 
         // Salvăm datele comenzii în localStorage pentru după plată
         const orderData = {
@@ -328,6 +412,11 @@ const Checkout: React.FC = () => {
           totalAmount: finalTotal,
           items: items,
           paymentMethod: "card",
+          cardData: {
+            // Salvăm doar ultimele 4 cifre pentru securitate
+            lastFour: cardData.cardNumber.replace(/\s/g, "").slice(-4),
+            cardHolderName: cardData.cardHolderName,
+          },
           date: new Date().toISOString(),
         };
 
@@ -413,9 +502,14 @@ const Checkout: React.FC = () => {
             orderNumber: orderNumber,
             customerName: formData.name,
             customerEmail: formData.email,
+            customerAddress: formData.address,
+            customerPhone: formData.phone,
             totalAmount: finalTotal,
             items: items.length,
             date: new Date().toISOString(),
+            paymentMethod: formData.paymentMethod,
+            paymentStatus:
+              formData.paymentMethod === "card" ? "paid" : "pending",
           })
         );
       }
@@ -426,8 +520,12 @@ const Checkout: React.FC = () => {
           orderNumber,
           customerName: formData.name,
           customerEmail: formData.email,
+          customerAddress: formData.address,
+          customerPhone: formData.phone,
           totalAmount: finalTotal,
           items: items.length,
+          paymentMethod: formData.paymentMethod,
+          paymentStatus: formData.paymentMethod === "card" ? "paid" : "pending",
         },
       });
     } catch (error: any) {
@@ -463,7 +561,7 @@ const Checkout: React.FC = () => {
         <div className="lg:w-1/2">
           <form
             onSubmit={handleSubmit}
-            className="bg-white rounded-lg shadow-md p-8"
+            className="bg-white rounded-lg shadow-md p-8 checkout-form"
           >
             <h2 className="text-xl font-semibold mb-6 text-gray-800">
               Date comandă
@@ -481,7 +579,7 @@ const Checkout: React.FC = () => {
                 name="name"
                 value={formData.name}
                 onChange={handleInputChange}
-                className="w-full border border-gray-300 rounded px-3 py-2 text-gray-800"
+                className="w-full border border-gray-300 rounded px-3 py-2 text-gray-800 bg-white focus:bg-white focus:text-gray-800 focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
                 required
               />
             </div>
@@ -499,7 +597,7 @@ const Checkout: React.FC = () => {
                 name="email"
                 value={formData.email}
                 onChange={handleInputChange}
-                className="w-full border border-gray-300 rounded px-3 py-2 text-gray-800"
+                className="w-full border border-gray-300 rounded px-3 py-2 text-gray-800 bg-white focus:bg-white focus:text-gray-800 focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
                 required
               />
             </div>
@@ -517,7 +615,7 @@ const Checkout: React.FC = () => {
                 name="address"
                 value={formData.address}
                 onChange={handleInputChange}
-                className="w-full border border-gray-300 rounded px-3 py-2 text-gray-800"
+                className="w-full border border-gray-300 rounded px-3 py-2 text-gray-800 bg-white focus:bg-white focus:text-gray-800 focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
                 required
               />
             </div>
@@ -534,7 +632,7 @@ const Checkout: React.FC = () => {
                 name="phone"
                 value={formData.phone}
                 onChange={handleInputChange}
-                className="w-full border border-gray-300 rounded px-3 py-2 text-gray-800"
+                className="w-full border border-gray-300 rounded px-3 py-2 text-gray-800 bg-white focus:bg-white focus:text-gray-800 focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
                 required
               />
             </div>
@@ -550,22 +648,97 @@ const Checkout: React.FC = () => {
                 name="paymentMethod"
                 value={formData.paymentMethod}
                 onChange={handleInputChange}
-                className="w-full border border-gray-300 rounded px-3 py-2 text-gray-800"
+                className="w-full border border-gray-300 rounded px-3 py-2 text-gray-800 bg-white focus:bg-white focus:text-gray-800 focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
               >
                 <option value="cash">Ramburs la livrare</option>
                 <option value="card">Card bancar (Netopia Payments)</option>
               </select>
 
               {formData.paymentMethod === "card" && (
-                <div className="mt-3 p-3 bg-blue-50 border border-blue-200 rounded">
-                  <p className="text-sm text-blue-800 mb-2">
-                    <strong>Plată securizată cu cardul</strong>
+                <div className="mt-3 p-4 bg-blue-50 border border-blue-200 rounded">
+                  <p className="text-sm text-blue-800 mb-4">
+                    <strong>🔐 Plată securizată cu cardul</strong>
                   </p>
-                  <p className="text-xs text-gray-600">
-                    Vei fi redirecționat către platforma securizată Netopia
-                    Payments pentru a finaliza plata cu cardul bancar. Acceptăm
-                    Visa, Mastercard și alte carduri bancare emise în România și
-                    UE.
+
+                  {/* Formular pentru datele cardului */}
+                  <div className="space-y-4">
+                    {/* Numele titularului cardului */}
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Numele de pe card *
+                      </label>
+                      <input
+                        type="text"
+                        name="cardHolderName"
+                        value={cardData.cardHolderName}
+                        onChange={handleCardInputChange}
+                        placeholder="Ex: JOHN DOE"
+                        className="w-full border border-gray-300 rounded px-3 py-2 text-gray-800 bg-white focus:bg-white focus:text-gray-800 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 uppercase"
+                        required
+                      />
+                    </div>
+
+                    {/* Numărul cardului */}
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Numărul cardului *
+                      </label>
+                      <input
+                        type="text"
+                        name="cardNumber"
+                        value={cardData.cardNumber}
+                        onChange={handleCardInputChange}
+                        placeholder="1234 5678 9012 3456"
+                        className="w-full border border-gray-300 rounded px-3 py-2 text-gray-800 bg-white focus:bg-white focus:text-gray-800 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 font-mono"
+                        required
+                      />
+                    </div>
+
+                    {/* Data expirării și CVV */}
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                          Data expirării *
+                        </label>
+                        <input
+                          type="text"
+                          name="expiryDate"
+                          value={cardData.expiryDate}
+                          onChange={handleCardInputChange}
+                          placeholder="MM/YY"
+                          className="w-full border border-gray-300 rounded px-3 py-2 text-gray-800 bg-white focus:bg-white focus:text-gray-800 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 font-mono"
+                          required
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                          CVV/CVC *
+                        </label>
+                        <input
+                          type="text"
+                          name="cvv"
+                          value={cardData.cvv}
+                          onChange={handleCardInputChange}
+                          placeholder="123"
+                          className="w-full border border-gray-300 rounded px-3 py-2 text-gray-800 bg-white focus:bg-white focus:text-gray-800 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 font-mono"
+                          required
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Informații de securitate */}
+                  <div className="mt-4 p-3 bg-green-50 border border-green-200 rounded">
+                    <p className="text-xs text-green-800">
+                      🔒 <strong>Securitate garantată:</strong> Datele cardului
+                      sunt procesate prin Netopia Payments, certificat PCI DSS
+                      Level 1. Informațiile tale sunt complet securizate.
+                    </p>
+                  </div>
+
+                  <p className="text-xs text-gray-600 mt-3">
+                    Acceptăm carduri Visa, Mastercard și alte carduri bancare
+                    emise în România și UE.
                   </p>
                 </div>
               )}
@@ -574,11 +747,41 @@ const Checkout: React.FC = () => {
                 <p className="text-sm text-gray-600 mb-2">
                   Metode de plată acceptate:
                 </p>
-                <img
-                  src="/images/payment-methods.png"
-                  alt="Metode de plată acceptate"
-                  className="max-w-full h-auto"
-                />
+                {formData.paymentMethod === "card" ? (
+                  <div className="bg-white p-3 rounded border border-gray-200">
+                    <div className="flex items-center space-x-3 mb-2">
+                      <span className="text-blue-600 font-semibold">
+                        💳 Carduri acceptate:
+                      </span>
+                    </div>
+                    <div className="flex items-center space-x-4 text-sm text-gray-600">
+                      <span className="bg-blue-100 px-2 py-1 rounded">
+                        VISA
+                      </span>
+                      <span className="bg-red-100 px-2 py-1 rounded">
+                        Mastercard
+                      </span>
+                      <span className="bg-gray-100 px-2 py-1 rounded">
+                        Maestro
+                      </span>
+                      <span className="bg-green-100 px-2 py-1 rounded">
+                        American Express
+                      </span>
+                    </div>
+                    <p className="text-xs text-gray-500 mt-2">
+                      ✓ Carduri românești și internaționale
+                      <br />
+                      ✓ Plăți securizate prin 3D Secure
+                      <br />✓ Certificare PCI DSS Level 1
+                    </p>
+                  </div>
+                ) : (
+                  <img
+                    src="/images/payment-methods.png"
+                    alt="Metode de plată acceptate"
+                    className="max-w-full h-auto"
+                  />
+                )}
               </div>
             </div>
 
@@ -605,12 +808,18 @@ const Checkout: React.FC = () => {
               disabled={isSubmitting}
               className={`w-full ${isSubmitting ? "bg-blue-400" : "bg-blue-600 hover:bg-blue-700"} text-white py-3 px-4 rounded-md transition-colors font-semibold`}
             >
-              {isSubmitting ? "Se procesează..." : "Trimite comanda"}
+              {isSubmitting
+                ? "Se procesează..."
+                : formData.paymentMethod === "card"
+                  ? "Continuă la plată securizată"
+                  : "Trimite comanda"}
             </button>
 
             {isSubmitting && (
               <p className="text-center text-sm mt-2 text-blue-500">
-                Procesăm comanda ta, te rugăm să aștepți...
+                {formData.paymentMethod === "card"
+                  ? "Validăm datele cardului și inițializăm plata securizată..."
+                  : "Procesăm comanda ta, te rugăm să aștepți..."}
               </p>
             )}
           </form>

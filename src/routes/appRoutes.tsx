@@ -80,6 +80,10 @@ const AdminSettings = lazyLoad(() => import("../pages/AdminSettings"));
 const AdminOrders = lazyLoad(() => import("../pages/AdminOrders"));
 const AdminAccounting = lazyLoad(() => import("../pages/AdminAccounting"));
 const AdminAnalytics = lazyLoad(() => import("../pages/AdminAnalytics"));
+// Import pentru dashboard financiar admin
+const AdminFinancialDashboard = lazyLoad(
+  () => import("../pages/admin/FinancialDashboard")
+);
 // Import for specialist panel
 const SpecialistPanel = lazyLoad(() => import("../pages/SpecialistPanel"));
 // Import for user profiles admin
@@ -349,6 +353,15 @@ const AppRoutes: React.FC = () => {
         element={
           <AdminRoute>
             <AdminOrders />
+          </AdminRoute>
+        }
+      />
+      {/* Rută pentru dashboard financiar admin */}
+      <Route
+        path="/admin/financial"
+        element={
+          <AdminRoute>
+            <AdminFinancialDashboard />
           </AdminRoute>
         }
       />

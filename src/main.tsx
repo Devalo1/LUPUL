@@ -251,6 +251,7 @@ import React from "react";
 import ReactDOM from "react-dom/client";
 import App from "./App";
 import "./index.css";
+import "./styles/input-fields.css"; // Stiluri pentru input-uri - FIX pentru text negru pe fundal negru
 import "./assets/styles/main.css"; // Stiluri principale
 import "./assets/styles/mobile-galaxy-fix.css"; // Fix pentru Galaxy S24 FE și mobile
 import { reportWebVitals } from "./utils/webVitals"; // Importăm utilitar pentru Web Vitals

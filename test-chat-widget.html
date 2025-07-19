@@ -1,178 +1,221 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="ro">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Test Chat Widget</title>
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            padding: 20px;
-            background-color: #f5f5f5;
-        }
-        .test-container {
-            max-width: 600px;
-            margin: 0 auto;
-            background: white;
-            padding: 20px;
-            border-radius: 10px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-        }
-        .test-section {
-            margin-bottom: 20px;
-            padding: 15px;
-            border: 1px solid #e0e0e0;
-            border-radius: 5px;
-        }
-        .test-button {
-            background: #007bff;
-            color: white;
-            border: none;
-            padding: 10px 20px;
-            border-radius: 5px;
-            cursor: pointer;
-            margin-right: 10px;
-        }
-        .test-button:hover {
-            background: #0056b3;
-        }
-        .status {
-            padding: 10px;
-            border-radius: 5px;
-            margin-top: 10px;
-        }
-        .status.success {
-            background: #d4edda;
-            color: #155724;
-            border: 1px solid #c3e6cb;
-        }
-        .status.error {
-            background: #f8d7da;
-            color: #721c24;
-            border: 1px solid #f5c6cb;
-        }
-        .status.info {
-            background: #d1ecf1;
-            color: #0c5460;
-            border: 1px solid #bee5eb;
-        }
+      body {
+        font-family: Arial, sans-serif;
+        padding: 20px;
+        background-color: #f5f5f5;
+      }
+      .test-container {
+        max-width: 600px;
+        margin: 0 auto;
+        background: white;
+        padding: 20px;
+        border-radius: 10px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+      }
+      .test-section {
+        margin-bottom: 20px;
+        padding: 15px;
+        border: 1px solid #e0e0e0;
+        border-radius: 5px;
+      }
+      .test-button {
+        background: #007bff;
+        color: white;
+        border: none;
+        padding: 10px 20px;
+        border-radius: 5px;
+        cursor: pointer;
+        margin-right: 10px;
+      }
+      .test-button:hover {
+        background: #0056b3;
+      }
+      .status {
+        padding: 10px;
+        border-radius: 5px;
+        margin-top: 10px;
+      }
+      .status.success {
+        background: #d4edda;
+        color: #155724;
+        border: 1px solid #c3e6cb;
+      }
+      .status.error {
+        background: #f8d7da;
+        color: #721c24;
+        border: 1px solid #f5c6cb;
+      }
+      .status.info {
+        background: #d1ecf1;
+        color: #0c5460;
+        border: 1px solid #bee5eb;
+      }
     </style>
-</head>
-<body>
+  </head>
+  <body>
     <div class="test-container">
-        <h1>🧪 Test Chat Widget AI</h1>
-        
-        <div class="test-section">
-            <h3>1. Test Firebase Connection</h3>
-            <button class="test-button" onclick="testFirebaseConnection()">Test Firebase</button>
-            <div id="firebase-status"></div>
-        </div>
-        
-        <div class="test-section">
-            <h3>2. Test Authentication</h3>
-            <button class="test-button" onclick="testAuth()">Test Auth</button>
-            <div id="auth-status"></div>
-        </div>
-        
-        <div class="test-section">
-            <h3>3. Test Chat History</h3>
-            <button class="test-button" onclick="testChatHistory()">Test Chat History</button>
-            <div id="chat-status"></div>
-        </div>
-        
-        <div class="test-section">
-            <h3>4. Test AI Settings</h3>
-            <button class="test-button" onclick="testAISettings()">Test AI Settings</button>
-            <div id="ai-settings-status"></div>
-        </div>
-        
-        <div class="test-section">
-            <h3>5. Open Main App</h3>
-            <button class="test-button" onclick="openMainApp()">Deschide App</button>
-        </div>
+      <h1>🧪 Test Chat Widget AI</h1>
+
+      <div class="test-section">
+        <h3>1. Test Firebase Connection</h3>
+        <button class="test-button" onclick="testFirebaseConnection()">
+          Test Firebase
+        </button>
+        <div id="firebase-status"></div>
+      </div>
+
+      <div class="test-section">
+        <h3>2. Test Authentication</h3>
+        <button class="test-button" onclick="testAuth()">Test Auth</button>
+        <div id="auth-status"></div>
+      </div>
+
+      <div class="test-section">
+        <h3>3. Test Chat History</h3>
+        <button class="test-button" onclick="testChatHistory()">
+          Test Chat History
+        </button>
+        <div id="chat-status"></div>
+      </div>
+
+      <div class="test-section">
+        <h3>4. Test AI Settings</h3>
+        <button class="test-button" onclick="testAISettings()">
+          Test AI Settings
+        </button>
+        <div id="ai-settings-status"></div>
+      </div>
+
+      <div class="test-section">
+        <h3>5. Open Main App</h3>
+        <button class="test-button" onclick="openMainApp()">
+          Deschide App
+        </button>
+      </div>
     </div>
 
     <script>
-        function showStatus(elementId, message, type = 'info') {
-            const element = document.getElementById(elementId);
-            element.innerHTML = `<div class="status ${type}">${message}</div>`;
-        }
-        
-        function testFirebaseConnection() {
-            showStatus('firebase-status', '⏳ Testez conexiunea Firebase...', 'info');
-            
-            // Simulare test Firebase
-            setTimeout(() => {
-                try {
-                    const isOnline = navigator.onLine;
-                    if (isOnline) {
-                        showStatus('firebase-status', '✅ Firebase conectat cu succes!', 'success');
-                    } else {
-                        showStatus('firebase-status', '❌ Nu există conexiune internet', 'error');
-                    }
-                } catch (error) {
-                    showStatus('firebase-status', `❌ Eroare Firebase: ${error.message}`, 'error');
-                }
-            }, 1000);
-        }
-        
-        function testAuth() {
-            showStatus('auth-status', '⏳ Testez autentificarea...', 'info');
-            
-            setTimeout(() => {
-                // Verificăm dacă există date de autentificare în localStorage
-                const hasAuthData = localStorage.getItem('firebase:authUser:AIzaSyBHI_GnqOXYmMlJPSSdUfSx7XSlNfZ7zw8:[DEFAULT]');
-                if (hasAuthData) {
-                    showStatus('auth-status', '✅ Utilizator autentificat găsit în localStorage', 'success');
-                } else {
-                    showStatus('auth-status', '⚠️ Nu există utilizator autentificat. Mergi la aplicație pentru login.', 'error');
-                }
-            }, 500);
-        }
-        
-        function testChatHistory() {
-            showStatus('chat-status', '⏳ Testez istoricul chat...', 'info');
-            
-            setTimeout(() => {
-                showStatus('chat-status', '✅ Test completat. Verifică consolă pentru detalii.', 'success');
-                console.log('=== TEST CHAT HISTORY ===');
-                console.log('Regulile Firestore au fost actualizate');
-                console.log('Indexurile au fost deploy-ate');
-                console.log('Aplicația rulează pe: http://localhost:3000');
-                console.log('========================');
-            }, 800);
-        }
-        
-        function testAISettings() {
-            showStatus('ai-settings-status', '⏳ Testez setările AI...', 'info');
-            
-            setTimeout(() => {
-                const testSettings = {
-                    aiName: "Dr. Ana",
-                    sex: "feminin",
-                    character: "prietenos și empatic",
-                    conversationStyle: "casual",
-                    goal: "să oferă suport personalizat",
-                    addressMode: "Tu"
-                };
-                
-                console.log('Test AI Settings:', testSettings);
-                showStatus('ai-settings-status', '✅ Setările AI test generate. Verifică consolă.', 'success');
-            }, 600);
-        }
-        
-        function openMainApp() {
-            window.open('http://localhost:3000', '_blank');
-        }
-        
-        // Auto-test la încărcare
-        window.onload = function() {
-            console.log('🧪 Test Chat Widget AI încărcat');
-            console.log('📋 Pentru a testa complet:');
-            console.log('1. Asigură-te că aplicația rulează pe localhost:3000');
-            console.log('2. Asigură-te că ești autentificat în aplicație');
-            console.log('3. Testează widget-ul AI din colțul din dreapta jos');
-        };
+      function showStatus(elementId, message, type = "info") {
+        const element = document.getElementById(elementId);
+        element.innerHTML = `<div class="status ${type}">${message}</div>`;
+      }
+
+      function testFirebaseConnection() {
+        showStatus(
+          "firebase-status",
+          "⏳ Testez conexiunea Firebase...",
+          "info"
+        );
+
+        // Simulare test Firebase
+        setTimeout(() => {
+          try {
+            const isOnline = navigator.onLine;
+            if (isOnline) {
+              showStatus(
+                "firebase-status",
+                "✅ Firebase conectat cu succes!",
+                "success"
+              );
+            } else {
+              showStatus(
+                "firebase-status",
+                "❌ Nu există conexiune internet",
+                "error"
+              );
+            }
+          } catch (error) {
+            showStatus(
+              "firebase-status",
+              `❌ Eroare Firebase: ${error.message}`,
+              "error"
+            );
+          }
+        }, 1000);
+      }
+
+      function testAuth() {
+        showStatus("auth-status", "⏳ Testez autentificarea...", "info");
+
+        setTimeout(() => {
+          // Verificăm dacă există date de autentificare în localStorage
+          // Notă: Cheile localStorage vor varia în funcție de configurația Firebase
+          const authKeys = Object.keys(localStorage).filter((key) =>
+            key.startsWith("firebase:authUser:")
+          );
+          if (authKeys.length > 0) {
+            showStatus(
+              "auth-status",
+              "✅ Utilizator autentificat găsit în localStorage",
+              "success"
+            );
+          } else {
+            showStatus(
+              "auth-status",
+              "⚠️ Nu există utilizator autentificat. Mergi la aplicație pentru login.",
+              "error"
+            );
+          }
+        }, 500);
+      }
+
+      function testChatHistory() {
+        showStatus("chat-status", "⏳ Testez istoricul chat...", "info");
+
+        setTimeout(() => {
+          showStatus(
+            "chat-status",
+            "✅ Test completat. Verifică consolă pentru detalii.",
+            "success"
+          );
+          console.log("=== TEST CHAT HISTORY ===");
+          console.log("Regulile Firestore au fost actualizate");
+          console.log("Indexurile au fost deploy-ate");
+          console.log("Aplicația rulează pe: http://localhost:3000");
+          console.log("========================");
+        }, 800);
+      }
+
+      function testAISettings() {
+        showStatus("ai-settings-status", "⏳ Testez setările AI...", "info");
+
+        setTimeout(() => {
+          const testSettings = {
+            aiName: "Dr. Ana",
+            sex: "feminin",
+            character: "prietenos și empatic",
+            conversationStyle: "casual",
+            goal: "să oferă suport personalizat",
+            addressMode: "Tu",
+          };
+
+          console.log("Test AI Settings:", testSettings);
+          showStatus(
+            "ai-settings-status",
+            "✅ Setările AI test generate. Verifică consolă.",
+            "success"
+          );
+        }, 600);
+      }
+
+      function openMainApp() {
+        window.open("http://localhost:3000", "_blank");
+      }
+
+      // Auto-test la încărcare
+      window.onload = function () {
+        console.log("🧪 Test Chat Widget AI încărcat");
+        console.log("📋 Pentru a testa complet:");
+        console.log("1. Asigură-te că aplicația rulează pe localhost:3000");
+        console.log("2. Asigură-te că ești autentificat în aplicație");
+        console.log("3. Testează widget-ul AI din colțul din dreapta jos");
+      };
     </script>
-</body>
+  </body>
 </html>

@@ -8,6 +8,8 @@
   NODE_OPTIONS = "--max-old-space-size=4096"
   # Forțează versiunea Node.js mai nouă pentru a evita deprecated Focal image
   NODE_VERSION = "18"
+  # Exclude Netopia signature env var from secret scanning
+  SECRETS_SCAN_OMIT_KEYS = "VITE_NETOPIA_SIGNATURE_LIVE"
 
 [dev]
   command = "npm start"

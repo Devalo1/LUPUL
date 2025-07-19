@@ -250,6 +250,7 @@ URL=https://your-site.netlify.app
 ```
 
 **⚠️ IMPORTANT SECURITATE:**
+
 - Nu puneți niciodată chei API reale în fișierele commitați
 - Folosiți `.env.local` pentru dezvoltare (nu este commitat)
 - Setați variabilele sensibile în dashboard-ul platformei (Netlify/Vercel)

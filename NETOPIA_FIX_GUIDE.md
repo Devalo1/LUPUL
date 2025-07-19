@@ -30,12 +30,12 @@ Ai nevoie de 2 lucruri de la Netopia (cei de la plăți):
 
 **Prima variabilă:**
 - La **Key** scrie: `VITE_NETOPIA_SIGNATURE_LIVE`
-- La **Value** pune: `2ZOW-PJ5X-HYYC-IENE-APZO`
+- La **Value** pune: `[SIGNATURE-UL TĂU LIVE DE LA NETOPIA]`
 - Click **Save**
 
 **A doua variabilă:**
 - La **Key** scrie: `NETOPIA_LIVE_SIGNATURE`  
-- La **Value** pune: `2ZOW-PJ5X-HYYC-IENE-APZO`
+- La **Value** pune: `[SIGNATURE-UL TĂU LIVE DE LA NETOPIA]`
 - Click **Save**
 
 **A treia variabilă:**

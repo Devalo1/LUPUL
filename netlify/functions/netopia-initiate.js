@@ -8,7 +8,7 @@ import crypto from "crypto";
 // Configurație NETOPIA
 const NETOPIA_CONFIG = {
   sandbox: {
-    signature: "2ZOW-PJ5X-HYYC-IENE-APZO",
+    signature: "NETOPIA_SANDBOX_TEST_SIGNATURE",
     endpoint: "https://secure-sandbox.netopia-payments.com/payment/card",
     publicKey: process.env.NETOPIA_SANDBOX_PUBLIC_KEY,
   },
@@ -89,7 +89,7 @@ function createNetopiaPayload(paymentData, config) {
 async function initiateNetopiaPayment(payload, config) {
   try {
     // Pentru sandbox, simulăm inițierea plății
-    if (config.signature === "2ZOW-PJ5X-HYYC-IENE-APZO") {
+    if (config.signature === "NETOPIA_SANDBOX_TEST_SIGNATURE") {
       console.log("Sandbox mode: Simulating NETOPIA payment initiation");
 
       // Creăm un URL local pentru simularea plății
@@ -260,7 +260,7 @@ export const handler = async (event, context) => {
     const isLive = paymentData.live === true;
     const hasCustomSignature =
       paymentData.posSignature &&
-      paymentData.posSignature !== "2ZOW-PJ5X-HYYC-IENE-APZO";
+      paymentData.posSignature !== "NETOPIA_SANDBOX_TEST_SIGNATURE";
 
     let config = isLive ? NETOPIA_CONFIG.live : NETOPIA_CONFIG.sandbox;
 

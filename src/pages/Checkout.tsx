@@ -103,7 +103,7 @@ const Checkout: React.FC = () => {
           county: "Bucuresti",
           postalCode: "010000",
         },
-        posSignature: "2ZOW-PJ5X-HYYC-IENE-APZO",
+        posSignature: "NETOPIA_SANDBOX_TEST_SIGNATURE",
         live: false,
       };
 

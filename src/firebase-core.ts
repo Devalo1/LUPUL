@@ -48,16 +48,61 @@ import { getAnalytics, Analytics } from "firebase/analytics";
 import { useEmulators, getEmulatorConfig } from "./utils/environment";
 import logger from "./utils/logger";
 
-// Configurație Firebase
-const firebaseConfig = {
-  apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
-  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
-  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
-  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET,
-  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
-  appId: import.meta.env.VITE_FIREBASE_APP_ID,
-  measurementId: import.meta.env.VITE_FIREBASE_MEASUREMENT_ID,
+// Validare configurație Firebase - verifică că toate valorile sunt setate și nu sunt placeholders
+const validateFirebaseConfig = () => {
+  const config = {
+    apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
+    authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
+    projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
+    storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET,
+    messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
+    appId: import.meta.env.VITE_FIREBASE_APP_ID,
+    measurementId: import.meta.env.VITE_FIREBASE_MEASUREMENT_ID,
+  };
+
+  // Verifică că variabilele de mediu sunt setate
+  const requiredFields = [
+    "apiKey",
+    "authDomain",
+    "projectId",
+    "storageBucket",
+    "messagingSenderId",
+    "appId",
+  ];
+  const missingFields = requiredFields.filter(
+    (field) => !config[field as keyof typeof config]
+  );
+
+  if (missingFields.length > 0) {
+    throw new Error(
+      `Firebase configuration missing required fields: ${missingFields.join(", ")}. Please set the environment variables in Netlify dashboard.`
+    );
+  }
+
+  // Verifică că nu sunt folosite valori placeholder
+  const placeholderValues = [
+    "your-api-key",
+    "your-project-id",
+    "your_app_id",
+    "your_firebase_api_key_here",
+    "your-sender-id",
+    "your_measurement_id",
+  ];
+  const fieldsWithPlaceholders = Object.entries(config).filter(([_, value]) =>
+    placeholderValues.some((placeholder) => value?.includes(placeholder))
+  );
+
+  if (fieldsWithPlaceholders.length > 0) {
+    throw new Error(
+      `Firebase configuration contains placeholder values: ${fieldsWithPlaceholders.map(([key]) => key).join(", ")}. Please set real Firebase values in environment variables.`
+    );
+  }
+
+  return config;
 };
+
+// Configurație Firebase cu validare
+const firebaseConfig = validateFirebaseConfig();
 
 // Inițializare Firebase
 const app = initializeApp(firebaseConfig);

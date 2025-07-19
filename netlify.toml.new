@@ -1,7 +1,6 @@
 [build]
-  # Clean dist, functions, and local dev env files, but keep .env.production for Firebase config
-  # Set NODE_ENV=production explicitly for production builds
-  command = "rm -rf dist netlify/functions/*.js .env.local .env.development && NODE_ENV=production npm run build"
+  # Clean dist, functions, and local env files, then build to ensure Netlify env vars are used
+  command = "rm -rf dist netlify/functions/*.js .env* && npm run build"
   publish = "dist"
   functions = "netlify/functions"
 
@@ -10,8 +9,8 @@
   NODE_OPTIONS = "--max-old-space-size=4096"
   # Forțează versiunea Node.js mai nouă pentru a evita deprecated Focal image
   NODE_VERSION = "18"
-  # NODE_ENV va fi setat explicit doar pentru production builds, nu pentru dev
-  # NODE_ENV = "production"  # Commented out to fix React dev mode
+  # Set NODE_ENV to production to disable React Fast Refresh
+  NODE_ENV = "production"
   # Exclude Netopia signature and Firebase API key from secret scanning
   SECRETS_SCAN_OMIT_KEYS = "VITE_NETOPIA_SIGNATURE_LIVE,VITE_FIREBASE_API_KEY"
   # Disable secret scanning to prevent build failures due to placeholder references
@@ -31,11 +30,6 @@
   port = 8888
   targetPort = 5173
   functions = "netlify/functions"
-  
-[dev.environment]
-  # Override pentru dezvoltare locală - React trebuie să ruleze în development mode
-  NODE_ENV = "development"
-  VITE_ENVIRONMENT = "development"
 
 # Redirectări pentru SPA (Single Page Application)
 [[redirects]]

@@ -14,10 +14,12 @@ const firebaseConfig = {
   measurementId: import.meta.env.VITE_FIREBASE_MEASUREMENT_ID,
 };
 // Validate that no placeholder or missing values exist
+// Ensure all Firebase config values are provided and not placeholders
 Object.entries(firebaseConfig).forEach(([key, value]) => {
-  if (!value || value.toString().includes("your-")) {
-    console.error(
-      `🚨 Firebase config ${key} is missing or using a placeholder value: ${value}`
+  if (!value || value.toString().toLowerCase().includes("your_")) {
+    throw new Error(
+      `Firebase configuration error: '${key}' is missing or still using a placeholder value ('${value}'). ` +
+        "Please set the correct environment variable."
     );
   }
 });

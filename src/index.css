@@ -537,12 +537,75 @@ footer input[type="email"]:focus {
   box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1) !important;
 }
 
-.admin-form label,
-label {
+.admin-form label {
   color: #ffffff !important;
   margin-bottom: 0.5rem;
   display: block;
   font-weight: 500;
+}
+
+/* REGULĂ DE PROTECȚIE ÎMPOTRIVA PROBLEMELOR DE CONTRAST */
+/* Previne textul alb pe fundal alb sau alte probleme de vizibilitate */
+.bg-white label,
+.bg-white .admin-form label,
+[style*="background-color: white"] label,
+[style*="background-color: #fff"] label,
+[style*="background-color: #ffffff"] label,
+.container .bg-white label {
+  color: #1f2937 !important;
+  background-color: transparent !important;
+  text-shadow: none !important;
+  -webkit-text-fill-color: #1f2937 !important;
+}
+
+/* Protecție pentru zone de administrare cu fundal deschis */
+.admin-page label,
+.admin-container label,
+.article-edit-form label,
+form label {
+  color: #1f2937 !important;
+  background-color: transparent !important;
+}
+
+/* Override pentru footer și alte zone cu fundal închis */
+footer label,
+.bg-dark label,
+.bg-gray-800 label,
+.bg-gray-900 label,
+[style*="background-color: #1f2937"] label,
+[style*="background-color: #111827"] label {
+  color: #ffffff !important;
+}
+
+/* REGULĂ UNIVERSALĂ ANTI-CONTRAST - PRIORITATE MAXIMĂ */
+/* Forțează vizibilitatea pentru TOATE etichetele din aplicație */
+label,
+* label,
+html label,
+body label {
+  color: #1f2937 !important;
+  background-color: transparent !important;
+  text-shadow: none !important;
+  -webkit-text-fill-color: #1f2937 !important;
+  font-weight: 600 !important;
+  margin-bottom: 8px !important;
+  display: block !important;
+}
+
+/* Excepții pentru zone cu fundal închis */
+footer label,
+.bg-dark label,
+.bg-gray-800 label,
+.bg-gray-900 label,
+.bg-black label,
+[class*="bg-gray-8"] label,
+[class*="bg-gray-9"] label,
+[style*="background-color: #1f2937"] label,
+[style*="background-color: #111827"] label,
+[style*="background-color: #000"] label,
+[style*="background-color: black"] label {
+  color: #ffffff !important;
+  -webkit-text-fill-color: #ffffff !important;
 }
 
 /* Stiluri pentru butoane de formular din admin */
@@ -959,3 +1022,7 @@ footer [class*="Link"]:hover,
 footer .text-slate-300:hover {
   color: #ffffff !important;
 }
+
+/* IMPORT FINAL PENTRU SUPRASCRIERE COMPLETĂ */
+@import "./styles/ArticleEdit.css";
+@import "./styles/ArticleEditFix.css";

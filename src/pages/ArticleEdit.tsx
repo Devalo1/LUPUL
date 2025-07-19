@@ -1,10 +1,35 @@
 import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { doc, getDoc, updateDoc, addDoc, collection, Timestamp } from "firebase/firestore";
-import { ref, uploadBytes, getDownloadURL, deleteObject } from "firebase/storage";
+import {
+  doc,
+  getDoc,
+  updateDoc,
+  addDoc,
+  collection,
+  Timestamp,
+} from "firebase/firestore";
+import {
+  ref,
+  uploadBytes,
+  getDownloadURL,
+  deleteObject,
+} from "firebase/storage";
 import { db, storage } from "../firebase";
 import { useAuth } from "../contexts";
-import { FaImage, FaSave, FaTimes, FaPlus, FaTags, FaTag, FaCheck, FaEye, FaEyeSlash, FaTrash, FaExchangeAlt } from "react-icons/fa";
+import {
+  FaImage,
+  FaSave,
+  FaTimes,
+  FaPlus,
+  FaTags,
+  FaTag,
+  FaCheck,
+  FaEye,
+  FaEyeSlash,
+  FaTrash,
+  FaExchangeAlt,
+} from "react-icons/fa";
+import "../styles/ArticleEditFix.css";
 
 // Enhanced interface to represent an article
 interface Article {
@@ -54,9 +79,9 @@ const ArticleEdit: React.FC = () => {
     readBy: [],
     feedback: [],
     galleryImages: [],
-    coverStyle: "standard" // Default style
+    coverStyle: "standard", // Default style
   });
-  
+
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
@@ -66,7 +91,7 @@ const ArticleEdit: React.FC = () => {
   const [imagePreview, setImagePreview] = useState<string>("");
   const [isUploading, setIsUploading] = useState(false);
   const [generatePreview, setGeneratePreview] = useState(true);
-  
+
   // New states for enhanced image management
   const [galleryFiles, setGalleryFiles] = useState<File[]>([]);
   const [galleryPreviews, setGalleryPreviews] = useState<string[]>([]);
@@ -80,7 +105,7 @@ const ArticleEdit: React.FC = () => {
         setLoading(false);
         return;
       }
-      
+
       try {
         if (!id) {
           setError("ID-ul articolului lipsește.");
@@ -94,16 +119,19 @@ const ArticleEdit: React.FC = () => {
           const articleData = docSnap.data() as Article;
           setArticle({
             id,
-            ...articleData
+            ...articleData,
           });
-          
+
           // Set image preview if there's an existing image
           if (articleData.imageUrl) {
             setImagePreview(articleData.imageUrl);
           }
-          
+
           // Set gallery previews if they exist
-          if (articleData.galleryImages && articleData.galleryImages.length > 0) {
+          if (
+            articleData.galleryImages &&
+            articleData.galleryImages.length > 0
+          ) {
             setGalleryPreviews(articleData.galleryImages);
           }
         } else {
@@ -120,22 +148,27 @@ const ArticleEdit: React.FC = () => {
     fetchArticle();
   }, [id, isNewArticle]);
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+  const handleInputChange = (
+    e: React.ChangeEvent<
+      HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
+    >
+  ) => {
     const { name, value } = e.target;
-    
+
     setArticle((prev) => {
       // When content changes and generatePreview is true, auto-generate preview
       if (name === "content" && generatePreview) {
-        const previewText = value.substring(0, 150) + (value.length > 150 ? "..." : "");
+        const previewText =
+          value.substring(0, 150) + (value.length > 150 ? "..." : "");
         return { ...prev, [name]: value, preview: previewText };
       }
-      
+
       // For preview field, turn off auto-generation if manually edited
       if (name === "preview") {
         setGeneratePreview(false);
         return { ...prev, [name]: value };
       }
-      
+
       return { ...prev, [name]: value };
     });
   };
@@ -148,7 +181,7 @@ const ArticleEdit: React.FC = () => {
     if (tagInput.trim() && !article.tags?.includes(tagInput.trim())) {
       setArticle((prev) => ({
         ...prev,
-        tags: [...(prev.tags || []), tagInput.trim()]
+        tags: [...(prev.tags || []), tagInput.trim()],
       }));
       setTagInput("");
     }
@@ -157,7 +190,7 @@ const ArticleEdit: React.FC = () => {
   const handleRemoveTag = (tagToRemove: string) => {
     setArticle((prev) => ({
       ...prev,
-      tags: prev.tags?.filter(tag => tag !== tagToRemove)
+      tags: prev.tags?.filter((tag) => tag !== tagToRemove),
     }));
   };
 
@@ -165,7 +198,7 @@ const ArticleEdit: React.FC = () => {
     if (e.target.files && e.target.files[0]) {
       const file = e.target.files[0];
       setImageFile(file);
-      
+
       // Create a temporary URL for preview
       const previewUrl = URL.createObjectURL(file);
       setImagePreview(previewUrl);
@@ -177,37 +210,41 @@ const ArticleEdit: React.FC = () => {
     if (e.target.files && e.target.files.length > 0) {
       const files = Array.from(e.target.files);
       setGalleryFiles([...galleryFiles, ...files]);
-      
+
       // Create temporary URLs for preview
-      const newPreviews = files.map(file => URL.createObjectURL(file));
+      const newPreviews = files.map((file) => URL.createObjectURL(file));
       setGalleryPreviews([...galleryPreviews, ...newPreviews]);
     }
   };
-  
+
   // Remove image from gallery
   const removeGalleryImage = (index: number) => {
     if (galleryFiles.length > index) {
       // Remove from files array if it's a new file
       setGalleryFiles(galleryFiles.filter((_, i) => i !== index));
     }
-    
+
     // Remove from previews
     setGalleryPreviews(galleryPreviews.filter((_, i) => i !== index));
-    
+
     // If it's an existing image (from database), also remove from article
-    if (article.galleryImages && article.galleryImages.length > index && galleryFiles.length <= index) {
-      setArticle(prev => ({
+    if (
+      article.galleryImages &&
+      article.galleryImages.length > index &&
+      galleryFiles.length <= index
+    ) {
+      setArticle((prev) => ({
         ...prev,
-        galleryImages: prev.galleryImages?.filter((_, i) => i !== index)
+        galleryImages: prev.galleryImages?.filter((_, i) => i !== index),
       }));
     }
   };
-  
+
   // Use an existing gallery image as the main image
   const useAsMainImage = (imageUrl: string) => {
-    setArticle(prev => ({
+    setArticle((prev) => ({
       ...prev,
-      imageUrl
+      imageUrl,
     }));
     setImagePreview(imageUrl);
     setImageFile(null);
@@ -220,20 +257,20 @@ const ArticleEdit: React.FC = () => {
 
     setIsUploading(true);
     setUploadProgress(0);
-    
+
     try {
       // Generate a unique filename using timestamp and original filename
       const timestamp = new Date().getTime();
       const fileName = `articles/${timestamp}_${imageFile.name}`;
       const storageRef = ref(storage, fileName);
-      
+
       // Upload the image
       const uploadTask = uploadBytes(storageRef, imageFile);
-      
+
       // Wait for upload to complete
       await uploadTask;
       setUploadProgress(100);
-      
+
       // Get download URL
       const downloadURL = await getDownloadURL(storageRef);
       return downloadURL;
@@ -244,28 +281,28 @@ const ArticleEdit: React.FC = () => {
       setIsUploading(false);
     }
   };
-  
+
   // Upload gallery images
   const uploadGalleryImages = async (): Promise<string[]> => {
     if (galleryFiles.length === 0) {
       return article.galleryImages || [];
     }
-    
+
     setUploadingGallery(true);
     const uploadedUrls: string[] = [];
-    
+
     try {
       // Upload each gallery image
       for (const file of galleryFiles) {
         const timestamp = new Date().getTime();
         const fileName = `articles/gallery/${timestamp}_${file.name}`;
         const storageRef = ref(storage, fileName);
-        
+
         await uploadBytes(storageRef, file);
         const downloadURL = await getDownloadURL(storageRef);
         uploadedUrls.push(downloadURL);
       }
-      
+
       // Combine with existing gallery images that weren't replaced
       const existingImages = article.galleryImages || [];
       return [...existingImages, ...uploadedUrls];
@@ -283,10 +320,10 @@ const ArticleEdit: React.FC = () => {
       // Extract path from URL
       const urlParts = imageUrl.split("?")[0].split("/o/")[1];
       if (!urlParts) return false;
-      
+
       const decodedPath = decodeURIComponent(urlParts);
       const imageRef = ref(storage, decodedPath);
-      
+
       await deleteObject(imageRef);
       return true;
     } catch (error) {
@@ -294,12 +331,12 @@ const ArticleEdit: React.FC = () => {
       return false;
     }
   };
-  
+
   // Handle cover style change
   const handleCoverStyleChange = (style: string) => {
-    setArticle(prev => ({
+    setArticle((prev) => ({
       ...prev,
-      coverStyle: style
+      coverStyle: style,
     }));
   };
 
@@ -308,7 +345,7 @@ const ArticleEdit: React.FC = () => {
     return now.toLocaleDateString("ro-RO", {
       year: "numeric",
       month: "long",
-      day: "numeric"
+      day: "numeric",
     });
   };
 
@@ -329,11 +366,13 @@ const ArticleEdit: React.FC = () => {
         try {
           imageUrl = await uploadImage();
         } catch (err) {
-          setError("Eroare la încărcarea imaginii. Vă rugăm încercați din nou.");
+          setError(
+            "Eroare la încărcarea imaginii. Vă rugăm încercați din nou."
+          );
           return;
         }
       }
-      
+
       // Upload gallery images if there are new ones
       let galleryImages = article.galleryImages || [];
       if (galleryFiles.length > 0) {
@@ -341,7 +380,9 @@ const ArticleEdit: React.FC = () => {
           const newGalleryUrls = await uploadGalleryImages();
           galleryImages = [...(article.galleryImages || []), ...newGalleryUrls];
         } catch (err) {
-          setError("Eroare la încărcarea imaginilor pentru galerie. Vă rugăm încercați din nou.");
+          setError(
+            "Eroare la încărcarea imaginilor pentru galerie. Vă rugăm încercați din nou."
+          );
           return;
         }
       }
@@ -353,14 +394,17 @@ const ArticleEdit: React.FC = () => {
         imageUrl: imageUrl,
         published: article.published,
         tags: article.tags || [],
-        preview: article.preview || article.content.substring(0, 150) + (article.content.length > 150 ? "..." : ""),
+        preview:
+          article.preview ||
+          article.content.substring(0, 150) +
+            (article.content.length > 150 ? "..." : ""),
         date: article.date || formatCurrentDate(),
         readCount: article.readCount || 0,
         readBy: article.readBy || [],
         feedback: article.feedback || [],
         galleryImages: galleryImages,
         coverStyle: article.coverStyle || "standard",
-        updatedAt: Timestamp.now()
+        updatedAt: Timestamp.now(),
       };
 
       if (isNewArticle) {
@@ -369,9 +413,9 @@ const ArticleEdit: React.FC = () => {
         const newArticleData = {
           ...updatedArticle,
           createdAt: Timestamp.now(),
-          updatedAt: Timestamp.now()
+          updatedAt: Timestamp.now(),
         };
-        
+
         await addDoc(articlesRef, newArticleData);
         setSuccess(true);
         setTimeout(() => navigate("/admin/articles"), 2000);
@@ -384,11 +428,18 @@ const ArticleEdit: React.FC = () => {
         setTimeout(() => navigate("/admin/articles"), 2000);
       }
     } catch (err: any) {
-      console.error(`Eroare la ${isNewArticle ? "crearea" : "actualizarea"} articolului:`, err);
+      console.error(
+        `Eroare la ${isNewArticle ? "crearea" : "actualizarea"} articolului:`,
+        err
+      );
       if (err.code === "permission-denied") {
-        setError(`Nu ai permisiunea de a ${isNewArticle ? "crea" : "actualiza"} acest articol.`);
+        setError(
+          `Nu ai permisiunea de a ${isNewArticle ? "crea" : "actualiza"} acest articol.`
+        );
       } else {
-        setError(`A apărut o eroare la ${isNewArticle ? "crearea" : "actualizarea"} articolului.`);
+        setError(
+          `A apărut o eroare la ${isNewArticle ? "crearea" : "actualizarea"} articolului.`
+        );
       }
     }
   };
@@ -396,15 +447,18 @@ const ArticleEdit: React.FC = () => {
   // Clear main image
   const clearMainImage = async () => {
     // If there's an existing image URL and it's in Firebase storage, attempt to delete it
-    if (article.imageUrl && article.imageUrl.includes("firebasestorage.googleapis.com")) {
+    if (
+      article.imageUrl &&
+      article.imageUrl.includes("firebasestorage.googleapis.com")
+    ) {
       await deleteImageFromStorage(article.imageUrl);
     }
-    
+
     setImagePreview("");
     setImageFile(null);
-    setArticle(prev => ({
+    setArticle((prev) => ({
       ...prev,
-      imageUrl: ""
+      imageUrl: "",
     }));
   };
 
@@ -436,16 +490,19 @@ const ArticleEdit: React.FC = () => {
           <div className="bg-green-100 border-l-4 border-green-500 text-green-700 p-4 mb-6 rounded shadow-md">
             <div className="flex items-center">
               <FaCheck className="text-green-500 mr-2" />
-              <p>Articolul a fost {isNewArticle ? "creat" : "actualizat"} cu succes!</p>
+              <p>
+                Articolul a fost {isNewArticle ? "creat" : "actualizat"} cu
+                succes!
+              </p>
             </div>
           </div>
         )}
 
-        <form onSubmit={handleSubmit}>
+        <form onSubmit={handleSubmit} className="article-edit-form">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <div className="md:col-span-2">
               <div className="mb-6">
-                <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="title">
+                <label className="block text-sm font-bold mb-2" htmlFor="title">
                   Titlu
                 </label>
                 <input
@@ -460,7 +517,10 @@ const ArticleEdit: React.FC = () => {
               </div>
 
               <div className="mb-6">
-                <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="content">
+                <label
+                  className="block text-sm font-bold mb-2"
+                  htmlFor="content"
+                >
                   Conținut
                 </label>
                 <textarea
@@ -473,9 +533,12 @@ const ArticleEdit: React.FC = () => {
                   required
                 ></textarea>
               </div>
-              
+
               <div className="mb-6">
-                <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="preview">
+                <label
+                  className="block text-sm font-bold mb-2"
+                  htmlFor="preview"
+                >
                   Text previzualizare
                   <span className="ml-2 text-sm font-normal text-gray-600">
                     {generatePreview ? "(generare automată)" : "(personalizat)"}
@@ -496,22 +559,31 @@ const ArticleEdit: React.FC = () => {
                       setGeneratePreview(!generatePreview);
                       if (!generatePreview) {
                         // Reset preview to auto-generated when switching back
-                        setArticle(prev => ({
+                        setArticle((prev) => ({
                           ...prev,
-                          preview: prev.content?.substring(0, 150) + (prev.content && prev.content.length > 150 ? "..." : "")
+                          preview:
+                            prev.content?.substring(0, 150) +
+                            (prev.content && prev.content.length > 150
+                              ? "..."
+                              : ""),
                         }));
                       }
                     }}
                     className="text-xs text-blue-600 hover:text-blue-800"
                   >
-                    {generatePreview ? "Dezactivează generarea automată" : "Activează generarea automată"}
+                    {generatePreview
+                      ? "Dezactivează generarea automată"
+                      : "Activează generarea automată"}
                   </button>
                 </div>
               </div>
-              
+
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="mb-6">
-                  <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="author">
+                  <label
+                    className="block text-sm font-bold mb-2"
+                    htmlFor="author"
+                  >
                     Autor
                   </label>
                   <input
@@ -523,9 +595,12 @@ const ArticleEdit: React.FC = () => {
                     className="shadow-sm appearance-none border border-gray-300 rounded-md w-full py-3 px-4 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   />
                 </div>
-                
+
                 <div className="mb-6">
-                  <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="date">
+                  <label
+                    className="block text-sm font-bold mb-2"
+                    htmlFor="date"
+                  >
                     Data articolului
                   </label>
                   <input
@@ -542,9 +617,9 @@ const ArticleEdit: React.FC = () => {
                   </p>
                 </div>
               </div>
-              
+
               <div className="mb-6">
-                <label className="block text-gray-700 text-sm font-bold mb-2 flex items-center">
+                <label className="block text-sm font-bold mb-2 flex items-center">
                   <FaTags className="mr-1" /> Etichete (Tags)
                 </label>
                 <div className="flex mb-2">
@@ -590,14 +665,19 @@ const ArticleEdit: React.FC = () => {
                 )}
               </div>
             </div>
-            
+
             <div className="md:col-span-1 bg-gray-50 p-4 rounded-lg shadow-inner">
               <div className="sticky top-20">
-                <h3 className="text-lg font-semibold mb-4 text-gray-700 border-b pb-2">Imagine copertă</h3>
-                
+                <h3 className="text-lg font-semibold mb-4 border-b pb-2">
+                  Imagine copertă
+                </h3>
+
                 <div className="mb-6">
                   <div className="flex items-center mb-2">
-                    <label htmlFor="imageUpload" className="cursor-pointer bg-blue-500 hover:bg-blue-600 text-white py-2 px-4 rounded-md flex items-center transition-colors">
+                    <label
+                      htmlFor="imageUpload"
+                      className="cursor-pointer bg-blue-500 hover:bg-blue-600 text-white py-2 px-4 rounded-md flex items-center transition-colors"
+                    >
                       <FaImage className="mr-2" /> Încarcă imagine
                     </label>
                     <input
@@ -620,11 +700,18 @@ const ArticleEdit: React.FC = () => {
                   </div>
 
                   <p className="text-sm text-gray-600 mb-2">
-                    {imageFile ? imageFile.name : (article.imageUrl ? "Imagine încărcată" : "Nicio imagine selectată")}
+                    {imageFile
+                      ? imageFile.name
+                      : article.imageUrl
+                        ? "Imagine încărcată"
+                        : "Nicio imagine selectată"}
                   </p>
-                  
+
                   <div className="mb-4">
-                    <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="imageUrl">
+                    <label
+                      className="block text-sm font-bold mb-2"
+                      htmlFor="imageUrl"
+                    >
                       URL imagine (alternativ)
                     </label>
                     <input
@@ -637,17 +724,17 @@ const ArticleEdit: React.FC = () => {
                       className="shadow-sm appearance-none border border-gray-300 rounded-md w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                     />
                   </div>
-                  
+
                   {isUploading && uploadProgress !== null && (
                     <div className="w-full bg-gray-200 rounded-full h-2.5 mt-2 mb-2">
-                      <div 
-                        className="bg-blue-600 h-2.5 rounded-full transition-all" 
+                      <div
+                        className="bg-blue-600 h-2.5 rounded-full transition-all"
                         style={{ width: `${uploadProgress}%` }}
                       ></div>
                     </div>
                   )}
                 </div>
-                
+
                 {(imagePreview || article.imageUrl) && (
                   <div className="mb-6 border rounded-lg overflow-hidden shadow-md">
                     <img
@@ -657,53 +744,74 @@ const ArticleEdit: React.FC = () => {
                     />
                   </div>
                 )}
-                
-                <h3 className="text-lg font-semibold mb-4 text-gray-700 border-b pb-2">Stil afișare</h3>
-                
+
+                <h3 className="text-lg font-semibold mb-4 border-b pb-2">
+                  Stil afișare
+                </h3>
+
                 <div className="grid grid-cols-2 gap-3 mb-6">
-                  <div 
+                  <div
                     onClick={() => handleCoverStyleChange("standard")}
                     className={`border rounded p-2 cursor-pointer text-center ${article.coverStyle === "standard" ? "border-blue-500 bg-blue-50" : "border-gray-200 hover:bg-gray-100"}`}
                   >
-                    <div className="h-12 bg-gray-200 mb-2 rounded flex items-center justify-center text-xs text-gray-500">Imagine sus</div>
+                    <div className="h-12 bg-gray-200 mb-2 rounded flex items-center justify-center text-xs text-gray-500">
+                      Imagine sus
+                    </div>
                     <p className="text-sm">Standard</p>
                   </div>
-                  
-                  <div 
+
+                  <div
                     onClick={() => handleCoverStyleChange("side")}
                     className={`border rounded p-2 cursor-pointer text-center ${article.coverStyle === "side" ? "border-blue-500 bg-blue-50" : "border-gray-200 hover:bg-gray-100"}`}
                   >
-                    <div className="h-12 bg-gray-200 mb-2 rounded flex items-center justify-center text-xs text-gray-500">Imagine lateral</div>
+                    <div className="h-12 bg-gray-200 mb-2 rounded flex items-center justify-center text-xs text-gray-500">
+                      Imagine lateral
+                    </div>
                     <p className="text-sm">Lateral</p>
                   </div>
-                  
-                  <div 
+
+                  <div
                     onClick={() => handleCoverStyleChange("fullwidth")}
                     className={`border rounded p-2 cursor-pointer text-center ${article.coverStyle === "fullwidth" ? "border-blue-500 bg-blue-50" : "border-gray-200 hover:bg-gray-100"}`}
                   >
-                    <div className="h-12 bg-gray-200 mb-2 rounded flex items-center justify-center text-xs text-gray-500">Full width</div>
+                    <div className="h-12 bg-gray-200 mb-2 rounded flex items-center justify-center text-xs text-gray-500">
+                      Full width
+                    </div>
                     <p className="text-sm">Lățime completă</p>
                   </div>
-                  
-                  <div 
+
+                  <div
                     onClick={() => handleCoverStyleChange("overlay")}
                     className={`border rounded p-2 cursor-pointer text-center ${article.coverStyle === "overlay" ? "border-blue-500 bg-blue-50" : "border-gray-200 hover:bg-gray-100"}`}
                   >
-                    <div className="h-12 bg-gray-200 mb-2 rounded flex items-center justify-center text-xs text-gray-500">Text peste imagine</div>
+                    <div className="h-12 bg-gray-200 mb-2 rounded flex items-center justify-center text-xs text-gray-500">
+                      Text peste imagine
+                    </div>
                     <p className="text-sm">Overlay</p>
                   </div>
                 </div>
 
                 <div className="mb-6">
                   <label className="flex items-center cursor-pointer">
-                    <div className={`w-10 h-6 rounded-full flex items-center transition-all duration-300 p-1 ${article.published ? "bg-green-500" : "bg-gray-300"}`}>
-                      <div className={`bg-white w-4 h-4 rounded-full shadow transition-all duration-300 transform ${article.published ? "translate-x-4" : ""}`} />
+                    <div
+                      className={`w-10 h-6 rounded-full flex items-center transition-all duration-300 p-1 ${article.published ? "bg-green-500" : "bg-gray-300"}`}
+                    >
+                      <div
+                        className={`bg-white w-4 h-4 rounded-full shadow transition-all duration-300 transform ${article.published ? "translate-x-4" : ""}`}
+                      />
                     </div>
                     <div className="ml-3 flex items-center">
-                      {article.published ? 
-                        <><FaEye className="text-green-600 mr-1" /> <span className="text-gray-700">Publicat</span></> : 
-                        <><FaEyeSlash className="text-gray-600 mr-1" /> <span className="text-gray-700">Ascuns</span></>
-                      }
+                      {article.published ? (
+                        <>
+                          <FaEye className="text-green-600 mr-1" />{" "}
+                          <span>Publicat</span>
+                        </>
+                      ) : (
+                        <>
+                          <FaEyeSlash className="text-gray-600 mr-1" />{" "}
+                          <span>Ascuns</span>
+                        </>
+                      )}
                       <input
                         type="checkbox"
                         checked={article.published}
@@ -716,28 +824,35 @@ const ArticleEdit: React.FC = () => {
               </div>
             </div>
           </div>
-          
+
           {/* Gallery Section */}
           <div className="mt-8 pt-6 border-t border-gray-200">
             <div className="flex justify-between items-center mb-4">
-              <h3 className="text-xl font-semibold text-gray-700">Galerie imagini</h3>
+              <h3 className="text-xl font-semibold">Galerie imagini</h3>
               <button
                 type="button"
                 onClick={() => setShowGalleryUpload(!showGalleryUpload)}
                 className="bg-indigo-500 hover:bg-indigo-600 text-white px-4 py-2 rounded-md flex items-center transition-colors"
               >
                 {showGalleryUpload ? (
-                  <><FaTimes className="mr-2" /> Închide</> 
+                  <>
+                    <FaTimes className="mr-2" /> Închide
+                  </>
                 ) : (
-                  <><FaPlus className="mr-2" /> Adaugă imagini</>
+                  <>
+                    <FaPlus className="mr-2" /> Adaugă imagini
+                  </>
                 )}
               </button>
             </div>
-            
+
             {showGalleryUpload && (
               <div className="bg-gray-50 p-4 rounded-lg mb-6 border border-gray-200">
                 <div className="flex items-center mb-4">
-                  <label htmlFor="galleryUpload" className="cursor-pointer bg-blue-500 hover:bg-blue-600 text-white py-2 px-4 rounded-md flex items-center transition-colors">
+                  <label
+                    htmlFor="galleryUpload"
+                    className="cursor-pointer bg-blue-500 hover:bg-blue-600 text-white py-2 px-4 rounded-md flex items-center transition-colors"
+                  >
                     <FaImage className="mr-2" /> Selectează imagini
                   </label>
                   <input
@@ -749,22 +864,28 @@ const ArticleEdit: React.FC = () => {
                     className="hidden"
                   />
                   <span className="ml-3 text-sm text-gray-600">
-                    {galleryFiles.length > 0 ? `${galleryFiles.length} fișiere selectate` : "Niciun fișier selectat"}
+                    {galleryFiles.length > 0
+                      ? `${galleryFiles.length} fișiere selectate`
+                      : "Niciun fișier selectat"}
                   </span>
                 </div>
-                
+
                 <p className="text-sm text-gray-600 mb-2">
-                  Adaugă imagini suplimentare pentru articol. Acestea vor fi afișate într-o galerie sub conținutul principal.
+                  Adaugă imagini suplimentare pentru articol. Acestea vor fi
+                  afișate într-o galerie sub conținutul principal.
                 </p>
               </div>
             )}
-            
+
             {galleryPreviews.length > 0 && (
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
                 {galleryPreviews.map((preview, index) => (
-                  <div key={index} className="relative group border rounded-lg overflow-hidden shadow-sm">
-                    <img 
-                      src={preview} 
+                  <div
+                    key={index}
+                    className="relative group border rounded-lg overflow-hidden shadow-sm"
+                  >
+                    <img
+                      src={preview}
                       alt={`Gallery image ${index + 1}`}
                       className="w-full h-32 object-cover"
                     />
@@ -791,7 +912,7 @@ const ArticleEdit: React.FC = () => {
               </div>
             )}
           </div>
-          
+
           <div className="mt-8 pt-6 border-t border-gray-200 flex justify-between items-center">
             <button
               type="button"
@@ -801,7 +922,7 @@ const ArticleEdit: React.FC = () => {
             >
               <FaTimes className="mr-2" /> Anulează
             </button>
-            
+
             <button
               type="submit"
               className="bg-blue-500 hover:bg-blue-600 text-white font-bold py-3 px-6 rounded-md flex items-center transition-colors shadow-md"
@@ -820,19 +941,36 @@ const ArticleEdit: React.FC = () => {
               )}
             </button>
           </div>
-          
+
           {!isNewArticle && article.readCount !== undefined && (
             <div className="mt-8 pt-6 border-t border-gray-200">
-              <h3 className="text-xl font-semibold text-gray-700 mb-4">Statistici articol</h3>
+              <h3 className="text-xl font-semibold mb-4">Statistici articol</h3>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div className="bg-blue-50 rounded-lg p-4 border border-blue-100 shadow-sm">
-                  <p className="text-sm text-gray-700">Număr de citiri: <span className="font-bold">{article.readCount}</span></p>
+                  <p className="text-sm">
+                    Număr de citiri:{" "}
+                    <span className="font-bold">{article.readCount}</span>
+                  </p>
                 </div>
                 <div className="bg-green-50 rounded-lg p-4 border border-green-100 shadow-sm">
-                  <p className="text-sm text-gray-700">Feedback-uri primite: <span className="font-bold">{article.feedback?.length || 0}</span></p>
+                  <p className="text-sm">
+                    Feedback-uri primite:{" "}
+                    <span className="font-bold">
+                      {article.feedback?.length || 0}
+                    </span>
+                  </p>
                 </div>
                 <div className="bg-yellow-50 rounded-lg p-4 border border-yellow-100 shadow-sm">
-                  <p className="text-sm text-gray-700">Ultima actualizare: <span className="font-bold">{article.updatedAt ? new Date(article.updatedAt.toDate()).toLocaleDateString("ro-RO") : "N/A"}</span></p>
+                  <p className="text-sm">
+                    Ultima actualizare:{" "}
+                    <span className="font-bold">
+                      {article.updatedAt
+                        ? new Date(
+                            article.updatedAt.toDate()
+                          ).toLocaleDateString("ro-RO")
+                        : "N/A"}
+                    </span>
+                  </p>
                 </div>
               </div>
             </div>

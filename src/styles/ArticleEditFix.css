@@ -1,0 +1,163 @@
+/* CSS FIX PENTRU VIZIBILITATEA INPUT-URILOR - ArticleEdit Page */
+
+/* PREVENIRE TEXT ALB PE FUNDAL ALB - REGULĂ ULTRA-SPECIFICĂ */
+.article-edit-form label,
+form.article-edit-form label,
+div.bg-white form label,
+.container form label {
+  color: #1f2937 !important;
+  background-color: transparent !important;
+  text-shadow: none !important;
+  -webkit-text-fill-color: #1f2937 !important;
+}
+
+/* FORȚEAZĂ VIZIBILITATEA PENTRU TOATE INPUT-URILE */
+input,
+textarea,
+select {
+  background-color: #ffffff !important;
+  color: #1f2937 !important;
+  border: 1px solid #d1d5db !important;
+  padding: 8px 12px !important;
+  border-radius: 4px !important;
+  font-size: 14px !important;
+  -webkit-text-fill-color: #1f2937 !important;
+  -webkit-appearance: none !important;
+  appearance: none !important;
+}
+
+input:focus,
+textarea:focus,
+select:focus {
+  outline: none !important;
+  border-color: #3b82f6 !important;
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2) !important;
+  background-color: #ffffff !important;
+  color: #1f2937 !important;
+  -webkit-text-fill-color: #1f2937 !important;
+}
+
+input::placeholder,
+textarea::placeholder {
+  color: #6b7280 !important;
+  opacity: 1 !important;
+}
+
+/* SPECIFICE PENTRU PAGINA DE EDITARE ARTICOLE */
+.article-title-input,
+.article-content-textarea,
+.tags-input {
+  background-color: #ffffff !important;
+  color: #1f2937 !important;
+  border: 2px solid #e5e7eb !important;
+  border-radius: 6px !important;
+  padding: 12px 16px !important;
+  font-size: 16px !important;
+  line-height: 1.5 !important;
+  width: 100% !important;
+  -webkit-text-fill-color: #1f2937 !important;
+  -webkit-appearance: none !important;
+  appearance: none !important;
+}
+
+.article-title-input:focus,
+.article-content-textarea:focus,
+.tags-input:focus {
+  outline: none !important;
+  border-color: #3b82f6 !important;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1) !important;
+  background-color: #ffffff !important;
+  color: #1f2937 !important;
+  -webkit-text-fill-color: #1f2937 !important;
+}
+
+/* TAGS INPUT SPECIFIC */
+.tags-input {
+  border-radius: 6px 0 0 6px !important;
+  border-right: none !important;
+}
+
+/* OVERRIDE PENTRU DARK MODE */
+@media (prefers-color-scheme: dark) {
+  input,
+  textarea,
+  select {
+    background-color: #ffffff !important;
+    color: #1f2937 !important;
+    border-color: #e5e7eb !important;
+    -webkit-text-fill-color: #1f2937 !important;
+  }
+
+  input:focus,
+  textarea:focus,
+  select:focus {
+    background-color: #ffffff !important;
+    color: #1f2937 !important;
+    border-color: #3b82f6 !important;
+    -webkit-text-fill-color: #1f2937 !important;
+  }
+}
+
+/* FORȚEAZĂ FUNDAL ALB PENTRU CONTAINERE */
+.container,
+.bg-white,
+form {
+  background-color: #ffffff !important;
+  color: #1f2937 !important;
+}
+
+/* LABELS VIZIBILE */
+label {
+  color: #374151 !important;
+  font-weight: 600 !important;
+  margin-bottom: 8px !important;
+  display: block !important;
+}
+
+/* BUTTONS */
+button {
+  cursor: pointer !important;
+}
+
+.btn-primary {
+  background-color: #3b82f6 !important;
+  color: #ffffff !important;
+  border: none !important;
+  padding: 8px 16px !important;
+  border-radius: 4px !important;
+  font-weight: 600 !important;
+}
+
+/* REGULĂ ULTRA-SPECIFICĂ PENTRU PREVENIREA TEXTULUI ALB PE FUNDAL ALB */
+/* Țintește specific pagina de administrare articole */
+[class*="container"] .bg-white label,
+.bg-white .article-edit-form label,
+.bg-white form label,
+.shadow-lg label,
+div[class*="bg-white"] label {
+  color: #1f2937 !important;
+  background-color: transparent !important;
+  text-shadow: none !important;
+  -webkit-text-fill-color: #1f2937 !important;
+  font-weight: 600 !important;
+  margin-bottom: 8px !important;
+  display: block !important;
+}
+
+/* OVERRIDE PENTRU ORICE ALT CONFLICT */
+body label,
+html label {
+  color: #1f2937 !important;
+}
+
+/* SPECIFICĂ PENTRU ADMIN PAGES */
+[class*="admin"] label,
+.admin-page label,
+.admin-form label {
+  color: #1f2937 !important;
+  background-color: transparent !important;
+}
+
+.btn-primary:hover {
+  background-color: #2563eb !important;
+}

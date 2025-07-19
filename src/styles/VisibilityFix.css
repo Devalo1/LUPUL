@@ -1,0 +1,140 @@
+/* CSS FIX URGENT - VIZIBILITATE COMPLETĂ PENTRU TOATE ELEMENTELE */
+
+/* FORȚEAZĂ CULOAREA NEAGRĂ PENTRU TOT TEXTUL DIN PAGINĂ */
+* {
+  color: #000000 !important;
+}
+
+body,
+html {
+  background-color: #ffffff !important;
+  color: #000000 !important;
+}
+
+/* INPUT-URI ȘI FORMULARE */
+input,
+textarea,
+select {
+  background-color: #ffffff !important;
+  color: #000000 !important;
+  border: 1px solid #333333 !important;
+  padding: 8px !important;
+  border-radius: 4px !important;
+  -webkit-text-fill-color: #000000 !important;
+  -webkit-appearance: none !important;
+  appearance: none !important;
+}
+
+input:focus,
+textarea:focus,
+select:focus {
+  background-color: #ffffff !important;
+  color: #000000 !important;
+  border: 2px solid #0066cc !important;
+  outline: none !important;
+  -webkit-text-fill-color: #000000 !important;
+}
+
+input::placeholder,
+textarea::placeholder {
+  color: #666666 !important;
+  opacity: 1 !important;
+}
+
+/* TITLURI ȘI LABEL-URI */
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  color: #000000 !important;
+  font-weight: bold !important;
+}
+
+label {
+  color: #000000 !important;
+  font-weight: 600 !important;
+  display: block !important;
+  margin-bottom: 5px !important;
+}
+
+/* PARAGRAFURI ȘI SPAN-URI */
+p,
+span,
+div {
+  color: #000000 !important;
+}
+
+/* CONTAINERE */
+.container,
+.bg-white,
+.bg-gray-50 {
+  background-color: #ffffff !important;
+  color: #000000 !important;
+}
+
+/* BUTOANE */
+button {
+  color: #ffffff !important;
+  font-weight: 600 !important;
+  cursor: pointer !important;
+}
+
+button.bg-blue-500,
+button.bg-indigo-500 {
+  background-color: #0066cc !important;
+  color: #ffffff !important;
+}
+
+button.bg-gray-500 {
+  background-color: #666666 !important;
+  color: #ffffff !important;
+}
+
+button.bg-red-500 {
+  background-color: #cc0000 !important;
+  color: #ffffff !important;
+}
+
+/* OVERRIDE PENTRU TOATE CLASELE TAILWIND CU CULORI */
+.text-gray-700,
+.text-gray-800,
+.text-gray-600,
+.text-gray-500,
+.text-gray-400 {
+  color: #000000 !important;
+}
+
+.text-blue-600,
+.text-blue-800 {
+  color: #0066cc !important;
+}
+
+.text-red-600,
+.text-red-700 {
+  color: #cc0000 !important;
+}
+
+.text-green-600,
+.text-green-700 {
+  color: #006600 !important;
+}
+
+/* SPECIFICAȚII PENTRU ARTICOL EDITING */
+.shadow-sm,
+.border,
+.rounded-md,
+.rounded-lg {
+  border: 1px solid #cccccc !important;
+}
+
+/* FUNDAL PENTRU SECȚIUNI */
+.bg-gray-50 {
+  background-color: #f9f9f9 !important;
+}
+
+/* HOVER EFFECTS */
+*:hover {
+  opacity: 0.9;
+}

@@ -1,5 +1,6 @@
 import {
   doc,
+  deleteDoc,
   setDoc,
   collection,
   query,
@@ -145,49 +146,79 @@ export const isUserAccountant = async (userEmail: string): Promise<boolean> => {
 };
 
 /**
- * Makes a user admin by adding their email to the admins collection
+ * Makes a user admin by updating both user document and admin collection
  */
-export const makeUserAdmin = async (userEmail: string): Promise<boolean> => {
-  if (!userEmail) return false;
+export const makeUserAdmin = async (userId: string): Promise<boolean> => {
+  if (!userId) return false;
 
   try {
-    // First check if user is already admin
-    if (await isUserAdmin(userEmail)) {
-      userRolesLogger.info(`User ${userEmail} is already an admin.`);
-      return true;
-    }
+    userRolesLogger.info(`Making user ${userId} an admin`);
 
-    // Add to admins collection only if needed
+    // Update user document with admin role
+    const userRef = doc(firestore, "users", userId);
+    await setDoc(
+      userRef,
+      {
+        isAdmin: true,
+        role: UserRole.ADMIN,
+        updatedAt: new Date(),
+      },
+      { merge: true }
+    );
+
+    // Also add to admin collection for compatibility
     try {
-      await ensureAdminInCollection(userEmail);
-    } catch (error) {
-      userRolesLogger.error(
-        "Could not add to admins collection, trying user document update:",
-        error
-      );
-      // Fallback: update user document directly
-      const usersCollection = collection(firestore, "users");
-      const userQuery = query(usersCollection, where("email", "==", userEmail));
-      const userSnapshot = await getDocs(userQuery);
-
-      if (!userSnapshot.empty) {
-        const userDoc = userSnapshot.docs[0];
-        await setDoc(
-          doc(firestore, "users", userDoc.id),
-          {
-            isAdmin: true,
-            role: UserRole.ADMIN,
-            updatedAt: new Date(),
-          },
-          { merge: true }
-        );
-      }
+      const adminRef = doc(firestore, "admins", userId);
+      await setDoc(adminRef, {
+        role: "admin",
+        addedAt: new Date(),
+      });
+    } catch (adminError) {
+      userRolesLogger.warn("Could not update admin collection:", adminError);
+      // This is not critical, the user document update is sufficient
     }
 
-    userRolesLogger.info(`User ${userEmail} has been made an admin.`);
+    userRolesLogger.info(`User ${userId} has been made an admin.`);
     return true;
   } catch (error) {
     userRolesLogger.error("Error making user admin:", error);
+    return false;
+  }
+};
+
+/**
+ * Removes admin role from a user
+ */
+export const removeAdminRole = async (userId: string): Promise<boolean> => {
+  if (!userId) return false;
+
+  try {
+    userRolesLogger.info(`Removing admin role from user ${userId}`);
+
+    // Update user document
+    const userRef = doc(firestore, "users", userId);
+    await setDoc(
+      userRef,
+      {
+        isAdmin: false,
+        role: UserRole.USER,
+        updatedAt: new Date(),
+      },
+      { merge: true }
+    );
+
+    // Remove from admin collection
+    try {
+      const adminRef = doc(firestore, "admins", userId);
+      await deleteDoc(adminRef);
+    } catch (adminError) {
+      userRolesLogger.warn("Could not remove admin document:", adminError);
+    }
+
+    userRolesLogger.info(`Admin role removed from user ${userId}`);
+    return true;
+  } catch (error) {
+    userRolesLogger.error("Error removing admin role:", error);
     return false;
   }
 };
@@ -558,6 +589,102 @@ export const checkPendingRoleRequests = async (
       "Eroare la verificarea cererilor de schimbare a rolului:",
       error
     );
+    return false;
+  }
+};
+
+/**
+ * Deletes a user from the system (marks as deleted, preserves data for audit)
+ */
+export const deleteUser = async (userId: string): Promise<boolean> => {
+  if (!userId) return false;
+
+  try {
+    userRolesLogger.info(`Deleting user ${userId}`);
+
+    // Mark user as deleted instead of actually deleting (for audit purposes)
+    const userRef = doc(firestore, "users", userId);
+    await setDoc(
+      userRef,
+      {
+        deleted: true,
+        deletedAt: new Date(),
+        isActive: false,
+        isAdmin: false,
+        isSpecialist: false,
+        isAccountant: false,
+        role: UserRole.USER,
+        updatedAt: new Date(),
+      },
+      { merge: true }
+    );
+
+    // Remove from admin collection if exists
+    try {
+      const adminRef = doc(firestore, "admin", userId);
+      await setDoc(adminRef, {
+        deleted: true,
+        deletedAt: new Date(),
+      });
+    } catch (adminError) {
+      userRolesLogger.warn(
+        "Could not update admin collection during deletion:",
+        adminError
+      );
+    }
+
+    // Remove from specialists collection if exists
+    try {
+      const specialistRef = doc(firestore, "specialists", userId);
+      await setDoc(
+        specialistRef,
+        {
+          deleted: true,
+          deletedAt: new Date(),
+          isActive: false,
+        },
+        { merge: true }
+      );
+    } catch (specialistError) {
+      userRolesLogger.warn(
+        "Could not update specialists collection during deletion:",
+        specialistError
+      );
+    }
+
+    userRolesLogger.info(`User ${userId} has been marked as deleted`);
+    return true;
+  } catch (error) {
+    userRolesLogger.error("Error deleting user:", error);
+    return false;
+  }
+};
+
+/**
+ * Permanently restores a deleted user
+ */
+export const restoreUser = async (userId: string): Promise<boolean> => {
+  if (!userId) return false;
+
+  try {
+    userRolesLogger.info(`Restoring user ${userId}`);
+
+    const userRef = doc(firestore, "users", userId);
+    await setDoc(
+      userRef,
+      {
+        deleted: false,
+        deletedAt: null,
+        isActive: true,
+        updatedAt: new Date(),
+      },
+      { merge: true }
+    );
+
+    userRolesLogger.info(`User ${userId} has been restored`);
+    return true;
+  } catch (error) {
+    userRolesLogger.error("Error restoring user:", error);
     return false;
   }
 };

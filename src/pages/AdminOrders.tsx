@@ -56,14 +56,13 @@ const AdminOrders: React.FC = () => {
 
   const fetchOrders = async () => {
     setLoading(true);
+    setError(null); // Resetează eroarea
     try {
       let ordersQuery;
 
       if (filter === "all") {
-        ordersQuery = query(
-          collection(db, "orders"),
-          orderBy("orderDate", "desc")
-        );
+        // Încearcă mai întâi fără orderBy pentru a testa dacă există date
+        ordersQuery = query(collection(db, "orders"));
       } else {
         ordersQuery = query(
           collection(db, "orders"),
@@ -75,8 +74,10 @@ const AdminOrders: React.FC = () => {
       const snapshot = await getDocs(ordersQuery);
 
       if (snapshot.empty) {
+        console.log("No orders found in database");
         setOrders([]);
       } else {
+        console.log(`Found ${snapshot.docs.length} orders`);
         const ordersList = snapshot.docs.map(
           (doc) =>
             ({
@@ -85,11 +86,24 @@ const AdminOrders: React.FC = () => {
             }) as Order
         );
 
+        // Sortează manual dacă nu folosim orderBy
+        if (filter === "all") {
+          ordersList.sort((a, b) => {
+            const dateA = a.orderDate?.toDate?.() || new Date(0);
+            const dateB = b.orderDate?.toDate?.() || new Date(0);
+            return dateB.getTime() - dateA.getTime();
+          });
+        }
+
         setOrders(ordersList);
       }
     } catch (err) {
       console.error("Error fetching orders:", err);
-      setError("A apărut o eroare la încărcarea comenzilor.");
+      if (err instanceof Error) {
+        setError(`Eroare la încărcarea comenzilor: ${err.message}`);
+      } else {
+        setError("A apărut o eroare la încărcarea comenzilor. Verificați consola pentru detalii.");
+      }
     } finally {
       setLoading(false);
     }

@@ -5,7 +5,7 @@ import { useAuth } from "../contexts";
 
 // Import test function for debugging
 import "../utils/testNetopia.js";
-import "../utils/netopiaDebug.js";
+// import "../utils/netopiaDebug.js"; // removed to avoid process.env reference errors
 
 // Use local Netlify function for order submission (proxied by Vite dev/preview server)
 const FUNCTION_URL = "/.netlify/functions/send-order-email";

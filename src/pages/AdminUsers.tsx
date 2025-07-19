@@ -5,9 +5,7 @@ import {
   doc,
   query,
   orderBy,
-  Timestamp,
   getDoc,
-  setDoc,
 } from "firebase/firestore";
 import { db } from "../firebase";
 import {
@@ -15,6 +13,9 @@ import {
   removeSpecialistRole,
   makeUserAccountant,
   removeAccountantRole,
+  makeUserAdmin,
+  removeAdminRole,
+  deleteUser,
   UserRole,
 } from "../utils/userRoles";
 
@@ -102,7 +103,7 @@ const AdminUsers: React.FC = () => {
           // Verifică dacă utilizatorul este admin
           let isAdmin = false;
           try {
-            const adminDoc = await getDoc(doc(db, "admin", userDoc.id));
+            const adminDoc = await getDoc(doc(db, "admins", userDoc.id));
             isAdmin = adminDoc.exists();
           } catch (error) {
             console.error("Error checking admin status:", error);
@@ -140,28 +141,30 @@ const AdminUsers: React.FC = () => {
 
   const makeAdmin = async (userId: string) => {
     try {
-      // Adaugă utilizatorul în colecția admin
-      await setDoc(doc(db, "admin", userId), {
-        role: "admin",
-        addedAt: Timestamp.now(),
-      });
+      // Use the improved function that updates all necessary collections
+      const success = await makeUserAdmin(userId);
 
-      // Actualizează lista locală
-      setUsers((prevUsers) =>
-        prevUsers.map((u) =>
-          u.id === userId
-            ? {
-                ...u,
-                isAdmin: true,
-                role: "admin",
-                isSpecialist: false,
-                isAccountant: false,
-              }
-            : u
-        )
-      );
-
-      alert("Utilizatorul a fost promovat la rolul de Admin.");
+      if (success) {
+        // Update local state
+        setUsers((prevUsers) =>
+          prevUsers.map((u) =>
+            u.id === userId
+              ? {
+                  ...u,
+                  isAdmin: true,
+                  role: "admin",
+                  isSpecialist: false,
+                  isAccountant: false,
+                }
+              : u
+          )
+        );
+        alert("Utilizatorul a fost promovat la rolul de Admin.");
+      } else {
+        alert(
+          "Eroare la adăugarea utilizatorului ca admin. Vă rugăm încercați din nou."
+        );
+      }
     } catch (error) {
       console.error("Error making user admin:", error);
       alert(
@@ -172,17 +175,22 @@ const AdminUsers: React.FC = () => {
 
   const removeAdmin = async (userId: string) => {
     try {
-      // Șterge utilizatorul din colecția admin
-      await setDoc(doc(db, "admin", userId), {});
+      // Use the improved function that updates all necessary collections
+      const success = await removeAdminRole(userId);
 
-      // Actualizează lista locală
-      setUsers((prevUsers) =>
-        prevUsers.map((u) =>
-          u.id === userId ? { ...u, isAdmin: false, role: "user" } : u
-        )
-      );
-
-      alert("Rolul de admin a fost revocat pentru acest utilizator.");
+      if (success) {
+        // Update local state
+        setUsers((prevUsers) =>
+          prevUsers.map((u) =>
+            u.id === userId ? { ...u, isAdmin: false, role: "user" } : u
+          )
+        );
+        alert("Rolul de admin a fost revocat pentru acest utilizator.");
+      } else {
+        alert(
+          "Eroare la revocarea rolului de admin. Vă rugăm încercați din nou."
+        );
+      }
     } catch (error) {
       console.error("Error removing admin status:", error);
       alert(
@@ -290,6 +298,26 @@ const AdminUsers: React.FC = () => {
       alert(
         "Eroare la revocarea rolului de contabil. Vă rugăm încercați din nou."
       );
+    }
+  };
+
+  // Funcția pentru ștergerea utilizatorului
+  const handleDeleteUser = async (userId: string) => {
+    try {
+      const success = await deleteUser(userId);
+
+      if (success) {
+        // Remove user from local state
+        setUsers((prevUsers) => prevUsers.filter((u) => u.id !== userId));
+        alert("Utilizatorul a fost șters cu succes.");
+      } else {
+        alert(
+          "Eroare la ștergerea utilizatorului. Vă rugăm încercați din nou."
+        );
+      }
+    } catch (error) {
+      console.error("Error deleting user:", error);
+      alert("Eroare la ștergerea utilizatorului. Vă rugăm încercați din nou.");
     }
   };
 
@@ -585,6 +613,22 @@ const AdminUsers: React.FC = () => {
                             onClick={() => handleOpenModal(user)}
                           >
                             Detalii
+                          </button>
+
+                          {/* Buton pentru ștergerea utilizatorului */}
+                          <button
+                            className="inline-flex items-center px-3 py-1.5 border border-red-300 text-sm font-medium rounded-md text-red-700 bg-red-50 hover:bg-red-100 hover:border-red-400 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-opacity-50 transition-colors duration-200"
+                            onClick={() => {
+                              if (
+                                confirm(
+                                  `Sunteți sigur că doriți să ștergeți utilizatorul ${user.displayName || user.email}? Această acțiune nu poate fi anulată.`
+                                )
+                              ) {
+                                handleDeleteUser(user.id);
+                              }
+                            }}
+                          >
+                            🗑️ Șterge
                           </button>
                           {!user.isAdmin &&
                           !user.isSpecialist &&
@@ -957,6 +1001,34 @@ const AdminUsers: React.FC = () => {
                     </button>
                   </div>
                 ) : null}
+              </div>
+              {/* Buton pentru ștergerea utilizatorului */}
+              <div className="mt-6 pt-4 border-t border-gray-200">
+                <div className="border-2 border-red-300 rounded-lg p-4 bg-gradient-to-br from-red-50 to-red-100 shadow-sm">
+                  <h6 className="text-sm font-bold text-red-700 mb-3 uppercase tracking-wide flex items-center">
+                    <span className="w-2 h-2 bg-red-500 rounded-full mr-2"></span>
+                    Zona Periculoasă
+                  </h6>
+                  <p className="text-xs text-red-600 mb-3">
+                    Această acțiune va șterge permanent utilizatorul din sistem.
+                    Acțiunea nu poate fi anulată.
+                  </p>
+                  <button
+                    onClick={() => {
+                      if (
+                        confirm(
+                          `Sunteți absolut sigur că doriți să ștergeți utilizatorul ${selectedUser.displayName || selectedUser.email}? Această acțiune va șterge permanent toate datele asociate și nu poate fi anulată.`
+                        )
+                      ) {
+                        handleDeleteUser(selectedUser.id);
+                        handleCloseModal();
+                      }
+                    }}
+                    className="w-full inline-flex items-center justify-center px-4 py-3 border-2 border-red-500 text-sm font-semibold rounded-lg text-white bg-red-600 hover:bg-red-700 hover:border-red-600 focus:outline-none focus:ring-3 focus:ring-red-300 focus:ring-opacity-50 transition-all duration-200 shadow-md hover:shadow-lg transform hover:-translate-y-0.5"
+                  >
+                    🗑️ Șterge Utilizatorul Permanent
+                  </button>
+                </div>
               </div>
             </div>
           </div>

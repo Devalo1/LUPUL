@@ -4,8 +4,13 @@ import path from "path";
 
 // https://vitejs.dev/config/
 export default defineConfig({
+  // Dezactivăm Fast Refresh la nivel global
+  define: {
+    __REACT_REFRESH__: false,
+  },
   plugins: [
     react({
+      // Emotion support cu Babel - Fast Refresh DEZACTIVAT
       jsxImportSource: "@emotion/react",
       babel: {
         plugins: ["@emotion/babel-plugin"],
@@ -21,6 +26,8 @@ export default defineConfig({
     port: 5173,
     host: true,
     open: true,
+    // Reactivăm HMR pentru React Fast Refresh
+    hmr: true,
   },
   preview: {
     port: 5174,

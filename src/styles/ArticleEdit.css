@@ -1,0 +1,403 @@
+/* ArticleEdit.css - Stiluri specifice pentru editarea articolelor */
+
+/* FORȚARE GLOBALĂ DE VIZIBILITATE - PRIORITATE MAXIMĂ */
+* {
+  color: #1f2937 !important;
+}
+
+body,
+html {
+  background-color: #ffffff !important;
+  color: #1f2937 !important;
+}
+
+/* Container principal */
+.article-edit-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 20px;
+  background-color: #f8fafc;
+  min-height: 100vh;
+}
+
+/* Header */
+.article-edit-header {
+  background: white;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  margin-bottom: 20px;
+}
+
+.article-edit-title {
+  font-size: 24px;
+  font-weight: bold;
+  color: #1f2937;
+  margin: 0;
+}
+
+/* Form styling */
+.article-edit-form {
+  background: white;
+  padding: 30px;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+/* Input fields - FORCE VISIBILITY */
+.article-edit-form input,
+.article-edit-form textarea,
+.article-edit-form select {
+  width: 100%;
+  background-color: #ffffff !important;
+  color: #1f2937 !important;
+  border: 2px solid #e5e7eb !important;
+  border-radius: 6px;
+  padding: 12px 16px;
+  font-size: 16px;
+  line-height: 1.5;
+  transition: all 0.3s ease;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+/* HIGH PRIORITY - Override ANY conflicting styles */
+input[type="text"],
+input[type="email"],
+input[type="password"],
+input[type="url"],
+textarea,
+select {
+  background-color: #ffffff !important;
+  color: #1f2937 !important;
+  border: 2px solid #e5e7eb !important;
+}
+
+/* SUPER HIGH PRIORITY - Force visibility for all form elements */
+.article-edit-form input[type="text"],
+.article-edit-form input[type="email"],
+.article-edit-form input[type="password"],
+.article-edit-form input[type="url"],
+.article-edit-form textarea,
+.article-edit-form select,
+input.article-title-input,
+textarea.article-content-textarea,
+input.tags-input {
+  background-color: #ffffff !important;
+  color: #1f2937 !important;
+  border: 2px solid #e5e7eb !important;
+  -webkit-text-fill-color: #1f2937 !important;
+  -webkit-appearance: none !important;
+  appearance: none !important;
+}
+
+/* Focus state for inputs */
+.article-edit-form input:focus,
+.article-edit-form textarea:focus,
+.article-edit-form select:focus {
+  outline: none;
+  border-color: #3b82f6 !important;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+  background-color: #ffffff !important;
+  color: #1f2937 !important;
+}
+
+/* Placeholder styling */
+.article-edit-form input::placeholder,
+.article-edit-form textarea::placeholder {
+  color: #6b7280 !important;
+  opacity: 1;
+}
+
+/* Labels */
+.article-edit-form label {
+  display: block;
+  margin-bottom: 8px;
+  font-weight: 600;
+  color: #374151;
+  font-size: 14px;
+}
+
+/* Form groups */
+.form-group {
+  margin-bottom: 24px;
+}
+
+/* Text area specific */
+.article-edit-form textarea {
+  min-height: 200px;
+  resize: vertical;
+  font-family:
+    "Inter",
+    -apple-system,
+    BlinkMacSystemFont,
+    sans-serif;
+}
+
+/* Title input specific */
+.article-title-input {
+  font-size: 18px !important;
+  font-weight: 600 !important;
+  background-color: #ffffff !important;
+  color: #1f2937 !important;
+  border: 2px solid #e5e7eb !important;
+}
+
+.article-title-input:focus {
+  border-color: #3b82f6 !important;
+  background-color: #ffffff !important;
+  color: #1f2937 !important;
+}
+
+/* Content textarea specific */
+.article-content-textarea {
+  min-height: 400px !important;
+  font-family:
+    "Inter",
+    -apple-system,
+    BlinkMacSystemFont,
+    sans-serif !important;
+  background-color: #ffffff !important;
+  color: #1f2937 !important;
+  border: 2px solid #e5e7eb !important;
+  line-height: 1.6;
+}
+
+.article-content-textarea:focus {
+  border-color: #3b82f6 !important;
+  background-color: #ffffff !important;
+  color: #1f2937 !important;
+}
+
+/* Tags input specific styling */
+.tags-input {
+  width: 100% !important;
+  background-color: #ffffff !important;
+  color: #1f2937 !important;
+  border: 2px solid #e5e7eb !important;
+  border-radius: 6px 0 0 6px !important;
+  border-right: none !important;
+  padding: 12px 16px !important;
+  font-size: 16px !important;
+  line-height: 1.5 !important;
+  transition: all 0.3s ease;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.tags-input:focus {
+  outline: none !important;
+  border-color: #3b82f6 !important;
+  background-color: #ffffff !important;
+  color: #1f2937 !important;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.tags-input::placeholder {
+  color: #6b7280 !important;
+  opacity: 1;
+}
+
+/* Buttons */
+.btn-primary {
+  background-color: #3b82f6;
+  color: white;
+  border: none;
+  padding: 12px 24px;
+  border-radius: 6px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.btn-primary:hover {
+  background-color: #2563eb;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(59, 130, 246, 0.3);
+}
+
+.btn-secondary {
+  background-color: #6b7280;
+  color: white;
+  border: none;
+  padding: 12px 24px;
+  border-radius: 6px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.btn-secondary:hover {
+  background-color: #4b5563;
+}
+
+/* Error states */
+.error-message {
+  color: #ef4444;
+  font-size: 14px;
+  margin-top: 4px;
+}
+
+/* Success states */
+.success-message {
+  color: #10b981;
+  font-size: 14px;
+  margin-top: 4px;
+}
+
+/* Loading state */
+.loading-spinner {
+  display: inline-block;
+  width: 20px;
+  height: 20px;
+  border: 2px solid #f3f4f6;
+  border-radius: 50%;
+  border-top-color: #3b82f6;
+  animation: spin 1s ease-in-out infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Image preview */
+.image-preview {
+  max-width: 300px;
+  height: auto;
+  border-radius: 6px;
+  margin-top: 10px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* File input styling */
+.file-input-wrapper {
+  position: relative;
+  display: inline-block;
+  cursor: pointer;
+  background-color: #f3f4f6;
+  border: 2px dashed #d1d5db;
+  border-radius: 6px;
+  padding: 20px;
+  text-align: center;
+  transition: all 0.3s ease;
+}
+
+.file-input-wrapper:hover {
+  border-color: #3b82f6;
+  background-color: #eff6ff;
+}
+
+.file-input-wrapper input[type="file"] {
+  position: absolute;
+  opacity: 0;
+  width: 100%;
+  height: 100%;
+  cursor: pointer;
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+  .article-edit-container {
+    padding: 10px;
+  }
+
+  .article-edit-form {
+    padding: 20px;
+  }
+
+  .article-edit-form input,
+  .article-edit-form textarea {
+    font-size: 16px; /* Prevent zoom on iOS */
+  }
+}
+
+/* Dark mode override - FORCE LIGHT MODE for visibility */
+@media (prefers-color-scheme: dark) {
+  .article-edit-form input,
+  .article-edit-form textarea,
+  .article-edit-form select {
+    background-color: #ffffff !important;
+    color: #1f2937 !important;
+    border-color: #e5e7eb !important;
+  }
+
+  .article-edit-form input:focus,
+  .article-edit-form textarea:focus,
+  .article-edit-form select:focus {
+    background-color: #ffffff !important;
+    color: #1f2937 !important;
+    border-color: #3b82f6 !important;
+  }
+
+  /* FORȚEAZĂ TEXTELE SĂ FIE NEGRE ȘI ÎN DARK MODE */
+  * {
+    color: #1f2937 !important;
+  }
+
+  label,
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6,
+  p,
+  span,
+  div {
+    color: #1f2937 !important;
+  }
+}
+
+/* ULTIMATE OVERRIDE - Force visibility on ALL page inputs */
+* input,
+* textarea,
+* select {
+  background-color: #ffffff !important;
+  color: #1f2937 !important;
+}
+
+/* FORȚEAZĂ VIZIBILITATEA PENTRU TOATE TEXTELE ȘI LABEL-URILE */
+* label,
+* h1,
+* h2,
+* h3,
+* h4,
+* h5,
+* h6,
+* p,
+* span,
+* div {
+  color: #1f2937 !important;
+}
+
+/* SPECIFICE PENTRU LABEL-URI */
+label {
+  color: #1f2937 !important;
+  font-weight: 600 !important;
+  display: block !important;
+  margin-bottom: 8px !important;
+}
+
+/* TITLURI SPECIFICE */
+.text-3xl,
+.text-xl,
+.text-lg,
+.text-sm {
+  color: #1f2937 !important;
+}
+
+/* OVERRIDE PENTRU CLASE TAILWIND */
+.text-gray-700,
+.text-gray-800,
+.text-gray-600,
+.text-gray-500 {
+  color: #1f2937 !important;
+}
+
+/* Container override to ensure white background */
+.container,
+.bg-white,
+.article-edit-form {
+  background-color: #ffffff !important;
+  color: #1f2937 !important;
+}

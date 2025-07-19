@@ -41,6 +41,9 @@ import Ong from "../../pages/Ong";
 import Partners from "../../pages/Partners";
 import PaymentSimulation from "../../pages/PaymentSimulation";
 import Formular230Page from "../../pages/Formular230Page";
+import Terapie from "../../pages/Terapie";
+import TerapiePsihica from "../../pages/terapie/Psihica";
+import TerapieFizica from "../../pages/terapie/Fizica";
 
 // Pagini protejate (necesită autentificare)
 import Dashboard from "../../pages/Dashboard";
@@ -54,6 +57,7 @@ import CheckoutSuccess from "../../pages/CheckoutSuccess";
 import Orders from "../../pages/Orders";
 import Account from "../../pages/Account";
 import Appointments from "../../pages/Appointments";
+import ProfileInfo from "../../pages/ProfileInfo";
 
 // Pagini AI
 import AIMessenger from "../../pages/ai/AIMessenger";
@@ -72,6 +76,10 @@ const AppRoutes = () => {
         <Route path="/" element={<HomePage />} />
         <Route path="/about" element={<AboutUs />} />
         <Route path="/services" element={<Services />} />
+        <Route path="/servicii" element={<Services />} />
+        <Route path="/terapie" element={<Terapie />} />
+        <Route path="/terapie/psihica" element={<TerapiePsihica />} />
+        <Route path="/terapie/fizica" element={<TerapieFizica />} />
         <Route path="/magazin" element={<Shop />} />
         <Route path="/products" element={<Products />} />
         <Route path="/product/:id" element={<ProductDetails />} />
@@ -142,6 +150,22 @@ const AppRoutes = () => {
             </ProtectedRoute>
           }
         />
+        <Route
+          path="/profile"
+          element={
+            <ProtectedRoute>
+              <Profile />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/profile/info"
+          element={
+            <ProtectedRoute>
+              <ProfileInfo />
+            </ProtectedRoute>
+          }
+        />
         <Route path="/cart" element={<Cart />} />
         <Route
           path="/checkout"
@@ -193,6 +217,14 @@ const AppRoutes = () => {
         />
         <Route
           path="/appointments"
+          element={
+            <ProtectedRoute>
+              <Appointments />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/programari"
           element={
             <ProtectedRoute>
               <Appointments />
@@ -258,6 +290,22 @@ const AppRoutes = () => {
         <Route path="/evenimente" element={<Navigate to="/events" replace />} />
         <Route path="/cos" element={<Navigate to="/cart" replace />} />
         <Route path="/cont" element={<Navigate to="/account" replace />} />
+        <Route path="/despre" element={<Navigate to="/about" replace />} />
+        <Route path="/despre-noi" element={<Navigate to="/about" replace />} />
+        <Route path="/contacte" element={<Navigate to="/contact" replace />} />
+        <Route path="/parteneri" element={<Navigate to="/partners" replace />} />
+        <Route path="/servicii-medicale" element={<Navigate to="/terapie" replace />} />
+        <Route path="/therapy" element={<Navigate to="/terapie" replace />} />
+        <Route path="/appointments-list" element={<Navigate to="/appointments" replace />} />
+        <Route path="/programari-lista" element={<Navigate to="/programari" replace />} />
+        <Route path="/shop" element={<Navigate to="/magazin" replace />} />
+        <Route path="/store" element={<Navigate to="/magazin" replace />} />
+        <Route path="/magazine" element={<Navigate to="/magazin" replace />} />
+        <Route path="/user" element={<Navigate to="/dashboard" replace />} />
+        <Route path="/my-account" element={<Navigate to="/account" replace />} />
+        <Route path="/my-profile" element={<Navigate to="/profil" replace />} />
+        <Route path="/appointments/list" element={<Navigate to="/appointments" replace />} />
+        <Route path="/programari/lista" element={<Navigate to="/programari" replace />} />
         {/* Rută 404 Not Found */}
         <Route path="*" element={<NotFound />} />
       </Routes>

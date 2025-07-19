@@ -4,7 +4,6 @@ import { getFirestore } from "firebase/firestore";
 import { getAnalytics, isSupported, Analytics } from "firebase/analytics";
 
 // Your web app's Firebase configuration
-// For Firebase JS SDK v7.20.0 and later, measurementId is optional
 const firebaseConfig = {
   apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
   authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
@@ -14,6 +13,14 @@ const firebaseConfig = {
   appId: import.meta.env.VITE_FIREBASE_APP_ID,
   measurementId: import.meta.env.VITE_FIREBASE_MEASUREMENT_ID,
 };
+// Validate that no placeholder or missing values exist
+Object.entries(firebaseConfig).forEach(([key, value]) => {
+  if (!value || value.toString().includes("your-")) {
+    console.error(
+      `🚨 Firebase config ${key} is missing or using a placeholder value: ${value}`
+    );
+  }
+});
 
 // Initialize Firebase only if it hasn't been initialized already
 let app: FirebaseApp;

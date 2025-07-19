@@ -293,19 +293,40 @@ const AppRoutes = () => {
         <Route path="/despre" element={<Navigate to="/about" replace />} />
         <Route path="/despre-noi" element={<Navigate to="/about" replace />} />
         <Route path="/contacte" element={<Navigate to="/contact" replace />} />
-        <Route path="/parteneri" element={<Navigate to="/partners" replace />} />
-        <Route path="/servicii-medicale" element={<Navigate to="/terapie" replace />} />
+        <Route
+          path="/parteneri"
+          element={<Navigate to="/partners" replace />}
+        />
+        <Route
+          path="/servicii-medicale"
+          element={<Navigate to="/terapie" replace />}
+        />
         <Route path="/therapy" element={<Navigate to="/terapie" replace />} />
-        <Route path="/appointments-list" element={<Navigate to="/appointments" replace />} />
-        <Route path="/programari-lista" element={<Navigate to="/programari" replace />} />
+        <Route
+          path="/appointments-list"
+          element={<Navigate to="/appointments" replace />}
+        />
+        <Route
+          path="/programari-lista"
+          element={<Navigate to="/programari" replace />}
+        />
         <Route path="/shop" element={<Navigate to="/magazin" replace />} />
         <Route path="/store" element={<Navigate to="/magazin" replace />} />
         <Route path="/magazine" element={<Navigate to="/magazin" replace />} />
         <Route path="/user" element={<Navigate to="/dashboard" replace />} />
-        <Route path="/my-account" element={<Navigate to="/account" replace />} />
+        <Route
+          path="/my-account"
+          element={<Navigate to="/account" replace />}
+        />
         <Route path="/my-profile" element={<Navigate to="/profil" replace />} />
-        <Route path="/appointments/list" element={<Navigate to="/appointments" replace />} />
-        <Route path="/programari/lista" element={<Navigate to="/programari" replace />} />
+        <Route
+          path="/appointments/list"
+          element={<Navigate to="/appointments" replace />}
+        />
+        <Route
+          path="/programari/lista"
+          element={<Navigate to="/programari" replace />}
+        />
         {/* Rută 404 Not Found */}
         <Route path="*" element={<NotFound />} />
       </Routes>

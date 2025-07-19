@@ -102,7 +102,9 @@ const AdminOrders: React.FC = () => {
       if (err instanceof Error) {
         setError(`Eroare la încărcarea comenzilor: ${err.message}`);
       } else {
-        setError("A apărut o eroare la încărcarea comenzilor. Verificați consola pentru detalii.");
+        setError(
+          "A apărut o eroare la încărcarea comenzilor. Verificați consola pentru detalii."
+        );
       }
     } finally {
       setLoading(false);

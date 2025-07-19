@@ -184,7 +184,8 @@ export const adminRoutes: AdminRoute[] = [
     path: "/admin/edit-article/:id",
     element: <ArticleEdit />,
     title: "Editează Articol",
-    description: "Editează informațiile unui articol existent (compatibilitate)",
+    description:
+      "Editează informațiile unui articol existent (compatibilitate)",
     icon: "edit-article",
   },
 ];

@@ -1,26 +1,32 @@
 # � PLĂȚILE NU FUNCȚIONEAZĂ - REPARĂ RAPID!
 
 ## CE ESTE PROBLEMA?
+
 Pe site-ul tău, când cineva încearcă să plătească cu cardul, în loc să meargă la plată reală, apare **"🧪 SIMULARE TEST"**. Asta înseamnă că nu poți încasa bani reali!
 
 ## CE TREBUIE SĂ FACI? (3 pași simpli)
 
 ### 📋 PASUL 1: Găsește datele de la Netopia
+
 Ai nevoie de 2 lucruri de la Netopia (cei de la plăți):
+
 - **SIGNATURE LIVE** (arată cam așa: `XXXX-XXXX-XXXX-XXXX-XXXX`)
 - **PUBLIC KEY LIVE** (un text lung care începe cu `-----BEGIN PUBLIC KEY-----`)
 
 **Unde le găsești:**
+
 - În contractul cu Netopia (documentul semnat)
 - În email-ul primit de la Netopia când ți-au activat contul
 - Sună la Netopia: **021-304-7799** și cere-le să ți le dea
 
 ### 🔧 PASUL 2: Pune datele în Netlify
+
 1. **Deschide**: https://app.netlify.com/
 2. **Găsește site-ul tău** (lupul-si-corbul)
 3. **Click pe el**
 
 ### 🔧 PASUL 2: Pune datele în Netlify
+
 1. **Deschide**: https://app.netlify.com/
 2. **Găsește site-ul tău** (lupul-si-corbul)
 3. **Click pe el**
@@ -29,36 +35,43 @@ Ai nevoie de 2 lucruri de la Netopia (cei de la plăți):
 6. **Click pe "Add variable"** și adaugă exact următoarele:
 
 **Prima variabilă:**
+
 - La **Key** scrie: `VITE_PAYMENT_LIVE_KEY`
 - La **Value** pune: `[SIGNATURE-UL TĂU LIVE DE LA NETOPIA]`
 - Click **Save**
 
 **A doua variabilă:**
-- La **Key** scrie: `NETOPIA_LIVE_SIGNATURE`  
+
+- La **Key** scrie: `NETOPIA_LIVE_SIGNATURE`
 - La **Value** pune: `[SIGNATURE-UL TĂU LIVE DE LA NETOPIA]`
 - Click **Save**
 
 **A treia variabilă:**
+
 - La **Key** scrie: `NETOPIA_LIVE_PUBLIC_KEY`
 - La **Value** pune: certificatul complet (vezi mai jos)
 - Click **Save**
 
 ### 🚀 PASUL 3: Repornește site-ul
+
 1. **Click pe "Deploys"** (în meniul de sus)
 2. **Click pe "Trigger deploy"** apoi **"Deploy site"**
 3. **Așteaptă 2-3 minute** să se termine
 
 ## ✅ GATA! Acum testează:
+
 - Mergi pe site-ul tău
 - Încearcă să faci o comandă cu cardul
 - **NU** ar mai trebui să apară "🧪 SIMULARE TEST"
 - Ar trebui să te ducă la Netopia real pentru plată
 
 ## 🆘 DACĂ NU ȘTII DATELE DE LA NETOPIA:
+
 **Sună acum la Netopia: 021-304-7799**
 Spune-le: "Am nevoie de SIGNATURE LIVE și PUBLIC KEY LIVE pentru site-ul meu"
 
 ## 📞 CONTACT NETOPIA
+
 - **Telefon**: 021-304-7799
 - **Email**: support@netopia-payments.com
 

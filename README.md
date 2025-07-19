@@ -243,11 +243,16 @@ Pentru detalii complete vezi: `EMOTION_TDZ_FIX_DOCUMENTATION.md`
 **Quick Fix pentru NETOPIA:**
 
 ```bash
-# Setează în Netlify Environment Variables:
-NETOPIA_LIVE_SIGNATURE=your_live_signature
-VITE_NETOPIA_SIGNATURE_LIVE=your_live_signature
+# Setează în Netlify Environment Variables (nu în cod!):
+NETOPIA_LIVE_SIGNATURE=your_live_signature_here
+VITE_NETOPIA_SIGNATURE_LIVE=your_live_signature_here
 URL=https://your-site.netlify.app
 ```
+
+**⚠️ IMPORTANT SECURITATE:**
+- Nu puneți niciodată chei API reale în fișierele commitați
+- Folosiți `.env.local` pentru dezvoltare (nu este commitat)
+- Setați variabilele sensibile în dashboard-ul platformei (Netlify/Vercel)
 
 #### Live Demo
 

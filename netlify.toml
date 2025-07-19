@@ -6,6 +6,8 @@
 [build.environment]
   GENERATE_SOURCEMAP = "false"
   NODE_OPTIONS = "--max-old-space-size=4096"
+  # Forțează versiunea Node.js mai nouă pentru a evita deprecated Focal image
+  NODE_VERSION = "18"
 
 [dev]
   command = "npm start"

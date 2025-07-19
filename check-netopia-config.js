@@ -12,7 +12,7 @@ const mockWindow = {
 
 // Simulează variabilele de mediu Vite
 const mockEnv = {
-  VITE_NETOPIA_SIGNATURE_LIVE: process.env.VITE_NETOPIA_SIGNATURE_LIVE || null,
+  VITE_PAYMENT_LIVE_KEY: process.env.VITE_PAYMENT_LIVE_KEY || null,
   MODE: 'production'
 };
 
@@ -21,8 +21,8 @@ console.log('=' .repeat(50));
 
 // Verifică configurația frontend
 const isProduction = mockWindow.location.hostname !== 'localhost';
-const liveSignature = mockEnv.VITE_NETOPIA_SIGNATURE_LIVE;
-const hasLiveCredentials = liveSignature && liveSignature !== '2ZOW-PJ5X-HYYC-IENE-APZO';
+const liveSignature = mockEnv.VITE_PAYMENT_LIVE_KEY;
+const hasLiveCredentials = liveSignature && liveSignature !== 'NETOPIA_SANDBOX_TEST_SIGNATURE';
 const useLive = isProduction && hasLiveCredentials;
 
 console.log('📱 FRONTEND CONFIG:');
@@ -51,7 +51,7 @@ if (useLive && process.env.NETOPIA_LIVE_SIGNATURE) {
   console.log('🔧 ACȚIUNI NECESARE:');
   
   if (!liveSignature) {
-    console.log('   1. Setează VITE_NETOPIA_SIGNATURE_LIVE în Netlify env vars');
+    console.log('   1. Setează VITE_PAYMENT_LIVE_KEY în Netlify env vars');
   }
   
   if (!process.env.NETOPIA_LIVE_SIGNATURE) {
@@ -67,6 +67,6 @@ if (useLive && process.env.NETOPIA_LIVE_SIGNATURE) {
 
 console.log('');
 console.log('📋 VARIABILE DE MEDIU NECESARE:');
-console.log('   VITE_NETOPIA_SIGNATURE_LIVE=your_live_signature');
+console.log('   VITE_PAYMENT_LIVE_KEY=your_live_signature');
 console.log('   NETOPIA_LIVE_SIGNATURE=your_live_signature');
 console.log('   NETOPIA_LIVE_PUBLIC_KEY=your_live_public_key');

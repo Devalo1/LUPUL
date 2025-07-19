@@ -6,7 +6,7 @@
 - Variabilele de mediu pentru Netopia LIVE nu sunt setate în Netlify
 
 ## CAUZA IDENTIFICATĂ
-1. `VITE_NETOPIA_SIGNATURE_LIVE` nu este setată în Netlify environment variables
+1. `VITE_PAYMENT_LIVE_KEY` nu este setată în Netlify environment variables
 2. `NETOPIA_LIVE_SIGNATURE` nu este setată pentru funcțiile serverless
 3. Aplicația face fallback la sandbox mode când nu găsește credențialele LIVE
 
@@ -18,7 +18,7 @@ Mergi la: https://app.netlify.com/sites/[site-name]/settings/env
 Adaugă următoarele variabile:
 
 ```
-VITE_NETOPIA_SIGNATURE_LIVE=YOUR_REAL_LIVE_SIGNATURE_HERE
+VITE_PAYMENT_LIVE_KEY=YOUR_REAL_LIVE_SIGNATURE_HERE
 NETOPIA_LIVE_SIGNATURE=YOUR_REAL_LIVE_SIGNATURE_HERE
 NETOPIA_LIVE_PUBLIC_KEY=YOUR_REAL_LIVE_PUBLIC_KEY_HERE
 ```
@@ -33,8 +33,8 @@ Testează din nou plata și verifică că nu mai apare "🧪 SIMULARE TEST".
 
 ### Frontend (netopiaPayments.ts)
 ```typescript
-const liveSignature = import.meta.env.VITE_NETOPIA_SIGNATURE_LIVE;
-const hasLiveCredentials = liveSignature && liveSignature !== "2ZOW-PJ5X-HYYC-IENE-APZO";
+const liveSignature = import.meta.env.VITE_PAYMENT_LIVE_KEY;
+const hasLiveCredentials = liveSignature && liveSignature !== "NETOPIA_SANDBOX_TEST_SIGNATURE";
 const useLive = isProduction && hasLiveCredentials;
 ```
 

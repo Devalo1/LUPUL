@@ -290,7 +290,7 @@ const getNetopiaConfig = (): NetopiaConfig => {
   const isProduction = window.location.hostname !== "localhost";
 
   // În Vite folosim import.meta.env nu process.env pentru variabile VITE_
-  const liveSignature = import.meta.env.VITE_NETOPIA_SIGNATURE_LIVE;
+  const liveSignature = import.meta.env.VITE_PAYMENT_LIVE_KEY;
   const hasLiveCredentials =
     liveSignature && liveSignature !== "NETOPIA_SANDBOX_TEST_SIGNATURE";
 

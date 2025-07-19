@@ -316,7 +316,7 @@ export const handler = async (event, context) => {
     }
 
     console.log(
-      `✅ Using ${config.signature === "2ZOW-PJ5X-HYYC-IENE-APZO" ? "SANDBOX" : "LIVE"} Netopia configuration`
+      `✅ Using ${config.signature === "NETOPIA_SANDBOX_TEST_SIGNATURE" ? "SANDBOX" : "LIVE"} Netopia configuration`
     );
 
     // Verifică configurația finală

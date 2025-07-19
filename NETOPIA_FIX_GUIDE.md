@@ -29,7 +29,7 @@ Ai nevoie de 2 lucruri de la Netopia (cei de la plăți):
 6. **Click pe "Add variable"** și adaugă exact următoarele:
 
 **Prima variabilă:**
-- La **Key** scrie: `VITE_NETOPIA_SIGNATURE_LIVE`
+- La **Key** scrie: `VITE_PAYMENT_LIVE_KEY`
 - La **Value** pune: `[SIGNATURE-UL TĂU LIVE DE LA NETOPIA]`
 - Click **Save**
 

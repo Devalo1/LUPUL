@@ -8,8 +8,8 @@ console.log("============================");
 
 console.log("Frontend Environment Variables:");
 console.log(
-  "- VITE_NETOPIA_SIGNATURE_LIVE:",
-  import.meta.env.VITE_NETOPIA_SIGNATURE_LIVE ? "SET" : "NOT SET"
+  "- VITE_PAYMENT_LIVE_KEY:",
+  import.meta.env.VITE_PAYMENT_LIVE_KEY ? "SET" : "NOT SET"
 );
 console.log(
   "- VITE_NETOPIA_PUBLIC_KEY:",

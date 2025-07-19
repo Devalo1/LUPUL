@@ -1,9 +1,31 @@
 import React, { useState, useEffect } from "react";
-import { collection, getDocs, doc, deleteDoc, updateDoc, query, orderBy, Timestamp } from "firebase/firestore";
+import {
+  collection,
+  getDocs,
+  doc,
+  deleteDoc,
+  updateDoc,
+  query,
+  orderBy,
+  Timestamp,
+} from "firebase/firestore";
 import { db, storage } from "../firebase";
 import { useNavigate } from "react-router-dom";
-import { ref, uploadBytes, getDownloadURL, deleteObject } from "firebase/storage";
-import { FaPlus, FaEdit, FaTrash, FaEye, FaEyeSlash, FaImage, FaComments } from "react-icons/fa";
+import {
+  ref,
+  uploadBytes,
+  getDownloadURL,
+  deleteObject,
+} from "firebase/storage";
+import {
+  FaPlus,
+  FaEdit,
+  FaTrash,
+  FaEyeSlash,
+  FaImage,
+  FaComments,
+  FaCheck,
+} from "react-icons/fa";
 
 // Enhanced Article interface
 interface Article {
@@ -36,9 +58,21 @@ const AdminArticles: React.FC = () => {
   const [articles, setArticles] = useState<Article[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
+  // Default to showing pending articles for admin approval
+  const [statusFilter, setStatusFilter] = useState<
+    "all" | "pending" | "published"
+  >("pending");
+  // Filter articles based on approval status
+  const filteredArticles = articles.filter((article) => {
+    if (statusFilter === "pending") return !article.published;
+    if (statusFilter === "published") return article.published;
+    return true;
+  });
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [uploadingImage, setUploadingImage] = useState<boolean>(false);
-  const [selectedArticleId, setSelectedArticleId] = useState<string | null>(null);
+  const [selectedArticleId, setSelectedArticleId] = useState<string | null>(
+    null
+  );
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -51,15 +85,18 @@ const AdminArticles: React.FC = () => {
       const articlesRef = collection(db, "articles");
       const q = query(articlesRef, orderBy("createdAt", "desc"));
       const snapshot = await getDocs(q);
-      
+
       if (snapshot.empty) {
         setArticles([]);
       } else {
-        const articlesList = snapshot.docs.map(doc => ({
-          id: doc.id,
-          ...doc.data()
-        } as Article));
-        
+        const articlesList = snapshot.docs.map(
+          (doc) =>
+            ({
+              id: doc.id,
+              ...doc.data(),
+            }) as Article
+        );
+
         setArticles(articlesList);
       }
     } catch (err) {
@@ -82,11 +119,14 @@ const AdminArticles: React.FC = () => {
     if (window.confirm("Sunteți sigur că doriți să ștergeți acest articol?")) {
       try {
         // First check if article has an image to delete from storage
-        const article = articles.find(a => a.id === articleId);
+        const article = articles.find((a) => a.id === articleId);
         if (article?.imageUrl) {
           try {
             // Extract the image path from the URL
-            const imagePath = article.imageUrl.split("?")[0].split("/o/")[1].replace(/%2F/g, "/");
+            const imagePath = article.imageUrl
+              .split("?")[0]
+              .split("/o/")[1]
+              .replace(/%2F/g, "/");
             const decodedPath = decodeURIComponent(imagePath);
             const storageRef = ref(storage, decodedPath);
             await deleteObject(storageRef);
@@ -96,10 +136,10 @@ const AdminArticles: React.FC = () => {
             // Continue with article deletion even if image deletion fails
           }
         }
-        
+
         // Delete the article document
         await deleteDoc(doc(db, "articles", articleId));
-        setArticles(articles.filter(article => article.id !== articleId));
+        setArticles(articles.filter((article) => article.id !== articleId));
         alert("Articolul a fost șters cu succes!");
       } catch (err) {
         console.error("Error deleting article:", err);
@@ -112,17 +152,19 @@ const AdminArticles: React.FC = () => {
     try {
       const articleRef = doc(db, "articles", article.id);
       const newStatus = !article.published;
-      
+
       await updateDoc(articleRef, {
         published: newStatus,
-        updatedAt: Timestamp.now()
+        updatedAt: Timestamp.now(),
       });
-      
+
       // Update the local state
-      setArticles(articles.map(a => 
-        a.id === article.id ? {...a, published: newStatus} : a
-      ));
-      
+      setArticles(
+        articles.map((a) =>
+          a.id === article.id ? { ...a, published: newStatus } : a
+        )
+      );
+
       alert(`Articolul a fost ${newStatus ? "publicat" : "ascuns"} cu succes!`);
     } catch (err) {
       console.error("Error updating article status:", err);
@@ -130,7 +172,10 @@ const AdminArticles: React.FC = () => {
     }
   };
 
-  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>, articleId: string) => {
+  const handleImageChange = (
+    e: React.ChangeEvent<HTMLInputElement>,
+    articleId: string
+  ) => {
     if (e.target.files && e.target.files[0]) {
       setImageFile(e.target.files[0]);
       setSelectedArticleId(articleId);
@@ -139,10 +184,13 @@ const AdminArticles: React.FC = () => {
 
   const uploadImage = async (articleId: string) => {
     if (!imageFile) return null;
-    
+
     setUploadingImage(true);
     try {
-      const storageRef = ref(storage, `articles/${articleId}/${imageFile.name}`);
+      const storageRef = ref(
+        storage,
+        `articles/${articleId}/${imageFile.name}`
+      );
       await uploadBytes(storageRef, imageFile);
       const downloadURL = await getDownloadURL(storageRef);
       return downloadURL;
@@ -159,21 +207,21 @@ const AdminArticles: React.FC = () => {
       alert("Selectați o imagine mai întâi!");
       return;
     }
-    
+
     try {
       const imageUrl = await uploadImage(articleId);
       if (imageUrl) {
         const articleRef = doc(db, "articles", articleId);
         await updateDoc(articleRef, {
           imageUrl,
-          updatedAt: Timestamp.now()
+          updatedAt: Timestamp.now(),
         });
-        
+
         // Update the local state
-        setArticles(articles.map(a => 
-          a.id === articleId ? {...a, imageUrl} : a
-        ));
-        
+        setArticles(
+          articles.map((a) => (a.id === articleId ? { ...a, imageUrl } : a))
+        );
+
         setImageFile(null);
         setSelectedArticleId(null);
         alert("Imaginea a fost încărcată cu succes!");
@@ -189,21 +237,23 @@ const AdminArticles: React.FC = () => {
       alert("Acest articol nu are feedback de la utilizatori.");
       return;
     }
-    
+
     // Navigate to a feedback view page or show a modal
     // For now, just show an alert with the feedback count
-    alert(`Acest articol are ${article.feedback.length} comentarii de la utilizatori.`);
+    alert(
+      `Acest articol are ${article.feedback.length} comentarii de la utilizatori.`
+    );
   };
 
   const formatDate = (timestamp: any) => {
     if (!timestamp) return "Data necunoscută";
-    
+
     try {
       const date = timestamp.toDate ? timestamp.toDate() : new Date(timestamp);
       return date.toLocaleDateString("ro-RO", {
         year: "numeric",
         month: "long",
-        day: "numeric"
+        day: "numeric",
       });
     } catch (e) {
       return "Format invalid";
@@ -215,6 +265,21 @@ const AdminArticles: React.FC = () => {
       <div className="bg-white rounded-lg shadow-md p-6 mt-6">
         <div className="flex justify-between items-center mb-6">
           <h1 className="text-2xl font-bold">Gestionare Articole</h1>
+          <div className="flex items-center space-x-2">
+            <label htmlFor="statusFilter" className="text-sm">
+              Filtrează:
+            </label>
+            <select
+              id="statusFilter"
+              value={statusFilter}
+              onChange={(e) => setStatusFilter(e.target.value as any)}
+              className="border rounded px-2 py-1 text-sm"
+            >
+              <option value="all">Toate</option>
+              <option value="pending">În așteptare</option>
+              <option value="published">Publicate</option>
+            </select>
+          </div>
           <button
             onClick={handleAddArticle}
             className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors flex items-center"
@@ -235,9 +300,15 @@ const AdminArticles: React.FC = () => {
           </div>
         ) : (
           <div className="overflow-x-auto">
-            {articles.length === 0 ? (
+            {filteredArticles.length === 0 ? (
               <div className="text-center py-8">
-                <p className="text-gray-600">Nu există articole. Adăugați unul nou pentru a începe.</p>
+                <p className="text-gray-600">
+                  {statusFilter === "all"
+                    ? "Nu există articole. Adăugați unul nou pentru a începe."
+                    : statusFilter === "pending"
+                      ? "Nu există articole în așteptare."
+                      : "Nu există articole publicate."}
+                </p>
               </div>
             ) : (
               <table className="min-w-full bg-white">
@@ -253,27 +324,36 @@ const AdminArticles: React.FC = () => {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-200">
-                  {articles.map((article) => (
+                  {filteredArticles.map((article) => (
                     <tr key={article.id} className="hover:bg-gray-50">
                       <td className="py-4 px-4">
                         <div className="flex items-center">
                           {article.imageUrl ? (
-                            <img 
-                              src={article.imageUrl} 
+                            <img
+                              src={article.imageUrl}
                               alt={article.title}
-                              className="w-12 h-12 rounded object-cover mr-3" 
+                              className="w-12 h-12 rounded object-cover mr-3"
                             />
                           ) : (
                             <div className="w-12 h-12 bg-gray-200 rounded flex items-center justify-center mr-3">
-                              <span className="text-gray-500 text-xs">No img</span>
+                              <span className="text-gray-500 text-xs">
+                                No img
+                              </span>
                             </div>
                           )}
                           <div>
-                            <div className="font-medium text-gray-900">{article.title}</div>
+                            <div className="font-medium text-gray-900 flex items-center">
+                              {article.title}
+                              {!article.published && (
+                                <span className="ml-2 px-2 py-0.5 bg-yellow-200 text-yellow-800 rounded-full text-xs">
+                                  În așteptare
+                                </span>
+                              )}
+                            </div>
                             {article.tags && article.tags.length > 0 && (
                               <div className="flex flex-wrap gap-1 mt-1">
                                 {article.tags.map((tag, index) => (
-                                  <span 
+                                  <span
                                     key={index}
                                     className="px-2 py-0.5 text-xs bg-blue-100 text-blue-800 rounded-full"
                                   >
@@ -286,27 +366,36 @@ const AdminArticles: React.FC = () => {
                         </div>
                       </td>
                       <td className="py-4 px-4">
-                        <div className="text-sm text-gray-900">{article.author}</div>
+                        <div className="text-sm text-gray-900">
+                          {article.author}
+                        </div>
                       </td>
                       <td className="py-4 px-4">
-                        <div className="text-sm text-gray-900">{formatDate(article.createdAt)}</div>
+                        <div className="text-sm text-gray-900">
+                          {formatDate(article.createdAt)}
+                        </div>
                       </td>
                       <td className="py-4 px-4 text-center">
                         <button
                           onClick={() => togglePublishStatus(article)}
+                          title={
+                            article.published
+                              ? "Ascunde articol"
+                              : "Aprobă articol"
+                          }
                           className={`px-2 py-1 text-xs rounded flex items-center justify-center mx-auto ${
-                            article.published 
-                              ? "bg-green-100 text-green-800" 
-                              : "bg-gray-100 text-gray-800"
+                            article.published
+                              ? "bg-green-100 text-green-800"
+                              : "bg-yellow-100 text-yellow-800"
                           }`}
                         >
                           {article.published ? (
                             <>
-                              <FaEye className="mr-1" /> Publicat
+                              <FaEyeSlash className="mr-1" /> Ascunde
                             </>
                           ) : (
                             <>
-                              <FaEyeSlash className="mr-1" /> Ascuns
+                              <FaCheck className="mr-1" /> Aprobă
                             </>
                           )}
                         </button>
@@ -329,14 +418,15 @@ const AdminArticles: React.FC = () => {
                         <div className="flex justify-end space-x-2">
                           {/* Image upload button */}
                           <div className="relative">
-                            <input 
+                            <input
                               type="file"
                               id={`image-upload-${article.id}`}
                               accept="image/*"
                               onChange={(e) => handleImageChange(e, article.id)}
                               className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                              aria-label="Încarcă imagine"
                             />
-                            <label 
+                            <label
                               htmlFor={`image-upload-${article.id}`}
                               className="text-gray-600 hover:text-gray-800 cursor-pointer"
                               title="Încarcă imagine"
@@ -344,7 +434,7 @@ const AdminArticles: React.FC = () => {
                               <FaImage />
                             </label>
                           </div>
-                          
+
                           {/* Show upload button if an image is selected for this article */}
                           {selectedArticleId === article.id && imageFile && (
                             <button
@@ -355,7 +445,7 @@ const AdminArticles: React.FC = () => {
                               {uploadingImage ? "Se încarcă..." : "Încarcă"}
                             </button>
                           )}
-                          
+
                           <button
                             onClick={() => handleEditArticle(article.id)}
                             className="text-indigo-600 hover:text-indigo-900"

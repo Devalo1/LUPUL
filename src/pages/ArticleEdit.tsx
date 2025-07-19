@@ -72,7 +72,8 @@ const ArticleEdit: React.FC = () => {
     content: "",
     author: "",
     imageUrl: "",
-    published: true,
+    // New articles start pending approval
+    published: false,
     tags: [],
     preview: "",
     readCount: 0,

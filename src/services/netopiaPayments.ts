@@ -291,8 +291,7 @@ const getNetopiaConfig = (): NetopiaConfig => {
 
   // În Vite folosim import.meta.env nu process.env pentru variabile VITE_
   const liveSignature = import.meta.env.VITE_PAYMENT_LIVE_KEY;
-  const hasLiveCredentials =
-    liveSignature && liveSignature !== "NETOPIA_SANDBOX_TEST_SIGNATURE";
+  const hasLiveCredentials = Boolean(liveSignature);
 
   // Folosește LIVE doar dacă avem credentialele și suntem în producție
   const useLive = isProduction && hasLiveCredentials;

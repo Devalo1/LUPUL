@@ -279,8 +279,9 @@ class NetopiaPayments {
         postalCode: formData.postalCode,
       },
       language: "ro",
-      returnUrl: `${window.location.origin}/order-confirmation`,
-      confirmUrl: `${window.location.origin}/netlify/functions/netopia-notify`,
+      // Netlify Functions endpoints for payment notifications and redirects
+      confirmUrl: `${window.location.origin}/.netlify/functions/netopia-notify`,
+      returnUrl: `${window.location.origin}/.netlify/functions/netopia-return`,
     };
   }
 }
@@ -290,7 +291,7 @@ const getNetopiaConfig = (): NetopiaConfig => {
   const isProduction = window.location.hostname !== "localhost";
 
   // În Vite folosim import.meta.env nu process.env pentru variabile VITE_
-  const liveSignature = import.meta.env.VITE_PAYMENT_LIVE_KEY;
+  const liveSignature = import.meta.env.VITE_NETOPIA_LIVE_SIGNATURE;
   const hasLiveCredentials = Boolean(liveSignature);
 
   // Folosește LIVE doar dacă avem credentialele și suntem în producție

@@ -296,6 +296,15 @@ const Checkout: React.FC = () => {
         throw new Error(`Eroare server: ${response.status} - ${errorText}`);
       }
       const resultJson = await response.json();
+      // If the email function didn't report success, throw to trigger fallback
+      if (!resultJson.success) {
+        console.error("Error from send-order-email function:", resultJson);
+        throw new Error(
+          resultJson.error ||
+            resultJson.message ||
+            "Unknown error in email sending"
+        );
+      }
       // Include our generated orderNumber for downstream use
       return { ...resultJson, orderNumber };
     } catch (err) {

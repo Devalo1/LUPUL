@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useCart } from "../contexts/CartContext";
 import { useAuth } from "../contexts";
+import type { CheckoutFormData } from "../services/netopiaPayments";
 
 // Import test function for debugging
 import "../utils/testNetopia.js";
@@ -32,6 +33,7 @@ const Checkout: React.FC = () => {
   });
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isValidatingCard, setIsValidatingCard] = useState(false);
   const [testResult, setTestResult] = useState<string>("");
   const navigate = useNavigate();
 
@@ -434,14 +436,17 @@ const Checkout: React.FC = () => {
       // Dacă utilizatorul a ales plata cu cardul, validăm și redirectăm către Netopia
       if (formData.paymentMethod === "card") {
         console.log("Plată cu cardul selectată, validăm datele...");
+        setIsValidatingCard(true);
 
         // Validăm datele cardului
         if (!validateCardData()) {
           setIsSubmitting(false);
+          setIsValidatingCard(false);
           return;
         }
 
         console.log("✅ Datele cardului sunt valide, inițializăm Netopia...");
+        setIsValidatingCard(false);
 
         // Salvăm datele comenzii în localStorage pentru după plată
         const orderData = {
@@ -475,16 +480,17 @@ const Checkout: React.FC = () => {
           }
 
           // Creăm obiectul de plată folosind serviciul
-          const paymentFormData = {
-            ...formData,
+          const paymentFormData: CheckoutFormData = {
             firstName: formData.name.split(" ")[0],
             lastName:
               formData.name.split(" ").slice(1).join(" ") ||
               formData.name.split(" ")[0],
+            email: formData.email,
+            phone: formData.phone,
             address: formData.address,
-            city: "Bucuresti", // Oraș fără caractere speciale
-            county: "Bucuresti", // Județ fără caractere speciale
-            postalCode: "010000", // Poți adăuga un câmp pentru cod poștal
+            city: formData.city,
+            county: formData.county,
+            postalCode: formData.postalCode,
           };
 
           const paymentData = netopiaService.createPaymentData(
@@ -517,6 +523,7 @@ const Checkout: React.FC = () => {
             "Nu am putut inițializa plata cu cardul. Te rugăm să încerci din nou sau să alegi plata ramburs."
           );
           setIsSubmitting(false);
+          setIsValidatingCard(false);
           return;
         }
       }
@@ -599,6 +606,7 @@ const Checkout: React.FC = () => {
       setError(errorMessage);
     } finally {
       setIsSubmitting(false);
+      setIsValidatingCard(false);
     }
   };
 
@@ -924,7 +932,9 @@ const Checkout: React.FC = () => {
               className={`w-full ${isSubmitting ? "bg-blue-400" : "bg-blue-600 hover:bg-blue-700"} text-white py-3 px-4 rounded-md transition-colors font-semibold`}
             >
               {isSubmitting
-                ? "Se procesează..."
+                ? isValidatingCard
+                  ? "Validez datele cardului..."
+                  : "Se procesează..."
                 : formData.paymentMethod === "card"
                   ? "Continuă la plată securizată"
                   : "Trimite comanda"}
@@ -932,9 +942,11 @@ const Checkout: React.FC = () => {
 
             {isSubmitting && (
               <p className="text-center text-sm mt-2 text-blue-500">
-                {formData.paymentMethod === "card"
-                  ? "Validăm datele cardului și inițializăm plata securizată..."
-                  : "Procesăm comanda ta, te rugăm să aștepți..."}
+                {isValidatingCard
+                  ? "Verificăm datele cardului pentru securitate..."
+                  : formData.paymentMethod === "card"
+                    ? "Inițializăm plata securizată prin Netopia..."
+                    : "Procesăm comanda ta, te rugăm să aștepți..."}
               </p>
             )}
           </form>

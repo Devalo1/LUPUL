@@ -465,13 +465,21 @@ const AdminPanel: React.FC = () => {
                 >
                   ➕ Adaugă articol nou
                 </a>
+                <a
+                  href="/admin/articles/debug"
+                  className="text-yellow-600 hover:underline text-sm"
+                >
+                  🔧 Debug articole
+                </a>
               </div>
-            </div>            <div className="bg-blue-50 border border-blue-200 rounded-lg p-5 hover:shadow-md transition-shadow">
+            </div>{" "}
+            <div className="bg-blue-50 border border-blue-200 rounded-lg p-5 hover:shadow-md transition-shadow">
               <h3 className="font-bold text-blue-800 mb-2">Analytics</h3>
               <p className="text-sm mb-4">
                 Analizează comportamentul utilizatorilor și statistici de
                 citire.
-              </p>              <div className="flex flex-col space-y-2">
+              </p>{" "}
+              <div className="flex flex-col space-y-2">
                 <a
                   href="/admin/userinfo"
                   className="text-blue-600 hover:underline text-sm"
@@ -971,7 +979,8 @@ const AdminPanel: React.FC = () => {
                 Utilizatori
               </h4>
               <p className="text-2xl font-bold text-gray-800">891</p>
-            </div>            <div className="bg-gray-50 rounded-lg p-4 text-center">
+            </div>{" "}
+            <div className="bg-gray-50 rounded-lg p-4 text-center">
               <h4 className="text-sm font-medium text-gray-500 mb-1">
                 Evenimente
               </h4>

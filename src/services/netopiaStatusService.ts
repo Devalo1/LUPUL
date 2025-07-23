@@ -17,13 +17,21 @@ class NetopiaStatusService {
    */
   async checkPaymentStatus(orderId: string): Promise<PaymentStatusResponse> {
     try {
-      const response = await fetch("/.netlify/functions/netopia-status", {
+      const response = await fetch(`/api/netopia-status?orderId=${orderId}`, {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ orderId }),
       });
+      // Fallback simulation in development or on 404
+      if (!response.ok) {
+        if (response.status === 404 || process.env.NODE_ENV === "development") {
+          console.warn(
+            `Netopia status endpoint unavailable (status ${response.status}), using simulation`
+          );
+          return this.simulatePaymentStatusCheck(orderId);
+        }
+        throw new Error(`Status check failed: ${response.status}`);
+      }
 
       if (!response.ok) {
         throw new Error(`Status check failed: ${response.status}`);

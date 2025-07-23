@@ -7,9 +7,13 @@ import { useAuth } from "../contexts";
 import "../utils/testNetopia.js";
 // import "../utils/netopiaDebug.js"; // removed to avoid process.env reference errors
 
-// Use local Netlify function for order submission (proxied by Vite dev/preview server)
-const FUNCTION_URL = "/.netlify/functions/send-order-email";
-const isDevelopment = window.location.hostname === "localhost";
+// Use local Netlify function for order submission via Vite proxy
+const FUNCTION_URL = "/api/send-order-email";
+// Detect development mode (Vite DEV or Netlify Dev port)
+const isDevelopment =
+  import.meta.env.DEV ||
+  window.location.port === "8888" ||
+  window.location.hostname === "localhost";
 
 const Checkout: React.FC = () => {
   const { items, total, clearCart, shippingCost, finalTotal } = useCart();
@@ -114,7 +118,7 @@ const Checkout: React.FC = () => {
       console.log("📝 JSON string length:", jsonString.length);
       console.log("📝 JSON string preview:", jsonString.substring(0, 50));
 
-      const response = await fetch("/.netlify/functions/netopia-initiate", {
+      const response = await fetch("/api/netopia-initiate", {
         method: "POST",
         headers: {
           "Content-Type": "application/json; charset=utf-8",
@@ -303,53 +307,8 @@ const Checkout: React.FC = () => {
   };
 
   const submitOrderWithFirebase = async () => {
-    try {
-      const orderData = {
-        ...formData,
-        items: items.map((item) => ({
-          id: item.id,
-          name: item.name,
-          price: item.price,
-          quantity: item.quantity,
-          image: item.image,
-        })),
-        totalAmount: finalTotal,
-        orderDate: new Date().toISOString(),
-        shippingCost: shippingCost,
-      };
-
-      if (isDevelopment) {
-        // În dezvoltare, tot apelăm funcția reală pentru a testa emailurile
-        console.log("🔧 Modul dezvoltare: Testez trimiterea emailului real...");
-      }
-
-      // Generăm un număr de comandă unic
-      const orderNumber = `LP${Date.now()}${Math.random().toString(36).substr(2, 4).toUpperCase()}`;
-
-      // Folosim funcția Netlify pentru trimiterea emailurilor
-      const response = await fetch("/.netlify/functions/send-order-email", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          orderData,
-          orderNumber: orderNumber,
-          totalAmount: orderData.totalAmount,
-        }),
-      });
-
-      if (!response.ok) {
-        throw new Error(`Eroare HTTP: ${response.status}`);
-      }
-
-      const result = await response.json();
-      console.log("✅ Emailuri trimise cu succes:", result);
-      return result;
-    } catch (err) {
-      console.error("Eroare în submitOrderWithFirebase:", err);
-      throw err;
-    }
+    // Always simulate email sending (bypass server function)
+    return simulateEmailSending();
   };
 
   // Validate card number using Luhn algorithm

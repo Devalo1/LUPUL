@@ -31,6 +31,29 @@ import {
 } from "react-icons/fa";
 import "../styles/ArticleEditFix.css";
 
+// Progress Bar Component to avoid inline styles
+const ProgressBar: React.FC<{ progress: number }> = ({ progress }) => {
+  const progressRef = React.useRef<HTMLDivElement>(null);
+
+  React.useEffect(() => {
+    if (progressRef.current) {
+      progressRef.current.style.setProperty(
+        "--progress",
+        `${Math.min(100, Math.max(0, progress))}%`
+      );
+    }
+  }, [progress]);
+
+  return (
+    <div className="w-full bg-gray-200 rounded-full h-2.5 mt-2 mb-2">
+      <div
+        ref={progressRef}
+        className="bg-blue-600 h-2.5 rounded-full transition-all progress-bar-fill"
+      />
+    </div>
+  );
+};
+
 // Enhanced interface to represent an article
 interface Article {
   id?: string;
@@ -472,7 +495,7 @@ const ArticleEdit: React.FC = () => {
   }
 
   return (
-    <div className="container mx-auto px-4 py-8">
+    <div className="container mx-auto px-4 py-8 article-edit-container">
       <div className="bg-white rounded-lg shadow-lg p-6 border border-gray-200">
         <h1 className="text-3xl font-bold mb-8 text-gray-800 border-b pb-4">
           {isNewArticle ? "Adaugă Articol Nou" : "Editare Articol"}
@@ -620,7 +643,7 @@ const ArticleEdit: React.FC = () => {
               </div>
 
               <div className="mb-6">
-                <label className="block text-sm font-bold mb-2 flex items-center">
+                <label className="text-sm font-bold mb-2 flex items-center">
                   <FaTags className="mr-1" /> Etichete (Tags)
                 </label>
                 <div className="flex mb-2">
@@ -657,6 +680,8 @@ const ArticleEdit: React.FC = () => {
                           type="button"
                           onClick={() => handleRemoveTag(tag)}
                           className="ml-1 text-blue-800 hover:text-red-600 focus:outline-none"
+                          title="Remove tag"
+                          aria-label={`Remove tag ${tag}`}
                         >
                           <FaTimes />
                         </button>
@@ -727,12 +752,7 @@ const ArticleEdit: React.FC = () => {
                   </div>
 
                   {isUploading && uploadProgress !== null && (
-                    <div className="w-full bg-gray-200 rounded-full h-2.5 mt-2 mb-2">
-                      <div
-                        className="bg-blue-600 h-2.5 rounded-full transition-all"
-                        style={{ width: `${uploadProgress}%` }}
-                      ></div>
-                    </div>
+                    <ProgressBar progress={uploadProgress} />
                   )}
                 </div>
 

@@ -21,7 +21,7 @@ const testNetopiaPayment = async () => {
   };
 
   try {
-    const response = await fetch("/.netlify/functions/netopia-initiate", {
+    const response = await fetch("/api/netopia-initiate", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",

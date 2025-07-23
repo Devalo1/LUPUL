@@ -103,9 +103,8 @@ class NetopiaPayments {
         live: this.config.live,
       });
 
-      // Use Netlify Dev functions path; no hardcoded port needed in browser
-      // Always use relative path to Netlify function
-      const netopiaUrl = "/.netlify/functions/netopia-initiate";
+      // Use API proxy endpoint for Netlify Functions
+      const netopiaUrl = "/api/netopia-initiate";
       const response = await fetch(netopiaUrl, {
         method: "POST",
         headers: { "Content-Type": "application/json; charset=utf-8" },
@@ -119,6 +118,7 @@ class NetopiaPayments {
       const contentType = response.headers.get("content-type") || "";
       const bodyText = await response.text();
       // If HTML form returned (3DS), return raw HTML
+      // Handle sandbox 3DS HTML form
       if (contentType.includes("text/html") || bodyText.includes("<html")) {
         return bodyText;
       }
@@ -165,15 +165,13 @@ class NetopiaPayments {
    */
   async checkPaymentStatus(orderId: string): Promise<any> {
     try {
-      const response = await fetch(
-        `/.netlify/functions/netopia-status?orderId=${orderId}`,
-        {
-          method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-          },
-        }
-      );
+      // Update status check endpoint
+      const response = await fetch(`/api/netopia-status?orderId=${orderId}`, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
 
       if (!response.ok) {
         throw new Error("Eroare la verificarea statusului");
@@ -291,22 +289,28 @@ const getNetopiaConfig = (): NetopiaConfig => {
 
   // În Vite folosim import.meta.env nu process.env pentru variabile VITE_
   const liveSignature = import.meta.env.VITE_PAYMENT_LIVE_KEY;
-  const hasLiveCredentials = Boolean(liveSignature);
-
-  // Folosește LIVE doar dacă avem credentialele și suntem în producție
-  const useLive = isProduction && hasLiveCredentials;
+  const sandboxSignature =
+    import.meta.env.VITE_PAYMENT_SANDBOX_KEY || "2ZOW-PJ5X-HYYC-IENE-APZO";
+  const useLive = isProduction && Boolean(liveSignature);
+  // În dev, permite utilizarea semnăturii sandbox reale dacă este configurată
+  const useSandbox = !isProduction && Boolean(sandboxSignature);
 
   console.log("Netopia Config:", {
     isProduction,
-    hasLiveCredentials,
     useLive,
+    useSandbox,
     hostname: window.location.hostname,
     liveSignatureExists: Boolean(liveSignature),
+    sandboxSignatureExists: Boolean(sandboxSignature),
     environment: import.meta.env.MODE,
   });
 
   return {
-    posSignature: useLive ? liveSignature! : "NETOPIA_SANDBOX_TEST_SIGNATURE", // Sandbox signature
+    posSignature: useLive
+      ? liveSignature!
+      : useSandbox
+        ? sandboxSignature!
+        : "NETOPIA_SANDBOX_TEST_SIGNATURE",
     baseUrl: useLive
       ? "https://secure.netopia-payments.com"
       : "https://secure-sandbox.netopia-payments.com",

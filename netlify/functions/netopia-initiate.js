@@ -8,7 +8,10 @@ import crypto from "crypto";
 // Configurație NETOPIA
 const NETOPIA_CONFIG = {
   sandbox: {
-    signature: "NETOPIA_SANDBOX_TEST_SIGNATURE",
+    // Use sandbox POS signature from environment or fallback to provided sandbox key
+    signature:
+      process.env.NETOPIA_SANDBOX_SIGNATURE || "2ZOW-PJ5X-HYYC-IENE-APZO",
+    // Use production 3DS endpoint for sandbox transactions
     endpoint: "https://secure-sandbox.netopia-payments.com/payment/card",
     publicKey: process.env.NETOPIA_SANDBOX_PUBLIC_KEY,
   },
@@ -87,24 +90,30 @@ function createNetopiaPayload(paymentData, config) {
  * Trimite request la NETOPIA pentru inițierea plății
  */
 async function initiateNetopiaPayment(payload, config) {
+  // Sandbox: for all non-live configs or explicit sandbox signatures, render 3DS form locally
+  const isSandbox =
+    config.live === false ||
+    config.signature === "NETOPIA_SANDBOX_TEST_SIGNATURE" ||
+    (process.env.NETOPIA_SANDBOX_SIGNATURE &&
+      config.signature === process.env.NETOPIA_SANDBOX_SIGNATURE);
+  if (isSandbox) {
+    const dataBase64 = Buffer.from(JSON.stringify(payload)).toString("base64");
+    const signature = config.signature;
+    const formHtml = `<!doctype html><html><body><form id="netopia3ds" action="${config.endpoint}" method="post">\
+      <input type="hidden" name="data" value="${dataBase64}"/>\
+      <input type="hidden" name="signature" value="${signature}"/>\
+    </form>\
+    <script>document.getElementById('netopia3ds').submit();</script></body></html>`;
+    return {
+      success: true,
+      paymentUrl: formHtml,
+      orderId: payload.payment.data.orderId,
+      html: true,
+    };
+  }
+
   try {
-    // Pentru sandbox, simulăm inițierea plății
-    if (config.signature === "NETOPIA_SANDBOX_TEST_SIGNATURE") {
-      console.log("Sandbox mode: Simulating NETOPIA payment initiation");
-
-      // Creăm un URL local pentru simularea plății
-      // În dezvoltare, folosim portul Vite (5173 sau 5174)
-      const baseUrl = process.env.URL || "http://localhost:5174";
-      const simulatedPaymentUrl = `${baseUrl}/payment-simulation?orderId=${payload.payment.data.orderId}&amount=${payload.payment.data.amount}&currency=RON&test=1`;
-
-      return {
-        success: true,
-        paymentUrl: simulatedPaymentUrl,
-        orderId: payload.payment.data.orderId,
-      };
-    }
-
-    // În producție, aici ar fi request-ul real către NETOPIA API
+    // Trimite request către NETOPIA API (sandbox și live)
     const response = await fetch(config.endpoint, {
       method: "POST",
       headers: {
@@ -326,6 +335,21 @@ export const handler = async (event, context) => {
 
     // Creează payload-ul pentru NETOPIA
     const payload = createNetopiaPayload(paymentData, config);
+    // Pentru sandbox (live=false), folosește pagina de simulare internă
+    // Use existing isLive flag determined earlier
+    if (!paymentData.live) {
+      const amount = payload.payment.data.amount;
+      const currency = payload.payment.data.currency;
+      return {
+        statusCode: 200,
+        headers,
+        body: JSON.stringify({
+          success: true,
+          paymentUrl: `http://localhost:5173/payment-simulation?orderId=${payload.payment.data.orderId}&amount=${amount}&currency=${currency}&test=1`,
+          orderId: payload.payment.data.orderId,
+        }),
+      };
+    }
 
     // Inițiază plata la NETOPIA
     console.log("🚀 Initiating payment with config:", {
@@ -337,7 +361,15 @@ export const handler = async (event, context) => {
     });
 
     const result = await initiateNetopiaPayment(payload, config);
-
+    // If sandbox returned HTML form, send it as text/html for popup
+    if (result.html && typeof result.paymentUrl === "string") {
+      return {
+        statusCode: 200,
+        headers: { "Content-Type": "text/html" },
+        body: result.paymentUrl,
+      };
+    }
+    // Otherwise return JSON
     return {
       statusCode: 200,
       headers,
@@ -345,7 +377,6 @@ export const handler = async (event, context) => {
         success: true,
         paymentUrl: result.paymentUrl,
         orderId: result.orderId,
-        message: "Payment initiated successfully",
       }),
     };
   } catch (error) {

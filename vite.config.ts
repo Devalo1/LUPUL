@@ -55,6 +55,14 @@ export default defineConfig(({ mode }) => ({
     open: true,
     // Reactivăm HMR pentru React Fast Refresh
     hmr: true,
+    // Forward /api/* to Netlify Dev functions on port 8888
+    proxy: {
+      "/api": {
+        target: "http://localhost:8888",
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/api\//, "/.netlify/functions/"),
+      },
+    },
   },
   preview: {
     port: 5174,

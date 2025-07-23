@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import AdminNavigation from "../components/AdminNavigation";
+
 import ReadingAnalyticsAdmin from "../components/ReadingAnalyticsAdmin";
 import AIAnalyticsAdmin from "../components/AIAnalyticsAdmin";
 import {
@@ -576,7 +576,6 @@ const AdminAnalytics: React.FC = () => {
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-50">
-        <AdminNavigation />
         <div className="container mx-auto px-4 py-8">
           <div className="flex items-center justify-center h-64">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
@@ -588,7 +587,6 @@ const AdminAnalytics: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <AdminNavigation />
       <div className="container mx-auto px-4 py-8">
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-gray-800 mb-2">Analytics</h1>

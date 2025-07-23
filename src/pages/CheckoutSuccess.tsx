@@ -61,8 +61,11 @@ const CheckoutSuccess: React.FC = () => {
               // Adăugăm statusul plății
               const orderWithPaymentStatus = {
                 ...orderData,
+                // Map Netopia return status to our paid/failed
                 paymentStatus:
-                  paymentStatus === "confirmed" ? "paid" : "pending",
+                  paymentStatus === "confirmed" || paymentStatus === "success"
+                    ? "paid"
+                    : "failed",
                 paymentMethod: orderData.paymentMethod || "card",
               };
 
@@ -96,7 +99,10 @@ const CheckoutSuccess: React.FC = () => {
         // Dacă nu găsim comanda în localStorage, creăm una basic cu datele de la Netopia
         setOrderDetails({
           orderNumber: netopiaOrderId,
-          paymentStatus: paymentStatus === "confirmed" ? "paid" : "pending",
+          paymentStatus:
+            paymentStatus === "confirmed" || paymentStatus === "success"
+              ? "paid"
+              : "failed",
           paymentMethod: "card",
           date: new Date().toISOString(),
         });

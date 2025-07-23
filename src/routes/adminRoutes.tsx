@@ -10,6 +10,7 @@ import AddEvent from "../pages/AddEvent";
 import MakeAdmin from "../pages/MakeAdmin";
 import AdminArticles from "../pages/AdminArticles";
 import ArticleEdit from "../pages/ArticleEdit";
+import ArticleDebugger from "../pages/ArticleDebugger";
 import AdminEvents from "../pages/AdminEvents"; // Adăugat import pentru AdminEvents
 import AdminAnalytics from "../pages/AdminAnalytics";
 import AdminSpecialists from "../pages/AdminSpecialists";
@@ -174,6 +175,13 @@ export const adminRoutes: AdminRoute[] = [
     title: "Debug Roluri",
     description: "Debug și reparare roluri administrator",
     icon: "debug",
+  },
+  {
+    path: "/admin/articles/debug",
+    element: <ArticleDebugger />,
+    title: "Debug Articole",
+    description: "Debug și testare funcționalitate articole",
+    icon: "debug-articles",
   },
   {
     path: "/admin/invoices",

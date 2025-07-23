@@ -5,6 +5,8 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Import specific pentru articole - la sfârșitul fișierului pentru a nu afecta alte stiluri */
+
 /* Global theme variables - Modified for a softer, more elegant look */
 :root {
   /* Nuanțe mai calme ale culorilor României */
@@ -1023,6 +1025,6 @@ footer .text-slate-300:hover {
   color: #ffffff !important;
 }
 
-/* IMPORT FINAL PENTRU SUPRASCRIERE COMPLETĂ */
+/* IMPORT STILURI PENTRU ARTICOLE - LA SFÂRȘIT PENTRU A NU AFECTA RESTUL PLATFORMEI */
 @import "./styles/ArticleEdit.css";
 @import "./styles/ArticleEditFix.css";

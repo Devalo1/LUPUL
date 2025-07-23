@@ -1,17 +1,23 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { collection, getDocs, doc, deleteDoc, updateDoc } from "firebase/firestore";
+import {
+  collection,
+  getDocs,
+  doc,
+  deleteDoc,
+  updateDoc,
+} from "firebase/firestore";
 import { db } from "../firebase";
 import { useAuth } from "../contexts/AuthContext";
 import Button from "../components/common/Button";
 import { Product } from "../types";
-import AdminNavigation from "../components/AdminNavigation";
+
 import { MAIN_ADMIN_EMAIL } from "../utils/userRoles";
 import AdminTools from "../components/admin/AdminTools";
 import { AdminService } from "../services/adminService";
 
 /**
- * Pagina principală de administrare 
+ * Pagina principală de administrare
  * Această pagină combină funcționalitățile din Admin și AdminPage pentru o experiență unificată
  */
 const Admin: React.FC = () => {
@@ -43,7 +49,7 @@ const Admin: React.FC = () => {
       } finally {
         setCheckingAdmin(false);
       }
-      
+
       if (!checkingAdmin && isAdmin) {
         loadProducts();
       }
@@ -53,11 +59,11 @@ const Admin: React.FC = () => {
       try {
         const productsCollection = collection(db, "products");
         const productsSnapshot = await getDocs(productsCollection);
-        const productsList = productsSnapshot.docs.map(doc => ({
+        const productsList = productsSnapshot.docs.map((doc) => ({
           id: doc.id,
-          ...doc.data()
+          ...doc.data(),
         })) as Product[];
-        
+
         if (productsList.length > 0) {
           setProducts(productsList);
         } else {
@@ -83,14 +89,15 @@ const Admin: React.FC = () => {
       {
         id: "1",
         name: "Carte Terapeutică",
-        description: "Ghid practic pentru gestionarea anxietății și dezvoltarea rezilienței personale.",
+        description:
+          "Ghid practic pentru gestionarea anxietății și dezvoltarea rezilienței personale.",
         price: 59.99,
         image: "https://placehold.co/400x500",
         category: "books",
         inStock: true,
         featured: true,
         stock: 10,
-        createdAt: new Date().toISOString()
+        createdAt: new Date().toISOString(),
       },
       {
         id: "2",
@@ -101,7 +108,7 @@ const Admin: React.FC = () => {
         category: "wellness",
         inStock: true,
         stock: 5,
-        createdAt: new Date().toISOString()
+        createdAt: new Date().toISOString(),
       },
       {
         id: "3",
@@ -113,8 +120,8 @@ const Admin: React.FC = () => {
         inStock: true,
         discount: 15,
         stock: 20,
-        createdAt: new Date().toISOString()
-      }
+        createdAt: new Date().toISOString(),
+      },
     ];
   };
 
@@ -122,7 +129,7 @@ const Admin: React.FC = () => {
     if (window.confirm("Ești sigur că vrei să ștergi acest produs?")) {
       try {
         await deleteDoc(doc(db, "products", id));
-        setProducts(products.filter(product => product.id !== id));
+        setProducts(products.filter((product) => product.id !== id));
       } catch (error) {
         console.error("Error deleting product:", error);
         alert("Eroare la ștergerea produsului.");
@@ -130,17 +137,20 @@ const Admin: React.FC = () => {
     }
   };
 
-  const handleToggleProductStock = async (id: string, currentInStock: boolean) => {
+  const handleToggleProductStock = async (
+    id: string,
+    currentInStock: boolean
+  ) => {
     try {
       await updateDoc(doc(db, "products", id), {
-        inStock: !currentInStock
+        inStock: !currentInStock,
       });
-      
-      setProducts(products.map(product => 
-        product.id === id 
-          ? { ...product, inStock: !currentInStock }
-          : product
-      ));
+
+      setProducts(
+        products.map((product) =>
+          product.id === id ? { ...product, inStock: !currentInStock } : product
+        )
+      );
     } catch (error) {
       console.error("Error updating product:", error);
       alert("Eroare la actualizarea produsului.");
@@ -158,14 +168,14 @@ const Admin: React.FC = () => {
       </div>
     );
   }
-  
+
   if (!isAdmin) {
     return (
       <div className="flex justify-center items-center h-screen">
         <div className="bg-red-100 border border-red-400 text-red-700 px-6 py-4 rounded max-w-md">
           <h2 className="text-lg font-semibold mb-2">Acces restricționat</h2>
           <p>Nu aveți permisiunea de a accesa această pagină.</p>
-          <button 
+          <button
             onClick={() => navigate("/")}
             className="mt-4 bg-red-600 hover:bg-red-700 text-white py-2 px-4 rounded"
           >
@@ -178,98 +188,176 @@ const Admin: React.FC = () => {
 
   return (
     <div className="admin-page min-h-screen bg-gray-50">
-      <AdminNavigation />
-      
       <div className="container mx-auto px-4 py-6">
         <div className="bg-white rounded-lg shadow-md p-6">
           <div className="flex justify-between items-center mb-6">
-            <h1 className="text-2xl font-bold text-gray-800">Panou de administrare</h1>
+            <h1 className="text-2xl font-bold text-gray-800">
+              Panou de administrare
+            </h1>
             <div className="text-sm text-gray-600">
-              Utilizator: <span className="font-medium">{user?.displayName || user?.email}</span>
+              Utilizator:{" "}
+              <span className="font-medium">
+                {user?.displayName || user?.email}
+              </span>
             </div>
           </div>
-          
+
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
             <div className="bg-blue-50 border border-blue-200 rounded-lg p-5 hover:shadow-md transition-shadow">
               <h3 className="font-bold text-blue-800 mb-2">Produse</h3>
-              <p className="text-sm mb-4">Gestionează produsele, categoriile și stocurile.</p>
+              <p className="text-sm mb-4">
+                Gestionează produsele, categoriile și stocurile.
+              </p>
               <div className="flex flex-col space-y-2">
-                <a href="/admin/add-product" className="text-blue-600 hover:underline text-sm">➕ Adaugă produs nou</a>
-                <a href="/admin/categories" className="text-blue-600 hover:underline text-sm">🏷️ Gestionează categorii</a>
-                <a href="/admin/inventory" className="text-blue-600 hover:underline text-sm">📦 Gestionează stocuri</a>
+                <a
+                  href="/admin/add-product"
+                  className="text-blue-600 hover:underline text-sm"
+                >
+                  ➕ Adaugă produs nou
+                </a>
+                <a
+                  href="/admin/categories"
+                  className="text-blue-600 hover:underline text-sm"
+                >
+                  🏷️ Gestionează categorii
+                </a>
+                <a
+                  href="/admin/inventory"
+                  className="text-blue-600 hover:underline text-sm"
+                >
+                  📦 Gestionează stocuri
+                </a>
               </div>
             </div>
-            
+
             <div className="bg-green-50 border border-green-200 rounded-lg p-5 hover:shadow-md transition-shadow">
               <h3 className="font-bold text-green-800 mb-2">Evenimente</h3>
-              <p className="text-sm mb-4">Gestionează evenimentele și programările.</p>
+              <p className="text-sm mb-4">
+                Gestionează evenimentele și programările.
+              </p>
               <div className="flex flex-col space-y-2">
-                <a href="/admin/add-event" className="text-green-600 hover:underline text-sm">➕ Adaugă eveniment nou</a>
-                <a href="/admin/appointments" className="text-green-600 hover:underline text-sm">📅 Gestionează programări</a>
+                <a
+                  href="/admin/add-event"
+                  className="text-green-600 hover:underline text-sm"
+                >
+                  ➕ Adaugă eveniment nou
+                </a>
+                <a
+                  href="/admin/appointments"
+                  className="text-green-600 hover:underline text-sm"
+                >
+                  📅 Gestionează programări
+                </a>
               </div>
             </div>
-            
+
             <div className="bg-purple-50 border border-purple-200 rounded-lg p-5 hover:shadow-md transition-shadow">
               <h3 className="font-bold text-purple-800 mb-2">Utilizatori</h3>
-              <p className="text-sm mb-4">Gestionează conturile utilizatorilor.</p>
+              <p className="text-sm mb-4">
+                Gestionează conturile utilizatorilor.
+              </p>
               <div className="flex flex-col space-y-2">
-                <a href="/admin/users" className="text-purple-600 hover:underline text-sm">👥 Gestionează utilizatori</a>
-                <a href="/admin/make-admin" className="text-purple-600 hover:underline text-sm">🔑 Permisiuni admin</a>
+                <a
+                  href="/admin/users"
+                  className="text-purple-600 hover:underline text-sm"
+                >
+                  👥 Gestionează utilizatori
+                </a>
+                <a
+                  href="/admin/make-admin"
+                  className="text-purple-600 hover:underline text-sm"
+                >
+                  🔑 Permisiuni admin
+                </a>
               </div>
             </div>
           </div>
-          
+
           <AdminTools />
 
           <div className="bg-white p-6 rounded-lg shadow-md mt-6">
             <div className="flex justify-between items-center mb-6">
-              <h2 className="text-xl font-semibold text-gray-800">Gestionare Produse</h2>
-              <Button onClick={handleButtonAddProduct}>Adaugă Produs Nou</Button>
+              <h2 className="text-xl font-semibold text-gray-800">
+                Gestionare Produse
+              </h2>
+              <Button onClick={handleButtonAddProduct}>
+                Adaugă Produs Nou
+              </Button>
             </div>
-            
+
             <div className="overflow-x-auto">
               <table className="min-w-full bg-white border border-gray-200">
                 <thead>
                   <tr className="bg-gray-200">
-                    <th className="py-3 px-4 border-b text-left text-gray-700">Imagine</th>
-                    <th className="py-3 px-4 border-b text-left text-gray-700">Nume</th>
-                    <th className="py-3 px-4 border-b text-left text-gray-700">Preț</th>
-                    <th className="py-3 px-4 border-b text-left text-gray-700">Categorie</th>
-                    <th className="py-3 px-4 border-b text-left text-gray-700">Stoc</th>
-                    <th className="py-3 px-4 border-b text-left text-gray-700">Acțiuni</th>
+                    <th className="py-3 px-4 border-b text-left text-gray-700">
+                      Imagine
+                    </th>
+                    <th className="py-3 px-4 border-b text-left text-gray-700">
+                      Nume
+                    </th>
+                    <th className="py-3 px-4 border-b text-left text-gray-700">
+                      Preț
+                    </th>
+                    <th className="py-3 px-4 border-b text-left text-gray-700">
+                      Categorie
+                    </th>
+                    <th className="py-3 px-4 border-b text-left text-gray-700">
+                      Stoc
+                    </th>
+                    <th className="py-3 px-4 border-b text-left text-gray-700">
+                      Acțiuni
+                    </th>
                   </tr>
                 </thead>
                 <tbody>
-                  {products.map(product => (
+                  {products.map((product) => (
                     <tr key={product.id} className="hover:bg-gray-50">
                       <td className="py-3 px-4 border-b">
-                        <img 
-                          src={product.image} 
-                          alt={product.name} 
+                        <img
+                          src={product.image}
+                          alt={product.name}
                           className="w-16 h-16 object-cover rounded"
                         />
                       </td>
-                      <td className="py-3 px-4 border-b text-gray-800">{product.name}</td>
                       <td className="py-3 px-4 border-b text-gray-800">
-                        {product.discount 
-                          ? <div>
-                            <span className="line-through text-gray-500">{product.price !== undefined ? product.price.toFixed(2) : "0.00"} lei</span>
+                        {product.name}
+                      </td>
+                      <td className="py-3 px-4 border-b text-gray-800">
+                        {product.discount ? (
+                          <div>
+                            <span className="line-through text-gray-500">
+                              {product.price !== undefined
+                                ? product.price.toFixed(2)
+                                : "0.00"}{" "}
+                              lei
+                            </span>
                             <span className="ml-2 text-red-600">
-                              {product.price !== undefined && product.discount !== undefined 
-                                ? (product.price * (1 - product.discount / 100)).toFixed(2) 
-                                : "0.00"} lei
+                              {product.price !== undefined &&
+                              product.discount !== undefined
+                                ? (
+                                    product.price *
+                                    (1 - product.discount / 100)
+                                  ).toFixed(2)
+                                : "0.00"}{" "}
+                              lei
                             </span>
                           </div>
-                          : <span>{product.price !== undefined ? product.price.toFixed(2) : "0.00"} lei</span>
-                        }
+                        ) : (
+                          <span>
+                            {product.price !== undefined
+                              ? product.price.toFixed(2)
+                              : "0.00"}{" "}
+                            lei
+                          </span>
+                        )}
                       </td>
                       <td className="py-3 px-4 border-b text-gray-800 capitalize">
-                        {typeof product.category === "string" 
-                          ? product.category 
+                        {typeof product.category === "string"
+                          ? product.category
                           : product.category?.name || "Diverse"}
                       </td>
                       <td className="py-3 px-4 border-b">
-                        <span 
+                        <span
                           className={`px-2 py-1 rounded-full text-xs ${
                             product.inStock
                               ? "bg-green-100 text-green-800"
@@ -283,13 +371,20 @@ const Admin: React.FC = () => {
                         <div className="flex space-x-2">
                           <button
                             className="text-blue-600 hover:text-blue-800"
-                            onClick={() => navigate(`/admin/edit-product/${product.id}`)}
+                            onClick={() =>
+                              navigate(`/admin/edit-product/${product.id}`)
+                            }
                           >
                             Editează
                           </button>
                           <button
                             className="text-gray-600 hover:text-gray-800"
-                            onClick={() => handleToggleProductStock(product.id, product.inStock)}
+                            onClick={() =>
+                              handleToggleProductStock(
+                                product.id,
+                                product.inStock
+                              )
+                            }
                           >
                             {product.inStock ? "Dezactivează" : "Activează"}
                           </button>

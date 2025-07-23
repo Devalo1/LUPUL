@@ -26,6 +26,8 @@ import {
   FaComments,
   FaCheck,
 } from "react-icons/fa";
+import { useAuth } from "../contexts/AuthContext";
+import { isUserAdmin, MAIN_ADMIN_EMAIL } from "../utils/userRoles";
 
 // Enhanced Article interface
 interface Article {
@@ -74,6 +76,41 @@ const AdminArticles: React.FC = () => {
     null
   );
   const navigate = useNavigate();
+  const { user, isAdmin } = useAuth();
+  const [hasAdminAccess, setHasAdminAccess] = useState<boolean>(false);
+
+  // Verificăm statusul de admin la încărcare
+  useEffect(() => {
+    const checkAdminAccess = async () => {
+      if (!user) {
+        setHasAdminAccess(false);
+        return;
+      }
+
+      // Verificare directă pentru email-ul principal de admin
+      if (user.email === MAIN_ADMIN_EMAIL) {
+        setHasAdminAccess(true);
+        return;
+      }
+
+      // Verificare prin contextul auth
+      if (isAdmin) {
+        setHasAdminAccess(true);
+        return;
+      }
+
+      // Verificare prin funcția de utilitate
+      try {
+        const adminStatus = await isUserAdmin(user.email || "");
+        setHasAdminAccess(adminStatus);
+      } catch (error) {
+        console.error("Eroare la verificarea statusului de admin:", error);
+        setHasAdminAccess(false);
+      }
+    };
+
+    checkAdminAccess();
+  }, [user, isAdmin]);
 
   useEffect(() => {
     fetchArticles();
@@ -261,7 +298,7 @@ const AdminArticles: React.FC = () => {
   };
 
   return (
-    <div className="container mx-auto px-4 py-8">
+    <div className="container mx-auto px-4 py-8 article-edit-container">
       <div className="bg-white rounded-lg shadow-md p-6 mt-6">
         <div className="flex justify-between items-center mb-6">
           <h1 className="text-2xl font-bold">Gestionare Articole</h1>
@@ -282,11 +319,48 @@ const AdminArticles: React.FC = () => {
           </div>
           <button
             onClick={handleAddArticle}
-            className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors flex items-center"
+            disabled={!hasAdminAccess}
+            className={`px-4 py-2 rounded-md transition-colors flex items-center ${
+              hasAdminAccess
+                ? "bg-blue-600 text-white hover:bg-blue-700"
+                : "bg-gray-300 text-gray-500 cursor-not-allowed"
+            }`}
           >
             <FaPlus className="mr-2" /> Adaugă articol nou
           </button>
         </div>
+
+        {/* Afișăm mesaj de informare despre statusul de admin */}
+        {!hasAdminAccess && user && (
+          <div className="bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700 p-4 mb-6">
+            <div className="flex">
+              <div className="flex-shrink-0">
+                <svg
+                  className="h-5 w-5 text-yellow-400"
+                  viewBox="0 0 20 20"
+                  fill="currentColor"
+                >
+                  <path
+                    fillRule="evenodd"
+                    d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z"
+                    clipRule="evenodd"
+                  />
+                </svg>
+              </div>
+              <div className="ml-3">
+                <p className="text-sm">
+                  <strong>Acces limitat:</strong> Pentru a putea adăuga sau
+                  edita articole, aveți nevoie de drepturi de administrator.
+                  <br />
+                  Email curent: <span className="font-mono">{user.email}</span>
+                  <br />
+                  Status admin din context:{" "}
+                  <span className="font-mono">{isAdmin ? "DA" : "NU"}</span>
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
 
         {error && (
           <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">

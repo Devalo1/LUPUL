@@ -1,20 +1,26 @@
-/* CSS FIX PENTRU VIZIBILITATEA INPUT-URILOR - ArticleEdit Page */
+/* CSS FIX PENTRU VIZIBILITATEA INPUT-URILOR - DOAR ArticleEdit Page */
 
-/* PREVENIRE TEXT ALB PE FUNDAL ALB - REGULĂ ULTRA-SPECIFICĂ */
+/* PREVENIRE TEXT ALB PE FUNDAL ALB - REGULĂ ULTRA-SPECIFICĂ DOAR PENTRU ARTICOLE */
 .article-edit-form label,
 form.article-edit-form label,
-div.bg-white form label,
-.container form label {
+.article-edit-container form label,
+.article-debugger-container label {
   color: #1f2937 !important;
   background-color: transparent !important;
   text-shadow: none !important;
   -webkit-text-fill-color: #1f2937 !important;
 }
 
-/* FORȚEAZĂ VIZIBILITATEA PENTRU TOATE INPUT-URILE */
-input,
-textarea,
-select {
+/* FORȚEAZĂ VIZIBILITATEA DOAR PENTRU INPUT-URILE DIN ARTICOLE */
+.article-edit-form input,
+.article-edit-form textarea,
+.article-edit-form select,
+.article-edit-container input,
+.article-edit-container textarea,
+.article-edit-container select,
+.article-debugger-container input,
+.article-debugger-container textarea,
+.article-debugger-container select {
   background-color: #ffffff !important;
   color: #1f2937 !important;
   border: 1px solid #d1d5db !important;
@@ -26,9 +32,15 @@ select {
   appearance: none !important;
 }
 
-input:focus,
-textarea:focus,
-select:focus {
+.article-edit-form input:focus,
+.article-edit-form textarea:focus,
+.article-edit-form select:focus,
+.article-edit-container input:focus,
+.article-edit-container textarea:focus,
+.article-edit-container select:focus,
+.article-debugger-container input:focus,
+.article-debugger-container textarea:focus,
+.article-debugger-container select:focus {
   outline: none !important;
   border-color: #3b82f6 !important;
   box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2) !important;
@@ -37,8 +49,12 @@ select:focus {
   -webkit-text-fill-color: #1f2937 !important;
 }
 
-input::placeholder,
-textarea::placeholder {
+.article-edit-form input::placeholder,
+.article-edit-form textarea::placeholder,
+.article-edit-container input::placeholder,
+.article-edit-container textarea::placeholder,
+.article-debugger-container input::placeholder,
+.article-debugger-container textarea::placeholder {
   color: #6b7280 !important;
   opacity: 1 !important;
 }
@@ -77,20 +93,32 @@ textarea::placeholder {
   border-right: none !important;
 }
 
-/* OVERRIDE PENTRU DARK MODE */
+/* OVERRIDE PENTRU DARK MODE - DOAR PENTRU ARTICOLE */
 @media (prefers-color-scheme: dark) {
-  input,
-  textarea,
-  select {
+  .article-edit-form input,
+  .article-edit-form textarea,
+  .article-edit-form select,
+  .article-edit-container input,
+  .article-edit-container textarea,
+  .article-edit-container select,
+  .article-debugger-container input,
+  .article-debugger-container textarea,
+  .article-debugger-container select {
     background-color: #ffffff !important;
     color: #1f2937 !important;
     border-color: #e5e7eb !important;
     -webkit-text-fill-color: #1f2937 !important;
   }
 
-  input:focus,
-  textarea:focus,
-  select:focus {
+  .article-edit-form input:focus,
+  .article-edit-form textarea:focus,
+  .article-edit-form select:focus,
+  .article-edit-container input:focus,
+  .article-edit-container textarea:focus,
+  .article-edit-container select:focus,
+  .article-debugger-container input:focus,
+  .article-debugger-container textarea:focus,
+  .article-debugger-container select:focus {
     background-color: #ffffff !important;
     color: #1f2937 !important;
     border-color: #3b82f6 !important;
@@ -98,28 +126,37 @@ textarea::placeholder {
   }
 }
 
-/* FORȚEAZĂ FUNDAL ALB PENTRU CONTAINERE */
-.container,
-.bg-white,
-form {
+/* FORȚEAZĂ FUNDAL ALB DOAR PENTRU CONTAINERE DE ARTICOLE */
+.article-edit-container,
+.article-edit-container .bg-white,
+.article-edit-container form,
+.article-debugger-container,
+.article-debugger-container .bg-white,
+.article-debugger-container form {
   background-color: #ffffff !important;
   color: #1f2937 !important;
 }
 
-/* LABELS VIZIBILE */
-label {
+/* LABELS VIZIBILE DOAR PENTRU ARTICOLE */
+.article-edit-form label,
+.article-edit-container label,
+.article-debugger-container label {
   color: #374151 !important;
   font-weight: 600 !important;
   margin-bottom: 8px !important;
   display: block !important;
 }
 
-/* BUTTONS */
-button {
+/* BUTTONS DOAR PENTRU ARTICOLE */
+.article-edit-form button,
+.article-edit-container button,
+.article-debugger-container button {
   cursor: pointer !important;
 }
 
-.btn-primary {
+.article-edit-form .btn-primary,
+.article-edit-container .btn-primary,
+.article-debugger-container .btn-primary {
   background-color: #3b82f6 !important;
   color: #ffffff !important;
   border: none !important;
@@ -129,12 +166,12 @@ button {
 }
 
 /* REGULĂ ULTRA-SPECIFICĂ PENTRU PREVENIREA TEXTULUI ALB PE FUNDAL ALB */
-/* Țintește specific pagina de administrare articole */
-[class*="container"] .bg-white label,
-.bg-white .article-edit-form label,
-.bg-white form label,
-.shadow-lg label,
-div[class*="bg-white"] label {
+/* Țintește DOAR paginile de administrare articole */
+.article-edit-container .bg-white label,
+.article-edit-container .shadow-lg label,
+.article-edit-form label,
+.article-debugger-container .bg-white label,
+.article-debugger-container .shadow-lg label {
   color: #1f2937 !important;
   background-color: transparent !important;
   text-shadow: none !important;
@@ -144,20 +181,15 @@ div[class*="bg-white"] label {
   display: block !important;
 }
 
-/* OVERRIDE PENTRU ORICE ALT CONFLICT */
-body label,
-html label {
-  color: #1f2937 !important;
-}
-
-/* SPECIFICĂ PENTRU ADMIN PAGES */
-[class*="admin"] label,
-.admin-page label,
-.admin-form label {
-  color: #1f2937 !important;
-  background-color: transparent !important;
-}
-
-.btn-primary:hover {
+/* HOVER EFFECTS DOAR PENTRU ARTICOLE */
+.article-edit-form .btn-primary:hover,
+.article-edit-container .btn-primary:hover,
+.article-debugger-container .btn-primary:hover {
   background-color: #2563eb !important;
+}
+
+/* Progress bar for upload */
+.progress-bar-fill {
+  width: var(--progress, 0%);
+  transition: width 0.3s ease;
 }

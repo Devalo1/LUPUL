@@ -16,6 +16,7 @@ import AdminSpecialists from "../pages/AdminSpecialists";
 import AdminSettings from "../pages/AdminSettings";
 import AdminOrders from "../pages/AdminOrders";
 import AdminAccounting from "../pages/AdminAccounting";
+import AdminDebugPage from "../pages/AdminDebugPage";
 import { Navigate } from "react-router-dom";
 
 /**
@@ -166,6 +167,13 @@ export const adminRoutes: AdminRoute[] = [
     title: "Contabilitate",
     description: "Gestionează aspectele contabile",
     icon: "accounting",
+  },
+  {
+    path: "/admin/debug",
+    element: <AdminDebugPage />,
+    title: "Debug Roluri",
+    description: "Debug și reparare roluri administrator",
+    icon: "debug",
   },
   {
     path: "/admin/invoices",

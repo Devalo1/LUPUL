@@ -289,30 +289,33 @@ const Dashboard: React.FC = () => {
         userRatings: [],
       };
 
-      const userRatingIndex = currentRatings.userRatings?.findIndex(
+      const userRatingIndex = (currentRatings.userRatings || []).findIndex(
         (r: any) => r.userId === user.uid
       );
 
       let newRatings;
 
       if (userRatingIndex >= 0) {
-        const updatedUserRatings = [...currentRatings.userRatings];
+        const updatedUserRatings = [...(currentRatings.userRatings || [])];
         updatedUserRatings[userRatingIndex].rating = rating;
 
         const sum = updatedUserRatings.reduce(
-          (acc: number, curr: any) => acc + curr.rating,
+          (acc: number, curr: any) => acc + (curr.rating || 0),
           0
         );
-        const newAverage = sum / updatedUserRatings.length;
+        const newAverage =
+          updatedUserRatings.length > 0 ? sum / updatedUserRatings.length : 0;
 
         newRatings = {
-          count: currentRatings.count,
+          count: currentRatings.count || 0,
           average: newAverage,
           userRatings: updatedUserRatings,
         };
       } else {
-        const newCount = currentRatings.count + 1;
-        const newSum = currentRatings.average * currentRatings.count + rating;
+        const currentCount = currentRatings.count || 0;
+        const currentAverage = currentRatings.average || 0;
+        const newCount = currentCount + 1;
+        const newSum = currentAverage * currentCount + rating;
         const newAverage = newSum / newCount;
 
         newRatings = {
@@ -784,7 +787,7 @@ const Dashboard: React.FC = () => {
             </div>
           ) : eventsError ? (
             <div className="text-center text-red-600 py-4">{eventsError}</div>
-          ) : events.length === 0 ? (
+          ) : !events || events.length === 0 ? (
             <div className="text-center py-6">
               <p className="text-gray-600">
                 Nu ești înscris la niciun eveniment.
@@ -842,7 +845,7 @@ const Dashboard: React.FC = () => {
             <div className="text-center">Se încarcă comenzile...</div>
           ) : ordersError ? (
             <div className="text-center text-red-600">{ordersError}</div>
-          ) : orders.length === 0 ? (
+          ) : !orders || orders.length === 0 ? (
             <p className="text-gray-600">Nu ai făcut încă nicio comandă.</p>
           ) : (
             <div className="space-y-6">
@@ -861,7 +864,7 @@ const Dashboard: React.FC = () => {
                   </div>
 
                   <div className="space-y-4">
-                    {order.items.map((item: any) => (
+                    {(order.items || []).map((item: any) => (
                       <div key={item.id} className="order-rating-widget">
                         <div className="flex items-center">
                           <img
@@ -875,7 +878,7 @@ const Dashboard: React.FC = () => {
                             <h4 className="font-medium">{item.name}</h4>
                             <p className="text-sm text-gray-500">
                               Cantitate: {item.quantity} ×{" "}
-                              {item.price !== undefined
+                              {typeof item.price === "number"
                                 ? item.price.toFixed(2)
                                 : "0.00"}{" "}
                               RON
@@ -924,7 +927,11 @@ const Dashboard: React.FC = () => {
 
                   <div className="mt-4 pt-3 border-t border-gray-100 flex justify-between">
                     <p className="font-medium">
-                      Total: {order.total.toFixed(2)} RON
+                      Total:{" "}
+                      {typeof order.total === "number"
+                        ? order.total.toFixed(2)
+                        : "0.00"}{" "}
+                      RON
                     </p>
                     <p className="text-sm text-gray-500">
                       Status: {order.status || "Finalizată"}

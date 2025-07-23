@@ -20,6 +20,7 @@ export interface AuthContextType {
   isSpecialist?: boolean;
   refreshUserData?: () => Promise<void>;
   refreshUserPhoto?: () => Promise<void>;
+  refreshAdminStatus?: () => Promise<void>;
 }
 
 // Initialize with empty defaults that match the type
@@ -40,6 +41,7 @@ const defaultContext: AuthContextType = {
   isSpecialist: false,
   refreshUserData: async () => {},
   refreshUserPhoto: async () => {},
+  refreshAdminStatus: async () => {},
 };
 
 // Create the context with defaults

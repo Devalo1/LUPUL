@@ -35,7 +35,7 @@ export enum UserRole {
 
 /**
  * Checks if a user with the given email has admin privileges
- * Implementare simplificată care nu mai generează erori de permisiuni
+ * Enhanced implementation with multiple verification layers
  */
 export const isUserAdmin = async (userEmail: string): Promise<boolean> => {
   if (!userEmail) return false;
@@ -47,18 +47,56 @@ export const isUserAdmin = async (userEmail: string): Promise<boolean> => {
   }
 
   try {
-    // Metoda simplificată: Verifică doar documentul utilizatorului, fără a verifica colecția de admini
+    // Primary check: Verifică documentul utilizatorului
     const usersCollection = collection(firestore, "users");
     const userQuery = query(usersCollection, where("email", "==", userEmail));
     const userSnapshot = await getDocs(userQuery);
 
     if (!userSnapshot.empty) {
       const userData = userSnapshot.docs[0].data();
-      if (userData.isAdmin === true || userData.role === UserRole.ADMIN) {
+      const isAdminFromUser =
+        userData.isAdmin === true || userData.role === UserRole.ADMIN;
+
+      if (isAdminFromUser) {
         userRolesLogger.info(
-          `User ${userEmail} has admin flag in user document`
+          `User ${userEmail} has admin flag in user document`,
+          { isAdmin: userData.isAdmin, role: userData.role }
         );
         return true;
+      }
+
+      // Secondary check: Verifică dacă există în colecția admins
+      const userId = userSnapshot.docs[0].id;
+      try {
+        const adminRef = doc(firestore, "admins", userId);
+        const adminDoc = await getDoc(adminRef);
+
+        if (adminDoc.exists()) {
+          const adminData = adminDoc.data();
+          if (adminData.role === "admin") {
+            userRolesLogger.info(
+              `User ${userEmail} found in admins collection, updating user document`
+            );
+
+            // Sincronizează datele între colecții
+            await setDoc(
+              doc(firestore, "users", userId),
+              {
+                isAdmin: true,
+                role: UserRole.ADMIN,
+                updatedAt: new Date(),
+              },
+              { merge: true }
+            );
+
+            return true;
+          }
+        }
+      } catch (adminCheckError) {
+        userRolesLogger.warn(
+          "Could not check admin collection:",
+          adminCheckError
+        );
       }
     }
 
@@ -147,6 +185,7 @@ export const isUserAccountant = async (userEmail: string): Promise<boolean> => {
 
 /**
  * Makes a user admin by updating both user document and admin collection
+ * Enhanced version with better error handling and verification
  */
 export const makeUserAdmin = async (userId: string): Promise<boolean> => {
   if (!userId) return false;
@@ -154,8 +193,23 @@ export const makeUserAdmin = async (userId: string): Promise<boolean> => {
   try {
     userRolesLogger.info(`Making user ${userId} an admin`);
 
-    // Update user document with admin role
+    // Verifică că documentul utilizatorului există
     const userRef = doc(firestore, "users", userId);
+    const userDoc = await getDoc(userRef);
+
+    if (!userDoc.exists()) {
+      userRolesLogger.error(`User document ${userId} does not exist`);
+      return false;
+    }
+
+    const userData = userDoc.data();
+    userRolesLogger.info(`Current user data:`, {
+      email: userData.email,
+      currentIsAdmin: userData.isAdmin,
+      currentRole: userData.role,
+    });
+
+    // Update user document with admin role
     await setDoc(
       userRef,
       {
@@ -166,20 +220,48 @@ export const makeUserAdmin = async (userId: string): Promise<boolean> => {
       { merge: true }
     );
 
+    userRolesLogger.info("User document updated successfully");
+
     // Also add to admin collection for compatibility
     try {
       const adminRef = doc(firestore, "admins", userId);
       await setDoc(adminRef, {
+        email: userData.email,
         role: "admin",
+        userId: userId,
+        displayName: userData.displayName || "Administrator",
         addedAt: new Date(),
+        updatedAt: new Date(),
       });
+      userRolesLogger.info("Admin collection updated successfully");
     } catch (adminError) {
       userRolesLogger.warn("Could not update admin collection:", adminError);
       // This is not critical, the user document update is sufficient
     }
 
-    userRolesLogger.info(`User ${userId} has been made an admin.`);
-    return true;
+    // Verify the update was successful
+    const verifyDoc = await getDoc(userRef);
+    if (verifyDoc.exists()) {
+      const verifyData = verifyDoc.data();
+      const isSuccessful =
+        verifyData.isAdmin === true && verifyData.role === UserRole.ADMIN;
+
+      if (isSuccessful) {
+        userRolesLogger.info(
+          `User ${userId} has been successfully made an admin.`
+        );
+        return true;
+      } else {
+        userRolesLogger.error(
+          `Verification failed for user ${userId}`,
+          verifyData
+        );
+        return false;
+      }
+    }
+
+    userRolesLogger.error(`Could not verify admin update for user ${userId}`);
+    return false;
   } catch (error) {
     userRolesLogger.error("Error making user admin:", error);
     return false;

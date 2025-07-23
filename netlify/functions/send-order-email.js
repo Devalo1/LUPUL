@@ -6,10 +6,20 @@
 const nodemailer = require("nodemailer");
 
 exports.handler = async (event, context) => {
-  // Verificăm metoda HTTP
+  // CORS headers
+  const headers = {
+    "Access-Control-Allow-Origin": "*",
+    "Access-Control-Allow-Headers": "Content-Type",
+    "Access-Control-Allow-Methods": "POST, OPTIONS",
+  };
+  if (event.httpMethod === "OPTIONS") {
+    return { statusCode: 200, headers, body: "" };
+  }
+  // Only accept POST requests
   if (event.httpMethod !== "POST") {
     return {
       statusCode: 405,
+      headers,
       body: JSON.stringify({ error: "Method not allowed" }),
     };
   }
@@ -21,6 +31,7 @@ exports.handler = async (event, context) => {
     if (!orderData || !orderNumber) {
       return {
         statusCode: 400,
+        headers,
         body: JSON.stringify({ error: "Date comandă lipsă" }),
       };
     }
@@ -45,11 +56,7 @@ exports.handler = async (event, context) => {
 
       return {
         statusCode: 200,
-        headers: {
-          "Access-Control-Allow-Origin": "*",
-          "Access-Control-Allow-Headers": "Content-Type",
-          "Access-Control-Allow-Methods": "POST, OPTIONS",
-        },
+        headers,
         body: JSON.stringify({
           success: true,
           message: "Emailuri simulate cu succes (modul dezvoltare)",
@@ -212,11 +219,7 @@ exports.handler = async (event, context) => {
 
     return {
       statusCode: 200,
-      headers: {
-        "Access-Control-Allow-Origin": "*",
-        "Access-Control-Allow-Headers": "Content-Type",
-        "Access-Control-Allow-Methods": "POST, OPTIONS",
-      },
+      headers,
       body: JSON.stringify({
         success: true,
         message: "Emailuri trimise cu succes",
@@ -229,10 +232,7 @@ exports.handler = async (event, context) => {
 
     return {
       statusCode: 500,
-      headers: {
-        "Access-Control-Allow-Origin": "*",
-        "Access-Control-Allow-Headers": "Content-Type",
-      },
+      headers,
       body: JSON.stringify({
         success: false,
         error: "Eroare la trimiterea emailului",

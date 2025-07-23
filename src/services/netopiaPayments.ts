@@ -37,6 +37,21 @@ interface NetopiaPaymentData {
 }
 
 /**
+ * Interfață pentru datele de formular de checkout
+ * Asigură type safety pentru transferul datelor din formular
+ */
+interface CheckoutFormData {
+  firstName: string;
+  lastName: string;
+  email: string;
+  phone: string;
+  address: string;
+  city: string;
+  county: string;
+  postalCode: string;
+}
+
+/**
  * Configurația pentru conexiunea NETOPIA
  * Integrarea tehnică conform standardelor NETOPIA
  */
@@ -253,13 +268,13 @@ class NetopiaPayments {
 
   /**
    * Creează obiectul de plată pentru NETOPIA
-   * @param formData Datele din formular
+   * @param formData Datele din formular (type-safe)
    * @param amount Suma de plată
    * @param description Descrierea produsului
    * @returns Obiectul de plată formatat
    */
   createPaymentData(
-    formData: any,
+    formData: CheckoutFormData,
     amount: number,
     description: string
   ): NetopiaPaymentData {
@@ -279,8 +294,9 @@ class NetopiaPayments {
         postalCode: formData.postalCode,
       },
       language: "ro",
-      returnUrl: `${window.location.origin}/order-confirmation`,
-      confirmUrl: `${window.location.origin}/netlify/functions/netopia-notify`,
+      // Netlify Functions endpoints for payment notifications and redirects
+      confirmUrl: `${window.location.origin}/.netlify/functions/netopia-notify`,
+      returnUrl: `${window.location.origin}/.netlify/functions/netopia-return`,
     };
   }
 }
@@ -290,7 +306,7 @@ const getNetopiaConfig = (): NetopiaConfig => {
   const isProduction = window.location.hostname !== "localhost";
 
   // În Vite folosim import.meta.env nu process.env pentru variabile VITE_
-  const liveSignature = import.meta.env.VITE_PAYMENT_LIVE_KEY;
+  const liveSignature = import.meta.env.VITE_NETOPIA_LIVE_SIGNATURE;
   const hasLiveCredentials = Boolean(liveSignature);
 
   // Folosește LIVE doar dacă avem credentialele și suntem în producție
@@ -319,5 +335,5 @@ const getNetopiaConfig = (): NetopiaConfig => {
 export const netopiaService = new NetopiaPayments(getNetopiaConfig());
 
 // Export pentru tipuri
-export type { NetopiaPaymentData, NetopiaConfig };
+export type { NetopiaPaymentData, NetopiaConfig, CheckoutFormData };
 export default NetopiaPayments;

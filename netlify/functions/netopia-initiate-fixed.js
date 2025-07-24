@@ -311,22 +311,6 @@ exports.handler = async (event, context) => {
       });
     }
 
-    // Verifică dacă configurația live este disponibilă
-    if (isLive && !config.signature) {
-      console.log(
-        "⚠️  NETOPIA live configuration not found, falling back to sandbox"
-      );
-      config = NETOPIA_CONFIG.sandbox;
-
-      // În producție, forțez utilizarea sandbox-ului funcțional
-      if (context.site?.url && !context.site.url.includes("localhost")) {
-        console.log("🔧 PRODUCTION FALLBACK: Using functional sandbox mode");
-        config = {
-          ...NETOPIA_CONFIG.sandbox,
-          signature: "2ZOW-PJ5X-HYYC-IENE-APZO",
-        };
-      }
-    }
 
     // Dacă avem o signature customă din frontend, o folosim
     if (hasCustomSignature) {

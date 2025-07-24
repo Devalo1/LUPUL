@@ -67,8 +67,13 @@ class NetopiaPayments {
   }
 
   /**
-   * Detectează dacă aplicația rulează în mediul de producție
+   * Detectează mediul de rulare pentru endpoint-uri
    */
+  private getNetlifyEndpoint(functionName: string): string {
+    return this.isProduction()
+      ? `/.netlify/functions/${functionName}`
+      : `/api/${functionName}`;
+  }
   private isProduction(): boolean {
     return (
       window.location.hostname === "lupulsicorbul.com" ||
@@ -126,8 +131,13 @@ class NetopiaPayments {
         live: this.config.live,
       });
 
-      // Use API proxy endpoint for Netlify Functions
-      const netopiaUrl = "/api/netopia-initiate";
+      // Use correct endpoint based on environment
+      const netopiaUrl = this.isProduction() 
+        ? "/.netlify/functions/netopia-initiate"  // Production: direct Netlify Functions path
+        : "/api/netopia-initiate";                // Development: Vite proxy path
+        
+      console.log("🌐 Netopia endpoint:", netopiaUrl);
+      
       const response = await fetch(netopiaUrl, {
         method: "POST",
         headers: { "Content-Type": "application/json; charset=utf-8" },
@@ -209,8 +219,12 @@ class NetopiaPayments {
    */
   async checkPaymentStatus(orderId: string): Promise<any> {
     try {
-      // Update status check endpoint
-      const response = await fetch(`/api/netopia-status?orderId=${orderId}`, {
+      // Use correct endpoint based on environment
+      const statusUrl = this.isProduction()
+        ? `/.netlify/functions/netopia-status?orderId=${orderId}`  // Production
+        : `/api/netopia-status?orderId=${orderId}`;               // Development
+        
+      const response = await fetch(statusUrl, {
         method: "GET",
         headers: {
           "Content-Type": "application/json",
@@ -322,7 +336,7 @@ class NetopiaPayments {
       },
       language: "ro",
       returnUrl: `${window.location.origin}/order-confirmation`,
-      confirmUrl: `${window.location.origin}/netlify/functions/netopia-notify`,
+      confirmUrl: `${window.location.origin}${this.getNetlifyEndpoint("netopia-notify")}`,
     };
   }
 }

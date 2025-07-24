@@ -350,7 +350,9 @@ exports.handler = async (event, context) => {
       currency: paymentData.currency,
       live: paymentData.live,
       hasLiveSignature: !!process.env.NETOPIA_LIVE_SIGNATURE,
-      liveSignatureValue: process.env.NETOPIA_LIVE_SIGNATURE ? process.env.NETOPIA_LIVE_SIGNATURE.substring(0, 15) + "..." : "NOT SET",
+      liveSignatureValue: process.env.NETOPIA_LIVE_SIGNATURE
+        ? process.env.NETOPIA_LIVE_SIGNATURE.substring(0, 15) + "..."
+        : "NOT SET",
       environment: process.env.NODE_ENV,
       netlifyContext: context.functionName,
     });
@@ -368,19 +370,30 @@ exports.handler = async (event, context) => {
             orderId: paymentData.orderId,
           },
           environment: {
-            NETOPIA_LIVE_SIGNATURE: process.env.NETOPIA_LIVE_SIGNATURE ? "SET" : "NOT SET",
-            NETOPIA_LIVE_SIGNATURE_PREVIEW: process.env.NETOPIA_LIVE_SIGNATURE?.substring(0, 15) + "..." || "NONE",
-            NETOPIA_SANDBOX_SIGNATURE: process.env.NETOPIA_SANDBOX_SIGNATURE ? "SET" : "NOT SET", 
+            NETOPIA_LIVE_SIGNATURE: process.env.NETOPIA_LIVE_SIGNATURE
+              ? "SET"
+              : "NOT SET",
+            NETOPIA_LIVE_SIGNATURE_PREVIEW:
+              process.env.NETOPIA_LIVE_SIGNATURE?.substring(0, 15) + "..." ||
+              "NONE",
+            NETOPIA_SANDBOX_SIGNATURE: process.env.NETOPIA_SANDBOX_SIGNATURE
+              ? "SET"
+              : "NOT SET",
             NODE_ENV: process.env.NODE_ENV,
             URL: process.env.URL,
-            allNetopiaKeys: Object.keys(process.env).filter(key => key.includes('NETOPIA')),
+            allNetopiaKeys: Object.keys(process.env).filter((key) =>
+              key.includes("NETOPIA")
+            ),
           },
           configSelection: {
             isLive: paymentData.live === true,
             hasLiveSignature: !!NETOPIA_CONFIG.live.signature,
-            liveConfigSignature: NETOPIA_CONFIG.live.signature?.substring(0, 15) + "..." || "NONE",
-            sandboxConfigSignature: NETOPIA_CONFIG.sandbox.signature?.substring(0, 15) + "..." || "NONE",
-          }
+            liveConfigSignature:
+              NETOPIA_CONFIG.live.signature?.substring(0, 15) + "..." || "NONE",
+            sandboxConfigSignature:
+              NETOPIA_CONFIG.sandbox.signature?.substring(0, 15) + "..." ||
+              "NONE",
+          },
         }),
       };
     }

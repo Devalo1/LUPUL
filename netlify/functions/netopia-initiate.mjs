@@ -3,7 +3,7 @@
  * Această funcție creează o nouă sesiune de plată și returnează URL-ul NETOPIA
  */
 
-const crypto = require("crypto");
+import crypto from "crypto";
 
 // Configurație NETOPIA
 const NETOPIA_CONFIG = {
@@ -207,7 +207,7 @@ function validatePaymentData(paymentData) {
 /**
  * Handler principal pentru endpoint-ul de inițiere
  */
-exports.handler = async (event, context) => {
+export const handler = async (event, context) => {
   // Headers CORS
   const headers = {
     "Access-Control-Allow-Origin": "*",

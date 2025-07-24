@@ -354,11 +354,10 @@ const getNetopiaConfig = (): NetopiaConfig => {
   const sandboxSignature =
     import.meta.env.VITE_PAYMENT_SANDBOX_KEY || "2ZOW-PJ5X-HYYC-IENE-APZO";
 
-  // Verificăm dacă avem credențiale live reale (nu sandbox)
-  const hasRealLiveCredentials =
-    liveSignature &&
-    liveSignature !== "2ZOW-PJ5X-HYYC-IENE-APZO" &&
-    liveSignature !== "NETOPIA_SANDBOX_TEST_SIGNATURE";
+  // Verificăm dacă avem credențiale live configurate
+  // Nota: Pentru NETOPIA, aceeași semnătură poate fi folosită pentru sandbox și live
+  // diferența este făcută prin endpoint-ul folosit
+  const hasRealLiveCredentials = Boolean(liveSignature);
 
   const useLive = isProduction && hasRealLiveCredentials;
 

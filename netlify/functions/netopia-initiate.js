@@ -90,13 +90,17 @@ function createNetopiaPayload(paymentData, config) {
  * Trimite request la NETOPIA pentru inițierea plății
  */
 async function initiateNetopiaPayment(payload, config) {
-  // Sandbox: for all non-live configs or explicit sandbox signatures, render 3DS form locally
+  // Sandbox: only for explicit test signatures or when config.live is false
   const isSandbox =
     config.live === false ||
-    config.signature === "NETOPIA_SANDBOX_TEST_SIGNATURE" ||
-    config.signature === "2ZOW-PJ5X-HYYC-IENE-APZO" ||
-    (process.env.NETOPIA_SANDBOX_SIGNATURE &&
-      config.signature === process.env.NETOPIA_SANDBOX_SIGNATURE);
+    config.signature === "NETOPIA_SANDBOX_TEST_SIGNATURE";
+
+  console.log("🔧 Payment mode selection:", {
+    configLive: config.live,
+    configSignature: config.signature?.substring(0, 15) + "...",
+    isSandbox: isSandbox,
+    willUseLiveNetopia: !isSandbox
+  });
 
   if (isSandbox) {
     console.log("🧪 Using sandbox mode for NETOPIA payment");
@@ -356,47 +360,6 @@ exports.handler = async (event, context) => {
       environment: process.env.NODE_ENV,
       netlifyContext: context.functionName,
     });
-
-    // 🚨 DEBUG: Return environment info for live requests to check why it's not working
-    if (paymentData.live === true) {
-      return {
-        statusCode: 200,
-        headers,
-        body: JSON.stringify({
-          debug: true,
-          message: "LIVE mode debug info",
-          requestData: {
-            live: paymentData.live,
-            orderId: paymentData.orderId,
-          },
-          environment: {
-            NETOPIA_LIVE_SIGNATURE: process.env.NETOPIA_LIVE_SIGNATURE
-              ? "SET"
-              : "NOT SET",
-            NETOPIA_LIVE_SIGNATURE_PREVIEW:
-              process.env.NETOPIA_LIVE_SIGNATURE?.substring(0, 15) + "..." ||
-              "NONE",
-            NETOPIA_SANDBOX_SIGNATURE: process.env.NETOPIA_SANDBOX_SIGNATURE
-              ? "SET"
-              : "NOT SET",
-            NODE_ENV: process.env.NODE_ENV,
-            URL: process.env.URL,
-            allNetopiaKeys: Object.keys(process.env).filter((key) =>
-              key.includes("NETOPIA")
-            ),
-          },
-          configSelection: {
-            isLive: paymentData.live === true,
-            hasLiveSignature: !!NETOPIA_CONFIG.live.signature,
-            liveConfigSignature:
-              NETOPIA_CONFIG.live.signature?.substring(0, 15) + "..." || "NONE",
-            sandboxConfigSignature:
-              NETOPIA_CONFIG.sandbox.signature?.substring(0, 15) + "..." ||
-              "NONE",
-          },
-        }),
-      };
-    }
 
     // Validează datele de plată
     validatePaymentData(paymentData);

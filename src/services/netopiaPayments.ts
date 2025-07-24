@@ -132,12 +132,12 @@ class NetopiaPayments {
       });
 
       // Use correct endpoint based on environment
-      const netopiaUrl = this.isProduction() 
-        ? "/.netlify/functions/netopia-initiate"  // Production: direct Netlify Functions path
-        : "/api/netopia-initiate";                // Development: Vite proxy path
-        
+      const netopiaUrl = this.isProduction()
+        ? "/.netlify/functions/netopia-initiate" // Production: direct Netlify Functions path
+        : "/api/netopia-initiate"; // Development: Vite proxy path
+
       console.log("🌐 Netopia endpoint:", netopiaUrl);
-      
+
       const response = await fetch(netopiaUrl, {
         method: "POST",
         headers: { "Content-Type": "application/json; charset=utf-8" },
@@ -221,9 +221,9 @@ class NetopiaPayments {
     try {
       // Use correct endpoint based on environment
       const statusUrl = this.isProduction()
-        ? `/.netlify/functions/netopia-status?orderId=${orderId}`  // Production
-        : `/api/netopia-status?orderId=${orderId}`;               // Development
-        
+        ? `/.netlify/functions/netopia-status?orderId=${orderId}` // Production
+        : `/api/netopia-status?orderId=${orderId}`; // Development
+
       const response = await fetch(statusUrl, {
         method: "GET",
         headers: {

@@ -13,8 +13,8 @@ function getEmailTransporter() {
   return nodemailer.createTransporter({
     service: "gmail",
     auth: {
-      user: process.env.SMTP_USER,
-      pass: process.env.SMTP_PASS,
+      user: process.env.SMTP_USER || "lupulsicorbul@gmail.com",
+      pass: process.env.SMTP_PASS || "lraf ziyj xyii ssas",
     },
   });
 }

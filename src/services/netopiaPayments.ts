@@ -67,6 +67,17 @@ class NetopiaPayments {
   }
 
   /**
+   * Detectează dacă aplicația rulează în mediul de producție
+   */
+  private isProduction(): boolean {
+    return (
+      window.location.hostname !== "localhost" &&
+      !window.location.hostname.includes("netlify") &&
+      !window.location.hostname.includes("preview")
+    );
+  }
+
+  /**
    * Inițiază o plată prin platforma NETOPIA Payments
    *
    * Procesul respectă standardele PCI DSS și implementează:
@@ -86,6 +97,16 @@ class NetopiaPayments {
         live: this.config.live,
         signature: this.config.posSignature?.substring(0, 10) + "...",
       });
+
+      // În production, dacă nu avem credențiale live configurate, aruncă eroare explicită
+      if (this.isProduction() && !this.config.live) {
+        console.warn(
+          "🚨 Production environment detected but no live Netopia credentials configured"
+        );
+        throw new Error(
+          "Sistemul de plăți cu cardul este în proces de configurare. Vă rugăm să alegeți plata ramburs pentru moment sau să încercați mai târziu."
+        );
+      }
 
       const requestPayload = {
         ...paymentData,
@@ -113,6 +134,27 @@ class NetopiaPayments {
       if (!response.ok) {
         const errorText = await response.text();
         console.error("Netopia API Error:", errorText);
+
+        // If we get HTML back (404 from SPA redirect), it means the Netlify function is not available
+        if (
+          errorText.includes("<!DOCTYPE html>") ||
+          errorText.includes("<html")
+        ) {
+          console.error(
+            "🚨 Netopia function not available - got SPA redirect instead of API response"
+          );
+
+          if (this.isProduction()) {
+            throw new Error(
+              "Serviciul de plăți cu cardul este temporar indisponibil din motive tehnice. Vă rugăm să alegeți plata ramburs sau să contactați suportul pentru asistență."
+            );
+          } else {
+            throw new Error(
+              "Funcția Netlify pentru Netopia nu este disponibilă. Verificați că serverul dev rulează corect."
+            );
+          }
+        }
+
         throw new Error(`Eroare la inițierea plății: ${response.status}`);
       }
       const contentType = response.headers.get("content-type") || "";
@@ -291,7 +333,15 @@ const getNetopiaConfig = (): NetopiaConfig => {
   const liveSignature = import.meta.env.VITE_PAYMENT_LIVE_KEY;
   const sandboxSignature =
     import.meta.env.VITE_PAYMENT_SANDBOX_KEY || "2ZOW-PJ5X-HYYC-IENE-APZO";
-  const useLive = isProduction && Boolean(liveSignature);
+
+  // Verificăm dacă avem credențiale live reale (nu sandbox)
+  const hasRealLiveCredentials =
+    liveSignature &&
+    liveSignature !== "2ZOW-PJ5X-HYYC-IENE-APZO" &&
+    liveSignature !== "NETOPIA_SANDBOX_TEST_SIGNATURE";
+
+  const useLive = isProduction && hasRealLiveCredentials;
+
   // În dev, permite utilizarea semnăturii sandbox reale dacă este configurată
   const useSandbox = !isProduction && Boolean(sandboxSignature);
 
@@ -310,7 +360,7 @@ const getNetopiaConfig = (): NetopiaConfig => {
       ? liveSignature!
       : useSandbox
         ? sandboxSignature!
-        : "NETOPIA_SANDBOX_TEST_SIGNATURE",
+        : "2ZOW-PJ5X-HYYC-IENE-APZO", // Fallback garantat funcțional
     baseUrl: useLive
       ? "https://secure.netopia-payments.com"
       : "https://secure-sandbox.netopia-payments.com",

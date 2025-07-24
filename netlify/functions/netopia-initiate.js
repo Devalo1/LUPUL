@@ -26,7 +26,7 @@ const NETOPIA_CONFIG = {
  * Creează payload-ul pentru NETOPIA
  */
 function createNetopiaPayload(paymentData, config) {
-  const baseUrl = process.env.URL || "https://lupul-si-corbul.netlify.app";
+  const baseUrl = process.env.URL || "https://lupulsicorbul.com";
 
   return {
     config: {
@@ -313,6 +313,15 @@ export const handler = async (event, context) => {
         "⚠️  NETOPIA live configuration not found, falling back to sandbox"
       );
       config = NETOPIA_CONFIG.sandbox;
+
+      // În producție, forțez utilizarea sandbox-ului funcțional
+      if (context.site?.url && !context.site.url.includes("localhost")) {
+        console.log("🔧 PRODUCTION FALLBACK: Using functional sandbox mode");
+        config = {
+          ...NETOPIA_CONFIG.sandbox,
+          signature: "2ZOW-PJ5X-HYYC-IENE-APZO",
+        };
+      }
     }
 
     // Dacă avem o signature customă din frontend, o folosim

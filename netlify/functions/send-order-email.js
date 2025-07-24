@@ -1,6 +1,12 @@
 /**
- * Funcție Netlify pentru trimiterea emailurilor de confirmare comandă
- * Folosește Nodemailer pentru SMTP real
+ * Funcție Netlify pentru trimiterea emailurilor de confirmare co    // Configurare transport SMTP (folosește variabile de mediu cu fallback)
+    const transporter = nodemailer.createTransporter({
+      service: "gmail", // sau alt service SMTP
+      auth: {
+        user: smtpUser,
+        pass: smtpPass,
+      },
+    });* Folosește Nodemailer pentru SMTP real
  */
 
 const nodemailer = require("nodemailer");
@@ -30,7 +36,16 @@ exports.handler = async (event, context) => {
       !process.env.SMTP_PASS ||
       process.env.SMTP_PASS === "test-development-mode";
 
-    if (isDevelopment) {
+    // Fallback la credențiale cunoscute pentru producție
+    const smtpUser = process.env.SMTP_USER || "lupulsicorbul@gmail.com";
+    const smtpPass = process.env.SMTP_PASS || "lraf ziyj xyii ssas";
+
+    // Dacă avem credențiale reale, nu intrăm în development mode
+    const hasRealCredentials =
+      smtpUser !== "lupulsicorbul@gmail.com" ||
+      (smtpPass && smtpPass !== "test-development-mode");
+
+    if (isDevelopment && !hasRealCredentials) {
       // În modul dezvoltare, simulăm trimiterea emailurilor
       console.log("🔧 MOD DEZVOLTARE: Simulăm trimiterea emailurilor");
       console.log("📧 Email client simulat pentru:", orderData.email);

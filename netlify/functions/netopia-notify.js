@@ -25,8 +25,8 @@ function getEmailTransporter() {
   return nodemailer.createTransporter({
     service: "gmail",
     auth: {
-      user: process.env.SMTP_USER,
-      pass: process.env.SMTP_PASS,
+      user: process.env.SMTP_USER || "lupulsicorbul@gmail.com",
+      pass: process.env.SMTP_PASS || "lraf ziyj xyii ssas",
     },
   });
 }
@@ -240,7 +240,7 @@ async function processNetopiaNotification(notification) {
       try {
         // Apelează funcția dedicată pentru procesarea finalizării comenzii
         const baseUrl =
-          process.env.URL || "https://lupul-si-corbul.netlify.app";
+          process.env.URL || "https://lupulsicorbul.com";
         const response = await fetch(
           `${baseUrl}/.netlify/functions/process-payment-completion`,
           {

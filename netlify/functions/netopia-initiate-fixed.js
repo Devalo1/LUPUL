@@ -114,34 +114,26 @@ async function initiateNetopiaPayment(payload, config) {
     };
   }
 
-  try {
-    // Trimite request către NETOPIA API (sandbox și live)
-    const response = await fetch(config.endpoint, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "X-NETOPIA-Signature": config.signature,
-      },
-      body: JSON.stringify(payload),
-    });
-
-    if (!response.ok) {
-      throw new Error(
-        `NETOPIA API error: ${response.status} ${response.statusText}`
-      );
-    }
-
-    const result = await response.json();
-
-    return {
-      success: true,
-      paymentUrl: result.paymentUrl || result.redirect_url,
-      orderId: payload.payment.data.orderId,
-    };
-  } catch (error) {
-    console.error("Error initiating NETOPIA payment:", error);
-    throw error;
-  }
+  // LIVE mode: generate HTML form to POST data to NETOPIA
+  const dataBase64 = Buffer.from(JSON.stringify(payload)).toString("base64");
+  const signature = config.signature;
+  const formHtml = `<!doctype html>
+<html lang="ro">
+<head><meta charset="UTF-8"><title>Redirecționare NETOPIA</title></head>
+<body>
+  <form id="netopia3ds" action="${config.endpoint}" method="post">
+    <input type="hidden" name="data" value="${dataBase64}"/>
+    <input type="hidden" name="signature" value="${signature}"/>
+  </form>
+  <script>document.getElementById('netopia3ds').submit();</script>
+</body>
+</html>`;
+  return {
+    success: true,
+    paymentUrl: formHtml,
+    orderId: payload.payment.data.orderId,
+    html: true,
+  };
 }
 
 /**
@@ -267,8 +259,18 @@ exports.handler = async (event, context) => {
     // Validează datele de plată
     validatePaymentData(paymentData);
 
-    // Determină configurația (sandbox vs live) cu fallback logic
-    const isLive = paymentData.live === true;
+    // Determină configurația (sandbox vs live) cu detectare automată în producție
+    let isLive = false;
+    // În producție, dacă există cheia live și URL-ul este domeniul live, forțăm modul live
+    if (
+      process.env.NETOPIA_LIVE_SIGNATURE &&
+      process.env.URL &&
+      process.env.URL.includes("lupulsicorbul.com")
+    ) {
+      isLive = true;
+    } else if (paymentData.live === true) {
+      isLive = true;
+    }
     const hasCustomSignature =
       paymentData.posSignature &&
       paymentData.posSignature !== "NETOPIA_SANDBOX_TEST_SIGNATURE";

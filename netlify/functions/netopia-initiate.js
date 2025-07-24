@@ -100,7 +100,7 @@ async function initiateNetopiaPayment(payload, config) {
 
   if (isSandbox) {
     console.log("🧪 Using sandbox mode for NETOPIA payment");
-    
+
     // Create a working sandbox simulation page instead of posting to broken NETOPIA endpoint
     const simulationHtml = `<!DOCTYPE html>
 <html lang="ro">

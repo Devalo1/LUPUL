@@ -73,8 +73,8 @@ class NetopiaPayments {
     return (
       window.location.hostname === "lupulsicorbul.com" ||
       (window.location.hostname !== "localhost" &&
-       !window.location.hostname.includes("netlify") &&
-       !window.location.hostname.includes("preview"))
+        !window.location.hostname.includes("netlify") &&
+        !window.location.hostname.includes("preview"))
     );
   }
 
@@ -329,10 +329,11 @@ class NetopiaPayments {
 
 // Configurația pentru producție și dezvoltare
 const getNetopiaConfig = (): NetopiaConfig => {
-  const isProduction = window.location.hostname === "lupulsicorbul.com" ||
+  const isProduction =
+    window.location.hostname === "lupulsicorbul.com" ||
     (window.location.hostname !== "localhost" &&
-     !window.location.hostname.includes("netlify") &&
-     !window.location.hostname.includes("preview"));
+      !window.location.hostname.includes("netlify") &&
+      !window.location.hostname.includes("preview"));
 
   // În Vite folosim import.meta.env nu process.env pentru variabile VITE_
   const liveSignature = import.meta.env.VITE_PAYMENT_LIVE_KEY;

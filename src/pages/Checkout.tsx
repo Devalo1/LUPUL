@@ -451,15 +451,20 @@ const Checkout: React.FC = () => {
           );
 
           // Open popup early to avoid browser blocking
-          const popup = window.open("about:blank", "netopia3ds", "width=400,height=600");
+          const popup = window.open(
+            "about:blank",
+            "netopia3ds",
+            "width=400,height=600"
+          );
           try {
-            const paymentResponse = await netopiaService.initiatePayment(paymentData);
+            const paymentResponse =
+              await netopiaService.initiatePayment(paymentData);
             if (paymentResponse.trim().startsWith("<")) {
               if (popup) {
                 // Inject target into form and write HTML
                 const htmlWithTarget = paymentResponse.replace(
                   /<form/i,
-                  "<form target=\"netopia3ds\" " // add space after attribute
+                  '<form target="netopia3ds" ' // add space after attribute
                 );
                 popup.document.write(htmlWithTarget);
                 popup.document.close();
@@ -493,7 +498,9 @@ const Checkout: React.FC = () => {
       let result;
 
       if (isDevelopment) {
-        console.log("Mediu de dezvoltare detectat, forțăm trimiterea prin Netlify Function...");
+        console.log(
+          "Mediu de dezvoltare detectat, forțăm trimiterea prin Netlify Function..."
+        );
         // În loc să simulez, forțez trimiterea prin Netlify Function
         try {
           console.log("Încercare trimitere comandă prin fetch direct...");

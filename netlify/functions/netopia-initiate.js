@@ -97,7 +97,7 @@ async function initiateNetopiaPayment(payload, config) {
     config.signature === "2ZOW-PJ5X-HYYC-IENE-APZO" ||
     (process.env.NETOPIA_SANDBOX_SIGNATURE &&
       config.signature === process.env.NETOPIA_SANDBOX_SIGNATURE);
-      
+
   if (isSandbox) {
     console.log("🧪 Using sandbox mode for NETOPIA payment");
     const dataBase64 = Buffer.from(JSON.stringify(payload)).toString("base64");
@@ -107,7 +107,7 @@ async function initiateNetopiaPayment(payload, config) {
       <input type="hidden" name="signature" value="${signature}"/>\
     </form>\
     <script>document.getElementById('netopia3ds').submit();</script></body></html>`;
-    
+
     return {
       success: true,
       paymentUrl: formHtml,
@@ -348,7 +348,7 @@ exports.handler = async (event, context) => {
 
     // Creează payload-ul pentru NETOPIA
     const payload = createNetopiaPayload(paymentData, config);
-    
+
     // Simulation only for local dev (fallback page), otherwise let sandbox HTML form logic handle
     const baseUrl = process.env.URL || event.headers.origin || "";
     if (!paymentData.live && baseUrl.includes("localhost")) {
@@ -375,7 +375,7 @@ exports.handler = async (event, context) => {
     });
 
     const result = await initiateNetopiaPayment(payload, config);
-    
+
     // If sandbox returned HTML form, send it as text/html for popup
     if (result.html && typeof result.paymentUrl === "string") {
       return {
@@ -384,7 +384,7 @@ exports.handler = async (event, context) => {
         body: result.paymentUrl,
       };
     }
-    
+
     // Otherwise return JSON
     return {
       statusCode: 200,

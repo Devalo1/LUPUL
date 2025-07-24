@@ -1,2 +1,3 @@
 // Export the fixed implementation for Netlify to invoke
-module.exports = require('./netopia-initiate-fixed');
+const fixed = require('./netopia-initiate-fixed');
+exports.handler = fixed.handler;

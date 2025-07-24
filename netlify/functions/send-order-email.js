@@ -1,12 +1,6 @@
 /**
- * Funcție Netlify pentru trimiterea emailurilor de confirmare co    // Configurare transport SMTP (folosește variabile de mediu cu fallback)
-    const transporter = nodemailer.createTransporter({
-      service: "gmail", // sau alt service SMTP
-      auth: {
-        user: smtpUser,
-        pass: smtpPass,
-      },
-    });* Folosește Nodemailer pentru SMTP real
+ * Funcție Netlify pentru trimiterea emailurilor de confirmare comenzi
+ * Folosește Nodemailer pentru SMTP real
  */
 
 const nodemailer = require("nodemailer");

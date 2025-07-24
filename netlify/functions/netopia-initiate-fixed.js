@@ -100,7 +100,7 @@ async function initiateNetopiaPayment(payload, config) {
   if (isSandbox) {
     const dataBase64 = Buffer.from(JSON.stringify(payload)).toString("base64");
     const signature = config.signature;
-    const formHtml = `<!doctype html><html><body><form id="netopia3ds" action="${config.endpoint}" method="post">\
+    const formHtml = `<!doctype html><html><body><form id="netopia3ds" action="${config.endpoint}" method="post" target="_top">\
       <input type="hidden" name="data" value="${dataBase64}"/>\
       <input type="hidden" name="signature" value="${signature}"/>\
     </form>\
@@ -121,7 +121,7 @@ async function initiateNetopiaPayment(payload, config) {
 <html lang="ro">
 <head><meta charset="UTF-8"><title>Redirecționare NETOPIA</title></head>
 <body>
-  <form id="netopia3ds" action="${config.endpoint}" method="post">
+  <form id="netopia3ds" action="${config.endpoint}" method="post" target="_top">
     <input type="hidden" name="data" value="${dataBase64}"/>
     <input type="hidden" name="signature" value="${signature}"/>
   </form>
@@ -310,7 +310,6 @@ exports.handler = async (event, context) => {
         URL: process.env.URL,
       });
     }
-
 
     // Dacă avem o signature customă din frontend, o folosim
     if (hasCustomSignature) {

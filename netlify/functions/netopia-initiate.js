@@ -229,8 +229,17 @@ async function initiateNetopiaPayment(payload, config) {
     const contentType = response.headers.get("content-type") || "";
     const responseText = await response.text();
 
+    console.log("🔍 NETOPIA Response Analysis:", {
+      statusCode: response.status,
+      contentType: contentType,
+      responseLength: responseText.length,
+      responseStart: responseText.substring(0, 500),
+      isHtml: responseText.includes("<html") || responseText.includes("<!DOCTYPE"),
+      isJson: responseText.trim().startsWith('{') || responseText.trim().startsWith('[')
+    });
+
     // Dacă returnează HTML (3DS form), returnează HTML-ul direct
-    if (contentType.includes("text/html") || responseText.includes("<html")) {
+    if (contentType.includes("text/html") || responseText.includes("<html") || responseText.includes("<!DOCTYPE")) {
       console.log("🔒 NETOPIA returned 3DS HTML form");
       return {
         success: true,
@@ -245,7 +254,13 @@ async function initiateNetopiaPayment(payload, config) {
     try {
       result = JSON.parse(responseText);
     } catch (jsonError) {
-      console.error("NETOPIA response not JSON:", responseText.substring(0, 200));
+      console.error("NETOPIA response parsing failed:", {
+        error: jsonError.message,
+        responsePreview: responseText.substring(0, 500),
+        responseType: typeof responseText,
+        firstChar: responseText.charAt(0),
+        lastChar: responseText.charAt(responseText.length - 1)
+      });
       throw new Error("NETOPIA returned invalid response format");
     }
 

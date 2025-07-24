@@ -6,8 +6,10 @@ import {
   isUserAdmin as _isUserAdmin,
   isUserAccountant,
 } from "../utils/userRoles";
+import { useAuth } from "../contexts/AuthContext";
 
 const MakeAdmin: React.FC = () => {
+  const { refreshAdminStatus } = useAuth();
   const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<{
@@ -87,6 +89,10 @@ const MakeAdmin: React.FC = () => {
         setDebugInfo("Operația a fost realizată cu succes!");
         // Refresh user status after successful operation
         await checkUserStatus();
+        // Refresh admin status in context
+        if (refreshAdminStatus) {
+          await refreshAdminStatus();
+        }
       } else {
         setDebugInfo(
           "Funcția a returnat false. Verificați consola pentru detalii."

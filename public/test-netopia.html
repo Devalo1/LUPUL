@@ -1,0 +1,226 @@
+<!doctype html>
+<html>
+  <head>
+    <title>Test Netopia Endpoint</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        padding: 20px;
+      }
+      .result {
+        margin: 10px 0;
+        padding: 10px;
+        border-radius: 5px;
+      }
+      .success {
+        background: #d4edda;
+        color: #155724;
+        border: 1px solid #c3e6cb;
+      }
+      .error {
+        background: #f8d7da;
+        color: #721c24;
+        border: 1px solid #f1aeb5;
+      }
+      .info {
+        background: #d1ecf1;
+        color: #0c5460;
+        border: 1px solid #b8daff;
+      }
+      pre {
+        background: #f8f9fa;
+        padding: 10px;
+        border-radius: 3px;
+        overflow-x: auto;
+      }
+      button {
+        background: #007bff;
+        color: white;
+        border: none;
+        padding: 10px 20px;
+        border-radius: 5px;
+        cursor: pointer;
+        margin: 5px;
+      }
+      button:hover {
+        background: #0056b3;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>🧪 Test Netopia Endpoint</h1>
+    <p>
+      Acest tool testează dacă funcția Netlify pentru Netopia funcționează
+      corect.
+    </p>
+
+    <button onclick="testNetopiaEndpoint()">Test Netopia Endpoint</button>
+    <button onclick="testDirectNetlifyFunction()">
+      Test Direct Netlify Function
+    </button>
+
+    <div id="results"></div>
+
+    <script>
+      function addResult(message, type = "info") {
+        const resultsDiv = document.getElementById("results");
+        const resultDiv = document.createElement("div");
+        resultDiv.className = `result ${type}`;
+        resultDiv.innerHTML = message;
+        resultsDiv.appendChild(resultDiv);
+      }
+
+      async function testNetopiaEndpoint() {
+        addResult("🔍 Testing /api/netopia-initiate endpoint...", "info");
+
+        const testData = {
+          orderId: "TEST-" + Date.now(),
+          amount: 500,
+          currency: "RON",
+          description: "Test payment",
+          customerInfo: {
+            firstName: "Test",
+            lastName: "User",
+            email: "test@example.com",
+            phone: "0712345678",
+            address: "Test Address",
+            city: "Bucuresti",
+            county: "Bucuresti",
+            postalCode: "010000",
+          },
+          live: false,
+        };
+
+        try {
+          const response = await fetch("/api/netopia-initiate", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(testData),
+          });
+
+          addResult(
+            `📡 Response Status: ${response.status} ${response.statusText}`,
+            response.ok ? "success" : "error"
+          );
+
+          const contentType = response.headers.get("content-type") || "";
+          addResult(`📄 Content-Type: ${contentType}`, "info");
+
+          const responseText = await response.text();
+
+          if (contentType.includes("application/json")) {
+            try {
+              const data = JSON.parse(responseText);
+              addResult("✅ Received JSON response:", "success");
+              addResult(`<pre>${JSON.stringify(data, null, 2)}</pre>`, "info");
+            } catch (e) {
+              addResult("❌ Failed to parse JSON response", "error");
+              addResult(
+                `<pre>${responseText.substring(0, 500)}...</pre>`,
+                "error"
+              );
+            }
+          } else if (responseText.includes("<!DOCTYPE html>")) {
+            addResult(
+              "⚠️ Received HTML instead of JSON - Endpoint not found (SPA redirect)",
+              "error"
+            );
+            addResult(
+              "<pre>This means the Netlify function is not available</pre>",
+              "error"
+            );
+          } else {
+            addResult("📝 Raw response:", "info");
+            addResult(
+              `<pre>${responseText.substring(0, 500)}...</pre>`,
+              "info"
+            );
+          }
+        } catch (error) {
+          addResult(`❌ Request failed: ${error.message}`, "error");
+        }
+      }
+
+      async function testDirectNetlifyFunction() {
+        addResult(
+          "🔍 Testing /.netlify/functions/netopia-initiate directly...",
+          "info"
+        );
+
+        const testData = {
+          orderId: "TEST-DIRECT-" + Date.now(),
+          amount: 500,
+          currency: "RON",
+          description: "Direct test payment",
+          customerInfo: {
+            firstName: "Test",
+            lastName: "User",
+            email: "test@example.com",
+            phone: "0712345678",
+            address: "Test Address",
+            city: "Bucuresti",
+            county: "Bucuresti",
+            postalCode: "010000",
+          },
+          live: false,
+        };
+
+        try {
+          const response = await fetch("/.netlify/functions/netopia-initiate", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(testData),
+          });
+
+          addResult(
+            `📡 Direct Response Status: ${response.status} ${response.statusText}`,
+            response.ok ? "success" : "error"
+          );
+
+          const contentType = response.headers.get("content-type") || "";
+          addResult(`📄 Content-Type: ${contentType}`, "info");
+
+          const responseText = await response.text();
+
+          if (contentType.includes("application/json")) {
+            try {
+              const data = JSON.parse(responseText);
+              addResult(
+                "✅ Direct access works! Received JSON response:",
+                "success"
+              );
+              addResult(`<pre>${JSON.stringify(data, null, 2)}</pre>`, "info");
+            } catch (e) {
+              addResult("❌ Failed to parse JSON response", "error");
+              addResult(
+                `<pre>${responseText.substring(0, 500)}...</pre>`,
+                "error"
+              );
+            }
+          } else if (responseText.includes("<!DOCTYPE html>")) {
+            addResult(
+              "⚠️ Direct access also returns HTML - Function missing from deployment",
+              "error"
+            );
+          } else {
+            addResult("📝 Raw response:", "info");
+            addResult(
+              `<pre>${responseText.substring(0, 500)}...</pre>`,
+              "info"
+            );
+          }
+        } catch (error) {
+          addResult(`❌ Direct request failed: ${error.message}`, "error");
+        }
+      }
+
+      // Auto-run test on page load for debugging
+      document.addEventListener("DOMContentLoaded", function () {
+        addResult(
+          "🚀 Page loaded. Click buttons above to test endpoints.",
+          "info"
+        );
+      });
+    </script>
+  </body>
+</html>

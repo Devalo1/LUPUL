@@ -7,6 +7,8 @@ export interface AuthContextType {
   isAuthenticated: boolean;
   user: FirebaseUser | null;
   isAdmin: boolean;
+  isSpecialist: boolean;
+  isAccountant: boolean;
   loading: boolean;
   error: string | null;
   login: (email: string, password: string) => Promise<AuthResult>;
@@ -17,7 +19,6 @@ export interface AuthContextType {
   resetPassword: (email: string) => Promise<AuthResult>;
   currentUser: User | null;
   userRole?: string | null;
-  isSpecialist?: boolean;
   refreshUserData?: () => Promise<void>;
   refreshUserPhoto?: () => Promise<void>;
   refreshAdminStatus?: () => Promise<void>;
@@ -28,6 +29,8 @@ const defaultContext: AuthContextType = {
   isAuthenticated: false,
   user: null,
   isAdmin: false,
+  isSpecialist: false,
+  isAccountant: false,
   loading: true,
   error: null,
   login: async () => ({ success: false }),
@@ -38,7 +41,6 @@ const defaultContext: AuthContextType = {
   resetPassword: async () => ({ success: false }),
   currentUser: null,
   userRole: null,
-  isSpecialist: false,
   refreshUserData: async () => {},
   refreshUserPhoto: async () => {},
   refreshAdminStatus: async () => {},

@@ -1,4 +1,4 @@
-import { auth, firestore, ensureAdminRights, ADMIN_EMAILS } from "../firebase";
+import { auth, firestore, isUserAdmin, ADMIN_EMAILS } from "../firebase";
 import {
   signInWithEmailAndPassword,
   createUserWithEmailAndPassword,
@@ -41,9 +41,19 @@ export class AuthService {
     try {
       const result = await signInWithEmailAndPassword(auth, email, password);
 
-      // Verificăm dacă este contul special de admin
+      // Verificăm dacă este admin și actualizăm flagul dacă este cazul
       if (email === "dani_popa21@yahoo.ro" || ADMIN_EMAILS.includes(email)) {
-        await ensureAdminRights(result.user.uid, email);
+        const userRef = doc(firestore, "users", result.user.uid);
+        await setDoc(
+          userRef,
+          {
+            isAdmin: true,
+            role: "admin",
+            lastLogin: new Date(),
+            updatedAt: new Date(),
+          },
+          { merge: true }
+        );
       } else {
         // Pentru utilizatori non-admin, actualizăm doar timestamp-ul de login
         const userRef = doc(firestore, "users", result.user.uid);
@@ -209,12 +219,10 @@ export class AuthService {
             result.user.email
           );
 
-          // Verificăm dacă utilizatorul este admin - folosim lista hardcodată pentru a evita erori
+          // Verificăm dacă utilizatorul este admin folosind funcția din firebase.ts
           let isAdmin = false;
           if (result.user.email) {
-            isAdmin =
-              result.user.email === "dani_popa21@yahoo.ro" ||
-              ADMIN_EMAILS.includes(result.user.email);
+            isAdmin = await isUserAdmin(result.user.email);
           }
 
           // Actualizăm sau creăm un document pentru utilizator în Firestore

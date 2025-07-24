@@ -7,8 +7,16 @@ import authService from "../services/AuthService";
 import { handleUnknownError } from "../utils/errorTypes";
 import logger from "../utils/logger";
 import { AuthState, AuthResult } from "../types/AuthContextUtils";
-import { isUserAdmin, MAIN_ADMIN_EMAIL } from "../utils/userRoles";
-import { formatUserData, convertFirebaseUser } from "../utils/authContextHelpers";
+import {
+  isUserAdmin,
+  isUserSpecialist,
+  isUserAccountant,
+  MAIN_ADMIN_EMAIL,
+} from "../utils/userRoles";
+import {
+  formatUserData,
+  convertFirebaseUser,
+} from "../utils/authContextHelpers";
 import { AuthContext, AuthContextType } from "./AuthContext";
 
 interface AuthProviderProps {
@@ -20,15 +28,17 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     isAuthenticated: false,
     user: null,
     isAdmin: false,
+    isSpecialist: false,
+    isAccountant: false,
     loading: true,
     error: null,
   });
 
   const auth = getAuth();
   const navigate = useNavigate();
+  const authLogger = logger.createLogger("AuthContext");
 
   React.useEffect(() => {
-    const authLogger = logger.createLogger("AuthContext");
     authLogger.debug("Setting up auth state listener");
 
     const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
@@ -38,6 +48,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       try {
         if (firebaseUser) {
           let isUserAdminFlag: boolean = false;
+          let isUserSpecialistFlag: boolean = false;
+          let isUserAccountantFlag: boolean = false;
 
           if (firebaseUser.email) {
             // First check hardcoded admin email
@@ -45,19 +57,28 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
               isUserAdminFlag = true;
               authLogger.debug("Main admin email detected");
             } else {
-              // Then check database
+              // Then check database and all roles
               try {
+                const [isAdmin, isSpecialist, isAccountant] = await Promise.all(
+                  [
+                    isUserAdmin(firebaseUser.email),
+                    isUserSpecialist(firebaseUser.email),
+                    isUserAccountant(firebaseUser.email),
+                  ]
+                );
+
+                isUserAdminFlag = isAdmin;
+                isUserSpecialistFlag = isSpecialist;
+                isUserAccountantFlag = isAccountant;
+
+                // Ensure user document exists
                 const userRef = doc(db, "users", firebaseUser.uid);
                 const userDoc = await getDoc(userRef);
-
-                if (userDoc.exists()) {
-                  const userData = userDoc.data();
-                  isUserAdminFlag = userData.isAdmin === true || userData.role === "admin";
-                } else {
+                if (!userDoc.exists()) {
                   await setDoc(userRef, formatUserData(firebaseUser));
                 }
               } catch (error) {
-                authLogger.error("Error checking user document for admin status:", error);
+                authLogger.error("Error checking user roles:", error);
               }
             }
           }
@@ -66,6 +87,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
             isAuthenticated: true,
             user: firebaseUser,
             isAdmin: isUserAdminFlag,
+            isSpecialist: isUserSpecialistFlag,
+            isAccountant: isUserAccountantFlag,
             loading: false,
             error: null,
           });
@@ -77,6 +100,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
             isAuthenticated: false,
             user: null,
             isAdmin: false,
+            isSpecialist: false,
+            isAccountant: false,
             loading: false,
             error: null,
           });
@@ -88,6 +113,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
           isAuthenticated: false,
           user: null,
           isAdmin: false,
+          isSpecialist: false,
+          isAccountant: false,
           loading: false,
           error: err.message || "Unknown error",
         });
@@ -97,10 +124,16 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     return () => unsubscribe();
   }, [auth]);
 
-  const login = async (email: string, password: string): Promise<AuthResult> => {
-    const authLogger = logger.createLogger("AuthContext");
+  const login = async (
+    email: string,
+    password: string
+  ): Promise<AuthResult> => {
     try {
-      setAuthState((prev: AuthState) => ({ ...prev, loading: true, error: null }));
+      setAuthState((prev: AuthState) => ({
+        ...prev,
+        loading: true,
+        error: null,
+      }));
       authLogger.debug("Attempting login with email and password");
 
       const userCredential = await authService.login(email, password);
@@ -108,7 +141,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
       let isAdmin = false;
       if (user.email) {
-        const userIsAdmin = await isUserAdmin(user.uid);
+        const userIsAdmin = await isUserAdmin(user.email);
         isAdmin = userIsAdmin;
       }
 
@@ -141,9 +174,13 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       authLogger.error("Login error:", error);
 
       const err = handleUnknownError(error);
-      let errorMessage = "A apărut o eroare la autentificare. Vă rugăm încercați din nou.";
+      let errorMessage =
+        "A apărut o eroare la autentificare. Vă rugăm încercați din nou.";
 
-      if (err.code === "auth/user-not-found" || err.code === "auth/wrong-password") {
+      if (
+        err.code === "auth/user-not-found" ||
+        err.code === "auth/wrong-password"
+      ) {
         errorMessage = "Email sau parolă incorectă";
       } else if (err.code === "auth/too-many-requests") {
         errorMessage = "Prea multe încercări eșuate. Încercați mai târziu.";
@@ -161,10 +198,16 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     }
   };
 
-  const register = async (email: string, password: string): Promise<AuthResult> => {
-    const authLogger = logger.createLogger("AuthContext");
+  const register = async (
+    email: string,
+    password: string
+  ): Promise<AuthResult> => {
     try {
-      setAuthState((prev: AuthState) => ({ ...prev, loading: true, error: null }));
+      setAuthState((prev: AuthState) => ({
+        ...prev,
+        loading: true,
+        error: null,
+      }));
       authLogger.debug("Attempting to register new user");
 
       const userCredential = await authService.signUp(email, password);
@@ -183,7 +226,9 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
       const afterLoginRedirect = sessionStorage.getItem("afterLoginRedirect");
       if (afterLoginRedirect) {
-        authLogger.debug(`Redirect after registration to: ${afterLoginRedirect}`);
+        authLogger.debug(
+          `Redirect after registration to: ${afterLoginRedirect}`
+        );
         navigate(afterLoginRedirect);
         sessionStorage.removeItem("afterLoginRedirect");
       } else {
@@ -218,11 +263,18 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const loginWithGoogle = async (redirectTo?: string): Promise<AuthResult> => {
     const authLogger = logger.createLogger("AuthContext");
     try {
-      setAuthState((prev: AuthState) => ({ ...prev, loading: true, error: null }));
+      setAuthState((prev: AuthState) => ({
+        ...prev,
+        loading: true,
+        error: null,
+      }));
       authLogger.debug("Starting Google login process via popup");
 
       const redirectPath = redirectTo || "/dashboard";
-      authLogger.debug("Setting redirect path for Google login to:", redirectPath);
+      authLogger.debug(
+        "Setting redirect path for Google login to:",
+        redirectPath
+      );
 
       const result = await authService.loginWithGoogle(redirectPath);
 
@@ -232,6 +284,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
           isAuthenticated: true,
           user: result.user,
           isAdmin: !!result.isAdmin,
+          isSpecialist: false, // Will be updated by role verification
+          isAccountant: false, // Will be updated by role verification
           loading: false,
           error: null,
         });
@@ -240,14 +294,17 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
           navigate(result.redirectPath, { replace: true });
         }
       } else {
-        throw new Error(result.error?.toString() || "Google authentication failed");
+        throw new Error(
+          result.error?.toString() || "Google authentication failed"
+        );
       }
 
       return result;
     } catch (error: unknown) {
       authLogger.error("Error with Google login:", error);
 
-      const errorMessage = error instanceof Error ? error.message : "Failed to login with Google";
+      const errorMessage =
+        error instanceof Error ? error.message : "Failed to login with Google";
 
       setAuthState((prev: AuthState) => ({
         ...prev,
@@ -269,6 +326,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         isAuthenticated: false,
         user: null,
         isAdmin: false,
+        isSpecialist: false,
+        isAccountant: false,
         loading: false,
         error: null,
       });
@@ -297,12 +356,42 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     } catch (error) {
       authLogger.error("Password reset error:", error);
       const err = handleUnknownError(error);
-      return { success: false, error: err.message || "Failed to reset password" };
+      return {
+        success: false,
+        error: err.message || "Failed to reset password",
+      };
     }
   };
 
   const resetAuthError = () => {
     setAuthState((prev: AuthState) => ({ ...prev, error: null }));
+  };
+
+  const refreshUserRoles = async () => {
+    if (authState.user?.email) {
+      try {
+        const [isAdmin, isSpecialist, isAccountant] = await Promise.all([
+          isUserAdmin(authState.user.email),
+          isUserSpecialist(authState.user.email),
+          isUserAccountant(authState.user.email),
+        ]);
+
+        setAuthState((prev: AuthState) => ({
+          ...prev,
+          isAdmin,
+          isSpecialist,
+          isAccountant,
+        }));
+
+        authLogger.info("User roles refreshed:", {
+          isAdmin,
+          isSpecialist,
+          isAccountant,
+        });
+      } catch (error) {
+        authLogger.error("Error refreshing user roles:", error);
+      }
+    }
   };
 
   const contextValue: AuthContextType = {
@@ -313,8 +402,11 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     register,
     resetAuthError,
     resetPassword,
+    refreshAdminStatus: refreshUserRoles,
     currentUser: authState.user ? convertFirebaseUser(authState.user) : null,
   };
 
-  return <AuthContext.Provider value={contextValue}>{children}</AuthContext.Provider>;
+  return (
+    <AuthContext.Provider value={contextValue}>{children}</AuthContext.Provider>
+  );
 };

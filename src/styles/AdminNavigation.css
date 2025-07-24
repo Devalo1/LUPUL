@@ -1,0 +1,120 @@
+/* AdminNavigation Mobile Responsive Styles */
+
+.admin-nav-mobile {
+  /* Asigură scroll smooth pentru dropdown-uri */
+  scrollbar-width: thin;
+  scrollbar-color: #cbd5e0 transparent;
+}
+
+.admin-nav-mobile::-webkit-scrollbar {
+  width: 4px;
+}
+
+.admin-nav-mobile::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.admin-nav-mobile::-webkit-scrollbar-thumb {
+  background-color: #cbd5e0;
+  border-radius: 2px;
+}
+
+.admin-nav-mobile::-webkit-scrollbar-thumb:hover {
+  background-color: #a0aec0;
+}
+
+/* Touch targets pentru butoane mobile */
+@media (max-width: 768px) {
+  .admin-nav-button {
+    min-height: 48px;
+    touch-action: manipulation;
+  }
+
+  .admin-nav-dropdown-button {
+    min-height: 52px;
+    padding: 0.75rem 1rem;
+  }
+
+  .admin-nav-dropdown-item {
+    min-height: 44px;
+    padding: 0.625rem 0.75rem;
+    font-size: 0.875rem;
+  }
+}
+
+/* Animații smooth pentru dropdown-uri */
+.admin-dropdown-enter {
+  opacity: 0;
+  transform: translateY(-4px);
+}
+
+.admin-dropdown-enter-active {
+  opacity: 1;
+  transform: translateY(0);
+  transition:
+    opacity 200ms ease-in-out,
+    transform 200ms ease-in-out;
+}
+
+.admin-dropdown-exit {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.admin-dropdown-exit-active {
+  opacity: 0;
+  transform: translateY(-4px);
+  transition:
+    opacity 200ms ease-in-out,
+    transform 200ms ease-in-out;
+}
+
+/* Previne zoom-ul pe input pe iOS */
+@media screen and (-webkit-min-device-pixel-ratio: 0) {
+  select,
+  textarea,
+  input[type="text"],
+  input[type="password"],
+  input[type="datetime"],
+  input[type="datetime-local"],
+  input[type="date"],
+  input[type="month"],
+  input[type="time"],
+  input[type="week"],
+  input[type="number"],
+  input[type="email"],
+  input[type="url"],
+  input[type="search"],
+  input[type="tel"],
+  input[type="color"] {
+    font-size: 16px !important;
+  }
+}
+
+/* Header responsive pe ecrane foarte mici */
+@media (max-width: 420px) {
+  .admin-nav-header {
+    padding: 0.5rem 0.75rem;
+  }
+
+  .admin-nav-title {
+    font-size: 0.875rem;
+  }
+
+  .admin-nav-user-email {
+    max-width: 100px;
+    font-size: 0.75rem;
+  }
+}
+
+/* Îmbunătățiri pentru landscape pe telefon */
+@media (max-height: 500px) and (orientation: landscape) {
+  .admin-nav-mobile {
+    max-height: calc(100vh - 120px);
+  }
+
+  .admin-nav-dropdown-item {
+    padding: 0.5rem 0.75rem;
+    min-height: 40px;
+  }
+}

@@ -4,6 +4,8 @@ export interface AuthState {
   isAuthenticated: boolean;
   user: FirebaseUser | null;
   isAdmin: boolean;
+  isSpecialist: boolean;
+  isAccountant: boolean;
   loading: boolean;
   error: string | null;
 }

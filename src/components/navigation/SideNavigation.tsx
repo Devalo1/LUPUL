@@ -11,7 +11,7 @@ import "../../styles/SideNavigation.css";
 
 const SideNavigation: React.FC = () => {
   const { isSideNavOpen, closeSideNav } = useNavigation();
-  const { user, loading, logout } = useAuth();
+  const { user, loading, logout, isAdmin: contextIsAdmin } = useAuth();
   const [isShopExpanded, setIsShopExpanded] = useState(false);
   const [isAdminExpanded, setIsAdminExpanded] = useState(false); // State pentru meniul admin
   const [isAdmin, setIsAdmin] = useState(false); // Add state to track admin status
@@ -34,6 +34,8 @@ const SideNavigation: React.FC = () => {
         // Otherwise check through the admin verification function
         const adminStatus = await isUserAdmin(user.email);
         setIsAdmin(adminStatus); // Properly update isAdmin state
+      } else {
+        setIsAdmin(false);
       }
     };
 
@@ -53,6 +55,13 @@ const SideNavigation: React.FC = () => {
       setIsAccountant(false);
     }
   }, [user]);
+
+  // Watch for changes in the auth context admin status
+  useEffect(() => {
+    if (contextIsAdmin !== undefined && user?.email) {
+      setIsAdmin(contextIsAdmin);
+    }
+  }, [contextIsAdmin, user?.email]);
 
   // Dezactivează scroll-ul când meniul este deschis
   useEffect(() => {

@@ -40,9 +40,12 @@ export enum UserRole {
 export const isUserAdmin = async (userEmail: string): Promise<boolean> => {
   if (!userEmail) return false;
 
+  console.log(`🔍 [isUserAdmin] Checking admin status for: ${userEmail}`);
+
   // First check if email is in the hardcoded admin list
   if (ADMIN_EMAILS.includes(userEmail)) {
     userRolesLogger.info(`Admin detected from hardcoded list: ${userEmail}`);
+    console.log(`✅ [isUserAdmin] ${userEmail} is in hardcoded admin list`);
     return true;
   }
 
@@ -52,8 +55,23 @@ export const isUserAdmin = async (userEmail: string): Promise<boolean> => {
     const userQuery = query(usersCollection, where("email", "==", userEmail));
     const userSnapshot = await getDocs(userQuery);
 
+    console.log(
+      `📄 [isUserAdmin] User document search result for ${userEmail}:`,
+      {
+        isEmpty: userSnapshot.empty,
+        size: userSnapshot.size,
+      }
+    );
+
     if (!userSnapshot.empty) {
       const userData = userSnapshot.docs[0].data();
+      console.log(`📋 [isUserAdmin] User data for ${userEmail}:`, {
+        isAdmin: userData.isAdmin,
+        role: userData.role,
+        email: userData.email,
+        displayName: userData.displayName,
+      });
+
       const isAdminFromUser =
         userData.isAdmin === true || userData.role === UserRole.ADMIN;
 
@@ -62,20 +80,35 @@ export const isUserAdmin = async (userEmail: string): Promise<boolean> => {
           `User ${userEmail} has admin flag in user document`,
           { isAdmin: userData.isAdmin, role: userData.role }
         );
+        console.log(
+          `✅ [isUserAdmin] ${userEmail} confirmed as admin from user document`
+        );
         return true;
       }
 
       // Secondary check: Verifică dacă există în colecția admins
       const userId = userSnapshot.docs[0].id;
+      console.log(
+        `🔍 [isUserAdmin] Checking admin collection for userId: ${userId}`
+      );
+
       try {
         const adminRef = doc(firestore, "admins", userId);
         const adminDoc = await getDoc(adminRef);
+
+        console.log(`📄 [isUserAdmin] Admin collection check result:`, {
+          exists: adminDoc.exists(),
+          data: adminDoc.exists() ? adminDoc.data() : null,
+        });
 
         if (adminDoc.exists()) {
           const adminData = adminDoc.data();
           if (adminData.role === "admin") {
             userRolesLogger.info(
               `User ${userEmail} found in admins collection, updating user document`
+            );
+            console.log(
+              `✅ [isUserAdmin] ${userEmail} found in admin collection, syncing...`
             );
 
             // Sincronizează datele între colecții
@@ -89,6 +122,9 @@ export const isUserAdmin = async (userEmail: string): Promise<boolean> => {
               { merge: true }
             );
 
+            console.log(
+              `✅ [isUserAdmin] ${userEmail} user document updated with admin role`
+            );
             return true;
           }
         }
@@ -97,14 +133,28 @@ export const isUserAdmin = async (userEmail: string): Promise<boolean> => {
           "Could not check admin collection:",
           adminCheckError
         );
+        console.log(
+          `⚠️ [isUserAdmin] Admin collection check failed:`,
+          adminCheckError
+        );
       }
     }
 
+    console.log(`❌ [isUserAdmin] ${userEmail} is not admin`);
     return false;
   } catch (error) {
     userRolesLogger.error("Error checking admin status:", error);
+    console.error(
+      `🚨 [isUserAdmin] Error checking admin status for ${userEmail}:`,
+      error
+    );
     // Fallback pentru email-ul principal de admin
-    return ADMIN_EMAILS.includes(userEmail);
+    const fallbackResult = ADMIN_EMAILS.includes(userEmail);
+    console.log(
+      `🔄 [isUserAdmin] Fallback result for ${userEmail}:`,
+      fallbackResult
+    );
+    return fallbackResult;
   }
 };
 
@@ -187,29 +237,38 @@ export const isUserAccountant = async (userEmail: string): Promise<boolean> => {
  * Makes a user admin by updating both user document and admin collection
  * Enhanced version with better error handling and verification
  */
-export const makeUserAdmin = async (userId: string): Promise<boolean> => {
-  if (!userId) return false;
+export const makeUserAdmin = async (userEmail: string): Promise<boolean> => {
+  if (!userEmail) {
+    userRolesLogger.error("Email is required for makeUserAdmin");
+    return false;
+  }
 
   try {
-    userRolesLogger.info(`Making user ${userId} an admin`);
+    userRolesLogger.info(`Making user ${userEmail} an admin`);
 
-    // Verifică că documentul utilizatorului există
-    const userRef = doc(firestore, "users", userId);
-    const userDoc = await getDoc(userRef);
+    // Find user by email first
+    const usersCollection = collection(firestore, "users");
+    const userQuery = query(usersCollection, where("email", "==", userEmail));
+    const userSnapshot = await getDocs(userQuery);
 
-    if (!userDoc.exists()) {
-      userRolesLogger.error(`User document ${userId} does not exist`);
+    if (userSnapshot.empty) {
+      userRolesLogger.error(`User with email ${userEmail} does not exist`);
       return false;
     }
 
+    const userDoc = userSnapshot.docs[0];
+    const userId = userDoc.id;
     const userData = userDoc.data();
-    userRolesLogger.info(`Current user data:`, {
+
+    userRolesLogger.info(`Found user document for ${userEmail}:`, {
+      userId,
       email: userData.email,
       currentIsAdmin: userData.isAdmin,
       currentRole: userData.role,
     });
 
     // Update user document with admin role
+    const userRef = doc(firestore, "users", userId);
     await setDoc(
       userRef,
       {
@@ -248,22 +307,24 @@ export const makeUserAdmin = async (userId: string): Promise<boolean> => {
 
       if (isSuccessful) {
         userRolesLogger.info(
-          `User ${userId} has been successfully made an admin.`
+          `User ${userEmail} (ID: ${userId}) has been successfully made an admin.`
         );
         return true;
       } else {
         userRolesLogger.error(
-          `Verification failed for user ${userId}`,
+          `Verification failed for user ${userEmail} (ID: ${userId})`,
           verifyData
         );
         return false;
       }
     }
 
-    userRolesLogger.error(`Could not verify admin update for user ${userId}`);
+    userRolesLogger.error(
+      `Could not verify admin update for user ${userEmail} (ID: ${userId})`
+    );
     return false;
   } catch (error) {
-    userRolesLogger.error("Error making user admin:", error);
+    userRolesLogger.error(`Error making user ${userEmail} admin:`, error);
     return false;
   }
 };
@@ -421,10 +482,37 @@ export const removeSpecialistRole = async (
 /**
  * Makes a user accountant by updating their role
  */
-export const makeUserAccountant = async (userId: string): Promise<boolean> => {
-  if (!userId) return false;
+export const makeUserAccountant = async (
+  userEmail: string
+): Promise<boolean> => {
+  if (!userEmail) {
+    userRolesLogger.error("Email is required for makeUserAccountant");
+    return false;
+  }
 
   try {
+    userRolesLogger.info(`Making user ${userEmail} an accountant`);
+
+    // Find user by email first
+    const usersCollection = collection(firestore, "users");
+    const userQuery = query(usersCollection, where("email", "==", userEmail));
+    const userSnapshot = await getDocs(userQuery);
+
+    if (userSnapshot.empty) {
+      userRolesLogger.error(`User with email ${userEmail} does not exist`);
+      return false;
+    }
+
+    const userDoc = userSnapshot.docs[0];
+    const userId = userDoc.id;
+    const userData = userDoc.data();
+
+    userRolesLogger.info(`Found user document for ${userEmail}:`, {
+      userId,
+      email: userData.email,
+      currentRole: userData.role,
+    });
+
     const userRef = doc(firestore, "users", userId);
 
     await setDoc(
@@ -437,10 +525,12 @@ export const makeUserAccountant = async (userId: string): Promise<boolean> => {
       { merge: true }
     );
 
-    userRolesLogger.info(`User ${userId} has been made an accountant`);
+    userRolesLogger.info(
+      `User ${userEmail} (ID: ${userId}) has been made an accountant`
+    );
     return true;
   } catch (error) {
-    userRolesLogger.error("Error making user accountant:", error);
+    userRolesLogger.error(`Error making user ${userEmail} accountant:`, error);
     return false;
   }
 };
@@ -449,9 +539,29 @@ export const makeUserAccountant = async (userId: string): Promise<boolean> => {
  * Removes accountant role from user
  */
 export const removeAccountantRole = async (
-  userId: string
+  userEmail: string
 ): Promise<boolean> => {
+  if (!userEmail) {
+    userRolesLogger.error("Email is required for removeAccountantRole");
+    return false;
+  }
+
   try {
+    userRolesLogger.info(`Removing accountant role from user ${userEmail}`);
+
+    // Find user by email first
+    const usersCollection = collection(firestore, "users");
+    const userQuery = query(usersCollection, where("email", "==", userEmail));
+    const userSnapshot = await getDocs(userQuery);
+
+    if (userSnapshot.empty) {
+      userRolesLogger.error(`User with email ${userEmail} does not exist`);
+      return false;
+    }
+
+    const userDoc = userSnapshot.docs[0];
+    const userId = userDoc.id;
+
     const userRef = doc(firestore, "users", userId);
 
     await setDoc(
@@ -464,11 +574,13 @@ export const removeAccountantRole = async (
       { merge: true }
     );
 
-    userRolesLogger.info(`Accountant role removed from user ${userId}`);
+    userRolesLogger.info(
+      `Accountant role removed from user ${userEmail} (ID: ${userId})`
+    );
     return true;
   } catch (error) {
     userRolesLogger.error(
-      `Failed to remove accountant role from user ${userId}`,
+      `Failed to remove accountant role from user ${userEmail}`,
       error
     );
     return false;

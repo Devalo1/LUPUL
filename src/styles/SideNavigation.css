@@ -3,6 +3,7 @@
   top: 0;
   right: -320px;
   width: 320px;
+  max-width: 90vw; /* Limitează lățimea pe ecrane foarte mici */
   height: 100vh;
   background-color: white;
   box-shadow: -2px 0 8px rgba(0, 0, 0, 0.1);
@@ -10,6 +11,13 @@
   transition: right 0.3s ease-in-out;
   display: flex;
   flex-direction: column;
+}
+
+/* Pe ecrane foarte mici (sub 360px), fă meniul mai îngust */
+@media (max-width: 360px) {
+  .side-navigation {
+    width: 280px;
+  }
 }
 
 .side-navigation.open {
@@ -29,8 +37,12 @@
 }
 
 @keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
 }
 
 .side-nav-header {
@@ -39,7 +51,7 @@
   align-items: center;
   padding: 1.5rem;
   border-bottom: 1px solid #e5e7eb;
-  background: linear-gradient(135deg, #002B7F, #0033A0);
+  background: linear-gradient(135deg, #002b7f, #0033a0);
   color: white;
 }
 
@@ -80,7 +92,7 @@
   display: flex;
   align-items: center;
   gap: 1rem;
-  padding: 0.85rem 1rem;
+  padding: 1rem;
   text-decoration: none;
   color: #4b5563;
   border-radius: 0.5rem;
@@ -92,6 +104,17 @@
   width: 100%;
   cursor: pointer;
   position: relative;
+  min-height: 48px; /* Minimum touch target size */
+  font-size: 0.95rem;
+}
+
+/* Pe ecrane mici, mărește padding-ul pentru touch */
+@media (max-width: 768px) {
+  .nav-item {
+    padding: 1.2rem;
+    gap: 0.85rem;
+    min-height: 52px;
+  }
 }
 
 .nav-item:hover {
@@ -105,7 +128,7 @@
   background-color: #f3f4f6;
   color: #1f2937;
   font-weight: 600;
-  border-left: 3px solid #CE1126;
+  border-left: 3px solid #ce1126;
   padding-left: calc(1rem - 3px);
   transform: translateX(3px);
 }
@@ -180,16 +203,36 @@
   }
 }
 
-.side-navigation.open .nav-item:nth-child(1) { animation-delay: 0.05s; }
-.side-navigation.open .nav-item:nth-child(2) { animation-delay: 0.1s; }
-.side-navigation.open .nav-item:nth-child(3) { animation-delay: 0.15s; }
-.side-navigation.open .nav-item:nth-child(4) { animation-delay: 0.2s; }
-.side-navigation.open .nav-item:nth-child(5) { animation-delay: 0.25s; }
-.side-navigation.open .nav-item:nth-child(6) { animation-delay: 0.3s; }
-.side-navigation.open .nav-item:nth-child(7) { animation-delay: 0.35s; }
-.side-navigation.open .nav-item:nth-child(8) { animation-delay: 0.4s; }
-.side-navigation.open .nav-item:nth-child(9) { animation-delay: 0.45s; }
-.side-navigation.open .nav-item:nth-child(10) { animation-delay: 0.5s; }
+.side-navigation.open .nav-item:nth-child(1) {
+  animation-delay: 0.05s;
+}
+.side-navigation.open .nav-item:nth-child(2) {
+  animation-delay: 0.1s;
+}
+.side-navigation.open .nav-item:nth-child(3) {
+  animation-delay: 0.15s;
+}
+.side-navigation.open .nav-item:nth-child(4) {
+  animation-delay: 0.2s;
+}
+.side-navigation.open .nav-item:nth-child(5) {
+  animation-delay: 0.25s;
+}
+.side-navigation.open .nav-item:nth-child(6) {
+  animation-delay: 0.3s;
+}
+.side-navigation.open .nav-item:nth-child(7) {
+  animation-delay: 0.35s;
+}
+.side-navigation.open .nav-item:nth-child(8) {
+  animation-delay: 0.4s;
+}
+.side-navigation.open .nav-item:nth-child(9) {
+  animation-delay: 0.45s;
+}
+.side-navigation.open .nav-item:nth-child(10) {
+  animation-delay: 0.5s;
+}
 
 /* Stiluri pentru dropdown și submeniuri */
 .nav-dropdown {
@@ -212,7 +255,7 @@
   display: flex;
   align-items: center;
   gap: 0.75rem;
-  padding: 0.65rem 0.75rem;
+  padding: 0.8rem 0.75rem;
   text-decoration: none;
   color: #4b5563;
   border-radius: 0.5rem;
@@ -223,6 +266,17 @@
   text-align: left;
   width: 100%;
   cursor: pointer;
+  min-height: 44px; /* Minimum touch target */
+  font-size: 0.9rem;
+}
+
+/* Pe ecrane mici, mărește touch targets */
+@media (max-width: 768px) {
+  .nav-subitem {
+    padding: 1rem 0.75rem;
+    gap: 1rem;
+    min-height: 48px;
+  }
 }
 
 .nav-subitem:hover {
@@ -245,7 +299,7 @@
     right: -85%;
     z-index: 9999;
   }
-  
+
   .side-nav-overlay {
     z-index: 9998;
   }
@@ -257,11 +311,11 @@
     width: 90%;
     right: -90%;
   }
-  
+
   .side-nav-header {
     padding: 1rem;
   }
-  
+
   .nav-item {
     padding: 0.75rem 0.75rem;
   }

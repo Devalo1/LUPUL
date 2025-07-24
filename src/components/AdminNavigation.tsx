@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
 import { MAIN_ADMIN_EMAIL, isUserAdmin } from "../utils/userRoles";
+import "../styles/AdminNavigation.css";
 
 const AdminNavigation: React.FC = () => {
   const location = useLocation();
@@ -75,21 +76,22 @@ const AdminNavigation: React.FC = () => {
   }
 
   return (
-    <div className="bg-white border-b border-gray-200 mb-4 shadow-sm sticky top-0 z-40">
-      <div className="container mx-auto px-4 sm:px-6">
-        <div className="flex items-center justify-between py-3 sm:py-4 border-b border-gray-100">
-          <h1 className="text-lg sm:text-xl font-bold text-gray-800">
+    <div className="bg-white border-b border-gray-200 mb-2 sm:mb-4 shadow-sm sticky top-0 z-40">
+      <div className="container mx-auto px-3 sm:px-4 lg:px-6">
+        <div className="flex items-center justify-between py-2 sm:py-3 lg:py-4 border-b border-gray-100">
+          <h1 className="text-base sm:text-lg lg:text-xl font-bold text-gray-800 truncate">
             <Link to="/admin" className="hover:text-blue-600 transition-colors">
-              Panou Administrativ
+              <span className="hidden sm:inline">Panou Administrativ</span>
+              <span className="sm:hidden">Admin</span>
             </Link>
           </h1>
 
           {user && (
-            <div className="flex items-center">
-              <span className="text-xs sm:text-sm text-gray-500 mr-2 hidden sm:inline">
+            <div className="flex items-center ml-2">
+              <span className="text-xs text-gray-500 mr-1 hidden md:inline">
                 Autentificat ca:
               </span>
-              <span className="text-xs sm:text-sm font-medium truncate max-w-[150px] sm:max-w-none">
+              <span className="text-xs sm:text-sm font-medium truncate max-w-[120px] sm:max-w-[200px]">
                 {user.email}
               </span>
             </div>
@@ -117,7 +119,6 @@ const AdminNavigation: React.FC = () => {
             </svg>
             Dashboard
           </Link>
-
           {/* Secțiunea Produse */}
           <div className="relative group">
             <Link
@@ -176,7 +177,6 @@ const AdminNavigation: React.FC = () => {
               </div>
             </div>
           </div>
-
           {/* Secțiunea Evenimente */}
           <div className="relative group">
             <Link
@@ -218,7 +218,6 @@ const AdminNavigation: React.FC = () => {
               </div>
             </div>
           </div>
-
           {/* Secțiunea Programări */}
           <Link
             to="/admin/appointments"
@@ -242,7 +241,6 @@ const AdminNavigation: React.FC = () => {
             </svg>
             Programări
           </Link>
-
           {/* Secțiunea Utilizatori */}
           <div className="relative group">
             <Link
@@ -280,7 +278,6 @@ const AdminNavigation: React.FC = () => {
               </div>
             </div>
           </div>
-
           {/* Secțiunea Comenzi */}
           <Link
             to="/admin/orders"
@@ -304,7 +301,8 @@ const AdminNavigation: React.FC = () => {
               />
             </svg>
             Comenzi
-          </Link>          {/* Secțiunea Articole/Blog */}
+          </Link>{" "}
+          {/* Secțiunea Articole/Blog */}
           <Link
             to="/admin/articles"
             className={`py-4 px-4 font-medium transition-colors flex items-center ${
@@ -327,7 +325,8 @@ const AdminNavigation: React.FC = () => {
               <path d="M15 7h1a2 2 0 012 2v5.5a1.5 1.5 0 01-3 0V7z" />
             </svg>
             Articole
-          </Link>          {/* Secțiunea Informații Utilizatori */}
+          </Link>{" "}
+          {/* Secțiunea Informații Utilizatori */}
           <Link
             to="/admin/userinfo"
             className={`py-4 px-4 font-medium transition-colors flex items-center ${
@@ -346,7 +345,6 @@ const AdminNavigation: React.FC = () => {
             </svg>
             Info Utilizatori
           </Link>
-
           {/* Secțiunea Setări */}
           <Link
             to="/admin/settings"
@@ -370,7 +368,6 @@ const AdminNavigation: React.FC = () => {
             </svg>
             Setări
           </Link>
-
           {/* Buton de ieșire din admin către site-ul principal */}
           <Link
             to="/"
@@ -393,11 +390,11 @@ const AdminNavigation: React.FC = () => {
         </nav>
         {/* Navigare mobilă */}
         <div className="md:hidden py-2">
-          <div className="space-y-1 max-h-screen overflow-y-auto">
+          <div className="space-y-1 max-h-[calc(100vh-200px)] overflow-y-auto pb-4 admin-nav-mobile">
             {/* Dashboard buton */}
             <Link
               to="/admin"
-              className={`flex items-center justify-between w-full p-4 rounded-lg ${
+              className={`flex items-center justify-between w-full p-3 rounded-lg text-sm admin-nav-button ${
                 isActive("/admin")
                   ? "bg-blue-50 text-blue-600 border-l-4 border-blue-600"
                   : "bg-gray-50 text-gray-700 hover:bg-gray-100"
@@ -406,21 +403,20 @@ const AdminNavigation: React.FC = () => {
               <div className="flex items-center">
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
-                  className="h-6 w-6 mr-4"
+                  className="h-5 w-5 mr-3 flex-shrink-0"
                   viewBox="0 0 20 20"
                   fill="currentColor"
                 >
                   <path d="M10.707 2.293a1 1 0 00-1.414 0l-7 7a1 1 0 001.414 1.414L4 10.414V17a1 1 0 001 1h2a1 1 0 001-1v-2a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 001 1h2a1 1 0 001-1v-6.586l.293.293a1 1 0 001.414-1.414l-7-7z" />
                 </svg>
-                <span className="font-medium text-base">Dashboard</span>
+                <span className="font-medium">Dashboard</span>
               </div>
             </Link>
-
             {/* Produse dropdown */}
             <div className="rounded-lg overflow-hidden bg-gray-50">
               <button
                 onClick={() => toggleDropdown("products")}
-                className={`flex items-center justify-between w-full p-4 ${
+                className={`flex items-center justify-between w-full p-3 text-sm ${
                   isCategoryActive([
                     "/admin/add-product",
                     "/admin/categories",
@@ -434,7 +430,7 @@ const AdminNavigation: React.FC = () => {
                 <div className="flex items-center">
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
-                    className="h-6 w-6 mr-4"
+                    className="h-5 w-5 mr-3 flex-shrink-0"
                     viewBox="0 0 20 20"
                     fill="currentColor"
                   >
@@ -444,10 +440,10 @@ const AdminNavigation: React.FC = () => {
                       clipRule="evenodd"
                     />
                   </svg>
-                  <span className="font-medium text-base">Produse</span>
+                  <span className="font-medium">Produse</span>
                 </div>
                 <svg
-                  className={`w-5 h-5 transition-transform duration-200 ${activeDropdown === "products" ? "rotate-180" : ""}`}
+                  className={`w-4 h-4 transition-transform duration-200 flex-shrink-0 ${activeDropdown === "products" ? "rotate-180" : ""}`}
                   fill="none"
                   viewBox="0 0 24 24"
                   stroke="currentColor"
@@ -464,19 +460,19 @@ const AdminNavigation: React.FC = () => {
                 <div className="bg-white border-t border-gray-200 divide-y divide-gray-100">
                   <Link
                     to="/admin/add-product"
-                    className="block pl-14 pr-4 py-3 text-gray-700 hover:bg-blue-50 hover:text-blue-600 transition-colors duration-200"
+                    className="block pl-10 pr-4 py-2.5 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600 transition-colors duration-200"
                   >
-                    <span className="text-base">Adaugă produs nou</span>
+                    <span>Adaugă produs nou</span>
                   </Link>
                   <Link
                     to="/admin/categories"
-                    className="block pl-14 pr-4 py-3 text-gray-700 hover:bg-blue-50 hover:text-blue-600 transition-colors duration-200"
+                    className="block pl-10 pr-4 py-2.5 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600 transition-colors duration-200"
                   >
-                    <span className="text-base">Categorii produse</span>
+                    <span>Categorii produse</span>
                   </Link>
                   <Link
                     to="/admin/inventory"
-                    className="block pl-14 pr-4 py-3 text-gray-700 hover:bg-blue-50 hover:text-blue-600 transition-colors duration-200"
+                    className="block pl-10 pr-4 py-2.5 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600 transition-colors duration-200"
                   >
                     <span className="text-base">Gestionare stocuri</span>
                   </Link>
@@ -489,7 +485,6 @@ const AdminNavigation: React.FC = () => {
                 </div>
               )}
             </div>
-
             {/* Evenimente dropdown */}
             <div className="rounded-lg overflow-hidden bg-gray-50">
               <button
@@ -571,7 +566,6 @@ const AdminNavigation: React.FC = () => {
                 <span className="font-medium text-base">Programări</span>
               </div>
             </Link>
-
             {/* Utilizatori dropdown */}
             <div className="rounded-lg overflow-hidden bg-gray-50">
               <button
@@ -624,7 +618,6 @@ const AdminNavigation: React.FC = () => {
                 </div>
               )}
             </div>
-
             {/* Comenzi */}
             <Link
               to="/admin/orders"
@@ -650,7 +643,8 @@ const AdminNavigation: React.FC = () => {
                 </svg>
                 <span className="font-medium text-base">Comenzi</span>
               </div>
-            </Link>            {/* Articole */}
+            </Link>{" "}
+            {/* Articole */}
             <Link
               to="/admin/articles"
               className={`flex items-center justify-between w-full p-4 rounded-lg ${
@@ -675,7 +669,8 @@ const AdminNavigation: React.FC = () => {
                 </svg>
                 <span className="font-medium text-base">Articole</span>
               </div>
-            </Link>            {/* Info Utilizatori */}
+            </Link>{" "}
+            {/* Info Utilizatori */}
             <Link
               to="/admin/userinfo"
               className={`flex items-center justify-between w-full p-4 rounded-lg ${
@@ -696,7 +691,6 @@ const AdminNavigation: React.FC = () => {
                 <span className="font-medium text-base">Info Utilizatori</span>
               </div>
             </Link>
-
             {/* Setări */}
             <Link
               to="/admin/settings"
@@ -722,7 +716,6 @@ const AdminNavigation: React.FC = () => {
                 <span className="font-medium text-base">Setări</span>
               </div>
             </Link>
-
             {/* Către site principal */}
             <Link
               to="/"

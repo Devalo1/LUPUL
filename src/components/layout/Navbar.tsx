@@ -19,7 +19,7 @@ import {
 } from "lucide-react";
 
 const Navbar: React.FC = () => {
-  const { user, logout } = useAuth();
+  const { user, logout, isAdmin: contextIsAdmin } = useAuth();
   const { toggleSideNav } = useNavigation();
   const navigate = useNavigate();
   const location = useLocation();
@@ -69,6 +69,13 @@ const Navbar: React.FC = () => {
       setIsAdmin(false);
     }
   }, [user]);
+
+  // Watch for changes in the auth context admin status
+  useEffect(() => {
+    if (contextIsAdmin !== undefined && user?.email) {
+      setIsAdmin(contextIsAdmin);
+    }
+  }, [contextIsAdmin, user?.email]);
 
   useEffect(() => {
     // Închide meniul când se face click în afara lui

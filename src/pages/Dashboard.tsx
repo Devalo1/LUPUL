@@ -56,6 +56,7 @@ const Dashboard: React.FC = () => {
   const [userRole, setUserRole] = useState<UserRole | null>(null);
   const [checkingRole, setCheckingRole] = useState<boolean>(true);
   const { user, loading } = useAuth();
+  const { isAdmin, isSpecialist, isAccountant } = useAuth(); // Extragerea separată pentru dependența useEffect
   const navigate = useNavigate();
   const hasRedirected = useRef(false);
   const [greeting, setGreeting] = useState("");
@@ -158,7 +159,7 @@ const Dashboard: React.FC = () => {
     } else {
       setUserRole(null);
     }
-  }, [user]);
+  }, [user, isAdmin, isSpecialist, isAccountant]); // Adăugat toate rolurile ca dependențe pentru a reactualiza când se schimbă
 
   useEffect(() => {
     const fetchUserEvents = async () => {

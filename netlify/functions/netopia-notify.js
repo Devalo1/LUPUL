@@ -239,8 +239,7 @@ async function processNetopiaNotification(notification) {
 
       try {
         // Apelează funcția dedicată pentru procesarea finalizării comenzii
-        const baseUrl =
-          process.env.URL || "https://lupulsicorbul.com";
+        const baseUrl = process.env.URL || "https://lupulsicorbul.com";
         const response = await fetch(
           `${baseUrl}/.netlify/functions/process-payment-completion`,
           {

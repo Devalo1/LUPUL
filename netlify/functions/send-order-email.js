@@ -6,27 +6,11 @@
 const nodemailer = require("nodemailer");
 
 exports.handler = async (event, context) => {
-  // CORS preflight
-  if (event.httpMethod === "OPTIONS") {
-    return {
-      statusCode: 200,
-      headers: {
-        "Access-Control-Allow-Origin": "*",
-        "Access-Control-Allow-Headers": "Content-Type",
-        "Access-Control-Allow-Methods": "POST,OPTIONS"
-      },
-      body: ""
-    };
-  }
   // Verificăm metoda HTTP
   if (event.httpMethod !== "POST") {
     return {
       statusCode: 405,
-      headers: {
-        "Access-Control-Allow-Origin": "*",
-        "Access-Control-Allow-Headers": "Content-Type"
-      },
-      body: JSON.stringify({ error: "Method not allowed" })
+      body: JSON.stringify({ error: "Method not allowed" }),
     };
   }
 
@@ -37,10 +21,6 @@ exports.handler = async (event, context) => {
     if (!orderData || !orderNumber) {
       return {
         statusCode: 400,
-        headers: {
-          "Access-Control-Allow-Origin": "*",
-          "Access-Control-Allow-Headers": "Content-Type",
-        },
         body: JSON.stringify({ error: "Date comandă lipsă" }),
       };
     }
@@ -50,21 +30,28 @@ exports.handler = async (event, context) => {
       !process.env.SMTP_PASS ||
       process.env.SMTP_PASS === "test-development-mode";
 
-    // Preiau credențiale SMTP din mediu (fără fallback implicit nesigur)
-    const smtpUser = process.env.SMTP_USER;
-    const smtpPass = process.env.SMTP_PASS;
+    // Fallback la credențiale cunoscute pentru producție
+    const smtpUser = process.env.SMTP_USER || "lupulsicorbul@gmail.com";
+    const smtpPass = process.env.SMTP_PASS || "lraf ziyj xyii ssas";
 
     // Dacă avem credențiale reale, nu intrăm în development mode
     const hasRealCredentials =
       smtpUser !== "lupulsicorbul@gmail.com" ||
       (smtpPass && smtpPass !== "test-development-mode");
 
-    // Dacă nu avem credențiale SMTP, simulăm trimiterea emailurilor pentru dezvoltare
-    if (!smtpUser || !smtpPass) {
-      console.log("🔧 SIMULATION: SMTP credentials missing, simulating email send");
-      // Simulare trimitere email client și admin
+    if (isDevelopment && !hasRealCredentials) {
+      // În modul dezvoltare, simulăm trimiterea emailurilor
+      console.log("🔧 MOD DEZVOLTARE: Simulăm trimiterea emailurilor");
       console.log("📧 Email client simulat pentru:", orderData.email);
       console.log("📧 Email admin simulat pentru: lupulsicorbul@gmail.com");
+      console.log("📋 Detalii comandă:", {
+        orderNumber,
+        totalAmount: (totalAmount / 100).toFixed(2) + " RON",
+        client: `${orderData.firstName} ${orderData.lastName}`,
+        phone: orderData.phone,
+        address: `${orderData.address}, ${orderData.city}, ${orderData.county}`,
+      });
+
       return {
         statusCode: 200,
         headers: {
@@ -74,7 +61,8 @@ exports.handler = async (event, context) => {
         },
         body: JSON.stringify({
           success: true,
-          message: "Emailuri simulate (SMTP credentials lipsă)",
+          message: "Emailuri simulate cu succes (modul dezvoltare)",
+          development: true,
           customerEmail: orderData.email,
           adminEmail: "lupulsicorbul@gmail.com",
         }),
@@ -82,12 +70,11 @@ exports.handler = async (event, context) => {
     }
 
     // Configurare transport SMTP (folosește variabile de mediu)
-    // Configurare transport SMTP (folosește variabile fallback definite mai sus)
     const transporter = nodemailer.createTransport({
-      service: "gmail",
+      service: "gmail", // sau alt service SMTP
       auth: {
-        user: smtpUser,
-        pass: smtpPass,
+        user: process.env.SMTP_USER, // lupulsicorbul@gmail.com
+        pass: process.env.SMTP_PASS, // parola de aplicație Gmail
       },
     });
 
@@ -209,7 +196,7 @@ exports.handler = async (event, context) => {
 
     // Trimite email către client
     const customerEmail = {
-      from: smtpUser,
+      from: process.env.SMTP_USER,
       to: orderData.email,
       subject: `Confirmare comandă ${orderNumber} - Lupul și Corbul`,
       html: customerEmailHtml,
@@ -217,7 +204,7 @@ exports.handler = async (event, context) => {
 
     // Trimite email către admin
     const adminEmail = {
-      from: smtpUser,
+      from: process.env.SMTP_USER,
       to: "lupulsicorbul@gmail.com",
       subject: `Comandă nouă: ${orderNumber}`,
       html: adminEmailHtml,

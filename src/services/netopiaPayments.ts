@@ -71,9 +71,10 @@ class NetopiaPayments {
    */
   private isProduction(): boolean {
     return (
-      window.location.hostname !== "localhost" &&
-      !window.location.hostname.includes("netlify") &&
-      !window.location.hostname.includes("preview")
+      window.location.hostname === "lupulsicorbul.com" ||
+      (window.location.hostname !== "localhost" &&
+       !window.location.hostname.includes("netlify") &&
+       !window.location.hostname.includes("preview"))
     );
   }
 
@@ -98,12 +99,15 @@ class NetopiaPayments {
         signature: this.config.posSignature?.substring(0, 10) + "...",
       });
 
-      // În production, dacă nu avem credențiale live configurate, logăm și continuăm în sandbox
+      // În production, dacă nu avem credențiale live configurate, folosim sandbox temporar
       if (this.isProduction() && !this.config.live) {
         console.warn(
-          "🚨 Production environment detected but using sandbox Netopia configuration"
+          "🚨 Production environment detected but no live Netopia credentials configured - using sandbox for testing"
         );
-        // allow sandbox (3DS form) even in production until live credentials are set
+        // Nu mai aruncă eroare, permite sandbox în production pentru testing
+        // throw new Error(
+        //   "Sistemul de plăți cu cardul este în proces de configurare. Vă rugăm să alegeți plata ramburs pentru moment sau să încercați mai târziu."
+        // );
       }
 
       const requestPayload = {
@@ -122,10 +126,8 @@ class NetopiaPayments {
         live: this.config.live,
       });
 
-      // Determine Netopia function endpoint based on environment
-      const netopiaUrl = import.meta.env.DEV
-        ? "/api/netopia-initiate"
-        : "/.netlify/functions/netopia-initiate";
+      // Use API proxy endpoint for Netlify Functions
+      const netopiaUrl = "/api/netopia-initiate";
       const response = await fetch(netopiaUrl, {
         method: "POST",
         headers: { "Content-Type": "application/json; charset=utf-8" },
@@ -327,7 +329,10 @@ class NetopiaPayments {
 
 // Configurația pentru producție și dezvoltare
 const getNetopiaConfig = (): NetopiaConfig => {
-  const isProduction = window.location.hostname !== "localhost";
+  const isProduction = window.location.hostname === "lupulsicorbul.com" ||
+    (window.location.hostname !== "localhost" &&
+     !window.location.hostname.includes("netlify") &&
+     !window.location.hostname.includes("preview"));
 
   // În Vite folosim import.meta.env nu process.env pentru variabile VITE_
   const liveSignature = import.meta.env.VITE_PAYMENT_LIVE_KEY;

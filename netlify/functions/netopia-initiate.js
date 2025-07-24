@@ -225,7 +225,29 @@ async function initiateNetopiaPayment(payload, config) {
       );
     }
 
-    const result = await response.json();
+    // NETOPIA може returna HTML (3DS form) sau JSON
+    const contentType = response.headers.get("content-type") || "";
+    const responseText = await response.text();
+
+    // Dacă returnează HTML (3DS form), returnează HTML-ul direct
+    if (contentType.includes("text/html") || responseText.includes("<html")) {
+      console.log("🔒 NETOPIA returned 3DS HTML form");
+      return {
+        success: true,
+        paymentUrl: responseText,
+        orderId: payload.payment.data.orderId,
+        html: true,
+      };
+    }
+
+    // Altfel încearcă să parseze ca JSON
+    let result;
+    try {
+      result = JSON.parse(responseText);
+    } catch (jsonError) {
+      console.error("NETOPIA response not JSON:", responseText.substring(0, 200));
+      throw new Error("NETOPIA returned invalid response format");
+    }
 
     return {
       success: true,

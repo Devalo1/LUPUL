@@ -350,9 +350,29 @@ exports.handler = async (event, context) => {
       currency: paymentData.currency,
       live: paymentData.live,
       hasLiveSignature: !!process.env.NETOPIA_LIVE_SIGNATURE,
+      liveSignatureValue: process.env.NETOPIA_LIVE_SIGNATURE ? process.env.NETOPIA_LIVE_SIGNATURE.substring(0, 15) + "..." : "NOT SET",
       environment: process.env.NODE_ENV,
       netlifyContext: context.functionName,
     });
+
+    // 🚨 DEBUG: Return environment info instead of processing payment for now
+    if (paymentData.orderId === "DEBUG_ENV") {
+      return {
+        statusCode: 200,
+        headers,
+        body: JSON.stringify({
+          debug: true,
+          environment: {
+            NETOPIA_LIVE_SIGNATURE: process.env.NETOPIA_LIVE_SIGNATURE ? "SET" : "NOT SET",
+            NETOPIA_LIVE_SIGNATURE_VALUE: process.env.NETOPIA_LIVE_SIGNATURE?.substring(0, 15) + "...",
+            NETOPIA_SANDBOX_SIGNATURE: process.env.NETOPIA_SANDBOX_SIGNATURE ? "SET" : "NOT SET",
+            NODE_ENV: process.env.NODE_ENV,
+            URL: process.env.URL,
+            allEnvKeys: Object.keys(process.env).filter(key => key.includes('NETOPIA')),
+          }
+        }),
+      };
+    }
 
     // Validează datele de plată
     validatePaymentData(paymentData);

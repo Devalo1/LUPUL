@@ -98,14 +98,12 @@ class NetopiaPayments {
         signature: this.config.posSignature?.substring(0, 10) + "...",
       });
 
-      // În production, dacă nu avem credențiale live configurate, aruncă eroare explicită
+      // În production, dacă nu avem credențiale live configurate, logăm și continuăm în sandbox
       if (this.isProduction() && !this.config.live) {
         console.warn(
-          "🚨 Production environment detected but no live Netopia credentials configured"
+          "🚨 Production environment detected but using sandbox Netopia configuration"
         );
-        throw new Error(
-          "Sistemul de plăți cu cardul este în proces de configurare. Vă rugăm să alegeți plata ramburs pentru moment sau să încercați mai târziu."
-        );
+        // allow sandbox (3DS form) even in production until live credentials are set
       }
 
       const requestPayload = {
@@ -124,8 +122,10 @@ class NetopiaPayments {
         live: this.config.live,
       });
 
-      // Use API proxy endpoint for Netlify Functions
-      const netopiaUrl = "/api/netopia-initiate";
+      // Determine Netopia function endpoint based on environment
+      const netopiaUrl = import.meta.env.DEV
+        ? "/api/netopia-initiate"
+        : "/.netlify/functions/netopia-initiate";
       const response = await fetch(netopiaUrl, {
         method: "POST",
         headers: { "Content-Type": "application/json; charset=utf-8" },

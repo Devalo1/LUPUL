@@ -1,141 +1,56 @@
 /**
- * Funcție Netlify pentru gestionarea returnului de la NETOPIA
- * Această funcție procesează returnul utilizatorului după plată
+ * Netlify Function to handle NETOPIA return callback
+ * Redirects to SPA route /order-confirmation with appropriate query params
  */
-
-/**
- * Handler principal pentru endpoint-ul de return
- */
-export const handler = async (event, context) => {
-  // Headers CORS
-  const headers = {
-    "Access-Control-Allow-Origin": "*",
-    "Access-Control-Allow-Headers": "Content-Type",
-    "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
-    "Content-Type": "application/json",
-  };
-
-  // Răspunde la preflight OPTIONS request
-  if (event.httpMethod === "OPTIONS") {
-    return {
-      statusCode: 200,
-      headers,
-      body: "",
-    };
-  }
-
+exports.handler = async (event, context) => {
+  console.log("🔙 NETOPIA Return Handler called");
+  console.log("Query params:", event.queryStringParameters, "Method:", event.httpMethod);
   try {
-    // Parse parametrii din query string sau body
+    // Parse parameters from GET or POST
     let params = {};
-
     if (event.httpMethod === "GET") {
       params = event.queryStringParameters || {};
     } else if (event.httpMethod === "POST") {
-      params = JSON.parse(event.body || "{}");
+      try {
+        params = JSON.parse(event.body || "{}");
+      } catch (e) {
+        console.warn("Failed to parse body, falling back to query params:", e);
+        params = event.queryStringParameters || {};
+      }
     }
 
-    const { orderId, paymentId, status, errorCode, errorMessage } = params;
+    // Extract parameters
+    const { orderId, status, paymentId, errorCode, errorMessage } = params;
+    
+    // Build query string
+    const queryParams = new URLSearchParams();
+    if (orderId) queryParams.set("orderId", orderId);
+    if (status) queryParams.set("status", status);
+    if (paymentId) queryParams.set("paymentId", paymentId);
+    if (errorCode) queryParams.set("errorCode", errorCode);
+    if (errorMessage) queryParams.set("errorMessage", errorMessage);
 
-    console.log("NETOPIA return received:", {
-      orderId,
-      paymentId,
-      status,
-      errorCode,
-      errorMessage,
-    });
-
-    // Determină URL-ul de redirecționare bazat pe status
-    let redirectUrl = process.env.URL || "https://lupul-si-corbul.netlify.app";
-
-    switch (status) {
-      case "confirmed":
-      case "success":
-        redirectUrl += "/checkout-success";
-        break;
-
-      case "pending":
-        redirectUrl += "/checkout-success?status=pending";
-        break;
-
-      case "canceled":
-        redirectUrl +=
-          "/checkout?status=canceled&message=" +
-          encodeURIComponent("Plata a fost anulată");
-        break;
-
-      case "failed":
-      case "error":
-        redirectUrl +=
-          "/checkout?status=failed&error=" +
-          encodeURIComponent(
-            errorMessage || "Plata a eșuat. Vă rugăm să încercați din nou."
-          );
-        break;
-
-      default:
-        redirectUrl +=
-          "/checkout?status=unknown&message=" +
-          encodeURIComponent("Status plată necunoscut");
-    }
-
-    // Adaugă orderId la URL pentru tracking
-    if (orderId) {
-      const separator = redirectUrl.includes("?") ? "&" : "?";
-      redirectUrl += `${separator}orderId=${orderId}`;
-    }
-
-    // Pentru GET requests, redirecționează direct
-    if (event.httpMethod === "GET") {
-      return {
-        statusCode: 302,
-        headers: {
-          ...headers,
-          Location: redirectUrl,
-        },
-        body: "",
-      };
-    }
-
-    // Pentru POST requests, returnează JSON cu URL-ul de redirecționare
+    // Redirect to SPA confirmation page
+    const redirectPath = `/order-confirmation?${queryParams.toString()}`;
+    console.log("Redirecting to:", redirectPath);
     return {
-      statusCode: 200,
-      headers,
-      body: JSON.stringify({
-        success: true,
-        redirectUrl,
-        orderId,
-        status,
-        message: "Payment processed successfully",
-      }),
+      statusCode: 302,
+      headers: {
+        "Location": redirectPath,
+        "Cache-Control": "no-cache, no-store, must-revalidate",
+        "Pragma": "no-cache",
+        "Expires": "0"
+      },
+      body: ""
     };
   } catch (error) {
-    console.error("Error processing NETOPIA return:", error);
-
-    // În caz de eroare, redirecționează către pagina de plată cu eroarea
-    const errorUrl =
-      (process.env.URL || "https://lupul-si-corbul.netlify.app") +
-      "/payment?status=error&error=" +
-      encodeURIComponent(error.message);
-
-    if (event.httpMethod === "GET") {
-      return {
-        statusCode: 302,
-        headers: {
-          ...headers,
-          Location: errorUrl,
-        },
-        body: "",
-      };
-    }
-
+    console.error("Error in return handler:", error);
+    // On error, redirect with error status
+    const errorRedirect = `/order-confirmation?status=error&errorMessage=${encodeURIComponent("Error processing return")}`;
     return {
-      statusCode: 500,
-      headers,
-      body: JSON.stringify({
-        error: "Internal server error",
-        message: error.message,
-        redirectUrl: errorUrl,
-      }),
+      statusCode: 302,
+      headers: { "Location": errorRedirect },
+      body: ""
     };
   }
 };

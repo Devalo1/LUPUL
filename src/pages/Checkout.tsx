@@ -7,13 +7,13 @@ import { useAuth } from "../contexts";
 import "../utils/testNetopia.js";
 // import "../utils/netopiaDebug.js"; // removed to avoid process.env reference errors
 
-// Use local Netlify function for order submission via Vite proxy
-const FUNCTION_URL = "/api/send-order-email";
 // Detect development mode (Vite DEV or Netlify Dev port)
 const isDevelopment =
   import.meta.env.DEV ||
   window.location.port === "8888" ||
   window.location.hostname === "localhost";
+// Netlify function URL for order submission
+const FUNCTION_URL = "/.netlify/functions/send-order-email";
 
 const Checkout: React.FC = () => {
   const { items, total, clearCart, shippingCost, finalTotal } = useCart();
@@ -273,9 +273,7 @@ const Checkout: React.FC = () => {
         shippingCost: shippingCost,
       };
 
-      if (isDevelopment) {
-        return await simulateEmailSending();
-      }
+      // Eliminat check pentru isDevelopment - trimitem mereu prin Netlify Function
       // Generate a unique order number for submission
       const orderNumber = `LC-${Date.now()}`;
       const url = FUNCTION_URL;
@@ -452,22 +450,33 @@ const Checkout: React.FC = () => {
             `Comandă ${orderData.orderNumber} - ${items.length} produse`
           );
 
-          const paymentResponse =
-            await netopiaService.initiatePayment(paymentData);
-          // Dacă răspunsul este HTML (3DS), deschidem popup și injectăm form-ul
-          if (paymentResponse.trim().startsWith("<")) {
-            const popup = window.open("", "netopia3ds", "width=400,height=600");
-            if (popup) {
-              popup.document.write(paymentResponse);
-              popup.document.close();
+          // Open popup early to avoid browser blocking
+          const popup = window.open("about:blank", "netopia3ds", "width=400,height=600");
+          try {
+            const paymentResponse = await netopiaService.initiatePayment(paymentData);
+            if (paymentResponse.trim().startsWith("<")) {
+              if (popup) {
+                // Inject target into form and write HTML
+                const htmlWithTarget = paymentResponse.replace(
+                  /<form/i,
+                  "<form target=\"netopia3ds\" " // add space after attribute
+                );
+                popup.document.write(htmlWithTarget);
+                popup.document.close();
+              } else {
+                setError(
+                  "Nu s-a putut deschide fereastra de plată securizată. Te rugăm să permiți pop-up-uri și să încerci din nou."
+                );
+              }
             } else {
-              setError(
-                "Nu s-a putut deschide fereastra de plată securizată. Te rugăm să permiți pop-up-uri și să încerci din nou."
-              );
+              // Close blank popup and redirect
+              if (popup) popup.close();
+              window.location.href = paymentResponse;
             }
-          } else {
-            // Redirect către URL
-            window.location.href = paymentResponse;
+          } catch (err) {
+            // Close popup on error
+            if (popup) popup.close();
+            throw err;
           }
           return;
         } catch (netopiaError) {
@@ -484,12 +493,17 @@ const Checkout: React.FC = () => {
       let result;
 
       if (isDevelopment) {
-        console.log("Mediu de dezvoltare detectat, folosim metoda simulată...");
-        result = await submitOrderWithFirebase();
-        console.log(
-          "⚡ Comandă simulată procesată cu succes în mediul de dezvoltare!"
-        );
-        console.log("👇 Verifică simularea email-ului în consolă");
+        console.log("Mediu de dezvoltare detectat, forțăm trimiterea prin Netlify Function...");
+        // În loc să simulez, forțez trimiterea prin Netlify Function
+        try {
+          console.log("Încercare trimitere comandă prin fetch direct...");
+          result = await submitOrderWithFetch();
+          console.log("Comandă trimisă cu succes prin fetch!");
+        } catch (fetchError) {
+          console.warn("Eroare la trimiterea prin fetch:", fetchError);
+          console.log("Fallback la simulare...");
+          result = await simulateEmailSending();
+        }
       } else {
         try {
           console.log("Încercare trimitere comandă prin fetch direct...");

@@ -98,7 +98,6 @@ async function initiateNetopiaPayment(payload, config) {
       config.signature === process.env.NETOPIA_SANDBOX_SIGNATURE);
       
   if (isSandbox) {
-    // Return raw 3DS HTML form for sandbox mode
     const dataBase64 = Buffer.from(JSON.stringify(payload)).toString("base64");
     const signature = config.signature;
     const formHtml = `<!doctype html><html><body><form id="netopia3ds" action="${config.endpoint}" method="post">\
@@ -106,6 +105,7 @@ async function initiateNetopiaPayment(payload, config) {
       <input type="hidden" name="signature" value="${signature}"/>\
     </form>\
     <script>document.getElementById('netopia3ds').submit();</script></body></html>`;
+    
     return {
       success: true,
       paymentUrl: formHtml,
@@ -378,12 +378,7 @@ exports.handler = async (event, context) => {
     if (result.html && typeof result.paymentUrl === "string") {
       return {
         statusCode: 200,
-        headers: {
-          "Access-Control-Allow-Origin": "*",
-          "Access-Control-Allow-Headers": "Content-Type",
-          "Access-Control-Allow-Methods": "POST,OPTIONS",
-          "Content-Type": "text/html; charset=utf-8"
-        },
+        headers: { "Content-Type": "text/html" },
         body: result.paymentUrl,
       };
     }

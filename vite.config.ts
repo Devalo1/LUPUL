@@ -62,6 +62,11 @@ export default defineConfig(({ mode }) => ({
         changeOrigin: true,
         rewrite: (path) => path.replace(/^\/api\//, "/.netlify/functions/"),
       },
+      // Forward calls to Netlify Functions path when hitting directly in Vite dev
+      "/.netlify/functions": {
+        target: "http://localhost:8888",
+        changeOrigin: true,
+      },
     },
   },
   preview: {

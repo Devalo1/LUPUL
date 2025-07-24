@@ -74,30 +74,27 @@ const PaymentPage: React.FC = () => {
         return;
       }
 
-      // Pentru demo, simulăm plata
-      if (window.location.hostname === "localhost") {
-        // Simulare pentru dezvoltare
-        await new Promise((resolve) => setTimeout(resolve, 2000));
-        alert(
-          `Plată simulată cu succes!\nNumăr comandă: ${paymentData.orderId}\nSumă: ${formData.amount} RON\n\nÎn producție, veți fi redirecționat către NETOPIA.`
-        );
-        navigate("/order-confirmation");
+      // Inițializează plata reală prin NETOPIA (inclusiv în dezvoltare pentru 3DS)
+      const paymentUrl = await netopiaService.initiatePayment(paymentData);
+
+      // Salvează detaliile comenzii în localStorage pentru confirmarea ulterioară
+      localStorage.setItem(
+        "currentOrder",
+        JSON.stringify({
+          orderId: paymentData.orderId,
+          amount: formData.amount,
+          description: formData.description,
+          customerInfo: paymentData.customerInfo,
+        })
+      );
+
+      // Dacă răspunsul este un HTML (3DS form), afișează direct conținutul
+      if (paymentUrl.trim().startsWith("<")) {
+        document.open();
+        document.write(paymentUrl);
+        document.close();
       } else {
-        // Plată reală prin NETOPIA
-        const paymentUrl = await netopiaService.initiatePayment(paymentData);
-
-        // Salvează detaliile comenzii în localStorage pentru confirmarea ulterioară
-        localStorage.setItem(
-          "currentOrder",
-          JSON.stringify({
-            orderId: paymentData.orderId,
-            amount: formData.amount,
-            description: formData.description,
-            customerInfo: paymentData.customerInfo,
-          })
-        );
-
-        // Redirecționează către NETOPIA
+        // În caz contrar, redirecționează către URL-ul primit
         window.location.href = paymentUrl;
       }
     } catch (error) {

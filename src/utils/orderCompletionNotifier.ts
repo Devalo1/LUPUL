@@ -11,8 +11,8 @@ export const sendOrderCompletionNotification = async (
   try {
     console.log("🎉 Trimit notificarea de finalizare pentru comanda:", orderId);
 
-    const response = await fetch(
-      "/.netlify/functions/process-payment-completion",
+    let response = await fetch(
+      "/api/process-payment-completion",
       {
         method: "POST",
         headers: {
@@ -28,7 +28,18 @@ export const sendOrderCompletionNotification = async (
         }),
       }
     );
-
+    // Fallback direct path if API proxy not found
+    if (response.status === 404) {
+      console.warn("API proxy failed, retrying via direct function path");
+      response = await fetch(
+        "/.netlify/functions/process-payment-completion",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ orderId, paymentInfo, orderData }),
+        }
+      );
+    }
     if (response.ok) {
       const result = await response.json();
       console.log("✅ Notificare finalizare trimisă cu succes:", result);

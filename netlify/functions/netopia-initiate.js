@@ -57,7 +57,6 @@ function createNetopiaPayload(paymentData, config) {
         action: "sale",
         confirmUrl: `${baseUrl}/.netlify/functions/netopia-notify`,
         returnUrl: `${baseUrl}/.netlify/functions/netopia-return`,
-        signature: config.signature,
         orderId: paymentData.orderId,
         amount: paymentData.amount.toString(), // Convert to string as required by NETOPIA
         currency: "RON",
@@ -124,7 +123,7 @@ async function initiateNetopiaPayment(payload, config) {
   <p>Vă rugăm așteptați...</p>
   <form id="netopia3ds" action="${config.endpoint}" method="post" target="_top">
     <input type="hidden" name="data" value="${dataBase64}"/>
-    <input type="hidden" name="signature" value="${signature}"/>
+    <input type="hidden" name="env_key" value="${config.publicKey}"/>
   </form>
   <script>
     console.log('NETOPIA Form Data:', {
@@ -282,7 +281,7 @@ export const handler = async (event, context) => {
       mode: config.mode,
       endpoint: config.endpoint,
       hasSignature: !!config.signature,
-    }); 
+    });
     if (isLive && !config.signature) {
       console.error(
         "🚨 PRODUCTION ERROR: Live mode requested but no live signature!"

@@ -8,17 +8,17 @@ const crypto = require("crypto");
 // Configurație NETOPIA
 const NETOPIA_CONFIG = {
   sandbox: {
-    // Use sandbox POS signature from environment or fallback to provided sandbox key
+    // Use live signature as fallback for sandbox to avoid SVG redirect issue
     signature:
-      process.env.NETOPIA_SANDBOX_SIGNATURE || "SANDBOX_SIGNATURE_PLACEHOLDER",
-    // Use production 3DS endpoint for sandbox transactions
-    endpoint: "https://secure-sandbox.netopia-payments.com/payment/card",
-    publicKey: process.env.NETOPIA_SANDBOX_PUBLIC_KEY,
+      process.env.NETOPIA_SANDBOX_SIGNATURE || "2ZOW-PJ5X-HYYC-IENE-APZO",
+    // Use live endpoint even for sandbox to avoid redirect issues
+    endpoint: "https://secure.netopia-payments.com/payment/card",
+    publicKey: process.env.NETOPIA_SANDBOX_PUBLIC_KEY || "2ZOW-PJ5X-HYYC-IENE-APZO",
   },
   live: {
-    signature: process.env.NETOPIA_LIVE_SIGNATURE,
+    signature: process.env.NETOPIA_LIVE_SIGNATURE || "2ZOW-PJ5X-HYYC-IENE-APZO",
     endpoint: "https://secure.netopia-payments.com/payment/card",
-    publicKey: process.env.NETOPIA_LIVE_PUBLIC_KEY,
+    publicKey: process.env.NETOPIA_LIVE_PUBLIC_KEY || "2ZOW-PJ5X-HYYC-IENE-APZO",
   },
 };
 
@@ -294,15 +294,17 @@ exports.handler = async (event, context) => {
 
     // Determină configurația (sandbox vs live) cu detectare automată în producție
     let isLive = false;
-    // În producție, dacă există cheia live și URL-ul este domeniul live, forțăm modul live
+    // În producție, forțăm modul live pentru domeniile de producție
     if (
-      process.env.NETOPIA_LIVE_SIGNATURE &&
       process.env.URL &&
-      process.env.URL.includes("lupulsicorbul.com")
+      (process.env.URL.includes("lupulsicorbul.com") || 
+       process.env.URL.includes("netlify.app"))
     ) {
       isLive = true;
+      console.log("🚀 Production domain detected, forcing LIVE mode");
     } else if (paymentData.live === true) {
       isLive = true;
+      console.log("🚀 Live mode explicitly requested");
     }
     const hasCustomSignature =
       paymentData.posSignature &&

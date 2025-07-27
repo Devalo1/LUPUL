@@ -31,9 +31,9 @@ export const handler = async (event, context) => {
     };
 
     // Determină modul de funcționare
-    const isLive =
-      process.env.NETOPIA_LIVE_SIGNATURE &&
-      process.env.NETOPIA_LIVE_SIGNATURE === "2ZOW-PJ5X-HYYC-IENE-APZO";
+    const isProductionURL = process.env.URL && 
+      (process.env.URL.includes("netlify.app") || process.env.URL.includes("lupulsicorbul.com"));
+    const isLive = isProductionURL; // Force live mode in production
 
     const config = {
       mode: isLive ? "LIVE" : "SANDBOX",

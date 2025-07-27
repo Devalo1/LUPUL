@@ -324,7 +324,7 @@ export const handler = async (event, context) => {
     if (!paymentData.live && baseUrl.includes("localhost")) {
       const amount = payload.payment.data.amount;
       const currency = payload.payment.data.currency;
-      
+
       // If this is a test request (contains TEST- in orderId), return JSON for the test button
       if (paymentData.orderId && paymentData.orderId.includes("TEST-")) {
         return {
@@ -337,11 +337,11 @@ export const handler = async (event, context) => {
             amount: amount,
             currency: currency,
             mode: "test-simulation",
-            paymentUrl: `${baseUrl}/test-simulation-completed`
+            paymentUrl: `${baseUrl}/test-simulation-completed`,
           }),
         };
       }
-      
+
       // Create realistic 3DS simulation HTML for actual payments
       const simulation3DS = `<!doctype html>
 <html lang="ro">
@@ -449,7 +449,7 @@ export const handler = async (event, context) => {
     <div class="content">
       <div class="order-info">
         <strong>Comandă:</strong> ${payload.payment.data.orderId}<br>
-        <strong>Suma:</strong> ${(amount/100).toFixed(2)} ${currency}<br>
+        <strong>Suma:</strong> ${(amount / 100).toFixed(2)} ${currency}<br>
         <strong>Merchant:</strong> Lupul și Corbul
       </div>
       
@@ -544,7 +544,7 @@ export const handler = async (event, context) => {
   </script>
 </body>
 </html>`;
-      
+
       return {
         statusCode: 200,
         headers: { "Content-Type": "text/html" },

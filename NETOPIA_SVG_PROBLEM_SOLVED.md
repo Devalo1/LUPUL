@@ -3,6 +3,7 @@
 ## ❌ PROBLEMA ORIGINALĂ
 
 **Descriere:** Plata cu cardul în producție te redirectă către:
+
 ```
 https://netopia-payments.com/wp-content/uploads/2024/04/card.svg
 ```
@@ -13,7 +14,7 @@ https://netopia-payments.com/wp-content/uploads/2024/04/card.svg
 
 ### Cauze identificate:
 
-1. **Endpoint sandbox incorect**: `secure-sandbox.netopia-payments.com/payment/card` 
+1. **Endpoint sandbox incorect**: `secure-sandbox.netopia-payments.com/payment/card`
 2. **Signature invalid**: `"NETOPIA_SANDBOX_TEST_SIGNATURE"` nu funcționa
 3. **Detectare mediu**: Nu se forța LIVE mode pe `netlify.app`
 4. **Configurație lipsă**: Environment variables LIVE nu erau setate
@@ -30,16 +31,20 @@ https://netopia-payments.com/wp-content/uploads/2024/04/card.svg
 
 ```javascript
 // ÎNAINTE: Doar dacă există environment variables
-if (process.env.NETOPIA_LIVE_SIGNATURE && 
-    process.env.URL && 
-    process.env.URL.includes("lupulsicorbul.com")) {
+if (
+  process.env.NETOPIA_LIVE_SIGNATURE &&
+  process.env.URL &&
+  process.env.URL.includes("lupulsicorbul.com")
+) {
   isLive = true;
 }
 
 // DUPĂ: Forțare pe toate domeniile de producție
-if (process.env.URL &&
-    (process.env.URL.includes("lupulsicorbul.com") || 
-     process.env.URL.includes("netlify.app"))) {
+if (
+  process.env.URL &&
+  (process.env.URL.includes("lupulsicorbul.com") ||
+    process.env.URL.includes("netlify.app"))
+) {
   isLive = true;
   console.log("🚀 Production domain detected, forcing LIVE mode");
 }
@@ -94,6 +99,7 @@ signature: process.env.NETOPIA_SANDBOX_SIGNATURE || "2ZOW-PJ5X-HYYC-IENE-APZO",
 5. **Apasă "Trimite comanda"**
 
 **Rezultat așteptat:**
+
 - ✅ Te redirectează către pagina Netopia 3DS
 - ✅ NU către `https://netopia-payments.com/wp-content/uploads/2024/04/card.svg`
 - ✅ Poți introduce datele cardului pentru procesare

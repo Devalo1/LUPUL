@@ -129,7 +129,7 @@ async function initiateNetopiaPayment(payload, config) {
     console.log('NETOPIA Form Data:', {
       endpoint: '${config.endpoint}',
       dataLength: ${dataBase64.length},
-      signature: '${signature.substring(0, 10)}...'
+      env_key: '${config.publicKey?.substring(0, 10)}...'
     });
     document.getElementById('netopia3ds').submit();
   </script>
@@ -319,19 +319,236 @@ export const handler = async (event, context) => {
     // Creează payload-ul pentru NETOPIA
     const payload = createNetopiaPayload(paymentData, config);
 
-    // Simulation only for local dev (fallback page), otherwise let sandbox HTML form logic handle
+    // Enhanced 3DS simulation for local development
     const baseUrl = process.env.URL || event.headers.origin || "";
     if (!paymentData.live && baseUrl.includes("localhost")) {
       const amount = payload.payment.data.amount;
       const currency = payload.payment.data.currency;
+      
+      // If this is a test request (contains TEST- in orderId), return JSON for the test button
+      if (paymentData.orderId && paymentData.orderId.includes("TEST-")) {
+        return {
+          statusCode: 200,
+          headers,
+          body: JSON.stringify({
+            success: true,
+            message: "Test connection successful",
+            orderId: paymentData.orderId,
+            amount: amount,
+            currency: currency,
+            mode: "test-simulation",
+            paymentUrl: `${baseUrl}/test-simulation-completed`
+          }),
+        };
+      }
+      
+      // Create realistic 3DS simulation HTML for actual payments
+      const simulation3DS = `<!doctype html>
+<html lang="ro">
+<head>
+  <meta charset="UTF-8">
+  <title>NETOPIA 3DS Simulation - Lupul și Corbul</title>
+  <style>
+    body { 
+      font-family: Arial, sans-serif; 
+      background: #f5f5f5; 
+      margin: 0; 
+      padding: 20px; 
+    }
+    .container { 
+      max-width: 500px; 
+      margin: 0 auto; 
+      background: white; 
+      border-radius: 10px; 
+      box-shadow: 0 4px 6px rgba(0,0,0,0.1); 
+      overflow: hidden;
+    }
+    .header { 
+      background: #2563eb; 
+      color: white; 
+      padding: 20px; 
+      text-align: center; 
+    }
+    .content { 
+      padding: 30px; 
+      text-align: center; 
+    }
+    .step { 
+      margin: 20px 0; 
+      padding: 15px; 
+      border-radius: 8px; 
+      display: none; 
+    }
+    .step.active { 
+      display: block; 
+    }
+    .step1 { 
+      background: #dbeafe; 
+      border: 1px solid #3b82f6; 
+    }
+    .step2 { 
+      background: #fef3c7; 
+      border: 1px solid #f59e0b; 
+    }
+    .step3 { 
+      background: #d1fae5; 
+      border: 1px solid #10b981; 
+    }
+    .card-input { 
+      width: 80%; 
+      padding: 10px; 
+      margin: 10px; 
+      border: 1px solid #ccc; 
+      border-radius: 5px; 
+      font-size: 16px;
+    }
+    .btn { 
+      background: #2563eb; 
+      color: white; 
+      padding: 12px 24px; 
+      border: none; 
+      border-radius: 5px; 
+      cursor: pointer; 
+      font-size: 16px; 
+      margin: 10px;
+    }
+    .btn:hover { 
+      background: #1d4ed8; 
+    }
+    .progress { 
+      width: 100%; 
+      height: 4px; 
+      background: #e5e7eb; 
+      margin: 20px 0;
+    }
+    .progress-bar { 
+      height: 100%; 
+      background: #2563eb; 
+      transition: width 0.3s ease; 
+    }
+    .order-info { 
+      background: #f9fafb; 
+      padding: 15px; 
+      border-radius: 8px; 
+      margin: 15px 0; 
+      border-left: 4px solid #2563eb;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h2>🔒 NETOPIA 3DS Secure</h2>
+      <p>Simulare Plată Securizată</p>
+    </div>
+    
+    <div class="progress">
+      <div class="progress-bar" id="progressBar" style="width: 33%"></div>
+    </div>
+    
+    <div class="content">
+      <div class="order-info">
+        <strong>Comandă:</strong> ${payload.payment.data.orderId}<br>
+        <strong>Suma:</strong> ${(amount/100).toFixed(2)} ${currency}<br>
+        <strong>Merchant:</strong> Lupul și Corbul
+      </div>
+      
+      <!-- Step 1: Card Details -->
+      <div class="step step1 active" id="step1">
+        <h3>📱 Pas 1: Verificare Card</h3>
+        <p>Vă rugăm confirmați ultimele 4 cifre ale cardului:</p>
+        <input type="text" class="card-input" placeholder="**** **** **** 1234" maxlength="4" id="cardDigits">
+        <br>
+        <button class="btn" onclick="nextStep(2)">Continuă</button>
+      </div>
+      
+      <!-- Step 2: 3DS Authentication -->
+      <div class="step step2" id="step2">
+        <h3>📲 Pas 2: Autentificare 3DS</h3>
+        <p>Am trimis un cod de verificare prin SMS la numărul:</p>
+        <strong>+40 7XX XXX X78</strong>
+        <br><br>
+        <input type="text" class="card-input" placeholder="Cod SMS (6 cifre)" maxlength="6" id="smsCode">
+        <br>
+        <button class="btn" onclick="nextStep(3)">Verifică Codul</button>
+        <br>
+        <small style="color: #666;">💡 Pentru simulare, introduceți orice cod de 6 cifre</small>
+      </div>
+      
+      <!-- Step 3: Processing -->
+      <div class="step step3" id="step3">
+        <h3>⏳ Pas 3: Procesare Plată</h3>
+        <p>Plata este în curs de procesare...</p>
+        <div style="margin: 20px 0;">
+          <div style="display: inline-block; width: 20px; height: 20px; border: 3px solid #f3f3f3; border-top: 3px solid #2563eb; border-radius: 50%; animation: spin 1s linear infinite;"></div>
+        </div>
+        <p><small>Vă rugăm așteptați, nu închideți această fereastră.</small></p>
+      </div>
+    </div>
+  </div>
+  
+  <style>
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+  </style>
+  
+  <script>
+    let currentStep = 1;
+    
+    function nextStep(step) {
+      // Validate inputs
+      if (step === 2) {
+        const cardDigits = document.getElementById('cardDigits').value;
+        if (cardDigits.length !== 4) {
+          alert('Vă rugăm introduceți ultimele 4 cifre ale cardului');
+          return;
+        }
+      }
+      
+      if (step === 3) {
+        const smsCode = document.getElementById('smsCode').value;
+        if (smsCode.length !== 6) {
+          alert('Vă rugăm introduceți codul SMS de 6 cifre');
+          return;
+        }
+      }
+      
+      // Hide current step
+      document.getElementById('step' + currentStep).classList.remove('active');
+      
+      // Show next step
+      currentStep = step;
+      document.getElementById('step' + currentStep).classList.add('active');
+      
+      // Update progress
+      const progress = (step / 3) * 100;
+      document.getElementById('progressBar').style.width = progress + '%';
+      
+      // Auto-redirect after processing
+      if (step === 3) {
+        setTimeout(function() {
+          // Simulate successful payment redirect
+          window.location.href = '${baseUrl}/order-confirmation?orderId=${payload.payment.data.orderId}&status=success&amount=${amount}&currency=${currency}&simulation=true';
+        }, 3000);
+      }
+    }
+    
+    console.log('NETOPIA 3DS Simulation Started:', {
+      orderId: '${payload.payment.data.orderId}',
+      amount: ${amount},
+      currency: '${currency}',
+      mode: 'simulation'
+    });
+  </script>
+</body>
+</html>`;
+      
       return {
         statusCode: 200,
-        headers,
-        body: JSON.stringify({
-          success: true,
-          paymentUrl: `${baseUrl.replace(/:\d+$/, ":5173")}/payment-simulation?orderId=${payload.payment.data.orderId}&amount=${amount}&currency=${currency}&test=1`,
-          orderId: payload.payment.data.orderId,
-        }),
+        headers: { "Content-Type": "text/html" },
+        body: simulation3DS,
       };
     }
 

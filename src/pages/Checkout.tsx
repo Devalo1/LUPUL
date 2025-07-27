@@ -118,7 +118,7 @@ const Checkout: React.FC = () => {
       console.log("📝 JSON string length:", jsonString.length);
       console.log("📝 JSON string preview:", jsonString.substring(0, 50));
 
-      const response = await fetch("/api/netopia-initiate", {
+      const response = await fetch("/.netlify/functions/netopia-initiate", {
         method: "POST",
         headers: {
           "Content-Type": "application/json; charset=utf-8",

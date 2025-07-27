@@ -31,8 +31,10 @@ export const handler = async (event, context) => {
     };
 
     // Determină modul de funcționare
-    const isProductionURL = process.env.URL && 
-      (process.env.URL.includes("netlify.app") || process.env.URL.includes("lupulsicorbul.com"));
+    const isProductionURL =
+      process.env.URL &&
+      (process.env.URL.includes("netlify.app") ||
+        process.env.URL.includes("lupulsicorbul.com"));
     const isLive = isProductionURL; // Force live mode in production
 
     const config = {

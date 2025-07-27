@@ -3,6 +3,7 @@
 ## ❌ PROBLEMA IDENTIFICATĂ
 
 În producție, plata cu cardul te redirecta către:
+
 ```
 https://netopia-payments.com/wp-content/uploads/2024/04/card.svg
 ```
@@ -23,8 +24,8 @@ https://netopia-payments.com/wp-content/uploads/2024/04/card.svg
 // În producție, forțăm modul live pentru domeniile de producție
 if (
   process.env.URL &&
-  (process.env.URL.includes("lupulsicorbul.com") || 
-   process.env.URL.includes("netlify.app"))
+  (process.env.URL.includes("lupulsicorbul.com") ||
+    process.env.URL.includes("netlify.app"))
 ) {
   isLive = true;
   console.log("🚀 Production domain detected, forcing LIVE mode");
@@ -36,14 +37,17 @@ if (
 ```javascript
 const NETOPIA_CONFIG = {
   sandbox: {
-    signature: process.env.NETOPIA_SANDBOX_SIGNATURE || "2ZOW-PJ5X-HYYC-IENE-APZO",
+    signature:
+      process.env.NETOPIA_SANDBOX_SIGNATURE || "2ZOW-PJ5X-HYYC-IENE-APZO",
     endpoint: "https://secure.netopia-payments.com/payment/card", // ✅ Endpoint LIVE
-    publicKey: process.env.NETOPIA_SANDBOX_PUBLIC_KEY || "2ZOW-PJ5X-HYYC-IENE-APZO",
+    publicKey:
+      process.env.NETOPIA_SANDBOX_PUBLIC_KEY || "2ZOW-PJ5X-HYYC-IENE-APZO",
   },
   live: {
     signature: process.env.NETOPIA_LIVE_SIGNATURE || "2ZOW-PJ5X-HYYC-IENE-APZO",
     endpoint: "https://secure.netopia-payments.com/payment/card",
-    publicKey: process.env.NETOPIA_LIVE_PUBLIC_KEY || "2ZOW-PJ5X-HYYC-IENE-APZO",
+    publicKey:
+      process.env.NETOPIA_LIVE_PUBLIC_KEY || "2ZOW-PJ5X-HYYC-IENE-APZO",
   },
 };
 ```
@@ -58,11 +62,13 @@ const NETOPIA_CONFIG = {
 ### Pas 1: Verifică configurația
 
 Accesează în browser:
+
 ```
 https://lupul-si-corbul.netlify.app/.netlify/functions/netopia-debug
 ```
 
 **Rezultat așteptat:**
+
 ```json
 {
   "netopiaConfig": {
@@ -82,6 +88,7 @@ https://lupul-si-corbul.netlify.app/.netlify/functions/netopia-debug
 5. **Apasă "Trimite comanda"**
 
 **Rezultat așteptat:**
+
 - ✅ Te redirectează către pagina Netopia (nu către SVG)
 - ✅ Apare formularul 3DS pentru introducerea datelor cardului
 - ✅ Nu mai apare "https://netopia-payments.com/wp-content/uploads/2024/04/card.svg"
@@ -99,6 +106,7 @@ https://lupul-si-corbul.netlify.app/.netlify/functions/netopia-debug
 Pentru optimizare completă, poți să:
 
 1. **Configurezi variabilele de mediu LIVE în Netlify:**
+
    ```
    NETOPIA_LIVE_SIGNATURE=your_real_live_signature
    NETOPIA_LIVE_PUBLIC_KEY=your_real_live_public_key

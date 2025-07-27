@@ -13,12 +13,14 @@ const NETOPIA_CONFIG = {
       process.env.NETOPIA_SANDBOX_SIGNATURE || "2ZOW-PJ5X-HYYC-IENE-APZO",
     // Use live endpoint even for sandbox to avoid redirect issues
     endpoint: "https://secure.netopia-payments.com/payment/card",
-    publicKey: process.env.NETOPIA_SANDBOX_PUBLIC_KEY || "2ZOW-PJ5X-HYYC-IENE-APZO",
+    publicKey:
+      process.env.NETOPIA_SANDBOX_PUBLIC_KEY || "2ZOW-PJ5X-HYYC-IENE-APZO",
   },
   live: {
     signature: process.env.NETOPIA_LIVE_SIGNATURE || "2ZOW-PJ5X-HYYC-IENE-APZO",
     endpoint: "https://secure.netopia-payments.com/payment/card",
-    publicKey: process.env.NETOPIA_LIVE_PUBLIC_KEY || "2ZOW-PJ5X-HYYC-IENE-APZO",
+    publicKey:
+      process.env.NETOPIA_LIVE_PUBLIC_KEY || "2ZOW-PJ5X-HYYC-IENE-APZO",
   },
 };
 
@@ -297,8 +299,8 @@ exports.handler = async (event, context) => {
     // În producție, forțăm modul live pentru domeniile de producție
     if (
       process.env.URL &&
-      (process.env.URL.includes("lupulsicorbul.com") || 
-       process.env.URL.includes("netlify.app"))
+      (process.env.URL.includes("lupulsicorbul.com") ||
+        process.env.URL.includes("netlify.app"))
     ) {
       isLive = true;
       console.log("🚀 Production domain detected, forcing LIVE mode");

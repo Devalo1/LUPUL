@@ -71,8 +71,8 @@ class NetopiaPayments {
    */
   private getNetlifyEndpoint(functionName: string): string {
     if (this.isProduction()) {
-      // Use absolute URL in production to avoid path collisions with static assets
-      return `${window.location.origin}/.netlify/functions/${functionName}`;
+      // Use relative path in production - absolute URLs cause routing issues
+      return `/.netlify/functions/${functionName}`;
     }
     // In development, use Vite proxy path
     return `/api/${functionName}`;

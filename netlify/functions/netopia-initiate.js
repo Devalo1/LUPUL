@@ -8,8 +8,8 @@ const crypto = require("crypto");
 // Configurație NETOPIA
 const NETOPIA_CONFIG = {
   sandbox: {
-    // Use sandbox signature from environment (nu mai avem fallback la 2ZOW-PJ5X-HYYC-IENE-APZO)
-    signature: process.env.NETOPIA_SANDBOX_SIGNATURE,
+    // Use sandbox signature from environment or fallback for test orders
+    signature: process.env.NETOPIA_SANDBOX_SIGNATURE || "NETOPIA_SANDBOX_TEST_SIGNATURE",
     // Use production 3DS endpoint for sandbox transactions
     endpoint: "https://secure-sandbox.netopia-payments.com/payment/card",
     publicKey: process.env.NETOPIA_SANDBOX_PUBLIC_KEY,

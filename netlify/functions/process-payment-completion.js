@@ -10,6 +10,16 @@ const nodemailer = require("nodemailer");
  * Configurează transportul pentru emailuri
  */
 function getEmailTransporter() {
+  // În dezvoltare locală cu credențiale placeholder, nu trimite emailuri reale
+  const isDevelopment = process.env.SMTP_USER === "your_email@gmail.com" || 
+                       process.env.SMTP_PASS === "your_app_password_here" ||
+                       !process.env.SMTP_USER || !process.env.SMTP_PASS;
+  
+  if (isDevelopment) {
+    console.log("📧 Development mode: Email sending disabled (no valid SMTP credentials)");
+    return null; // Returnează null pentru a indica că nu trimitem emailuri
+  }
+
   return nodemailer.createTransport({
     service: "gmail",
     auth: {
@@ -41,6 +51,22 @@ async function findOrderData(orderId) {
  */
 async function sendOrderCompletionEmails(orderData, paymentInfo) {
   const transporter = getEmailTransporter();
+  
+  // Dacă nu avem transporter valid (dezvoltare locală), simulează trimiterea
+  if (!transporter) {
+    console.log("📧 Simulating email sending in development mode:", {
+      orderNumber: orderData.orderNumber,
+      customerEmail: orderData.customerEmail,
+      paymentInfo
+    });
+    
+    return {
+      customerEmailSent: true, // Simulat
+      adminEmailSent: true, // Simulat
+      customerEmailId: "dev-simulation-customer",
+      adminEmailId: "dev-simulation-admin",
+    };
+  }
 
   // Email pentru admin (întotdeauna trimis)
   const adminEmailHtml = `

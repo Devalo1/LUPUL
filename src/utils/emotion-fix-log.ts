@@ -53,6 +53,6 @@ export const EMOTION_FIX_INFO = {
   config: {
     file: "vite.config.ts",
     setting:
-      'optimizeDeps: { exclude: ["@emotion/use-insertion-effect-with-fallbacks"] }',
+      "optimizeDeps: { exclude: [\"@emotion/use-insertion-effect-with-fallbacks\"] }",
   },
 };

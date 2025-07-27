@@ -118,7 +118,10 @@ const Checkout: React.FC = () => {
       console.log("📝 JSON string length:", jsonString.length);
       console.log("📝 JSON string preview:", jsonString.substring(0, 50));
 
-      const response = await fetch("/.netlify/functions/netopia-initiate", {
+      const netopiaEndpoint = isDevelopment
+        ? "/api/netopia-initiate"
+        : "/.netlify/functions/netopia-initiate";
+      const response = await fetch(netopiaEndpoint, {
         method: "POST",
         headers: {
           "Content-Type": "application/json; charset=utf-8",
@@ -464,7 +467,7 @@ const Checkout: React.FC = () => {
                 // Inject target into form and write HTML
                 const htmlWithTarget = paymentResponse.replace(
                   /<form/i,
-                  '<form target="netopia3ds" ' // add space after attribute
+                  "<form target=\"netopia3ds\" " // add space after attribute
                 );
                 popup.document.write(htmlWithTarget);
                 popup.document.close();

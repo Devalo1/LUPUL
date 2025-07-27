@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 import { getPersonalizedMedicationRecommendation } from "../utils/medicationRecommendation";
 
 // Test rapid pentru funcția de recomandare personalizată

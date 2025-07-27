@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 // Importăm mai întâi shim-ul pentru React Refresh (Edge compatibility)
 import "./utils/react-refresh-shim";
 

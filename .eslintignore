@@ -1,0 +1,11 @@
+# Ignore Vite plugins and other custom scripts
+plugins/
+
+# Ignore backup files and test files with console logs
+src/main.backup.tsx
+src/tests/testMedicationRecommendation.ts
+
+# Other ignores
+node_modules/
+build/
+dist/

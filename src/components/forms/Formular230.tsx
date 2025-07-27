@@ -193,7 +193,7 @@ const Formular230: React.FC = () => {
 
     const declaratieText = [
       "Prin prezenta, solicit redirecționarea unei cote de până la 3,5% din impozitul",
-      'pe venitul datorat către Asociația "Făuritorii de Destin", în conformitate',
+      "pe venitul datorat către Asociația \"Făuritorii de Destin\", în conformitate",
       "cu prevederile Legii nr. 571/2003 privind Codul fiscal.",
     ];
 

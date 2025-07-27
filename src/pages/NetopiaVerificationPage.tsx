@@ -95,21 +95,21 @@ const NetopiaVerificationPage: React.FC = () => {
               <h3 className="text-lg font-semibold text-gray-700 mb-4 text-center"> Butoane de Test</h3>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
                 <button
-                  onClick={() => window.open('/payment', '_blank')}
+                  onClick={() => window.open("/payment", "_blank")}
                   className="bg-blue-500 text-white py-2 px-4 rounded-lg hover:bg-blue-600"
                 >
                   Test Pagină Plată
                 </button>
                 <button
-                  onClick={() => alert('Test NETOPIA API - Conexiune OK ')}
+                  onClick={() => alert("Test NETOPIA API - Conexiune OK ")}
                   className="bg-green-500 text-white py-2 px-4 rounded-lg hover:bg-green-600"
                 >
                   Test API NETOPIA
                 </button>
                 <button
                   onClick={() => {
-                    console.log('Test SSL Certificate');
-                    alert('Certificat SSL Valid \nDomeniu: lupul-si-corbul.netlify.app');
+                    console.log("Test SSL Certificate");
+                    alert("Certificat SSL Valid \nDomeniu: lupul-si-corbul.netlify.app");
                   }}
                   className="bg-purple-500 text-white py-2 px-4 rounded-lg hover:bg-purple-600"
                 >

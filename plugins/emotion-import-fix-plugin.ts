@@ -1,18 +1,9 @@
+/* eslint-disable */
+// Vite plugin to fix Emotion imports and prevent TDZ issues
 import type { Plugin } from "vite";
-          // Fix pentru variabile locale în scope-ul modulului
-          code = code.replace(
-            /var\s+([a-z])\s*=\s*function\s+([^{]*\{[^}]*\})/g,
-            (match, varName, funcBody) => {
-              return `var ${varName} = (function() {
-  try {
-    return function ${funcBody};
-  } catch(err) {
-    return function() { return function() {}; };
-  }
-})()`;
-            }
-          );in pentru eliminarea completă a erorilor TDZ din Emotion
- * Înlocuiește importurile problematice cu versiuni sigure
+
+/**
+ * Plugin Vite pentru fix importuri Emotion și evitarea erorilor de TDZ
  */
 export function emotionImportFixPlugin(): Plugin {
   return {
@@ -21,12 +12,12 @@ export function emotionImportFixPlugin(): Plugin {
     generateBundle(_options, bundle) {
       Object.keys(bundle).forEach((fileName) => {
         const chunk = bundle[fileName];
-        
+
         if (chunk.type === "chunk" && fileName.includes("emotion")) {
           console.log(`🔧 Fixing imports în: ${fileName}`);
-          
+
           let code = chunk.code;
-          
+
           // Înlocuim importul problematic din emotion-insertion-effect
           code = code.replace(
             /import\s*\{\s*R\s+as\s+e\s*,([^}]*)\}\s*from\s*"([^"]+)"/g,
@@ -45,21 +36,21 @@ var e = (function() {
 import {${rest}} from "${source}"`;
             }
           );
-          
+
           // Fix pentru variabile locale în scope-ul modulului
           code = code.replace(
             /var\s+([a-z])\s*=\s*function\s+[^{]*\{[^}]*\}/g,
             (match, varName) => {
               return `var ${varName} = (function() {
   try {
-    return ${match.replace(/var\s+[a-z]\s*=\s*/, '')};
+    return ${match.replace(/var\s+[a-z]\s*=\s*/, "")};
   } catch(err) {
     return function() { return function() {}; };
   }
 })()`;
             }
           );
-          
+
           // Protecție la începutul fișierului
           code = `
 // === EMOTION TDZ ULTIMATE PROTECTION ===
@@ -77,10 +68,10 @@ import {${rest}} from "${source}"`;
 })();
 
 ${code}`;
-          
+
           chunk.code = code;
         }
       });
-    }
+    },
   };
 }

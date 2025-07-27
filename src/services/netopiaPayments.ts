@@ -70,9 +70,12 @@ class NetopiaPayments {
    * Detectează mediul de rulare pentru endpoint-uri
    */
   private getNetlifyEndpoint(functionName: string): string {
-    return this.isProduction()
-      ? `/.netlify/functions/${functionName}`
-      : `/api/${functionName}`;
+    if (this.isProduction()) {
+      // Use absolute URL in production to avoid path collisions with static assets
+      return `${window.location.origin}/.netlify/functions/${functionName}`;
+    }
+    // In development, use Vite proxy path
+    return `/api/${functionName}`;
   }
   private isProduction(): boolean {
     return (
@@ -131,10 +134,8 @@ class NetopiaPayments {
         live: this.config.live,
       });
 
-      // Use correct endpoint based on environment
-      const netopiaUrl = this.isProduction()
-        ? "/.netlify/functions/netopia-initiate" // Production: direct Netlify Functions path
-        : "/api/netopia-initiate"; // Development: Vite proxy path
+      // Use dynamic endpoint via getNetlifyEndpoint
+      const netopiaUrl = this.getNetlifyEndpoint("netopia-initiate");
 
       console.log("🌐 Netopia endpoint:", netopiaUrl);
 

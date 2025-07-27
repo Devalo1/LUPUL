@@ -14,13 +14,15 @@ const NETOPIA_CONFIG = {
       process.env.NETOPIA_SANDBOX_SIGNATURE || "2ZOW-PJ5X-HYYC-IENE-APZO",
     // Use live endpoint even for sandbox to avoid redirect issues
     endpoint: "https://secure.netopia-payments.com/payment/card",
-    publicKey: process.env.NETOPIA_SANDBOX_PUBLIC_KEY || "2ZOW-PJ5X-HYYC-IENE-APZO",
+    publicKey:
+      process.env.NETOPIA_SANDBOX_PUBLIC_KEY || "2ZOW-PJ5X-HYYC-IENE-APZO",
   },
   live: {
     mode: "live",
     signature: process.env.NETOPIA_LIVE_SIGNATURE || "2ZOW-PJ5X-HYYC-IENE-APZO",
     endpoint: "https://secure.netopia-payments.com/payment/card",
-    publicKey: process.env.NETOPIA_LIVE_PUBLIC_KEY || "2ZOW-PJ5X-HYYC-IENE-APZO",
+    publicKey:
+      process.env.NETOPIA_LIVE_PUBLIC_KEY || "2ZOW-PJ5X-HYYC-IENE-APZO",
   },
 };
 
@@ -270,14 +272,17 @@ export const handler = async (event, context) => {
     // Validează datele de plată
     validatePaymentData(paymentData);
 
+    const isLive = paymentData.live;
+    const hasCustomSignature = !!paymentData.posSignature;
+
     // Forțăm mereu LIVE mode pentru a evita problema cu SVG-ul
-    const config = NETOPIA_CONFIG.live;
+    let config = NETOPIA_CONFIG.live;
     console.log("🚀 Forcing LIVE mode to prevent SVG redirect issue.");
     console.log("🔧 Using configuration:", {
       mode: config.mode,
       endpoint: config.endpoint,
       hasSignature: !!config.signature,
-    });    // 🚨 PRODUCTION DEBUG: Verifică de ce nu folosește LIVE mode
+    }); 
     if (isLive && !config.signature) {
       console.error(
         "🚨 PRODUCTION ERROR: Live mode requested but no live signature!"

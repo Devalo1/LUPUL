@@ -48,7 +48,7 @@ async function checkNetopiaStatus(orderId, config) {
     // Pentru sandbox, simulăm verificarea
     if (config.signature === "2ZOW-PJ5X-HYYC-IENE-APZO") {
       console.log("Live mode: Making real API call to NETOPIA for", orderId);
-      
+
       // Verifică dacă este o comandă de test (LP + caractere random)
       if (orderId.startsWith("LP") && orderId.length > 10) {
         console.log("Test order detected in live mode, using simulation");

@@ -225,7 +225,7 @@ class NetopiaPayments {
         import.meta.env.VITE_PAYMENT_LIVE_KEY;
       const hasRealLiveCredentials =
         Boolean(liveSignature) && liveSignature === "2ZOW-PJ5X-HYYC-IENE-APZO";
-      
+
       // Use correct endpoint based on environment and include live parameter
       const isLive = this.isProduction() && hasRealLiveCredentials;
       const statusUrl = this.isProduction()

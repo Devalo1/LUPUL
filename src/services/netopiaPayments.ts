@@ -350,9 +350,14 @@ const getNetopiaConfig = (): NetopiaConfig => {
       !window.location.hostname.includes("preview"));
 
   // În Vite folosim import.meta.env nu process.env pentru variabile VITE_
-  const liveSignature = import.meta.env.VITE_PAYMENT_LIVE_KEY;
+  // Citim semnături Netopia din variabilele corespunzătoare
+  const liveSignature =
+    import.meta.env.VITE_NETOPIA_SIGNATURE_LIVE ||
+    import.meta.env.VITE_PAYMENT_LIVE_KEY;
   const sandboxSignature =
-    import.meta.env.VITE_PAYMENT_SANDBOX_KEY || "2ZOW-PJ5X-HYYC-IENE-APZO";
+    import.meta.env.VITE_NETOPIA_SIGNATURE_SANDBOX ||
+    import.meta.env.VITE_PAYMENT_SANDBOX_KEY ||
+    "2ZOW-PJ5X-HYYC-IENE-APZO";
 
   // Verificăm dacă avem credențiale live configurate
   // Nota: Pentru NETOPIA, aceeași semnătură poate fi folosită pentru sandbox și live
@@ -384,7 +389,9 @@ const getNetopiaConfig = (): NetopiaConfig => {
       ? "https://secure.netopia-payments.com"
       : "https://secure-sandbox.netopia-payments.com",
     live: Boolean(useLive),
-    publicKey: import.meta.env.VITE_NETOPIA_PUBLIC_KEY,
+    publicKey:
+      import.meta.env.VITE_NETOPIA_PUBLIC_KEY ||
+      import.meta.env.VITE_PAYMENT_PUBLIC_KEY,
   };
 };
 

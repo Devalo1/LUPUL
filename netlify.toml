@@ -1,7 +1,7 @@
 [build]
   # Clean dist, functions, and local dev env files, but keep .env.production for Firebase config
   # Set NODE_ENV=production explicitly for production builds
-  command = "rm -rf dist .env.local .env.development && NODE_ENV=production npm run build"
+  command = "if exist dist rmdir /s /q dist && if exist .env.local del .env.local && if exist .env.development del .env.development && set NODE_ENV=production && npm run build"
   publish = "dist"
   functions = "netlify/functions"
 

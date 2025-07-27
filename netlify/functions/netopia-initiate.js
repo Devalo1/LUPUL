@@ -22,8 +22,12 @@ const NETOPIA_CONFIG = {
     signature: process.env.NETOPIA_LIVE_SIGNATURE,
     endpoint: "https://secure.netopia-payments.com/payment/card",
     publicKey: process.env.NETOPIA_LIVE_PUBLIC_KEY,
-    privateKey: process.env.NETOPIA_LIVE_PRIVATE_KEY,
-    certificate: process.env.NETOPIA_LIVE_CERTIFICATE,
+    privateKey: process.env.NETOPIA_LIVE_PRIVATE_KEY_B64 
+      ? Buffer.from(process.env.NETOPIA_LIVE_PRIVATE_KEY_B64, 'base64').toString('utf-8')
+      : process.env.NETOPIA_LIVE_PRIVATE_KEY,
+    certificate: process.env.NETOPIA_LIVE_CERTIFICATE_B64
+      ? Buffer.from(process.env.NETOPIA_LIVE_CERTIFICATE_B64, 'base64').toString('utf-8')
+      : process.env.NETOPIA_LIVE_CERTIFICATE,
   },
 };
 

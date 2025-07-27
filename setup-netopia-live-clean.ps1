@@ -1,38 +1,38 @@
-# Script PowerShell pentru configurarea credentialelor NETOPIA LIVE in Netlify
-# Acest script seteaza variabilele de environment necesare pentru plati NETOPIA in productie
+# NETOPIA Live Credentials Setup Script
+# Configures Netlify environment variables for NETOPIA Live payments
 
-Write-Host "🚀 Configurare NETOPIA LIVE Credentials pentru Netlify..." -ForegroundColor Green
+Write-Host "Configurare NETOPIA LIVE Credentials pentru Netlify..." -ForegroundColor Green
 
-# Verifica daca Netlify CLI este instalat
+# Check if Netlify CLI is installed
 try {
     $netlifyVersion = netlify --version
-    Write-Host "✅ Netlify CLI detectat: $netlifyVersion" -ForegroundColor Green
+    Write-Host "Netlify CLI detectat: $netlifyVersion" -ForegroundColor Green
 } catch {
-    Write-Host "❌ Netlify CLI nu este instalat. Instaleaza cu: npm install -g netlify-cli" -ForegroundColor Red
+    Write-Host "Netlify CLI nu este instalat. Instaleaza cu: npm install -g netlify-cli" -ForegroundColor Red
     exit 1
 }
 
-# Verifica daca suntem logati in Netlify
+# Check if logged into Netlify
 try {
     $currentUser = netlify status
-    Write-Host "✅ Conectat la Netlify" -ForegroundColor Green
+    Write-Host "Conectat la Netlify" -ForegroundColor Green
 } catch {
-    Write-Host "❌ Nu esti logat in Netlify. Logheaza-te cu: netlify login" -ForegroundColor Red
+    Write-Host "Nu esti logat in Netlify. Logheaza-te cu: netlify login" -ForegroundColor Red
     exit 1
 }
 
-Write-Host "`n📋 Configurare variabile NETOPIA LIVE..." -ForegroundColor Yellow
+Write-Host "Configurare variabile NETOPIA LIVE..." -ForegroundColor Yellow
 
 # NETOPIA Live Signature
-Write-Host "   -> Setare NETOPIA_LIVE_SIGNATURE..." -ForegroundColor Cyan
+Write-Host "Setare NETOPIA_LIVE_SIGNATURE..." -ForegroundColor Cyan
 netlify env:set NETOPIA_LIVE_SIGNATURE "2ZOW-PJ5X-HYYC-IENE-APZO"
 
-# NETOPIA Live Public Key (acelasi cu signature pentru acest merchant)
-Write-Host "   -> Setare NETOPIA_LIVE_PUBLIC_KEY..." -ForegroundColor Cyan
+# NETOPIA Live Public Key
+Write-Host "Setare NETOPIA_LIVE_PUBLIC_KEY..." -ForegroundColor Cyan
 netlify env:set NETOPIA_LIVE_PUBLIC_KEY "2ZOW-PJ5X-HYYC-IENE-APZO"
 
-# NETOPIA Live Private Key (multi-line)
-Write-Host "   -> Setare NETOPIA_LIVE_PRIVATE_KEY..." -ForegroundColor Cyan
+# NETOPIA Live Private Key
+Write-Host "Setare NETOPIA_LIVE_PRIVATE_KEY..." -ForegroundColor Cyan
 $privateKey = @'
 -----BEGIN RSA PRIVATE KEY-----
 MIICXAIBAAKBgQDgvgno9K9M465g14CoKE0aIvKbSqwE3EvKm6NIcVO0ZQ7za08v
@@ -53,7 +53,7 @@ pMG6i1YXb4+4Y9NR0QJBANt0qlS2GsS9S79eWhPkAnw5qxDcOEQeekk5z5jil7yw
 netlify env:set NETOPIA_LIVE_PRIVATE_KEY $privateKey
 
 # NETOPIA Live Certificate
-Write-Host "   -> Setare NETOPIA_LIVE_CERTIFICATE..." -ForegroundColor Cyan
+Write-Host "Setare NETOPIA_LIVE_CERTIFICATE..." -ForegroundColor Cyan
 $certificate = @'
 -----BEGIN CERTIFICATE-----
 MIIC3zCCAkigAwIBAgIBATANBgkqhkiG9w0BAQsFADCBiDELMAkGA1UEBhMCUk8x
@@ -76,28 +76,28 @@ RbUx6W/CU+uFDgDY8CdZ3hZ7kg==
 '@
 netlify env:set NETOPIA_LIVE_CERTIFICATE $certificate
 
-# Frontend Environment Variables (cu prefix VITE_)
-Write-Host "   -> Setare VITE_PAYMENT_LIVE_KEY..." -ForegroundColor Cyan
+# Frontend Environment Variables
+Write-Host "Setare VITE_PAYMENT_LIVE_KEY..." -ForegroundColor Cyan
 netlify env:set VITE_PAYMENT_LIVE_KEY "2ZOW-PJ5X-HYYC-IENE-APZO"
 
-# Variabile de production flag
-Write-Host "   -> Setare NETOPIA_PRODUCTION_MODE..." -ForegroundColor Cyan
+# Production mode flag
+Write-Host "Setare NETOPIA_PRODUCTION_MODE..." -ForegroundColor Cyan
 netlify env:set NETOPIA_PRODUCTION_MODE "true"
 
-Write-Host "`n✅ Configurare completa! Variabilele NETOPIA LIVE au fost setate in Netlify." -ForegroundColor Green
-Write-Host "📝 Variabile configurate:" -ForegroundColor Yellow
-Write-Host "   • NETOPIA_LIVE_SIGNATURE" -ForegroundColor White
-Write-Host "   • NETOPIA_LIVE_PUBLIC_KEY" -ForegroundColor White
-Write-Host "   • NETOPIA_LIVE_PRIVATE_KEY" -ForegroundColor White
-Write-Host "   • NETOPIA_LIVE_CERTIFICATE" -ForegroundColor White
-Write-Host "   • VITE_PAYMENT_LIVE_KEY" -ForegroundColor White
-Write-Host "   • NETOPIA_PRODUCTION_MODE" -ForegroundColor White
+Write-Host "Configurare completa! Variabilele NETOPIA LIVE au fost setate." -ForegroundColor Green
+Write-Host "Variabile configurate:" -ForegroundColor Yellow
+Write-Host "• NETOPIA_LIVE_SIGNATURE" -ForegroundColor White
+Write-Host "• NETOPIA_LIVE_PUBLIC_KEY" -ForegroundColor White
+Write-Host "• NETOPIA_LIVE_PRIVATE_KEY" -ForegroundColor White
+Write-Host "• NETOPIA_LIVE_CERTIFICATE" -ForegroundColor White
+Write-Host "• VITE_PAYMENT_LIVE_KEY" -ForegroundColor White
+Write-Host "• NETOPIA_PRODUCTION_MODE" -ForegroundColor White
 
-Write-Host "`n🔄 Pentru a aplica modificarile, redeploy site-ul cu:" -ForegroundColor Cyan
-Write-Host "   netlify deploy --prod" -ForegroundColor White
+Write-Host "Pentru a aplica modificarile, redeploy site-ul cu:" -ForegroundColor Cyan
+Write-Host "netlify deploy --prod" -ForegroundColor White
 
-Write-Host "`n🔍 Pentru a verifica variabilele setate:" -ForegroundColor Cyan
-Write-Host "   netlify env:list" -ForegroundColor White
+Write-Host "Pentru a verifica variabilele setate:" -ForegroundColor Cyan
+Write-Host "netlify env:list" -ForegroundColor White
 
-Write-Host "`n⚠️  IMPORTANT: Credentialele LIVE sunt acum active!" -ForegroundColor Red
-Write-Host "   Sistemul va procesa plati reale in productie." -ForegroundColor Red
+Write-Host "IMPORTANT: Credentialele LIVE sunt acum active!" -ForegroundColor Red
+Write-Host "Sistemul va procesa plati reale in productie." -ForegroundColor Red

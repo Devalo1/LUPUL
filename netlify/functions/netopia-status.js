@@ -46,7 +46,15 @@ function simulateStatusCheck(orderId) {
 async function checkNetopiaStatus(orderId, config) {
   try {
     // Pentru sandbox, simulăm verificarea
-    if (config.signature !== "2ZOW-PJ5X-HYYC-IENE-APZO") {
+    if (config.signature === "2ZOW-PJ5X-HYYC-IENE-APZO") {
+      console.log("Live mode: Making real API call to NETOPIA for", orderId);
+      
+      // Verifică dacă este o comandă de test (LP + caractere random)
+      if (orderId.startsWith("LP") && orderId.length > 10) {
+        console.log("Test order detected in live mode, using simulation");
+        return simulateStatusCheck(orderId);
+      }
+    } else {
       console.log("Sandbox mode: Simulating status check for", orderId);
       return simulateStatusCheck(orderId);
     }
@@ -144,9 +152,12 @@ export const handler = async (event, context) => {
     }
 
     console.log("Checking NETOPIA status for order:", orderId);
+    console.log("Using live mode:", isLive);
 
     // Determină configurația
     const config = isLive ? NETOPIA_CONFIG.live : NETOPIA_CONFIG.sandbox;
+    console.log("Config signature:", config.signature);
+    console.log("Config endpoint:", config.endpoint);
 
     // Verifică configurația
     if (isLive && !config.signature) {

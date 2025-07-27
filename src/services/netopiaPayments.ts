@@ -219,10 +219,20 @@ class NetopiaPayments {
    */
   async checkPaymentStatus(orderId: string): Promise<any> {
     try {
-      // Use correct endpoint based on environment
+      // Calculate if we have real live credentials
+      const liveSignature =
+        import.meta.env.VITE_NETOPIA_SIGNATURE_LIVE ||
+        import.meta.env.VITE_PAYMENT_LIVE_KEY;
+      const hasRealLiveCredentials =
+        Boolean(liveSignature) && liveSignature === "2ZOW-PJ5X-HYYC-IENE-APZO";
+      
+      // Use correct endpoint based on environment and include live parameter
+      const isLive = this.isProduction() && hasRealLiveCredentials;
       const statusUrl = this.isProduction()
-        ? `/.netlify/functions/netopia-status?orderId=${orderId}` // Production
-        : `/api/netopia-status?orderId=${orderId}`; // Development
+        ? `/.netlify/functions/netopia-status?orderId=${orderId}&live=${isLive}` // Production
+        : `/api/netopia-status?orderId=${orderId}&live=${isLive}`; // Development
+
+      console.log("Checking payment status:", { orderId, isLive, statusUrl });
 
       const response = await fetch(statusUrl, {
         method: "GET",

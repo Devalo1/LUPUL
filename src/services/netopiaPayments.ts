@@ -78,11 +78,12 @@ class NetopiaPayments {
     return `/api/${functionName}`;
   }
   private isProduction(): boolean {
+    const hostname = window.location.hostname;
     return (
-      window.location.hostname === "lupulsicorbul.com" ||
-      (window.location.hostname !== "localhost" &&
-        !window.location.hostname.includes("netlify") &&
-        !window.location.hostname.includes("preview"))
+      hostname === "lupulsicorbul.com" ||
+      (hostname !== "localhost" &&
+        !hostname.includes("netlify") &&
+        !hostname.includes("preview"))
     );
   }
 
@@ -107,15 +108,11 @@ class NetopiaPayments {
         signature: this.config.posSignature?.substring(0, 10) + "...",
       });
 
-      // În production, dacă nu avem credențiale live configurate, folosim sandbox temporar
+      // În production, forțează eroare dacă nu avem credențiale live
       if (this.isProduction() && !this.config.live) {
-        console.warn(
-          "🚨 Production environment detected but no live Netopia credentials configured - using sandbox for testing"
+        throw new Error(
+          "Sistemul de plăți cu cardul este în proces de configurare. Vă rugăm să alegeți plata ramburs pentru moment sau să încercați mai târziu."
         );
-        // Nu mai aruncă eroare, permite sandbox în production pentru testing
-        // throw new Error(
-        //   "Sistemul de plăți cu cardul este în proces de configurare. Vă rugăm să alegeți plata ramburs pentru moment sau să încercați mai târziu."
-        // );
       }
 
       const requestPayload = {

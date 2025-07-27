@@ -319,9 +319,14 @@ export const handler = async (event, context) => {
     // Creează payload-ul pentru NETOPIA
     const payload = createNetopiaPayload(paymentData, config);
 
-    // Enhanced 3DS simulation for local development
+    // Enhanced 3DS simulation for preview environments and localhost
     const baseUrl = process.env.URL || event.headers.origin || "";
-    if (!paymentData.live && baseUrl.includes("localhost")) {
+    const isSimulationEnvironment =
+      baseUrl.includes("localhost") ||
+      baseUrl.includes("127.0.0.1") ||
+      baseUrl.includes(".netlify.app");
+
+    if (!paymentData.live && isSimulationEnvironment) {
       const amount = payload.payment.data.amount;
       const currency = payload.payment.data.currency;
 

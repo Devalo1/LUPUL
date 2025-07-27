@@ -122,8 +122,8 @@ const AIMessengerAdvanced: React.FC = () => {
       try {
         const aiReply = await fetchAIResponse(
           userMessage,
-          assistantProfile,
-          user?.uid
+          user?.uid,
+          assistantProfile
         );
 
         console.log("[AIMessengerAdvanced] ✅ AI response received");

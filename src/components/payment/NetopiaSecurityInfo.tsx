@@ -1,5 +1,4 @@
 import React from "react";
-import NTPLogo from "ntp-logo-react";
 
 /**
  * Componentă pentru afișarea informațiilor de securitate NETOPIA
@@ -27,7 +26,15 @@ const NetopiaSecurityInfo: React.FC<NetopiaSecurityInfoProps> = ({
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-3">
             <div className="bg-white rounded p-2 shadow-sm">
-              <NTPLogo color="#1E40AF" version="horizontal" secret="153287" />
+              <img
+                src="/images/netopia-official-logo.svg"
+                alt="NETOPIA"
+                className="h-6 w-auto object-contain"
+                onError={(e) => {
+                  const target = e.target as HTMLImageElement;
+                  target.src = "/images/NP.svg";
+                }}
+              />
             </div>
             <div>
               <p className="text-sm font-semibold text-blue-900">
@@ -64,7 +71,15 @@ const NetopiaSecurityInfo: React.FC<NetopiaSecurityInfoProps> = ({
       >
         <div className="text-center mb-6">
           <div className="bg-white rounded-lg p-4 shadow-md inline-block mb-4">
-            <NTPLogo color="#1E40AF" version="horizontal" secret="153287" />
+            <img
+              src="/images/netopia-official-logo.svg"
+              alt="NETOPIA"
+              className="h-8 w-auto object-contain"
+              onError={(e) => {
+                const target = e.target as HTMLImageElement;
+                target.src = "/images/NP.svg";
+              }}
+            />
           </div>
           <h3 className="text-xl font-bold text-blue-900 mb-2">
             Plăți 100% Securizate
@@ -202,7 +217,15 @@ const NetopiaSecurityInfo: React.FC<NetopiaSecurityInfoProps> = ({
     >
       <div className="flex items-start space-x-4">
         <div className="bg-white rounded-lg p-3 shadow-sm">
-          <NTPLogo color="#1E40AF" version="horizontal" secret="153287" />
+          <img
+            src="/images/netopia-official-logo.svg"
+            alt="NETOPIA"
+            className="h-6 w-auto object-contain"
+            onError={(e) => {
+              const target = e.target as HTMLImageElement;
+              target.src = "/images/NP.svg";
+            }}
+          />
         </div>
         <div className="flex-1">
           <h4 className="font-semibold text-blue-900 mb-2">

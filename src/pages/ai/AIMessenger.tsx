@@ -26,7 +26,7 @@ const AIMessenger: React.FC = () => {
 
   const [input, setInput] = useState("");
   const [aiTyping, setAiTyping] = useState(false);
-  const [forceUpdate, setForceUpdate] = useState(0);
+  const [_forceUpdate, _setForceUpdate] = useState(0);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   // Auto-scroll to bottom when new messages arrive
@@ -42,21 +42,21 @@ const AIMessenger: React.FC = () => {
         block: "end",
       });
     }, 50);
-  }, [activeConversation?.messages, aiTyping, forceUpdate]);
+  }, [activeConversation?.messages, aiTyping]);
 
   const handleSendMessage = async () => {
     if (!input.trim() || !user?.uid) return;
 
     const userMessage = input.trim();
-    console.log("[AIMessenger] 🚀 ÎNCEPE TRIMITEREA:", userMessage);
-    console.log("[AIMessenger] 📝 Input înainte de clear:", input);
+    console.log("[AIMessenger] 🚀 TRIMITE MESAJ:", userMessage);
 
-    // Clear input BEFORE processing to show immediate feedback
+    // 1. Clear input IMEDIAT pentru feedback vizual instant
     setInput("");
-    console.log("[AIMessenger] ✅ Input cleared, ar trebui să fie gol acum");
+    console.log("[AIMessenger] ✅ Input cleared pentru feedback instant");
 
     try {
       let convId = activeConversation?.id;
+      let isNewConversation = false;
 
       // Create new conversation if none exists
       if (!convId) {
@@ -68,6 +68,7 @@ const AIMessenger: React.FC = () => {
           return;
         }
         setActiveConversationId(convId);
+        isNewConversation = true;
         console.log("[AIMessenger] New conversation created:", convId);
 
         // Wait a bit for conversation to be set as active
@@ -79,7 +80,7 @@ const AIMessenger: React.FC = () => {
         convId
       );
 
-      // Create message object
+      // 2. Create user message object
       const userMsg = {
         id: Date.now().toString(),
         sender: "user" as const,
@@ -89,34 +90,38 @@ const AIMessenger: React.FC = () => {
 
       console.log("[AIMessenger] 📨 Mesaj utilizator creat:", userMsg);
 
-      // Add user message with immediate UI update
+      // 3. Add user message cu afișare INSTANTANEE în UI
       await addMessage(userMsg);
-      console.log("[AIMessenger] ✅ Mesaj utilizator adăugat în context");
+      console.log("[AIMessenger] ✅ Mesaj utilizator afișat INSTANT în UI");
 
-      // Force immediate re-render to show user message
-      setForceUpdate((prev) => prev + 1);
-      console.log("[AIMessenger] 🔄 ForceUpdate triggered");
+      // 4. Force scroll pentru a vedea mesajul nou
+      setTimeout(() => {
+        messagesEndRef.current?.scrollIntoView({
+          behavior: "smooth",
+          block: "end",
+        });
+      }, 50);
 
-      console.log(
-        "[AIMessenger] 🤖 User message added, getting AI response..."
-      );
+      console.log("[AIMessenger] 🤖 Starting AI response processing...");
 
-      // Set typing indicator AFTER user message is visible
+      // 5. Set typing indicator AFTER user message is visible
       setAiTyping(true);
 
       try {
         console.log(
           `[AIMessenger] Calling fetchAIResponse with userId: ${user?.uid}`
         );
-        // Gather full conversation history
+
+        // Gather full conversation history for context
         const historyMessages = activeConversation?.messages.map((msg) => ({
           role: msg.sender === "user" ? "user" : "assistant",
           content: msg.content,
         }));
+
         const aiReply = await fetchAIResponse(
           userMessage,
-          assistantProfile,
           user?.uid,
+          assistantProfile,
           historyMessages
         );
 
@@ -125,26 +130,25 @@ const AIMessenger: React.FC = () => {
           aiReply?.substring(0, 100)
         );
 
-        // Add AI response
+        // 6. Add AI response
         await addMessage({
           id: (Date.now() + 1).toString(),
           sender: "ai",
           content: aiReply,
           timestamp: Timestamp.now(),
         });
+
+        console.log("[AIMessenger] ✅ AI response added to conversation");
       } finally {
         setAiTyping(false);
       }
 
-      console.log("[AIMessenger] AI message added successfully");
+      console.log("[AIMessenger] 🎉 Message exchange completed successfully");
 
-      // Generate title if this is the first exchange and conversation has no subject
-      if (
-        activeConversation &&
-        (!activeConversation.subject || activeConversation.subject === "")
-      ) {
+      // Generate title for new conversations after first message exchange
+      if (isNewConversation) {
         console.log(
-          "[AIMessenger] Generez titlu automat pentru conversația:",
+          "[AIMessenger] 🏷️ Generez titlu automat pentru conversația nouă:",
           convId
         );
 
@@ -321,27 +325,19 @@ const AIMessenger: React.FC = () => {
             </div>
           </div>
 
-          <div
-            className="ai-messenger__messages"
-            key={`messages-${forceUpdate}`}
-          >
+          <div className="ai-messenger__messages">
             {(() => {
-              console.log(
-                "[AIMessenger] Conversation state (forceUpdate=" +
-                  forceUpdate +
-                  "):",
-                {
-                  hasActiveConversation: !!activeConversation,
-                  conversationId: activeConversation?.id,
-                  messagesLength: activeConversation?.messages?.length || 0,
-                  messages:
-                    activeConversation?.messages?.map((m) => ({
-                      id: m.id,
-                      sender: m.sender,
-                      contentPreview: m.content?.substring(0, 30),
-                    })) || [],
-                }
-              );
+              console.log("[AIMessenger] Conversation state:", {
+                hasActiveConversation: !!activeConversation,
+                conversationId: activeConversation?.id,
+                messagesLength: activeConversation?.messages?.length || 0,
+                messages:
+                  activeConversation?.messages?.map((m) => ({
+                    id: m.id,
+                    sender: m.sender,
+                    contentPreview: m.content?.substring(0, 30),
+                  })) || [],
+              });
               return null;
             })()}
 

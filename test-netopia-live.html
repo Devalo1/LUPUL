@@ -1,0 +1,119 @@
+<!doctype html>
+<html lang="ro">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Test NETOPIA Live Payment</title>
+  </head>
+  <body>
+    <h1>Test NETOPIA Live Payment</h1>
+    <button onclick="testPayment()">Test Plată NETOPIA Live</button>
+
+    <div id="result"></div>
+
+    <script>
+      async function testPayment() {
+        console.log("Starting NETOPIA test payment...");
+
+        // Clear any browser cache by adding random parameter
+        const testPaymentData = {
+          orderId:
+            "FRESH" + Date.now() + Math.random().toString(36).substr(2, 9),
+          amount: 100, // 1 RON în bani
+          currency: "RON",
+          description: "Test plată NETOPIA Live - Cache Bypass",
+          customerInfo: {
+            firstName: "Test",
+            lastName: "User",
+            email: "test@example.com",
+            phone: "0712345678",
+            address: "Test Street 1",
+            city: "Bucuresti",
+            county: "Bucuresti",
+            postalCode: "010101",
+          },
+          posSignature: "live.2ZOW-PJ5X-HYYC-IENE-APZO",
+          live: true,
+        };
+
+        try {
+          // Add cache buster to URL
+          const cacheBuster = "?v=" + Date.now();
+          const response = await fetch(
+            "/.netlify/functions/netopia-initiate" + cacheBuster,
+            {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+                "Cache-Control": "no-cache",
+                Pragma: "no-cache",
+              },
+              body: JSON.stringify(testPaymentData),
+            }
+          );
+
+          console.log("Response status:", response.status);
+          console.log("Response headers:", response.headers);
+
+          const contentType = response.headers.get("content-type") || "";
+          const bodyText = await response.text();
+
+          console.log("Content type:", contentType);
+          console.log("Body length:", bodyText.length);
+          console.log("Body preview:", bodyText.substring(0, 500));
+
+          const resultDiv = document.getElementById("result");
+
+          // Enhanced debugging info
+          console.log("🟢 Full response analysis:");
+          console.log("- Status:", response.status);
+          console.log("- Content-Type:", contentType);
+          console.log("- Contains <form:", bodyText.includes("<form"));
+          console.log("- Contains card.svg:", bodyText.includes("card.svg"));
+          console.log("- Contains NETOPIA:", bodyText.includes("NETOPIA"));
+          console.log("- Body length:", bodyText.length);
+
+          if (contentType.includes("text/html") || bodyText.includes("<html")) {
+            resultDiv.innerHTML = `
+                        <h3>✅ Received 3DS HTML Form (SUCCESS!)</h3>
+                        <p><strong>Status:</strong> ${response.status}</p>
+                        <p><strong>Content-Type:</strong> ${contentType}</p>
+                        <p><strong>Contains &lt;form&gt;:</strong> ${bodyText.includes("<form")}</p>
+                        <p><strong>Contains card.svg:</strong> ${bodyText.includes("card.svg")}</p>
+                        <p><strong>Length:</strong> ${bodyText.length} chars</p>
+                        <details>
+                            <summary>View Full Response</summary>
+                            <pre style="max-height:400px;overflow:auto;">${bodyText.substring(0, 2000)}</pre>
+                        </details>
+                    `;
+          } else if (bodyText.includes("card.svg")) {
+            resultDiv.innerHTML = `
+                        <h3>❌ Received SVG redirect (PROBLEM STILL EXISTS)</h3>
+                        <p><strong>Status:</strong> ${response.status}</p>
+                        <p><strong>Content-Type:</strong> ${contentType}</p>
+                        <details>
+                            <summary>View Full Response</summary>
+                            <pre>${bodyText}</pre>
+                        </details>
+                    `;
+          } else {
+            resultDiv.innerHTML = `
+                        <h3>📄 Other response type:</h3>
+                        <p><strong>Status:</strong> ${response.status}</p>
+                        <p><strong>Content-Type:</strong> ${contentType}</p>
+                        <p><strong>Length:</strong> ${bodyText.length} chars</p>
+                        <details>
+                            <summary>View Response</summary>
+                            <pre>${bodyText}</pre>
+                        </details>
+                    `;
+          }
+        } catch (error) {
+          console.error("Test failed:", error);
+          document.getElementById("result").innerHTML =
+            "<h3>❌ Error:</h3><pre>" + error.message + "</pre>";
+        }
+      }
+    </script>
+  </body>
+</html>

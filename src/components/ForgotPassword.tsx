@@ -3,6 +3,7 @@ import { useAuth } from "../hooks/useAuth";
 import { Link } from "react-router-dom";
 import { handleUnknownError } from "../utils/errorTypes";
 import logger from "../utils/logger";
+import { isGoogleAccount } from "../utils/firebaseUserUtils";
 
 const componentLogger = logger.createLogger("ForgotPassword");
 
@@ -15,19 +16,27 @@ const ForgotPassword: React.FC = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
     if (!email.trim()) {
       setError("Vă rugăm introduceți adresa de email");
       return;
     }
-
+    setMessage(null);
+    setError(null);
+    setLoading(true);
     try {
-      setMessage(null);
-      setError(null);
-      setLoading(true);
+      // Verifică dacă emailul este asociat cu Google
+      if (await isGoogleAccount(email)) {
+        setError(
+          "Acest cont este creat cu Google. Folosiți doar autentificarea cu Google, nu resetarea parolei."
+        );
+        setLoading(false);
+        return;
+      }
       await resetPassword(email);
-      setMessage("Verificați email-ul pentru instrucțiuni de resetare a parolei");
-      setEmail(""); // Clear the input field after successful submission
+      setMessage(
+        "Verificați email-ul pentru instrucțiuni de resetare a parolei"
+      );
+      setEmail("");
     } catch (err) {
       const error = handleUnknownError(err);
       if (error.code === "auth/user-not-found") {
@@ -44,10 +53,10 @@ const ForgotPassword: React.FC = () => {
   return (
     <div className="forgot-password-container">
       <h2>Recuperare parolă</h2>
-      
+
       {message && <div className="alert alert-success">{message}</div>}
       {error && <div className="alert alert-error">{error}</div>}
-      
+
       <form onSubmit={handleSubmit}>
         <div className="form-group">
           <label htmlFor="email">Email</label>
@@ -61,11 +70,7 @@ const ForgotPassword: React.FC = () => {
           />
         </div>
 
-        <button 
-          type="submit" 
-          className="btn-primary"
-          disabled={loading}
-        >
+        <button type="submit" className="btn-primary" disabled={loading}>
           {loading ? "Se procesează..." : "Resetează parola"}
         </button>
       </form>

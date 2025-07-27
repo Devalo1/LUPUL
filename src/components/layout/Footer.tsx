@@ -1,6 +1,5 @@
 import React, { useState } from "react";
 import { Link } from "react-router-dom";
-import NTPLogo from "ntp-logo-react";
 
 const Footer: React.FC = () => {
   const currentYear = new Date().getFullYear();
@@ -477,10 +476,14 @@ const Footer: React.FC = () => {
               >
                 {/* NETOPIA Logo oficial conform contractului */}
                 <div className="w-12 h-8 group-hover:scale-105 transition-transform duration-300">
-                  <NTPLogo
-                    color="#1E40AF"
-                    version="horizontal"
-                    secret="153287"
+                  <img
+                    src="/images/netopia-official-logo.svg"
+                    alt="NETOPIA"
+                    className="w-full h-full object-contain"
+                    onError={(e) => {
+                      const target = e.target as HTMLImageElement;
+                      target.src = "/images/NP.svg";
+                    }}
                   />
                 </div>
               </a>

@@ -16,6 +16,7 @@ import {
   getTimeBasedGreeting,
   getContextualSuggestions,
   generatePersonalizedInsights,
+  generateConversationTitle,
   type MoodEntry,
 } from "../utils/advancedAIFeatures";
 
@@ -47,6 +48,19 @@ const AIAssistantWidget: React.FC = () => {
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
   const [aiTyping, setAiTyping] = useState(false);
+
+  // Drag functionality state
+  const [dragging, setDragging] = useState(false);
+  const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
+  const [hasDragged, setHasDragged] = useState(false); // New state to track if we actually dragged
+  const [modalPos, setModalPos] = useState<{ x: number; y: number }>({
+    x: 0,
+    y: 0,
+  });
+  const [modalDimensions, setModalDimensions] = useState({
+    width: 420,
+    height: 600,
+  });
 
   // Enhanced state for modern features
   const [unreadCount, setUnreadCount] = useState(0);
@@ -89,6 +103,140 @@ const AIAssistantWidget: React.FC = () => {
     setIsMinimized(!isMinimized);
   };
 
+  // Drag functionality handlers
+  const calculateOptimalPosition = () => {
+    const viewport = {
+      width: window.innerWidth,
+      height: window.innerHeight,
+    };
+
+    const modal = {
+      width: modalDimensions.width,
+      height: modalDimensions.height,
+    };
+
+    // Mobile positioning - full screen overlay
+    if (viewport.width <= 768) {
+      return {
+        x: 10,
+        y: 20,
+        width: viewport.width - 20,
+        height: viewport.height - 40,
+      };
+    }
+
+    // Desktop positioning - bottom right corner
+    const padding = 20;
+    const preferredX = viewport.width - modal.width - padding;
+    const preferredY = viewport.height - modal.height - padding;
+
+    // Ensure modal stays within viewport bounds
+    const safeX = Math.max(
+      padding,
+      Math.min(preferredX, viewport.width - modal.width - padding)
+    );
+    const safeY = Math.max(
+      padding,
+      Math.min(preferredY, viewport.height - modal.height - padding)
+    );
+
+    return {
+      x: safeX,
+      y: safeY,
+      width: modal.width,
+      height: modal.height,
+    };
+  };
+
+  const handleDragStart = (e: React.MouseEvent | React.TouchEvent) => {
+    // Disable drag on mobile
+    if (window.innerWidth <= 768) return;
+
+    // Prevent the button click when dragging starts
+    e.preventDefault();
+    e.stopPropagation();
+
+    setDragging(true);
+    let clientX = 0,
+      clientY = 0;
+    if ("touches" in e && e.touches.length > 0) {
+      clientX = e.touches[0].clientX;
+      clientY = e.touches[0].clientY;
+    } else if ("clientX" in e) {
+      clientX = e.clientX;
+      clientY = e.clientY;
+    }
+
+    // Check if dragging from floating button or modal header
+    const target = e.currentTarget;
+    const isFloatingButton = target.classList.contains(
+      "ai-modern-widget__button"
+    );
+
+    let rect: DOMRect | undefined;
+    if (isFloatingButton) {
+      // For floating button, use the button's position
+      rect = target.getBoundingClientRect();
+    } else {
+      // For modal header, use modal's position
+      rect = modalRef.current?.getBoundingClientRect();
+    }
+
+    setDragOffset({
+      x: clientX - (rect?.left || 0),
+      y: clientY - (rect?.top || 0),
+    });
+  };
+
+  const handleDrag = useCallback(
+    (e: MouseEvent | TouchEvent) => {
+      if (!dragging) return;
+
+      e.preventDefault(); // Prevent default behavior
+
+      // Mark that we actually dragged (moved)
+      setHasDragged(true);
+
+      let clientX = 0,
+        clientY = 0;
+      if ("touches" in e && e.touches.length > 0) {
+        clientX = e.touches[0].clientX;
+        clientY = e.touches[0].clientY;
+      } else if ("clientX" in e) {
+        clientX = (e as MouseEvent).clientX;
+        clientY = (e as MouseEvent).clientY;
+      }
+
+      // Calculate new position with viewport constraints
+      const newX = clientX - dragOffset.x;
+      const newY = clientY - dragOffset.y;
+
+      const viewport = {
+        width: window.innerWidth,
+        height: window.innerHeight,
+      };
+
+      // Constrain to viewport bounds
+      const constrainedX = Math.max(
+        10,
+        Math.min(newX, viewport.width - modalDimensions.width - 10)
+      );
+      const constrainedY = Math.max(
+        10,
+        Math.min(newY, viewport.height - modalDimensions.height - 10)
+      );
+
+      setModalPos({ x: constrainedX, y: constrainedY });
+    },
+    [dragging, dragOffset, modalDimensions]
+  );
+
+  const handleDragEnd = useCallback(() => {
+    setDragging(false);
+    // Reset drag flag after a small delay to allow click handler to check it
+    setTimeout(() => setHasDragged(false), 10);
+  }, []);
+
   // Auto-scroll to bottom
   const scrollToBottom = useCallback(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -102,6 +250,69 @@ const AIAssistantWidget: React.FC = () => {
     aiTyping,
     scrollToBottom,
   ]);
+
+  // Initialize modal position when opened
+  useEffect(() => {
+    if (open && modalPos.x === 0 && modalPos.y === 0) {
+      const optimalPosition = calculateOptimalPosition();
+      setModalPos({ x: optimalPosition.x, y: optimalPosition.y });
+      setModalDimensions({
+        width: optimalPosition.width,
+        height: optimalPosition.height,
+      });
+    }
+  }, [open, modalPos, calculateOptimalPosition]);
+
+  // Handle drag events
+  useEffect(() => {
+    if (dragging) {
+      window.addEventListener("mousemove", handleDrag);
+      window.addEventListener("mouseup", handleDragEnd);
+      window.addEventListener("touchmove", handleDrag);
+      window.addEventListener("touchend", handleDragEnd);
+    } else {
+      window.removeEventListener("mousemove", handleDrag);
+      window.removeEventListener("mouseup", handleDragEnd);
+      window.removeEventListener("touchmove", handleDrag);
+      window.removeEventListener("touchend", handleDragEnd);
+    }
+    return () => {
+      window.removeEventListener("mousemove", handleDrag);
+      window.removeEventListener("mouseup", handleDragEnd);
+      window.removeEventListener("touchmove", handleDrag);
+      window.removeEventListener("touchend", handleDragEnd);
+    };
+  }, [dragging, dragOffset, modalDimensions]); // Remove handleDrag and handleDragEnd from dependencies
+
+  // Update modal position in CSS
+  useEffect(() => {
+    if (modalRef.current && open) {
+      const modal = modalRef.current;
+      modal.style.setProperty("--modal-x", `${modalPos.x}px`);
+      modal.style.setProperty("--modal-y", `${modalPos.y}px`);
+      modal.style.setProperty("--modal-width", `${modalDimensions.width}px`);
+      modal.style.setProperty("--modal-height", `${modalDimensions.height}px`);
+    }
+
+    // Update floating button position as well
+    const floatingButton = document.querySelector(
+      ".ai-modern-widget__button"
+    ) as HTMLElement;
+    if (floatingButton && modalPos.x !== 0 && modalPos.y !== 0) {
+      // Position the floating button near the modal
+      const buttonX = modalPos.x + modalDimensions.width - 80;
+      const buttonY = modalPos.y + modalDimensions.height - 80;
+
+      floatingButton.style.setProperty(
+        "--button-x",
+        `${Math.max(24, buttonX)}px`
+      );
+      floatingButton.style.setProperty(
+        "--button-y",
+        `${Math.max(24, buttonY)}px`
+      );
+    }
+  }, [modalPos, modalDimensions, open]);
 
   // Handle input changes with auto-resize
   const handleInputChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
@@ -198,8 +409,8 @@ const AIAssistantWidget: React.FC = () => {
 
         const aiReply = await fetchAIResponseSafe(
           userMessage,
-          assistantProfile,
-          user?.uid
+          user?.uid,
+          assistantProfile
         );
 
         console.log(`[AIWidget] AI reply received: ${aiReply.slice(0, 50)}...`);
@@ -215,6 +426,50 @@ const AIAssistantWidget: React.FC = () => {
           },
           user.uid
         );
+
+        // Generate automatic title if this is the first exchange
+        if (
+          activeConversation &&
+          (activeConversation.subject === "Conversație nouă" ||
+            activeConversation.subject === "" ||
+            activeConversation.subject?.startsWith("Chat "))
+        ) {
+          // Check if this was the first user message (conversation should have had 0 messages before)
+          const conversationMessages = activeConversation.messages || [];
+          const wasFirstMessage = conversationMessages.length === 0;
+
+          console.log("[AIWidget] Checking for auto-title generation:", {
+            subject: activeConversation.subject,
+            messageCount: conversationMessages.length,
+            wasFirstMessage,
+            conversationId: conversationId,
+          });
+
+          if (wasFirstMessage) {
+            console.log(
+              "[AIWidget] Generating automatic title for conversation"
+            );
+
+            try {
+              const autoTitle = await generateConversationTitle(
+                userMessage,
+                aiReply
+              );
+              console.log("[AIWidget] Generated title:", autoTitle);
+
+              // Update conversation title
+              await renameConversation(conversationId, autoTitle);
+              console.log(
+                "[AIWidget] Conversation title updated automatically"
+              );
+            } catch (error) {
+              console.error(
+                "[AIWidget] Error generating automatic title:",
+                error
+              );
+            }
+          }
+        }
 
         // Refresh the conversation in the context
         await refreshConversations();
@@ -305,6 +560,11 @@ const AIAssistantWidget: React.FC = () => {
 
   // Handle modal toggle
   const toggleModal = () => {
+    // Don't toggle if we just finished dragging
+    if (hasDragged) {
+      return;
+    }
+
     setOpen(!open);
     if (!open) {
       setUnreadCount(0);
@@ -489,7 +749,7 @@ const AIAssistantWidget: React.FC = () => {
   useEffect(() => {
     if (
       activeConversation?.messages &&
-      activeConversation.messages.length > 0
+      activeConversation.messages.length > 1
     ) {
       const lastUserMessage = activeConversation.messages
         .filter((msg) => msg.sender === "user")
@@ -535,6 +795,8 @@ const AIAssistantWidget: React.FC = () => {
       <button
         className="ai-modern-widget__button"
         onClick={toggleModal}
+        onMouseDown={handleDragStart}
+        onTouchStart={handleDragStart}
         title={`Chat cu ${assistantName}`}
       >
         <div className="ai-modern-widget__button-content">
@@ -564,7 +826,11 @@ const AIAssistantWidget: React.FC = () => {
             ref={modalRef}
           >
             {/* Header */}
-            <div className="ai-modern-widget__modal-header">
+            <div
+              className={`ai-modern-widget__modal-header ${dragging ? "dragging" : ""}`}
+              onMouseDown={handleDragStart}
+              onTouchStart={handleDragStart}
+            >
               <div className="ai-modern-widget__modal-title">
                 <button
                   className="ai-modern-widget__conversations-toggle"
@@ -791,33 +1057,31 @@ const AIAssistantWidget: React.FC = () => {
                     </div>
                   )}
 
-                  {/* Contextual Suggestions */}
-                  {contextualSuggestions.length > 0 &&
-                    activeConversation?.messages &&
-                    activeConversation.messages.length > 0 && (
-                      <div className="ai-modern-widget__suggestions">
-                        <div className="ai-modern-widget__suggestions-title">
-                          💡 Sugestii:
-                        </div>
-                        {contextualSuggestions
-                          .slice(0, 3)
-                          .map((suggestion, index) => (
-                            <button
-                              key={index}
-                              className="ai-modern-widget__suggestion"
-                              onClick={() => setInput(suggestion)}
-                            >
-                              {suggestion}
-                            </button>
-                          ))}
-                      </div>
-                    )}
-
                   <div ref={messagesEndRef} />
                 </div>
 
                 {/* Input Area */}
                 <div className="ai-modern-widget__input-container">
+                  {/* Contextual Suggestions - moved here for better visibility */}
+                  {contextualSuggestions.length > 0 && (
+                    <div className="ai-modern-widget__suggestions">
+                      <div className="ai-modern-widget__suggestions-title">
+                        💡 Sugestii:
+                      </div>
+                      {contextualSuggestions
+                        .slice(0, 3)
+                        .map((suggestion, index) => (
+                          <button
+                            key={index}
+                            className="ai-modern-widget__suggestion"
+                            onClick={() => setInput(suggestion)}
+                          >
+                            {suggestion}
+                          </button>
+                        ))}
+                    </div>
+                  )}
+
                   {/* Quick Actions */}
                   {(!activeConversation?.messages?.length ||
                     activeConversation.messages.length < 2) && (

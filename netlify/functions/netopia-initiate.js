@@ -4,6 +4,10 @@
  */
 
 import crypto from "crypto";
+import {
+  NETOPIA_LIVE_PRIVATE_KEY,
+  NETOPIA_LIVE_CERTIFICATE,
+} from "./netopia-credentials.js";
 
 // Configurație NETOPIA
 const NETOPIA_CONFIG = {
@@ -11,23 +15,30 @@ const NETOPIA_CONFIG = {
     mode: "sandbox",
     // Use live signature as fallback for sandbox to avoid SVG redirect issue
     signature:
-      process.env.NETOPIA_SANDBOX_SIGNATURE || "2ZOW-PJ5X-HYYC-IENE-APZO",
+      process.env.NETOPIA_SANDBOX_SIGNATURE ||
+      process.env.VITE_NETOPIA_SIGNATURE_SANDBOX ||
+      "2ZOW-PJ5X-HYYC-IENE-APZO",
     // Use live endpoint even for sandbox to avoid redirect issues
     endpoint: "https://secure.netopia-payments.com/payment/card",
     publicKey:
-      process.env.NETOPIA_SANDBOX_PUBLIC_KEY || "2ZOW-PJ5X-HYYC-IENE-APZO",
+      process.env.NETOPIA_SANDBOX_PUBLIC_KEY ||
+      process.env.VITE_NETOPIA_PUBLIC_KEY ||
+      "2ZOW-PJ5X-HYYC-IENE-APZO",
   },
   live: {
     mode: "live",
-    signature: process.env.NETOPIA_LIVE_SIGNATURE,
+    // First try environment variables, then fallback to hardcoded values
+    signature:
+      process.env.NETOPIA_LIVE_SIGNATURE ||
+      process.env.VITE_NETOPIA_SIGNATURE_LIVE ||
+      "2ZOW-PJ5X-HYYC-IENE-APZO",
     endpoint: "https://secure.netopia-payments.com/payment/card",
-    publicKey: process.env.NETOPIA_LIVE_PUBLIC_KEY,
-    privateKey: process.env.NETOPIA_LIVE_PRIVATE_KEY_B64 
-      ? Buffer.from(process.env.NETOPIA_LIVE_PRIVATE_KEY_B64, 'base64').toString('utf-8')
-      : process.env.NETOPIA_LIVE_PRIVATE_KEY,
-    certificate: process.env.NETOPIA_LIVE_CERTIFICATE_B64
-      ? Buffer.from(process.env.NETOPIA_LIVE_CERTIFICATE_B64, 'base64').toString('utf-8')
-      : process.env.NETOPIA_LIVE_CERTIFICATE,
+    publicKey:
+      process.env.NETOPIA_LIVE_PUBLIC_KEY ||
+      process.env.VITE_NETOPIA_PUBLIC_KEY ||
+      "2ZOW-PJ5X-HYYC-IENE-APZO",
+    privateKey: NETOPIA_LIVE_PRIVATE_KEY,
+    certificate: NETOPIA_LIVE_CERTIFICATE,
   },
 };
 
@@ -114,6 +125,12 @@ async function initiateNetopiaPayment(payload, config) {
     dataHash: dataHash.substring(0, 32) + "...",
     payloadOrderId: payload.payment.data.orderId,
     payloadAmount: payload.payment.data.amount,
+    payloadStructure: {
+      hasConfig: !!payload.config,
+      hasPayment: !!payload.payment,
+      hasPaymentData: !!payload.payment?.data,
+      paymentDataKeys: Object.keys(payload.payment?.data || {}),
+    },
   });
 
   const formHtml = `<!doctype html>
@@ -128,13 +145,13 @@ async function initiateNetopiaPayment(payload, config) {
   <p>Vă rugăm așteptați...</p>
   <form id="netopia3ds" action="${config.endpoint}" method="post" target="_top">
     <input type="hidden" name="data" value="${dataBase64}"/>
-    <input type="hidden" name="env_key" value="${config.publicKey}"/>
+    <input type="hidden" name="signature" value="${config.signature}"/>
   </form>
   <script>
     console.log('NETOPIA Form Data:', {
       endpoint: '${config.endpoint}',
       dataLength: ${dataBase64.length},
-      env_key: '${config.publicKey?.substring(0, 10)}...'
+      signature: '${config.signature?.substring(0, 10)}...'
     });
     document.getElementById('netopia3ds').submit();
   </script>
@@ -268,9 +285,32 @@ export const handler = async (event, context) => {
       amount: paymentData.amount,
       currency: paymentData.currency,
       live: paymentData.live,
-      hasLiveSignature: !!process.env.NETOPIA_LIVE_SIGNATURE,
+      hasLiveCredentials: !!(
+        NETOPIA_LIVE_PRIVATE_KEY && NETOPIA_LIVE_CERTIFICATE
+      ),
       environment: process.env.NODE_ENV,
       netlifyContext: context.functionName,
+      availableEnvVars: {
+        NETOPIA_LIVE_SIGNATURE: process.env.NETOPIA_LIVE_SIGNATURE
+          ? `SET (${process.env.NETOPIA_LIVE_SIGNATURE.substring(0, 10)}...)`
+          : "MISSING",
+        VITE_NETOPIA_SIGNATURE_LIVE: process.env.VITE_NETOPIA_SIGNATURE_LIVE
+          ? `SET (${process.env.VITE_NETOPIA_SIGNATURE_LIVE.substring(0, 10)}...)`
+          : "MISSING",
+        NETOPIA_LIVE_PUBLIC_KEY: process.env.NETOPIA_LIVE_PUBLIC_KEY
+          ? "SET"
+          : "MISSING",
+        VITE_NETOPIA_PUBLIC_KEY: process.env.VITE_NETOPIA_PUBLIC_KEY
+          ? "SET"
+          : "MISSING",
+        NETOPIA_SANDBOX_SIGNATURE: process.env.NETOPIA_SANDBOX_SIGNATURE
+          ? "SET"
+          : "MISSING",
+        VITE_NETOPIA_SIGNATURE_SANDBOX: process.env
+          .VITE_NETOPIA_SIGNATURE_SANDBOX
+          ? "SET"
+          : "MISSING",
+      },
     });
 
     // Validează datele de plată
@@ -279,16 +319,20 @@ export const handler = async (event, context) => {
     const isLive = paymentData.live;
     const hasCustomSignature = !!paymentData.posSignature;
     const hasLiveCredentials = !!(
-      process.env.NETOPIA_LIVE_SIGNATURE &&
-      process.env.NETOPIA_LIVE_PUBLIC_KEY &&
-      process.env.NETOPIA_LIVE_PRIVATE_KEY
+      (process.env.NETOPIA_LIVE_SIGNATURE ||
+        process.env.VITE_NETOPIA_SIGNATURE_LIVE) &&
+      NETOPIA_LIVE_PRIVATE_KEY &&
+      NETOPIA_LIVE_CERTIFICATE
     );
 
     // Folosim LIVE mode dacă avem credențiale configurate sau dacă e explicit cerut
     let config;
     if (isLive && hasLiveCredentials) {
       config = NETOPIA_CONFIG.live;
-      console.log("🚀 Using LIVE NETOPIA credentials for production payment.");
+      console.log(
+        "🚀 Using LIVE NETOPIA credentials for production payment with signature:",
+        config.signature?.substring(0, 10) + "..."
+      );
     } else if (!isLive || !hasLiveCredentials) {
       // Fallback la configurație sandbox pentru development/testing
       config = NETOPIA_CONFIG.sandbox;
@@ -310,13 +354,21 @@ export const handler = async (event, context) => {
       );
       console.error("Environment check:", {
         NETOPIA_LIVE_SIGNATURE: process.env.NETOPIA_LIVE_SIGNATURE
-          ? `SET (${process.env.NETOPIA_LIVE_SIGNATURE.length} chars)`
+          ? `SET (${process.env.NETOPIA_LIVE_SIGNATURE.substring(0, 10)}...)`
+          : "MISSING",
+        VITE_NETOPIA_SIGNATURE_LIVE: process.env.VITE_NETOPIA_SIGNATURE_LIVE
+          ? `SET (${process.env.VITE_NETOPIA_SIGNATURE_LIVE.substring(0, 10)}...)`
           : "MISSING",
         NETOPIA_LIVE_PUBLIC_KEY: process.env.NETOPIA_LIVE_PUBLIC_KEY
           ? "SET"
           : "MISSING",
-        NETOPIA_LIVE_PRIVATE_KEY: process.env.NETOPIA_LIVE_PRIVATE_KEY
+        VITE_NETOPIA_PUBLIC_KEY: process.env.VITE_NETOPIA_PUBLIC_KEY
           ? "SET"
+          : "MISSING",
+        NETOPIA_LIVE_PRIVATE_KEY: NETOPIA_LIVE_PRIVATE_KEY ? "SET" : "MISSING",
+        NETOPIA_LIVE_CERTIFICATE: NETOPIA_LIVE_CERTIFICATE ? "SET" : "MISSING",
+        configSignature: config.signature
+          ? `SET (${config.signature.substring(0, 10)}...)`
           : "MISSING",
         NODE_ENV: process.env.NODE_ENV,
         URL: process.env.URL,

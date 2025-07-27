@@ -1,0 +1,206 @@
+<!doctype html>
+<html lang="ro">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Test Fix Contrast Input AI Messenger</title>
+    <style>
+      body {
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        margin: 0;
+        padding: 20px;
+        min-height: 100vh;
+      }
+
+      .test-container {
+        max-width: 800px;
+        margin: 0 auto;
+        background: white;
+        border-radius: 20px;
+        padding: 30px;
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+      }
+
+      .test-title {
+        text-align: center;
+        color: #333;
+        margin-bottom: 30px;
+      }
+
+      .status-indicator {
+        padding: 15px;
+        border-radius: 10px;
+        margin: 15px 0;
+        font-weight: 500;
+      }
+
+      .status-success {
+        background: #ecfdf5;
+        color: #059669;
+        border: 1px solid #a7f3d0;
+      }
+
+      .status-error {
+        background: #fef2f2;
+        color: #dc2626;
+        border: 1px solid #fecaca;
+      }
+
+      .status-info {
+        background: #eff6ff;
+        color: #2563eb;
+        border: 1px solid #93c5fd;
+      }
+
+      /* Stiluri care simulează problema originală */
+      .input-problematic {
+        width: 100%;
+        padding: 12px 16px;
+        border: 1px solid #d1d5db;
+        border-radius: 12px;
+        font-size: 14px;
+        margin: 10px 0;
+        background: transparent;
+        /* PROBLEMA: Fără culoare specificată pentru text */
+      }
+
+      /* Stiluri corectate */
+      .input-fixed {
+        width: 100%;
+        padding: 12px 16px;
+        border: 1px solid #d1d5db;
+        border-radius: 12px;
+        font-size: 14px;
+        margin: 10px 0;
+        background: transparent;
+        color: #1f2937 !important; /* FIX: Culoare text specificată */
+      }
+
+      .input-fixed::placeholder {
+        color: #9ca3af !important; /* FIX: Culoare placeholder specificată */
+      }
+
+      /* Container cu fundal alb pentru test */
+      .white-background {
+        background: white;
+        padding: 20px;
+        border-radius: 8px;
+        margin: 20px 0;
+      }
+
+      /* Container cu fundal gri pentru test */
+      .gray-background {
+        background: #f3f4f6;
+        padding: 20px;
+        border-radius: 8px;
+        margin: 20px 0;
+      }
+
+      .test-section {
+        margin: 30px 0;
+        padding: 20px;
+        border: 2px solid #e5e7eb;
+        border-radius: 12px;
+      }
+
+      .test-section h3 {
+        margin-top: 0;
+        color: #374151;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="test-container">
+      <h1 class="test-title">🔧 Test Fix: Contrast Input AI Messenger</h1>
+
+      <div class="status-indicator status-error">
+        ❌ <strong>Problema Identificată:</strong> Text alb pe fundal alb în
+        input-ul AI Messenger
+      </div>
+
+      <div class="status-indicator status-success">
+        ✅ <strong>Fix Implementat:</strong> Culoare text forțată cu !important
+        pentru vizibilitate
+      </div>
+
+      <div class="test-section">
+        <h3>🧪 Test 1: Input Problematic (Înainte de Fix)</h3>
+        <div class="white-background">
+          <label>Input fără culoare specificată pe fundal alb:</label>
+          <input
+            type="text"
+            class="input-problematic"
+            placeholder="Acest text ar trebui să fie greu vizibil..."
+            value="Text aproape invizibil"
+          />
+        </div>
+        <div class="status-indicator status-error">
+          ⚠️ <strong>Rezultat:</strong> Textul este greu de văzut pe fundal alb
+        </div>
+      </div>
+
+      <div class="test-section">
+        <h3>✅ Test 2: Input Corectat (După Fix)</h3>
+        <div class="white-background">
+          <label>Input cu culoare text forțată pe fundal alb:</label>
+          <input
+            type="text"
+            class="input-fixed"
+            placeholder="Acest text este vizibil!"
+            value="Text perfect vizibil"
+          />
+        </div>
+        <div class="gray-background">
+          <label>Același input pe fundal gri pentru comparație:</label>
+          <input
+            type="text"
+            class="input-fixed"
+            placeholder="Vizibil și pe gri!"
+            value="Text perfect vizibil"
+          />
+        </div>
+        <div class="status-indicator status-success">
+          ✅ <strong>Rezultat:</strong> Textul este perfect vizibil pe orice
+          fundal
+        </div>
+      </div>
+
+      <div class="test-section">
+        <h3>🎯 Fix-ul Implementat în AIMessenger.css</h3>
+        <div class="status-indicator status-info">
+          <strong>Modificări CSS aplicate:</strong><br /><br />
+          <code
+            style="background: #f3f4f6; padding: 2px 6px; border-radius: 4px"
+          >
+            .ai-messenger__input {<br />
+            &nbsp;&nbsp;color: #1f2937 !important; /* Text color forțat */<br />
+            }<br /><br />
+            .ai-messenger__input::placeholder {<br />
+            &nbsp;&nbsp;color: #9ca3af !important; /* Placeholder color */<br />
+            }
+          </code>
+        </div>
+      </div>
+
+      <div class="test-section">
+        <h3>🔍 Verificare în AI Messenger</h3>
+        <div class="status-indicator status-info">
+          <strong>Pași de testare:</strong><br />
+          1. Mergi la
+          <a href="http://localhost:5173/ai-messenger" target="_blank"
+            >http://localhost:5173/ai-messenger</a
+          ><br />
+          2. Încearcă să scrii în input-ul de chat<br />
+          3. Textul trebuie să fie vizibil cu culoare gri închis<br />
+          4. Placeholder-ul trebuie să fie vizibil cu culoare gri deschis
+        </div>
+      </div>
+
+      <div class="status-indicator status-success">
+        ✅ <strong>Status Fix:</strong> Implementat și gata pentru testare în AI
+        Messenger real
+      </div>
+    </div>
+  </body>
+</html>

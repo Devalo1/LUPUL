@@ -442,8 +442,8 @@ const AIAssistantWidget: React.FC = () => {
         );
         const aiReply = await fetchAIResponse(
           userMessage, // Folosește mesajul salvat, nu input-ul resetat
-          assistantProfile,
-          user?.uid
+          user?.uid,
+          assistantProfile
         );
 
         console.log(

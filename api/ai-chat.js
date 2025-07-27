@@ -1,9 +1,11 @@
 // Simple Node.js Express backend for OpenAI proxy (safe for API key)
 // Place your OpenAI API key in the .env file as OPENAI_API_KEY=sk-...
 
-const express = require("express");
-const fetch = require("node-fetch");
-require("dotenv").config();
+import express from "express";
+import fetch from "node-fetch";
+import { config } from "dotenv";
+
+config();
 
 const app = express();
 app.use(express.json());

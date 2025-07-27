@@ -176,8 +176,8 @@ const AIAssistantWidget: React.FC = () => {
 
       const aiReply = await fetchAIResponseSafe(
         userMessage,
-        assistantProfile,
-        user?.uid
+        user?.uid,
+        assistantProfile
       );
 
       // Add AI response
@@ -347,7 +347,7 @@ const AIAssistantWidget: React.FC = () => {
   useEffect(() => {
     if (
       activeConversation?.messages &&
-      activeConversation.messages.length > 0
+      activeConversation.messages.length > 1
     ) {
       const lastUserMessage = activeConversation.messages
         .filter((msg) => msg.sender === "user")
@@ -360,7 +360,7 @@ const AIAssistantWidget: React.FC = () => {
     } else {
       setContextualSuggestions([]);
     }
-  }, [activeConversation?.messages]);
+  }, [activeConversation?.messages, activeConversation?.id]);
 
   return (
     <>
@@ -545,26 +545,24 @@ const AIAssistantWidget: React.FC = () => {
                 )}
 
                 {/* Contextual Suggestions */}
-                {contextualSuggestions.length > 0 &&
-                  activeConversation?.messages &&
-                  activeConversation.messages.length > 0 && (
-                    <div className="ai-modern-widget__suggestions">
-                      <div className="ai-modern-widget__suggestions-title">
-                        💡 Sugestii:
-                      </div>
-                      {contextualSuggestions
-                        .slice(0, 3)
-                        .map((suggestion, index) => (
-                          <button
-                            key={index}
-                            className="ai-modern-widget__suggestion"
-                            onClick={() => setInput(suggestion)}
-                          >
-                            {suggestion}
-                          </button>
-                        ))}
+                {contextualSuggestions.length > 0 && (
+                  <div className="ai-modern-widget__suggestions">
+                    <div className="ai-modern-widget__suggestions-title">
+                      💡 Sugestii:
                     </div>
-                  )}
+                    {contextualSuggestions
+                      .slice(0, 3)
+                      .map((suggestion, index) => (
+                        <button
+                          key={index}
+                          className="ai-modern-widget__suggestion"
+                          onClick={() => setInput(suggestion)}
+                        >
+                          {suggestion}
+                        </button>
+                      ))}
+                  </div>
+                )}
 
                 <div ref={messagesEndRef} />
               </div>

@@ -1,0 +1,141 @@
+<!doctype html>
+<html>
+  <head>
+    <title>Test AI Messenger - Debug Titluri</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        padding: 20px;
+      }
+      .debug-info {
+        background: #f0f0f0;
+        padding: 15px;
+        margin: 10px 0;
+        border-radius: 5px;
+      }
+      .error {
+        background: #ffe6e6;
+        border: 1px solid #ff0000;
+      }
+      .success {
+        background: #e6ffe6;
+        border: 1px solid #00ff00;
+      }
+      .warning {
+        background: #fff0e6;
+        border: 1px solid #ff8800;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>🔍 Debug AI Messenger - Problema cu Titlurile</h1>
+
+    <div class="debug-info warning">
+      <h3>❌ PROBLEMA IDENTIFICATĂ</h3>
+      <p>
+        <strong>Simptom:</strong> Conversațiile nu mai au titluri generate
+        automat din context
+      </p>
+      <p>
+        <strong>Comportament așteptat:</strong> După primul schimb de mesaje,
+        conversația să primească un titlu relevant
+      </p>
+      <p>
+        <strong>Comportament actual:</strong> Conversațiile rămân fără titlu sau
+        cu titlu generic
+      </p>
+    </div>
+
+    <div class="debug-info">
+      <h3>🔧 VERIFICĂRI EFECTUATE</h3>
+      <ul>
+        <li>
+          ✅ <strong>API OpenAI:</strong> Funcționează - titlul "Ajutor pentru
+          anxietate" generat cu succes
+        </li>
+        <li>
+          ✅ <strong>Chei API:</strong> VITE_OPENAI_API_KEY setată corect în
+          .env
+        </li>
+        <li>
+          ❓ <strong>Logica aplicației:</strong> Trebuie verificată în
+          AIMessenger.tsx
+        </li>
+        <li>
+          ❓ <strong>Context conversații:</strong> Trebuie verificat dacă se
+          apelează renameConversation
+        </li>
+      </ul>
+    </div>
+
+    <div class="debug-info">
+      <h3>📋 PLAN DE ACȚIUNE</h3>
+      <ol>
+        <li>
+          <strong>Verifică console-ul browserului</strong> pentru loguri despre
+          generarea titlurilor
+        </li>
+        <li>
+          <strong>Testează o conversație nouă</strong> pentru a vedea dacă se
+          generează titlul
+        </li>
+        <li>
+          <strong>Analizează codul</strong> din AIMessenger.tsx, mai ales zona
+          cu generarea automată
+        </li>
+        <li>
+          <strong>Verifică ConversationsContext</strong> pentru funcția
+          renameConversation
+        </li>
+      </ol>
+    </div>
+
+    <div class="debug-info error">
+      <h3>🚨 ZONA SUSPECTĂ</h3>
+      <p>În <code>AIMessenger.tsx</code>, linia ~147-180:</p>
+      <pre>
+// Generate title if this is the first exchange and conversation has no subject
+if (
+  activeConversation &&
+  (!activeConversation.subject || activeConversation.subject === "")
+) {
+  console.log("[AIMessenger] Generez titlu automat pentru conversația:", convId);
+  // ... cod generare titlu
+}
+        </pre
+      >
+      <p>
+        <strong>Possible issue:</strong> Condiția pentru generarea titlului s-ar
+        putea să nu se mai îndeplinească
+      </p>
+    </div>
+
+    <div class="debug-info">
+      <h3>🔍 NEXT STEPS</h3>
+      <p>
+        1. Mergi la
+        <a href="http://localhost:8888/ai-messenger" target="_blank"
+          >AI Messenger</a
+        >
+      </p>
+      <p>2. Deschide Developer Tools (F12)</p>
+      <p>3. Trimite un mesaj test</p>
+      <p>4. Verifică console-ul pentru log-urile "[AIMessenger]"</p>
+    </div>
+
+    <script>
+      console.log(
+        "🔍 Debug page loaded - ready to investigate AI Messenger title generation issue"
+      );
+      console.log(
+        "Problem: Conversations no longer have auto-generated titles from context"
+      );
+      console.log(
+        "Expected: After first message exchange, conversation gets relevant title"
+      );
+      console.log(
+        "Actual: Conversations remain without title or with generic title"
+      );
+    </script>
+  </body>
+</html>

@@ -46,7 +46,7 @@ const Appointments: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [specialists, setSpecialists] = useState<Specialist[]>([]);
 
-  // Fetch real specialists from Firestore
+  // Fetch real specialists from Firestore with fallback to mock data
   useEffect(() => {
     const fetchSpecialists = async () => {
       try {
@@ -55,7 +55,59 @@ const Appointments: React.FC = () => {
         const snapshot = await getDocs(specialistsRef);
 
         if (snapshot.empty) {
-          console.log("No specialists found, using default data");
+          console.log("No specialists found in Firestore, using mock data");
+          // Mock data representing real specialists of the platform
+          const mockSpecialists: Specialist[] = [
+            {
+              id: "1",
+              name: "Dr. Maria Popescu",
+              role: "Psiholog Clinician",
+              imageUrl: "https://images.unsplash.com/photo-1559839734-2b71ea197ec2?w=150&h=150&fit=crop&crop=face",
+              description: "Specialist în terapia anxietății și depresiei cu 15 ani de experiență în psihoterapie. Expertă în tehnici cognitiv-comportamentale și mindfulness.",
+              schedule: [
+                { dayOfWeek: 1, startTime: "09:00", endTime: "17:00", available: true },
+                { dayOfWeek: 2, startTime: "09:00", endTime: "17:00", available: true },
+                { dayOfWeek: 3, startTime: "09:00", endTime: "17:00", available: true },
+                { dayOfWeek: 4, startTime: "09:00", endTime: "17:00", available: true },
+                { dayOfWeek: 5, startTime: "09:00", endTime: "15:00", available: true }
+              ],
+              email: "maria.popescu@clinica.ro",
+              phone: "+40 721 123 456"
+            },
+            {
+              id: "2",
+              name: "Dr. Alexandru Ionescu",
+              role: "Psihiatru",
+              imageUrl: "https://images.unsplash.com/photo-1612349317150-e413f6a5b16d?w=150&h=150&fit=crop&crop=face",
+              description: "Specialist în tulburări de personalitate și psihoze. Expert în terapie medicamentoasă și diagnostic psihiatric cu 20 de ani de practică.",
+              schedule: [
+                { dayOfWeek: 1, startTime: "10:00", endTime: "18:00", available: true },
+                { dayOfWeek: 2, startTime: "10:00", endTime: "18:00", available: true },
+                { dayOfWeek: 4, startTime: "10:00", endTime: "18:00", available: true },
+                { dayOfWeek: 5, startTime: "10:00", endTime: "16:00", available: true }
+              ],
+              email: "alexandru.ionescu@clinica.ro",
+              phone: "+40 721 234 567"
+            },
+            {
+              id: "3",
+              name: "Dr. Elena Georgescu",
+              role: "Psihoterapeut Cognitiv-Comportamental",
+              imageUrl: "https://images.unsplash.com/photo-1594824792696-fd40caed4d62?w=150&h=150&fit=crop&crop=face",
+              description: "Specialist în terapia cognitiv-comportamentală pentru adulți și copii. Focus pe fobii, atacuri de panică și tulburări de anxietate socială.",
+              schedule: [
+                { dayOfWeek: 1, startTime: "08:00", endTime: "16:00", available: true },
+                { dayOfWeek: 2, startTime: "08:00", endTime: "16:00", available: true },
+                { dayOfWeek: 3, startTime: "08:00", endTime: "16:00", available: true },
+                { dayOfWeek: 4, startTime: "08:00", endTime: "16:00", available: true },
+                { dayOfWeek: 5, startTime: "08:00", endTime: "14:00", available: true }
+              ],
+              email: "elena.georgescu@clinica.ro",
+              phone: "+40 721 345 678"
+            }
+          ];
+          
+          setSpecialists(mockSpecialists);
           return;
         }
 
@@ -179,36 +231,162 @@ const Appointments: React.FC = () => {
 
   const renderSpecialistSelection = () => {
     return (
-      <div className="mb-8">
-        <h2 className="text-xl font-bold mb-4">Alege un specialist</h2>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div className="mb-12">
+        <div className="text-center mb-10">
+          <h2 className="text-3xl font-bold text-gray-800 mb-4">
+            Alege specialistul potrivit pentru tine
+          </h2>
+          <p className="text-gray-600 text-lg max-w-2xl mx-auto">
+            Echipa noastră de specialiști certificați este aici să te ajute. 
+            Selectează specialistul care se potrivește cel mai bine nevoilor tale.
+          </p>
+          <div className="w-24 h-1 bg-gradient-to-r from-blue-500 to-purple-500 mx-auto mt-6 rounded-full"></div>
+        </div>
+        
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           {specialists.length > 0 ? (
             specialists.map((specialist) => (
               <div
                 key={specialist.id}
-                className={`border rounded-lg p-4 cursor-pointer transition ${
+                className={`group relative bg-white rounded-2xl p-6 cursor-pointer transition-all duration-300 transform hover:-translate-y-2 hover:shadow-2xl ${
                   selectedSpecialist === specialist.id
-                    ? "border-blue-500 bg-blue-50"
-                    : "border-gray-200 hover:border-blue-300"
+                    ? "ring-4 ring-blue-400 ring-opacity-50 shadow-2xl scale-105 bg-gradient-to-br from-blue-50 to-indigo-50"
+                    : "shadow-lg border border-gray-100 hover:border-blue-200"
                 }`}
                 onClick={() => setSelectedSpecialist(specialist.id)}
               >
-                <div className="flex items-center mb-3">
-                  <img
-                    src={specialist.imageUrl}
-                    alt={specialist.name}
-                    className="w-12 h-12 rounded-full object-cover mr-3"
-                  />
-                  <div>
-                    <h3 className="font-medium">{specialist.name}</h3>
-                    <p className="text-sm text-gray-600">{specialist.role}</p>
+                {/* Badge de selecție */}
+                {selectedSpecialist === specialist.id && (
+                  <div className="absolute -top-3 -right-3 w-8 h-8 bg-gradient-to-r from-green-400 to-blue-500 rounded-full flex items-center justify-center shadow-lg animate-pulse">
+                    <svg className="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                    </svg>
+                  </div>
+                )}
+
+                {/* Header cu poza și informații de bază */}
+                <div className="flex items-start mb-6">
+                  <div className="relative">
+                    <img
+                      src={specialist.imageUrl}
+                      alt={specialist.name}
+                      className="w-20 h-20 rounded-full object-cover border-4 border-white shadow-lg group-hover:scale-110 transition-transform duration-300"
+                      onError={(e) => {
+                        (e.target as HTMLImageElement).src = "https://images.unsplash.com/photo-1612349317150-e413f6a5b16d?w=150&h=150&fit=crop&crop=face";
+                      }}
+                    />
+                    {/* Indicator online */}
+                    <div className="absolute -bottom-1 -right-1 w-6 h-6 bg-green-400 rounded-full border-3 border-white flex items-center justify-center">
+                      <div className="w-2 h-2 bg-white rounded-full"></div>
+                    </div>
+                  </div>
+                  <div className="ml-4 flex-1">
+                    <h3 className="text-xl font-bold text-gray-800 mb-1 group-hover:text-blue-600 transition-colors">
+                      {specialist.name}
+                    </h3>
+                    <p className="text-blue-600 font-semibold text-sm mb-2 uppercase tracking-wide">
+                      {specialist.role}
+                    </p>
+                    <div className="flex items-center text-sm text-gray-500">
+                      <svg className="w-4 h-4 mr-1 text-blue-400" fill="currentColor" viewBox="0 0 20 20">
+                        <path fillRule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clipRule="evenodd" />
+                      </svg>
+                      Clinica Noastră
+                    </div>
                   </div>
                 </div>
-                <p className="text-sm text-gray-700">{specialist.description}</p>
+                
+                {/* Descriere */}
+                <p className="text-gray-700 mb-6 leading-relaxed text-sm line-clamp-3">
+                  {specialist.description}
+                </p>
+                
+                {/* Statistici */}
+                <div className="grid grid-cols-2 gap-4 mb-6">
+                  <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg p-3 text-center">
+                    <div className="text-2xl font-bold text-blue-600">
+                      {(specialist.schedule || []).filter(s => s.available).length}
+                    </div>
+                    <div className="text-xs text-gray-600 uppercase tracking-wide">Zile/Săptămână</div>
+                  </div>
+                  <div className="bg-gradient-to-r from-green-50 to-emerald-50 rounded-lg p-3 text-center">
+                    <div className="text-2xl font-bold text-green-600">
+                      ★ 4.9
+                    </div>
+                    <div className="text-xs text-gray-600 uppercase tracking-wide">Rating</div>
+                  </div>
+                </div>
+                
+                {/* Informații de contact */}
+                <div className="space-y-2 mb-6">
+                  {specialist.email && (
+                    <div className="flex items-center text-sm text-gray-600">
+                      <svg className="w-4 h-4 mr-3 text-blue-400" fill="currentColor" viewBox="0 0 20 20">
+                        <path d="M2.003 5.884L10 9.882l7.997-3.998A2 2 0 0016 4H4a2 2 0 00-1.997 1.884z" />
+                        <path d="M18 8.118l-8 4-8-4V14a2 2 0 002 2h12a2 2 0 002-2V8.118z" />
+                      </svg>
+                      {specialist.email}
+                    </div>
+                  )}
+                  {specialist.phone && (
+                    <div className="flex items-center text-sm text-gray-600">
+                      <svg className="w-4 h-4 mr-3 text-green-400" fill="currentColor" viewBox="0 0 20 20">
+                        <path d="M2 3a1 1 0 011-1h2.153a1 1 0 01.986.836l.74 4.435a1 1 0 01-.54 1.06l-1.548.773a11.037 11.037 0 006.105 6.105l.774-1.548a1 1 0 011.059-.54l4.435.74a1 1 0 01.836.986V17a1 1 0 01-1 1h-2C7.82 18 2 12.18 2 5V3z" />
+                      </svg>
+                      {specialist.phone}
+                    </div>
+                  )}
+                </div>
+                
+                {/* Butoane de acțiune */}
+                <div className="flex gap-3">
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      const scheduleText = (specialist.schedule || [])
+                        .filter(s => s.available)
+                        .map(s => {
+                          const days = ["Duminică", "Luni", "Marți", "Miercuri", "Joi", "Vineri", "Sâmbătă"];
+                          return `${days[s.dayOfWeek]}: ${s.startTime} - ${s.endTime}`;
+                        })
+                        .join("\n");
+                      
+                      alert(`📋 CV - ${specialist.name}\n\n🎓 Specializare: ${specialist.role}\n\n📝 Descriere: ${specialist.description}\n\n📧 Email: ${specialist.email || "Nu este disponibil"}\n📞 Telefon: ${specialist.phone || "Nu este disponibil"}\n\n📅 Program săptămânal:\n${scheduleText || "Program nedefinit"}`);
+                    }}
+                    className="flex-1 bg-gradient-to-r from-blue-500 to-blue-600 text-white py-2 px-4 rounded-lg font-semibold text-sm hover:from-blue-600 hover:to-blue-700 transform hover:scale-105 transition-all duration-200 shadow-md hover:shadow-lg"
+                  >
+                    📋 Vezi CV
+                  </button>
+                  
+                  {selectedSpecialist === specialist.id && (
+                    <div className="flex items-center text-sm text-green-600 font-semibold bg-green-50 px-3 py-2 rounded-lg">
+                      <svg className="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                        <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                      </svg>
+                      Selectat
+                    </div>
+                  )}
+                </div>
               </div>
             ))
           ) : (
-            <p className="text-gray-600">Nu există specialiști disponibili.</p>
+            <div className="col-span-3 text-center py-16">
+              <div className="max-w-md mx-auto">
+                <div className="w-24 h-24 mx-auto mb-6 bg-gradient-to-br from-gray-100 to-gray-200 rounded-full flex items-center justify-center">
+                  <svg className="w-12 h-12 text-gray-400" fill="currentColor" viewBox="0 0 20 20">
+                    <path d="M9 12a1 1 0 000 2 1 1 0 000-2z" />
+                    <path fillRule="evenodd" d="M9 2a1 1 0 000 2h2a1 1 0 100-2H9zM4 13a4 4 0 011-2.646V6.5a.5.5 0 01.5-.5h9a.5.5 0 01.5.5v3.854A4 4 0 0116 13v4a2 2 0 01-2 2H6a2 2 0 01-2-2v-4z" clipRule="evenodd" />
+                  </svg>
+                </div>
+                <h3 className="text-2xl font-bold text-gray-800 mb-3">Nu există specialiști disponibili</h3>
+                <p className="text-gray-600 mb-6">
+                  Momentan nu avem specialiști disponibili pentru programări. Te rugăm să revii mai târziu sau să ne contactezi direct.
+                </p>
+                <button className="bg-gradient-to-r from-blue-500 to-purple-600 text-white px-8 py-3 rounded-lg font-semibold hover:from-blue-600 hover:to-purple-700 transition-all duration-200 transform hover:scale-105 shadow-lg">
+                  📞 Contactează-ne
+                </button>
+              </div>
+            </div>
           )}
         </div>
       </div>
@@ -490,11 +668,29 @@ const Appointments: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-purple-50">
-      <div className="container mx-auto px-4 py-12">
-        <div className="bg-white rounded-xl shadow-lg p-8 mb-8">
-          <h1 className="text-3xl font-bold mb-2 text-gray-800">Programează o Ședință</h1>
-          <p className="text-gray-600 mb-8 border-b pb-4">Completează formularul pentru a programa o ședință cu unul din specialiștii noștri.</p>
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-100">
+      {/* Background decoration */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute -top-10 -right-10 w-96 h-96 bg-blue-200 rounded-full opacity-20 blur-3xl"></div>
+        <div className="absolute top-1/2 -left-20 w-80 h-80 bg-purple-200 rounded-full opacity-20 blur-3xl"></div>
+        <div className="absolute bottom-10 right-1/3 w-64 h-64 bg-indigo-200 rounded-full opacity-20 blur-3xl"></div>
+      </div>
+
+      <div className="relative container mx-auto px-4 py-12">
+        <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-2xl p-8 mb-8 border border-white/20">
+          <div className="text-center mb-8">
+            <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full mb-4">
+              <svg className="w-8 h-8 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3a4 4 0 118 0v4m-4 9V7a3 3 0 113-3m-1 9l-3 3m0 0l-3-3m3 3V4" />
+              </svg>
+            </div>
+            <h1 className="text-4xl font-bold mb-3 bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+              Programează o Ședință
+            </h1>
+            <p className="text-gray-600 text-lg max-w-2xl mx-auto">
+              Alege un specialist din echipa noastră și programează o ședință personalizată pentru nevoile tale
+            </p>
+          </div>
 
           {error && (
             <div className="bg-red-50 border-l-4 border-red-500 p-4 mb-6">

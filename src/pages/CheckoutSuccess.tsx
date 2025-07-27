@@ -297,13 +297,26 @@ const CheckoutSuccess: React.FC = () => {
                   <p className="text-gray-700 mb-1 font-medium">
                     Metoda de plată:
                   </p>
-                  <p className="text-gray-800">
-                    {orderDetails.paymentMethod === "card"
-                      ? "Card bancar (Netopia Payments)"
-                      : orderDetails.paymentMethod === "cash"
-                        ? "Ramburs la livrare"
-                        : orderDetails.paymentMethod}
-                  </p>
+                  <div className="flex items-center space-x-2">
+                    {orderDetails.paymentMethod === "card" && (
+                      <img
+                        src="/images/netopia-official-logo.svg"
+                        alt="NETOPIA"
+                        className="h-5 w-auto object-contain"
+                        onError={(e) => {
+                          const target = e.target as HTMLImageElement;
+                          target.src = "/images/NP.svg";
+                        }}
+                      />
+                    )}
+                    <p className="text-gray-800">
+                      {orderDetails.paymentMethod === "card"
+                        ? "Card bancar (NETOPIA Payments)"
+                        : orderDetails.paymentMethod === "cash"
+                          ? "Ramburs la livrare"
+                          : orderDetails.paymentMethod}
+                    </p>
+                  </div>
                   {orderDetails.paymentStatus &&
                     orderDetails.paymentMethod === "card" && (
                       <p

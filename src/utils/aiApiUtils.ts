@@ -5,10 +5,384 @@ import { AssistantProfile } from "../models/AssistantProfile";
 import { getTherapyResponse } from "../services/openaiService";
 
 // Main function that routes to AI with proper fallback
-export const fetchAIResponseSafe = async (
+// Enhanced helper functions for intelligent response generation (commented out to avoid lint warnings)
+/*
+const analyzeMessageType = (message: string): string => {
+  // 🏥 Sănătate și medicină
+  if (
+    message.includes("durere") ||
+    message.includes("medicament") ||
+    message.includes("simptom") ||
+    message.includes("doctori") ||
+    message.includes("sănătate") ||
+    message.includes("sanatate") ||
+    message.includes("remediu") ||
+    message.includes("tratament") ||
+    message.includes("alergii") ||
+    message.includes("temperatura") ||
+    message.includes("răceală") ||
+    message.includes("raceala") ||
+    message.includes("gripa") ||
+    message.includes("vitamina") ||
+    message.includes("nutriție") ||
+    message.includes("nutritie") ||
+    message.includes("dietă") ||
+    message.includes("dieta")
+  ) {
+    return "HEALTH";
+  }
+
+  // 💪 Motivație și dezvoltare personală
+  if (
+    message.includes("motivație") ||
+    message.includes("motivatie") ||
+    message.includes("inspirație") ||
+    message.includes("inspiratie") ||
+    message.includes("obiective") ||
+    message.includes("țeluri") ||
+    message.includes("teluri") ||
+    message.includes("energia") ||
+    message.includes("productivitate") ||
+    message.includes("concentrare") ||
+    message.includes("disciplină") ||
+    message.includes("disciplina") ||
+    message.includes("habite") ||
+    message.includes("rutină") ||
+    message.includes("rutina") ||
+    message.includes("dezvoltare personală") ||
+    message.includes("self-improvement") ||
+    message.includes("mood") ||
+    message.includes("vibe") ||
+    message.includes("ziua de azi") ||
+    message.includes("începutul zilei")
+  ) {
+    return "MOTIVATION";
+  }
+
+  // 💼 Business și carieră
+  if (
+    message.includes("business") ||
+    message.includes("afaceri") ||
+    message.includes("carieră") ||
+    message.includes("cariera") ||
+    message.includes("job") ||
+    message.includes("lucru") ||
+    message.includes("muncă") ||
+    message.includes("munca") ||
+    message.includes("venit") ||
+    message.includes("bani") ||
+    message.includes("investiții") ||
+    message.includes("investitii") ||
+    message.includes("marketing") ||
+    message.includes("vanzari") ||
+    message.includes("client") ||
+    message.includes("management") ||
+    message.includes("lider") ||
+    message.includes("echipă") ||
+    message.includes("echipa") ||
+    message.includes("proiect") ||
+    message.includes("deadline") ||
+    message.includes("planificare") ||
+    message.includes("strategie")
+  ) {
+    return "BUSINESS";
+  }
+
+  // 🎨 Creativitate și artă
+  if (
+    message.includes("creativ") ||
+    message.includes("inspirație artistică") ||
+    message.includes("design") ||
+    message.includes("artă") ||
+    message.includes("arta") ||
+    message.includes("desenat") ||
+    message.includes("pictat") ||
+    message.includes("muzică") ||
+    message.includes("muzica") ||
+    message.includes("poezie") ||
+    message.includes("scriitor") ||
+    message.includes("povestire") ||
+    message.includes("idei creative") ||
+    message.includes("brainstorming") ||
+    message.includes("inovație") ||
+    message.includes("inovatie")
+  ) {
+    return "CREATIVE";
+  }
+
+  // 💻 Suport tehnic
+  if (
+    message.includes("cod") ||
+    message.includes("programare") ||
+    message.includes("software") ||
+    message.includes("aplicație") ||
+    message.includes("aplicatie") ||
+    message.includes("bug") ||
+    message.includes("eroare") ||
+    message.includes("debug") ||
+    message.includes("tehnologie") ||
+    message.includes("calculator") ||
+    message.includes("laptop") ||
+    message.includes("telefon") ||
+    message.includes("internet") ||
+    message.includes("wifi") ||
+    message.includes("configurare") ||
+    message.includes("instalare") ||
+    message.includes("update") ||
+    message.includes("actualizare") ||
+    message.includes("github") ||
+    message.includes("javascript") ||
+    message.includes("typescript") ||
+    message.includes("react") ||
+    message.includes("css") ||
+    message.includes("html")
+  ) {
+    return "TECHNICAL";
+  }
+
+  return "GENERAL";
+};
+*/
+
+// Commented out unused functions to avoid lint warnings
+/*
+const generateSmartHealthResponse = (message: string): string => {
+  const healthResponses = [
+    `🏥 Pentru problemele de sănătate, îți recomand să consulți întotdeauna un medic. Totuși, iată câteva sfaturi generale care pot ajuta:
+
+💧 Hidratare - Bea suficientă apă (2-3 litri/zi)
+🥗 Nutriție echilibrată - Include fructe și legume
+😴 Somn de calitate - 7-9 ore pe noapte
+🚶‍♂️ Mișcare regulată - Măcar 30 min/zi
+🧘‍♀️ Management stres - Meditație, respirații profunde
+
+⚠️ Pentru simptome persistente sau grave, contactează urgent un medic!`,
+
+    `🌟 Corpul nostru are nevoie de îngrijire constantă. Iată un plan de sănătate holistic:
+
+🍎 NUTRIȚIE: Evită zahărul rafinat, include proteine și fibre
+💤 SOMN: Creează o rutină de seară relaxantă
+🏃‍♀️ EXERCIȚIU: Alternează cardio cu exerciții de forță
+🧠 MENTAL: Practici gratitudine și mindfulness
+💊 PREVENȚIE: Controale medicale regulate
+
+Îmi amintesc discuțiile noastre - ce aspect te preocupă cel mai mult?`,
+
+    `⚕️ Sănătatea e cea mai de preț comoara! Te pot ajuta cu sfaturi generale, dar pentru probleme specifice consultă medicul.
+
+🔬 ȘTIAI CĂ:
+- Sistemul imunitar se întărește prin somn de calitate
+- Stresul cronic poate provoca inflamații
+- Exercițiul regulat îmbunătățește dispoziția
+- Hidratarea afectează energia și concentrarea
+
+Care e zona care te îngrijorează? Să discutăm!`,
+  ];
+
+  return healthResponses[Math.floor(Math.random() * healthResponses.length)];
+};
+
+const generateSmartMotivationResponse = (message: string): string => {
+  const currentHour = new Date().getHours();
+  let timeMessage = "";
+
+  if (currentHour < 12) {
+    timeMessage = "Bună dimineața";
+  } else if (currentHour < 17) {
+    timeMessage = "Bună ziua";
+  } else {
+    timeMessage = "Bună seara";
+  }
+
+  const motivationResponses = [
+    `${timeMessage}! 💪 Astăzi e ziua ta să strălucești!
+
+🎯 PLANUL DE SUCCES pentru azi:
+1. Stabilește 3 priorități clare
+2. Începe cu cea mai dificilă sarcină
+3. Fă pauze de 15 min la fiecare oră
+4. Celebrează micile victorii
+5. Reflectează seara la progres
+
+🔥 MANTRA zilei: "Sunt capabil să depășesc orice provocare!"
+
+Tu crezi că poți? Pentru că eu sunt convins că DA! 🚀`,
+
+    `⭐ ${timeMessage}! Fiecare zi e o nouă șansă de a fi versiunea ta cea mai bună!
+
+💡 GÂNDURI PUTERNICE:
+• Eșecul e doar feedback, nu finalitate
+• Progresul constant învinge perfecțiunea
+• Fiecare pas mic contează
+• Tu ești mai puternic decât crezi
+• Astăzi poți începe orice schimbare
+
+🌟 Ce vrei să accomplishezi azi? Să facem un plan concret!`,
+
+    `🔥 ${timeMessage}! Energia ta de astăzi poate schimba totul!
+
+⚡ BOOSTER DE ENERGIE:
+- Respiră adânc 5 ori
+- Vizualizează succesul 
+- Mișcă-te 10 minute
+- Ascultă muzică motivațională
+- Gândește-te la de ce merită să lupți
+
+💎 Amintește-ți: Diamantele se formează sub presiune. Tu ești mai rezistent decât știi!
+
+Cu ce provocare începem? 🎯`,
+  ];
+
+  return motivationResponses[
+    Math.floor(Math.random() * motivationResponses.length)
+  ];
+};
+
+const generateSmartBusinessResponse = (message: string): string => {
+  const businessResponses = [
+    `💼 Excelent! Business-ul e pasiunea mea! Iată strategii practice:
+
+📊 FUNDAȚIA BUSINESS-ULUI:
+• Validează ideea cu clienți reali
+• Calculează costurile și profitul
+• Creează un MVP (produs minim viabil)
+• Testează piața înainte de investiție mare
+• Construiește o echipă complementară
+
+🎯 URMĂTORUL PAS: Care e visul tău de business? Să-l transformăm în plan concret!`,
+
+    `🚀 Antreprenoriatul cere curaj și strategie! Te ajut cu:
+
+💡 GENERARE IDEI: Problemele oamenilor = oportunități
+📈 MARKETING: Storytelling autentic câștigă
+💰 FINANȚE: Cash flow e mai important decât profitul pe hârtie
+🤝 NETWORKING: Relațiile deschid mai multe uși decât CV-ul
+⏰ TIME MANAGEMENT: Focus pe 20% care aduc 80% rezultate
+
+Care e provocarea ta principală acum?`,
+
+    `💎 Business-ul de succes = Valoare reală + Execuție constantă!
+
+🎪 STRATEGII CÂȘTIGĂTOARE:
+1. Ascultă nevoile clienților (nu presupunerile tale)
+2. Livrează mai mult decât promiți
+3. Automatizează procesele repetitive
+4. Investește în dezvoltarea echipei
+5. Măsoară tot ce contează
+
+🔍 Ce aspect te interesează cel mai mult? Să intrăm în detalii!`,
+  ];
+
+  return businessResponses[
+    Math.floor(Math.random() * businessResponses.length)
+  ];
+};
+
+const generateSmartCreativeResponse = (message: string): string => {
+  const creativeResponses = [
+    `🎨 Creativitatea e superpunterea ta! Să o dezlănțuim:
+
+✨ TEHNICI DE INSPIRAȚIE:
+• Morning pages - scrie 3 pagini în fiecare dimineață
+• Plimbări fără telefon - lasă mintea să rătăcească
+• Schimbă mediul - lucrează din locuri noi
+• Combinații neașteptate - unește concepte diferite
+• Restrânge limitele - creativitatea înflorește în constrângeri
+
+🌟 Care e proiectul tău creativ actual?`,
+
+    `🚀 Ideile geniale vin la cine le provoacă! Iată cum:
+
+🧠 BRAINSTORMING INTELIGENT:
+1. Nu judeca ideile prima oră
+2. Construiește pe ideile altora
+3. Întreabă "Dacă...?" și "De ce nu...?"
+4. Inversează problemele
+5. Caută inspirație în alte domenii
+
+🎭 Exercițiu rapid: Descrie-mi o problemă și îți ofer 5 soluții creative!`,
+
+    `🌈 Creativitatea = Curaj + Persistență + Joacă!
+
+💫 DEBLOCATORI CREATIVE:
+• Schimbă perspectiva (vezi din alt unghi)
+• Folosește tehnica "6 pălării gânditoare"
+• Creează constrângeri artificiale
+• Colaborează cu oameni diferiți
+• Acceptă "eșecurile" frumoase
+
+🎪 La ce lucrezi creativ? Să găsim împreună breakthrough-ul!`,
+  ];
+
+  return creativeResponses[
+    Math.floor(Math.random() * creativeResponses.length)
+  ];
+};
+
+const generateSmartTechnicalResponse = (message: string): string => {
+  const techResponses = [
+    `💻 Tehnologia e unealta, tu ești artistul! Să rezolvăm:
+
+🔧 DEBUGGING INTELIGENT:
+• Reproduci eroarea pas cu pas
+• Verifici logs și console errors
+• Izolezi componenta problematică
+• Testezi pe environment clean
+• Căști ajutor din comunitate
+
+🚀 BEST PRACTICES:
+- Clean code e mai important decât clever code
+- Testele automate salvează timp
+- Documentația e pentru viitorul tău eu
+- Git commits descriptive
+
+Ce problemă tehnică ai?`,
+
+    `⚡ Tech troubleshooting ca un pro!
+
+🎯 METODOLOGIA MESTERULUI:
+1. Definește exact problema
+2. Reproducere consistentă
+3. Căutare în documentație oficială
+4. Check Stack Overflow & GitHub issues
+5. Testare incrementală
+6. Backup înainte de schimbări mari
+
+🛠️ TOOLS ESENȚIALE:
+- DevTools pentru debugging frontend
+- Postman pentru API testing
+- Git pentru version control
+- IDE-ul configurat optimal
+
+Spune-mi exact ce nu funcționează!`,
+
+    `🔬 Programarea e știință + artă! Te ajut cu:
+
+💡 PROBLEM SOLVING:
+• Împarte problema în bucăți mici
+• Scrie pseudocode înainte de implementare
+• Testează fiecare funcție separat
+• Refactorizează cu încredere
+• Optimizează doar după ce funcționează
+
+📚 ÎNVĂȚARE CONTINUĂ:
+- Citește cod de la alții
+- Contribuie la open source
+- Fă side-projects
+- Urmărește tech leaders
+
+Care e provocarea ta tehnică?`,
+  ];
+
+  return techResponses[Math.floor(Math.random() * techResponses.length)];
+};
+*/
+
+// Main fetchAIResponseSafe function
+const fetchAIResponseSafe = async (
   userMessage: string,
-  assistantProfile?: AssistantProfile,
   userId?: string,
+  assistantProfile?: AssistantProfile,
   historyMessages?: Array<{ role: string; content: string }>
 ): Promise<string> => {
   console.log("[fetchAIResponseSafe] Starting AI request...");
@@ -316,3 +690,4 @@ export const isAIServiceAvailable = async (): Promise<boolean> => {
 
 // Default export pentru compatibilitate
 export default fetchAIResponseSafe;
+export { fetchAIResponseSafe };

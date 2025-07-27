@@ -19,7 +19,15 @@ const NetopiaPaymentInfo: React.FC<NetopiaPaymentInfoProps> = ({
     <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mt-4">
       <div className="flex items-center space-x-3 mb-3">
         <div className="bg-white rounded p-2 shadow-sm">
-          <div className="text-blue-600 font-bold text-sm">NETOPIA</div>
+          <img
+            src="/images/netopia-official-logo.svg"
+            alt="NETOPIA"
+            className="h-6 w-auto object-contain"
+            onError={(e) => {
+              const target = e.target as HTMLImageElement;
+              target.src = "/images/NP.svg";
+            }}
+          />
         </div>
         <div>
           <p className="text-sm font-semibold text-blue-900">

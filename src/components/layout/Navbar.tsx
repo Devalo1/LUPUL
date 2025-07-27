@@ -3,7 +3,11 @@ import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../../hooks/useAuth";
 import { useNavigation } from "../../hooks/useNavigation";
 import "../../styles/Header.css";
-import { isUserAccountant, isUserAdmin } from "../../utils/userRoles";
+import {
+  isUserAccountant,
+  isUserAdmin,
+  isUserSpecialist,
+} from "../../utils/userRoles";
 import { useCart } from "../../contexts/CartContext";
 import {
   Home,
@@ -16,6 +20,7 @@ import {
   LogOut,
   BriefcaseBusiness,
   Settings,
+  Stethoscope,
 } from "lucide-react";
 
 const Navbar: React.FC = () => {
@@ -27,6 +32,7 @@ const Navbar: React.FC = () => {
   const [scrolled, setScrolled] = useState(false);
   const [isAccountant, setIsAccountant] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
+  const [isSpecialist, setIsSpecialist] = useState(false);
   const { totalItems } = useCart();
   const [shopMenuOpen, setShopMenuOpen] = useState(false);
   const shopMenuRef = useRef<HTMLDivElement>(null);
@@ -50,7 +56,7 @@ const Navbar: React.FC = () => {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
   useEffect(() => {
-    const checkAccountant = async () => {
+    const checkRoles = async () => {
       if (user?.email) {
         // Verificăm dacă utilizatorul are rol de contabil
         const accountantStatus = await isUserAccountant(user.email);
@@ -59,14 +65,19 @@ const Navbar: React.FC = () => {
         // Verificăm dacă utilizatorul are rol de admin
         const adminStatus = await isUserAdmin(user.email);
         setIsAdmin(adminStatus);
+
+        // Verificăm dacă utilizatorul are rol de specialist
+        const specialistStatus = await isUserSpecialist(user.email);
+        setIsSpecialist(specialistStatus);
       }
     };
 
     if (user) {
-      checkAccountant(); // Verificăm și rolul de contabil și admin
+      checkRoles();
     } else {
       setIsAccountant(false);
       setIsAdmin(false);
+      setIsSpecialist(false);
     }
   }, [user]);
 
@@ -294,6 +305,16 @@ const Navbar: React.FC = () => {
                 title="Contabilitate"
               >
                 <FileText className="w-9 h-9 mb-1 text-blue-200 nav-icon" />
+                {/* doar icon, fără text */}
+              </Link>
+            )}{" "}
+            {isSpecialist && (
+              <Link
+                to="/specialist-panel"
+                className="nav-link flex flex-col items-center gap-1 text-white hover:bg-blue-600 px-2 py-1 rounded-md transition-all duration-300 font-semibold animate-nav-pop nav-text"
+                title="Panou Specialist"
+              >
+                <Stethoscope className="w-9 h-9 mb-1 text-green-200 nav-icon" />
                 {/* doar icon, fără text */}
               </Link>
             )}{" "}

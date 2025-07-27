@@ -68,19 +68,19 @@ export const ConversationsProvider = ({
       return;
     }
 
-    console.log("[ConversationsContext] Adding message:", message);
+    console.log("[ConversationsContext] Adding message INSTANTLY:", message);
     console.log(
       "[ConversationsContext] Active conversation ID:",
       activeConversationId
     );
 
-    // PRIORITATE MAXIMĂ: Update immediate pentru activeConversation
+    // PRIORITATE MAXIMĂ: Update SINCRON pentru afișare instantanee
     setActiveConversation((prev) => {
       if (!prev) {
-        console.warn(
-          "[ConversationsContext] No activeConversation, creating temporary one"
+        console.log(
+          "[ConversationsContext] No activeConversation, creating temporary one for instant display"
         );
-        // Creează o conversație temporară pentru afișarea imediată
+        // Creează conversație temporară pentru afișarea imediată
         return {
           id: activeConversationId,
           userId: user.uid!,
@@ -90,20 +90,22 @@ export const ConversationsProvider = ({
           updatedAt: message.timestamp,
         };
       }
+
       const updated = {
         ...prev,
         messages: [...(prev.messages || []), message],
         updatedAt: message.timestamp,
       };
+
       console.log(
-        "[ConversationsContext] IMMEDIATE activeConversation update:",
+        "[ConversationsContext] INSTANT UI UPDATE - activeConversation now has:",
         updated.messages.length,
         "messages"
       );
       return updated;
     });
 
-    // Apoi actualizăm conversations list
+    // Actualizează și lista de conversații SINCRON pentru consistență
     setConversations((prev) => {
       const updated = prev.map((conv) =>
         conv.id === activeConversationId
@@ -115,32 +117,26 @@ export const ConversationsProvider = ({
           : conv
       );
       console.log(
-        "[ConversationsContext] Updated conversations list:",
+        "[ConversationsContext] INSTANT conversations list update:",
         updated.find((c) => c.id === activeConversationId)?.messages?.length,
-        "messages in active"
+        "messages in active conversation"
       );
       return updated;
     });
 
-    // Force immediate re-render prin shallow copy
-    setActiveConversation((current) => (current ? { ...current } : current));
-
-    // Save to backend (non-blocking for UI)
-    try {
-      await conversationService.addMessage(
-        activeConversationId,
-        message,
-        user.uid
-      );
-      console.log(
-        "[ConversationsContext] Message successfully saved to backend"
-      );
-    } catch (error) {
-      console.error(
-        "[ConversationsContext] Error saving message to backend:",
-        error
-      );
-    }
+    // Salvează în backend ASYNC (nu blochează UI-ul pentru afișare instantanee)
+    conversationService
+      .addMessage(activeConversationId, message, user.uid)
+      .then(() => {
+        console.log(
+          "[ConversationsContext] Message successfully saved to backend"
+        );
+      })
+      .catch((error) => {
+        console.error("[ConversationsContext] Backend save error:", error);
+        // În caz de eroare, mesajul rămâne în UI dar nu e salvat în backend
+        // Poți adăuga logică de retry aici dacă este necesar
+      });
   };
   const renameConversation = async (id: string, newSubject: string) => {
     if (!user?.uid) return;

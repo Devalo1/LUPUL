@@ -95,8 +95,8 @@ const AIMessenger: React.FC = () => {
         );
         const aiReply = await fetchAIResponse(
           userMessage,
-          assistantProfile,
-          user?.uid
+          user?.uid,
+          assistantProfile
         );
 
         console.log(

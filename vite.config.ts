@@ -55,17 +55,12 @@ export default defineConfig(({ mode }) => ({
     open: true,
     // Reactivăm HMR pentru React Fast Refresh
     hmr: true,
-    // Forward /api/* to Netlify Dev functions on port 8888
+    // Forward /api/* to our local Node.js backend on port 3001
     proxy: {
       "/api": {
-        target: "http://localhost:8888",
+        target: "http://localhost:3001",
         changeOrigin: true,
-        rewrite: (path) => path.replace(/^\/api\//, "/.netlify/functions/"),
-      },
-      // Forward calls to Netlify Functions path when hitting directly in Vite dev
-      "/.netlify/functions": {
-        target: "http://localhost:8888",
-        changeOrigin: true,
+        rewrite: (path) => path, // Keep the /api path as is
       },
     },
   },

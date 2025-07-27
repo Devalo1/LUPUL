@@ -315,6 +315,147 @@ export const generatePersonalizedInsights = (
   return insights;
 };
 
+// Generare automată de titluri pentru conversații (similar ChatGPT)
+export const generateConversationTitle = async (
+  firstUserMessage: string,
+  aiResponse?: string
+): Promise<string> => {
+  try {
+    // Dacă avem și răspunsul AI-ului, folosim ambele pentru context
+    const context = aiResponse
+      ? `User: ${firstUserMessage}\nAI: ${aiResponse}`
+      : `User: ${firstUserMessage}`;
+
+    // Prompt optimizat pentru generarea de titluri scurte și relevante
+    const titlePrompt = `Analizează următoarea conversație și generează un titlu scurt și descriptiv (maxim 4-5 cuvinte) în română:
+
+${context}
+
+Instrucțiuni:
+- Titlul trebuie să fie scurt și să reflecte subiectul principal
+- Nu folosi ghilimele sau alte marcaje
+- Folosește un limbaj natural și accesibil
+- Exemplu de format: "Ajutor cu matematica", "Sfaturi pentru somn", "Planuri de weekend"
+
+Titlu:`;
+
+    const response = await fetch("/api/ai-chat", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        prompt: titlePrompt,
+        assistantName: "AI Assistant",
+        addressMode: "formal",
+        personalizedContext:
+          "Generează doar titlul conversației, scurt și relevant.",
+      }),
+    });
+
+    if (!response.ok) {
+      throw new Error(`API Error: ${response.status}`);
+    }
+
+    const data = await response.json();
+    const generatedTitle = data.reply?.trim();
+
+    if (generatedTitle && generatedTitle.length > 3) {
+      // Curățare și validare titlu
+      let cleanTitle = generatedTitle
+        .replace(/^["']|["']$/g, "") // Elimină ghilimelele
+        .replace(/^Titlu:?\s*/i, "") // Elimină prefixul "Titlu:"
+        .trim();
+
+      // Limitează lungimea la 50 de caractere
+      if (cleanTitle.length > 50) {
+        cleanTitle = cleanTitle.substring(0, 47) + "...";
+      }
+
+      return cleanTitle;
+    }
+  } catch (error) {
+    console.error("Error generating conversation title:", error);
+  }
+
+  // Fallback: generare titlu bazat pe primul mesaj
+  return generateFallbackTitle(firstUserMessage);
+};
+
+// Generare titlu fallback bazat pe primul mesaj
+const generateFallbackTitle = (message: string): string => {
+  // Curățarea mesajului
+  let cleanMessage = message.trim().toLowerCase();
+
+  // Eliminarea cuvintelor comune
+  const stopWords = [
+    "și",
+    "cu",
+    "de",
+    "la",
+    "în",
+    "pe",
+    "să",
+    "am",
+    "ai",
+    "are",
+    "că",
+    "cum",
+    "ce",
+    "când",
+    "unde",
+    "why",
+    "how",
+    "what",
+    "the",
+    "a",
+    "an",
+    "is",
+    "are",
+    "was",
+    "were",
+  ];
+
+  // Identificarea cuvintelor cheie
+  const words = cleanMessage
+    .split(/\s+/)
+    .filter((word) => word.length > 2 && !stopWords.includes(word));
+
+  // Detectarea unor pattern-uri comune
+  if (cleanMessage.includes("ajut") || cleanMessage.includes("help")) {
+    return "Cerere de ajutor";
+  }
+  if (cleanMessage.includes("învăț") || cleanMessage.includes("studiu")) {
+    return "Întrebări despre studiu";
+  }
+  if (cleanMessage.includes("mănânc") || cleanMessage.includes("mâncare")) {
+    return "Întrebări despre hrană";
+  }
+  if (cleanMessage.includes("dorm") || cleanMessage.includes("somn")) {
+    return "Probleme cu somnul";
+  }
+  if (cleanMessage.includes("lucr") || cleanMessage.includes("job")) {
+    return "Întrebări despre muncă";
+  }
+  if (cleanMessage.includes("trist") || cleanMessage.includes("deprim")) {
+    return "Suport emoțional";
+  }
+  if (cleanMessage.includes("stres") || cleanMessage.includes("anxios")) {
+    return "Gestionarea stresului";
+  }
+
+  // Fallback: primele 3-4 cuvinte relevante
+  const keyWords = words.slice(0, 3);
+  if (keyWords.length > 0) {
+    return keyWords
+      .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+      .join(" ");
+  }
+
+  // Ultimate fallback
+  return "Conversație nouă";
+};
+
 export default {
   MOOD_OPTIONS,
   QUICK_RESPONSES,
@@ -326,4 +467,5 @@ export default {
   getTimeBasedGreeting,
   getContextualSuggestions,
   generatePersonalizedInsights,
+  generateConversationTitle,
 };

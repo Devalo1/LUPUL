@@ -467,7 +467,7 @@ const Checkout: React.FC = () => {
                 // Inject target into form and write HTML
                 const htmlWithTarget = paymentResponse.replace(
                   /<form/i,
-                  "<form target=\"netopia3ds\" " // add space after attribute
+                  '<form target="netopia3ds" ' // add space after attribute
                 );
                 popup.document.write(htmlWithTarget);
                 popup.document.close();
@@ -847,6 +847,20 @@ const Checkout: React.FC = () => {
                 </p>
                 {formData.paymentMethod === "card" ? (
                   <div className="bg-white p-3 rounded border border-gray-200">
+                    <div className="flex items-center space-x-3 mb-3">
+                      <img
+                        src="/images/netopia-official-logo.svg"
+                        alt="NETOPIA Payments"
+                        className="h-8 w-auto object-contain"
+                        onError={(e) => {
+                          const target = e.target as HTMLImageElement;
+                          target.src = "/images/NP.svg";
+                        }}
+                      />
+                      <span className="text-blue-600 font-semibold">
+                        Plata securizată prin NETOPIA
+                      </span>
+                    </div>
                     <div className="flex items-center space-x-3 mb-2">
                       <span className="text-blue-600 font-semibold">
                         💳 Carduri acceptate:

@@ -1,6 +1,7 @@
 # 🔐 Manual Setup pentru NETOPIA Live Private Key & Certificate
 
 ## ✅ Variabile deja configurate automat:
+
 - ✅ NETOPIA_LIVE_SIGNATURE = 2ZOW-PJ5X-HYYC-IENE-APZO
 - ✅ NETOPIA_LIVE_PUBLIC_KEY = 2ZOW-PJ5X-HYYC-IENE-APZO
 - ✅ VITE_PAYMENT_LIVE_KEY = 2ZOW-PJ5X-HYYC-IENE-APZO
@@ -9,13 +10,15 @@
 ## 📋 Variabile de adăugat manual în Netlify Dashboard:
 
 ### 1. Acces Netlify Dashboard:
+
 🔗 **URL**: https://app.netlify.com/projects/lupulsicorbul
 📍 **Navigare**: Site settings → Environment variables → Add variable
 
 ### 2. Adăugare NETOPIA_LIVE_PRIVATE_KEY:
 
 **Key**: `NETOPIA_LIVE_PRIVATE_KEY`
-**Value**: 
+**Value**:
+
 ```
 -----BEGIN RSA PRIVATE KEY-----
 MIICXAIBAAKBgQDgvgno9K9M465g14CoKE0aIvKbSqwE3EvKm6NIcVO0ZQ7za08v
@@ -33,12 +36,14 @@ pMG6i1YXb4+4Y9NR0QJBANt0qlS2GsS9S79eWhPkAnw5qxDcOEQeekk5z5jil7yw
 7J0yOEdf46C89U56v2zORfS5Due8YEYgSMRxXdY0/As=
 -----END RSA PRIVATE KEY-----
 ```
+
 **Scopes**: `Builds, Functions, Runtime`
 
 ### 3. Adăugare NETOPIA_LIVE_CERTIFICATE:
 
 **Key**: `NETOPIA_LIVE_CERTIFICATE`
 **Value**:
+
 ```
 -----BEGIN CERTIFICATE-----
 MIIC3zCCAkigAwIBAgIBATANBgkqhkiG9w0BAQsFADCBiDELMAkGA1UEBhMCUk8x
@@ -59,29 +64,35 @@ gNWC9AwVBt61MTid213yuXDGxkouizSGFr1MjP1tk/YkcWdNka9QB3AtCr4bMers
 RbUx6W/CU+uFDgDY8CdZ3hZ7kg==
 -----END CERTIFICATE-----
 ```
+
 **Scopes**: `Builds, Functions, Runtime`
 
 ## 🚀 După configurarea completă:
 
 ### 4. Deploy în Production:
+
 ```bash
 netlify deploy --prod
 ```
 
 ### 5. Verificare finală:
+
 ```bash
 netlify env:list
 node verify-netopia-live-config.cjs
 ```
 
 ## 🎯 Status Final Așteptat:
+
 - ✅ 6 variabile NETOPIA configurate
 - ✅ 3DS simulation funcționează în preview
 - ✅ Production va folosi credențiale LIVE reale
 - ✅ Error handling clar pentru utilizatori
 
 ## ⚠️ IMPORTANT:
+
 Odată configurate toate variabilele, sistemul va procesa **plăți reale** în producție!
 
 ---
+
 **🏁 IMPLEMENTARE NETOPIA LIVE FINALIZATĂ!**

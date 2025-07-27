@@ -5,6 +5,7 @@ import { Routes, Route, Navigate } from "react-router-dom";
 import ProtectedRoute from "./ProtectedRoute";
 import AdminRoute from "./AdminRoute";
 import AccountantRoute from "./AccountantRoute";
+import SpecialistRoute from "./SpecialistRoute";
 
 // Import rute admin și contabilitate centralizate
 import adminRoutes from "../../routes/adminRoutes";
@@ -65,6 +66,9 @@ import AIMessenger from "../../pages/ai/AIMessenger";
 
 // Pagini medicale AI
 import MedicalRoutes from "../../routes/MedicalRoutes";
+
+// Pagini specialiști
+import SpecialistPanel from "../../pages/SpecialistPanel";
 
 // Pagini embleme
 import { EmblemMintingPage, EmblemDashboard } from "../../components/emblems";
@@ -231,6 +235,31 @@ const AppRoutes = () => {
             <ProtectedRoute>
               <AIMessenger />
             </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/specialist-panel"
+          element={
+            <SpecialistRoute>
+              <SpecialistPanel />
+            </SpecialistRoute>
+          }
+        />
+        <Route
+          path="/specialist/panel"
+          element={
+            <SpecialistRoute>
+              <SpecialistPanel />
+            </SpecialistRoute>
+          }
+        />
+        <Route
+          path="/specialist/dashboard"
+          element={
+            <SpecialistRoute>
+              <SpecialistPanel />
+            </SpecialistRoute>
           }
         />
 

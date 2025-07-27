@@ -9,17 +9,16 @@ import { userPersonalizationService } from "./userPersonalizationService";
 
 const OPENAI_API_URL = "https://api.openai.com/v1/chat/completions";
 
-// Configurări AI Ultra-Inteligente - Mai bune decât ChatGPT-4
+// Configurări AI Optimizate - Balanță între performanță și cost
 export const AI_CONFIG = {
-  model: "gpt-4", // Upgrade la GPT-4 pentru inteligență superioară
-  temperature: 0.8, // Echilibru perfect între creativitate și precizie
-  max_tokens: 2000, // Răspunsuri mult mai detaliate și complete
-  top_p: 0.95, // Vocabular extins pentru expresivitate maximă
-  frequency_penalty: 0.4, // Evită repetările pentru conversații mai naturale
-  presence_penalty: 0.5, // Explorează idei noi și perspective diverse
-  // Configurări avansate pentru performanță superioară
-  stream: false, // Pentru răspunsuri complete și coerente
-  logit_bias: {}, // Poate fi personalizat pentru fiecare utilizator
+  model: "gpt-3.5-turbo", // Mult mai ieftin decât GPT-4, foarte capabil
+  temperature: 0.7, // Bun echilibru creativitate/precizie
+  max_tokens: 800, // Suficient pentru răspunsuri bune, dar nu excesiv
+  top_p: 0.9, // Optimizat pentru eficiență
+  frequency_penalty: 0.3, // Evită repetările
+  presence_penalty: 0.3, // Explorează idei noi
+  stream: false,
+  logit_bias: {},
 };
 
 export async function getTherapyResponse(

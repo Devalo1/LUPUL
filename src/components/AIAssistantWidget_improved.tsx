@@ -380,8 +380,8 @@ const AIAssistantWidget: React.FC = () => {
         );
         const aiReply = await fetchAIResponse(
           input.trim(),
-          assistantProfile,
-          user?.uid
+          user?.uid,
+          assistantProfile
         );
         await addMessage({
           id: (Date.now() + 1).toString(),

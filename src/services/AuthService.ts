@@ -132,7 +132,8 @@ export class AuthService {
         `Încercare de trimitere email de resetare parolă către: ${email}`
       );
 
-      // Adăugăm opțiuni suplimentare pentru configurarea corectă a emailului de resetare
+      // Verificăm mai întâi dacă utilizatorul există în Firebase
+      // Pentru a detecta tipul de cont (email/password vs Google)
       await sendPasswordResetEmail(auth, email, {
         url: `${window.location.origin}/login`, // URL-ul de redirecționare după resetarea parolei
         handleCodeInApp: false, // Setăm la false pentru a gestiona pe pagina de Firebase
@@ -143,6 +144,33 @@ export class AuthService {
       );
     } catch (error: unknown) {
       const err = handleUnknownError(error);
+
+      // Verificăm dacă utilizatorul există în Firestore pentru a determina tipul de cont
+      if (err.code === "auth/user-not-found") {
+        // Utilizatorul nu există deloc
+        throw err;
+      } else {
+        // Pentru alte erori, inclusiv conturi Google care nu au parolă
+        try {
+          // Verificăm în baza de date dacă este cont Google
+          const userRef = doc(firestore, "users", email.replace(/[@.]/g, "_"));
+          const userDoc = await getDoc(userRef);
+
+          if (userDoc.exists()) {
+            const userData = userDoc.data();
+            // Dacă utilizatorul există dar nu poate reseta parola, probabil e cont Google
+            if (
+              userData.photoURL &&
+              userData.photoURL.includes("googleusercontent")
+            ) {
+              throw new Error("no-password");
+            }
+          }
+        } catch (dbError) {
+          authLogger.warn("Nu s-a putut verifica tipul de cont:", dbError);
+        }
+      }
+
       authLogger.error(
         "Eroare detaliată la trimiterea emailului de resetare:",
         err

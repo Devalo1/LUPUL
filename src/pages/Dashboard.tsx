@@ -615,9 +615,20 @@ const Dashboard: React.FC = () => {
               </svg>
               Evenimente
             </button>{" "}
+            {userRole === UserRole.SPECIALIST && (
+              <button
+                onClick={() => navigate("/specialist-panel")}
+                className="p-3 bg-emerald-600 text-white rounded-md hover:bg-emerald-700 transition duration-200 text-sm font-medium flex flex-col items-center"
+              >
+                <FaUserMd className="h-6 w-6 mb-1" />
+                Panou Specialist
+              </button>
+            )}
             <button
               onClick={() => navigate("/dashboard/AIsettings")}
-              className="p-3 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 transition duration-200 text-sm font-medium flex flex-col items-center col-span-2"
+              className={`p-3 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 transition duration-200 text-sm font-medium flex flex-col items-center ${
+                userRole === UserRole.SPECIALIST ? "col-span-1" : "col-span-2"
+              }`}
             >
               <svg
                 xmlns="http://www.w3.org/2000/svg"

@@ -5,6 +5,21 @@
   padding: 0;
 }
 
+/* Global fix pentru probleme de contrast text pe input-uri */
+.ai-messenger input[type="text"],
+.ai-messenger input[type="email"],
+.ai-messenger input[type="password"],
+.ai-messenger textarea {
+  color: #1f2937 !important;
+}
+
+.ai-messenger input[type="text"]::placeholder,
+.ai-messenger input[type="email"]::placeholder,
+.ai-messenger input[type="password"]::placeholder,
+.ai-messenger textarea::placeholder {
+  color: #9ca3af !important;
+}
+
 .ai-messenger__container {
   display: flex;
   height: 100vh;
@@ -369,6 +384,45 @@
   text-align: left;
 }
 
+/* Message animations pentru feedback instant */
+.ai-messenger__message {
+  animation: messageAppear 0.3s ease-out;
+  opacity: 1;
+  transform: translateY(0);
+}
+
+@keyframes messageAppear {
+  0% {
+    opacity: 0;
+    transform: translateY(10px) scale(0.95);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+/* Highlight pentru mesajul proaspăt trimis */
+.ai-messenger__message--fresh {
+  box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
+  border: 1px solid rgba(102, 126, 234, 0.2);
+  animation:
+    messageAppear 0.3s ease-out,
+    messagePulse 1s ease-out 0.3s;
+}
+
+@keyframes messagePulse {
+  0% {
+    box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
+  }
+  50% {
+    box-shadow: 0 4px 16px rgba(102, 126, 234, 0.5);
+  }
+  100% {
+    box-shadow: 0 2px 8px rgba(102, 126, 234, 0.2);
+  }
+}
+
 /* Debug styles for troubleshooting */
 .debug-message {
   border: 1px solid rgba(255, 0, 0, 0.2) !important;
@@ -505,18 +559,48 @@
   font-family: inherit;
   outline: none;
   background: transparent;
+  color: #1f2937 !important; /* Text color forțat pentru vizibilitate */
   transition: all 0.2s;
+}
+
+.ai-messenger__input::placeholder {
+  color: #9ca3af !important; /* Placeholder color pentru vizibilitate */
 }
 
 .ai-messenger__input:focus {
   /* Focus styles are handled by the container */
   outline: none;
+  color: #1f2937 !important; /* Menține culoarea la focus */
 }
 
 .ai-messenger__input:disabled {
   background: transparent;
-  color: #9ca3af;
+  color: #6b7280 !important; /* Culoare mai vizibilă pentru starea disabled */
   cursor: not-allowed;
+}
+
+/* Fix pentru probleme de contrast - asigură vizibilitatea textului în toate cazurile */
+.ai-messenger__input-container input,
+.ai-messenger__input-container textarea {
+  color: #1f2937 !important;
+  background: transparent !important;
+}
+
+.ai-messenger__input-container input::placeholder,
+.ai-messenger__input-container textarea::placeholder {
+  color: #9ca3af !important;
+}
+
+/* Pentru cazuri extreme de override CSS */
+.ai-messenger__input-area input,
+.ai-messenger__input-area textarea {
+  color: #1f2937 !important;
+  background: transparent !important;
+}
+
+.ai-messenger__input-area input::placeholder,
+.ai-messenger__input-area textarea::placeholder {
+  color: #9ca3af !important;
 }
 
 .ai-messenger__send-btn {

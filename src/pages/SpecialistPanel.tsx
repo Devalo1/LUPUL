@@ -792,10 +792,645 @@ const SpecialistPanel: React.FC = () => {
     }
   }, [user, isSpecialist, showCVEditForm]);
 
+  // Afișare în timpul încărcării
+  if (loading || checkingRole) {
+    return (
+      <div className="min-h-screen bg-gray-100 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500 mx-auto mb-4"></div>
+          <p className="text-gray-600">Se verifică permisiunile...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Verificare permisiuni de specialist
+  if (!isSpecialist) {
+    return (
+      <div className="min-h-screen bg-gray-100 flex items-center justify-center">
+        <div className="max-w-md w-full bg-white p-8 rounded-lg shadow-md">
+          <div className="text-red-600 text-center mb-4">
+            <svg
+              className="w-16 h-16 mx-auto"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
+              />
+            </svg>
+          </div>
+          <h1 className="text-2xl font-bold text-center text-gray-800 mb-2">
+            Acces restricționat
+          </h1>
+          <p className="text-center text-gray-600 mb-6">
+            Nu aveți permisiunea de a accesa panoul de specialist.
+          </p>
+          <div className="flex justify-center">
+            <button
+              onClick={() => navigate("/dashboard")}
+              className="px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
+            >
+              Înapoi la Dashboard
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <div>
-      <h1>Specialist Panel</h1>
-      <p>Welcome to the specialist panel</p>
+    <div className="min-h-screen bg-gray-50">
+      {/* Header */}
+      <div className="bg-white shadow-sm border-b">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex justify-between items-center py-6">
+            <div>
+              <h1 className="text-3xl font-bold text-gray-900">
+                Panou Specialist
+              </h1>
+              <p className="mt-1 text-sm text-gray-500">
+                Gestionează programările, sesiunile și serviciile tale
+              </p>
+            </div>
+            <div className="flex items-center space-x-4">
+              <span className="bg-green-100 text-green-800 text-sm px-3 py-1 rounded-full font-medium">
+                Specialist Activ
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Mesaje de alertă */}
+      {_alertMessage && (
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-4">
+          <div
+            className={`p-4 rounded-md ${
+              _alertMessage.type === "success"
+                ? "bg-green-50 text-green-800 border border-green-200"
+                : "bg-red-50 text-red-800 border border-red-200"
+            }`}
+          >
+            <div className="flex">
+              <div className="flex-shrink-0">
+                {_alertMessage.type === "success" ? (
+                  <svg
+                    className="h-5 w-5 text-green-400"
+                    viewBox="0 0 20 20"
+                    fill="currentColor"
+                  >
+                    <path
+                      fillRule="evenodd"
+                      d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                      clipRule="evenodd"
+                    />
+                  </svg>
+                ) : (
+                  <svg
+                    className="h-5 w-5 text-red-400"
+                    viewBox="0 0 20 20"
+                    fill="currentColor"
+                  >
+                    <path
+                      fillRule="evenodd"
+                      d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
+                      clipRule="evenodd"
+                    />
+                  </svg>
+                )}
+              </div>
+              <div className="ml-3">
+                <p className="text-sm">{_alertMessage.message}</p>
+              </div>
+              <div className="ml-auto pl-3">
+                <button
+                  onClick={() => setAlertMessage(null)}
+                  className="inline-flex text-gray-400 hover:text-gray-600"
+                >
+                  <span className="sr-only">Închide</span>
+                  <svg
+                    className="h-5 w-5"
+                    viewBox="0 0 20 20"
+                    fill="currentColor"
+                  >
+                    <path
+                      fillRule="evenodd"
+                      d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
+                      clipRule="evenodd"
+                    />
+                  </svg>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Main Content */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* Navigation Tabs */}
+        <div className="mb-8">
+          <nav className="flex space-x-8" aria-label="Tabs">
+            <button
+              onClick={() => _setActiveTab("appointments")}
+              className={`${
+                activeTab === "appointments"
+                  ? "border-blue-500 text-blue-600"
+                  : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
+              } whitespace-nowrap py-2 px-1 border-b-2 font-medium text-sm transition-colors`}
+            >
+              Programări
+              {_appointments.length > 0 && (
+                <span className="ml-2 bg-blue-100 text-blue-600 py-0.5 px-2 rounded-full text-xs">
+                  {_appointments.length}
+                </span>
+              )}
+            </button>
+            <button
+              onClick={() => _setActiveTab("sessions")}
+              className={`${
+                activeTab === "sessions"
+                  ? "border-blue-500 text-blue-600"
+                  : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
+              } whitespace-nowrap py-2 px-1 border-b-2 font-medium text-sm transition-colors`}
+            >
+              Sesiuni Speciale
+              {_specialSessions.length > 0 && (
+                <span className="ml-2 bg-green-100 text-green-600 py-0.5 px-2 rounded-full text-xs">
+                  {_specialSessions.length}
+                </span>
+              )}
+            </button>
+            <button
+              onClick={() => _setActiveTab("services")}
+              className={`${
+                activeTab === "services"
+                  ? "border-blue-500 text-blue-600"
+                  : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
+              } whitespace-nowrap py-2 px-1 border-b-2 font-medium text-sm transition-colors`}
+            >
+              Servicii
+              {_specialistServices.length > 0 && (
+                <span className="ml-2 bg-purple-100 text-purple-600 py-0.5 px-2 rounded-full text-xs">
+                  {_specialistServices.length}
+                </span>
+              )}
+            </button>
+          </nav>
+        </div>
+
+        {/* Tab Content */}
+        {activeTab === "appointments" && (
+          <div className="bg-white shadow rounded-lg">
+            <div className="px-6 py-4 border-b border-gray-200">
+              <h3 className="text-lg font-medium text-gray-900">
+                Programările mele
+              </h3>
+              <p className="mt-1 text-sm text-gray-500">
+                Gestionează programările și consultațiile programate
+              </p>
+            </div>
+            <div className="p-6">
+              {_loadingAppointments ? (
+                <div className="text-center py-12">
+                  <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-blue-500 mx-auto mb-4"></div>
+                  <p className="text-gray-600">Se încarcă programările...</p>
+                </div>
+              ) : _appointments.length === 0 ? (
+                <div className="text-center py-12">
+                  <svg
+                    className="mx-auto h-12 w-12 text-gray-400"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
+                    />
+                  </svg>
+                  <h3 className="mt-4 text-lg font-medium text-gray-900">
+                    Nu aveți programări
+                  </h3>
+                  <p className="mt-2 text-gray-500">
+                    Nu aveți programări înregistrate momentan.
+                  </p>
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  {_appointments.map((appointment) => (
+                    <div
+                      key={appointment.id}
+                      className="border border-gray-200 rounded-lg p-4 hover:bg-gray-50 transition-colors"
+                    >
+                      <div className="flex items-center justify-between">
+                        <div className="flex-1">
+                          <div className="flex items-center space-x-3">
+                            <div className="flex-shrink-0">
+                              <div className="h-10 w-10 rounded-full bg-blue-100 flex items-center justify-center">
+                                <span className="text-blue-600 font-medium text-sm">
+                                  {appointment.userName.charAt(0).toUpperCase()}
+                                </span>
+                              </div>
+                            </div>
+                            <div className="min-w-0 flex-1">
+                              <p className="text-sm font-medium text-gray-900">
+                                {appointment.userName}
+                              </p>
+                              <p className="text-sm text-gray-500">
+                                {appointment.userEmail}
+                              </p>
+                            </div>
+                          </div>
+                          <div className="mt-2 flex items-center text-sm text-gray-500">
+                            <svg
+                              className="flex-shrink-0 mr-1.5 h-4 w-4"
+                              fill="none"
+                              viewBox="0 0 24 24"
+                              stroke="currentColor"
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth={2}
+                                d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
+                              />
+                            </svg>
+                            {appointment.date
+                              .toDate()
+                              .toLocaleDateString("ro-RO")}{" "}
+                            la {appointment.time}
+                          </div>
+                          <div className="mt-1 flex items-center text-sm text-gray-500">
+                            <svg
+                              className="flex-shrink-0 mr-1.5 h-4 w-4"
+                              fill="none"
+                              viewBox="0 0 24 24"
+                              stroke="currentColor"
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth={2}
+                                d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-2m-2 0H7m5 0v-5a2 2 0 00-2-2H8a2 2 0 00-2 2v5m2 0V9a2 2 0 012-2h2a2 2 0 012 2v8"
+                              />
+                            </svg>
+                            {appointment.service}
+                          </div>
+                        </div>
+                        <div className="flex-shrink-0 ml-4">
+                          <span
+                            className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
+                              appointment.status === "confirmed"
+                                ? "bg-green-100 text-green-800"
+                                : appointment.status === "pending"
+                                  ? "bg-yellow-100 text-yellow-800"
+                                  : appointment.status === "completed"
+                                    ? "bg-blue-100 text-blue-800"
+                                    : "bg-red-100 text-red-800"
+                            }`}
+                          >
+                            {appointment.status === "confirmed"
+                              ? "Confirmată"
+                              : appointment.status === "pending"
+                                ? "În așteptare"
+                                : appointment.status === "completed"
+                                  ? "Completată"
+                                  : "Anulată"}
+                          </span>
+                        </div>
+                      </div>
+                      {appointment.details && (
+                        <div className="mt-3 text-sm text-gray-600 bg-gray-50 p-3 rounded-md">
+                          <p className="font-medium mb-1">Detalii:</p>
+                          <p>{appointment.details}</p>
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+
+        {activeTab === "sessions" && (
+          <div className="bg-white shadow rounded-lg">
+            <div className="px-6 py-4 border-b border-gray-200">
+              <h3 className="text-lg font-medium text-gray-900">
+                Sesiuni Speciale
+              </h3>
+              <p className="mt-1 text-sm text-gray-500">
+                Creează și gestionează sesiuni speciale pentru clienți
+              </p>
+            </div>
+            <div className="p-6">
+              {_loadingSessions ? (
+                <div className="text-center py-12">
+                  <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-blue-500 mx-auto mb-4"></div>
+                  <p className="text-gray-600">Se încarcă sesiunile...</p>
+                </div>
+              ) : _specialSessions.length === 0 ? (
+                <div className="text-center py-12">
+                  <svg
+                    className="mx-auto h-12 w-12 text-gray-400"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
+                    />
+                  </svg>
+                  <h3 className="mt-4 text-lg font-medium text-gray-900">
+                    Nu aveți sesiuni speciale
+                  </h3>
+                  <p className="mt-2 text-gray-500">
+                    Creați prima sesiune specială pentru clienții dumneavoastră.
+                  </p>
+                  <div className="mt-4">
+                    <button
+                      onClick={() => _setShowSessionForm(true)}
+                      className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700"
+                    >
+                      Creează prima sesiune
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  <div className="flex justify-end mb-4">
+                    <button
+                      onClick={() => _setShowSessionForm(true)}
+                      className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700"
+                    >
+                      <svg
+                        className="mr-2 h-4 w-4"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M12 4v16m8-8H4"
+                        />
+                      </svg>
+                      Sesiune nouă
+                    </button>
+                  </div>
+                  {_specialSessions.map((session) => (
+                    <div
+                      key={session.id}
+                      className="border border-gray-200 rounded-lg p-4 hover:bg-gray-50 transition-colors"
+                    >
+                      <div className="flex items-start justify-between">
+                        <div className="flex-1">
+                          <h4 className="text-lg font-medium text-gray-900">
+                            {session.title}
+                          </h4>
+                          <p className="mt-1 text-sm text-gray-600">
+                            {session.description}
+                          </p>
+                          <div className="mt-2 flex items-center space-x-4 text-sm text-gray-500">
+                            <div className="flex items-center">
+                              <svg
+                                className="mr-1 h-4 w-4"
+                                fill="none"
+                                viewBox="0 0 24 24"
+                                stroke="currentColor"
+                              >
+                                <path
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                  strokeWidth={2}
+                                  d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
+                                />
+                              </svg>
+                              {session.date.toLocaleDateString("ro-RO")}
+                            </div>
+                            <div className="flex items-center">
+                              <svg
+                                className="mr-1 h-4 w-4"
+                                fill="none"
+                                viewBox="0 0 24 24"
+                                stroke="currentColor"
+                              >
+                                <path
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                  strokeWidth={2}
+                                  d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
+                                />
+                              </svg>
+                              {session.startTime} - {session.endTime}
+                            </div>
+                            <div className="flex items-center">
+                              <svg
+                                className="mr-1 h-4 w-4"
+                                fill="none"
+                                viewBox="0 0 24 24"
+                                stroke="currentColor"
+                              >
+                                <path
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                  strokeWidth={2}
+                                  d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"
+                                />
+                              </svg>
+                              {session.currentParticipants}/{session.capacity}{" "}
+                              participanți
+                            </div>
+                            <div className="flex items-center">
+                              <svg
+                                className="mr-1 h-4 w-4"
+                                fill="none"
+                                viewBox="0 0 24 24"
+                                stroke="currentColor"
+                              >
+                                <path
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                  strokeWidth={2}
+                                  d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1"
+                                />
+                              </svg>
+                              {session.price} RON
+                            </div>
+                          </div>
+                          {session.location && !session.isOnline && (
+                            <div className="mt-2 flex items-center text-sm text-gray-500">
+                              <svg
+                                className="mr-1 h-4 w-4"
+                                fill="none"
+                                viewBox="0 0 24 24"
+                                stroke="currentColor"
+                              >
+                                <path
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                  strokeWidth={2}
+                                  d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"
+                                />
+                                <path
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                  strokeWidth={2}
+                                  d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
+                                />
+                              </svg>
+                              {session.location}
+                            </div>
+                          )}
+                          {session.isOnline && (
+                            <div className="mt-2 flex items-center text-sm text-blue-600">
+                              <svg
+                                className="mr-1 h-4 w-4"
+                                fill="none"
+                                viewBox="0 0 24 24"
+                                stroke="currentColor"
+                              >
+                                <path
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                  strokeWidth={2}
+                                  d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9v-9m0-9v9"
+                                />
+                              </svg>
+                              Sesiune online
+                            </div>
+                          )}
+                        </div>
+                        <div className="flex-shrink-0 ml-4 flex space-x-2">
+                          <button
+                            onClick={() => {
+                              _setSelectedSession(session);
+                              _setShowSessionForm(true);
+                            }}
+                            className="text-blue-600 hover:text-blue-800"
+                            aria-label={`Editează sesiunea ${session.title}`}
+                          >
+                            <svg
+                              className="h-5 w-5"
+                              fill="none"
+                              viewBox="0 0 24 24"
+                              stroke="currentColor"
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth={2}
+                                d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
+                              />
+                            </svg>
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+
+        {activeTab === "services" && (
+          <div className="bg-white shadow rounded-lg">
+            <div className="px-6 py-4 border-b border-gray-200">
+              <h3 className="text-lg font-medium text-gray-900">
+                Serviciile mele
+              </h3>
+              <p className="mt-1 text-sm text-gray-500">
+                Gestionează serviciile pe care le oferi clienților
+              </p>
+            </div>
+            <div className="p-6">
+              {_loadingServices ? (
+                <div className="text-center py-12">
+                  <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-blue-500 mx-auto mb-4"></div>
+                  <p className="text-gray-600">Se încarcă serviciile...</p>
+                </div>
+              ) : _specialistServices.length === 0 ? (
+                <div className="text-center py-12">
+                  <svg
+                    className="mx-auto h-12 w-12 text-gray-400"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-2m-2 0H7m5 0v-5a2 2 0 00-2-2H8a2 2 0 00-2 2v5m2 0V9a2 2 0 012-2h2a2 2 0 012 2v8"
+                    />
+                  </svg>
+                  <h3 className="mt-4 text-lg font-medium text-gray-900">
+                    Nu aveți servicii configurate
+                  </h3>
+                  <p className="mt-2 text-gray-500">
+                    Adăugați servicii pentru a începe să primiți programări.
+                  </p>
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                  {_specialistServices.map((service) => (
+                    <div
+                      key={service.id}
+                      className="border border-gray-200 rounded-lg p-4 hover:bg-gray-50 transition-colors"
+                    >
+                      <div className="flex items-start justify-between">
+                        <div className="flex-1">
+                          <h4 className="text-lg font-medium text-gray-900">
+                            {service.name}
+                          </h4>
+                          <p className="mt-1 text-sm text-gray-600">
+                            {service.description}
+                          </p>
+                          <div className="mt-2 flex items-center justify-between">
+                            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                              {service.category}
+                            </span>
+                            <span className="text-sm font-medium text-gray-900">
+                              {service.price} RON
+                            </span>
+                          </div>
+                          <div className="mt-2 text-sm text-gray-500">
+                            Durată: {service.duration} minute
+                          </div>
+                        </div>
+                      </div>
+                      <div className="mt-3 flex items-center justify-between">
+                        <span
+                          className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
+                            service.isActive
+                              ? "bg-green-100 text-green-800"
+                              : "bg-red-100 text-red-800"
+                          }`}
+                        >
+                          {service.isActive ? "Activ" : "Inactiv"}
+                        </span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+      </div>
     </div>
   );
 };

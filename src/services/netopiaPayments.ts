@@ -92,10 +92,15 @@ class NetopiaPayments {
    * @returns true dacă sunt configurate credențialele live
    */
   private hasLiveCredentials(): boolean {
-    // În production, verificăm dacă avem cheia live configurată
+    // În producție, considerăm că avem credențiale live dacă variabilele sunt setate
+    const liveKey = import.meta.env.VITE_PAYMENT_LIVE_KEY;
+    const liveSignature = import.meta.env.VITE_NETOPIA_SIGNATURE_LIVE;
+
     return !!(
-      import.meta.env.VITE_PAYMENT_LIVE_KEY &&
-      import.meta.env.VITE_PAYMENT_LIVE_KEY !== "2ZOW-PJ5X-HYYC-IENE-APZO" &&
+      liveKey &&
+      liveSignature &&
+      liveKey !== "SANDBOX_SIGNATURE_PLACEHOLDER" &&
+      liveSignature !== "SANDBOX_SIGNATURE_PLACEHOLDER" &&
       this.isProduction()
     );
   }
@@ -105,7 +110,12 @@ class NetopiaPayments {
    * @returns true pentru live mode, false pentru sandbox
    */
   private shouldUseLiveMode(): boolean {
-    return this.isProduction() && this.hasLiveCredentials();
+    // În producție, întotdeauna folosim live mode dacă avem credențialele
+    if (this.isProduction()) {
+      return this.hasLiveCredentials();
+    }
+    // În development, folosim sandbox
+    return false;
   }
 
   /**
@@ -131,13 +141,6 @@ class NetopiaPayments {
         isProduction: this.isProduction(),
         signature: this.config.posSignature?.substring(0, 10) + "...",
       });
-
-      // În production, forțează eroare dacă nu avem credențiale live
-      if (this.isProduction() && !useLiveMode) {
-        throw new Error(
-          "Sistemul de plăți cu cardul este în proces de configurare. Vă rugăm să alegeți plata ramburs pentru moment sau să încercați mai târziu."
-        );
-      }
 
       const requestPayload = {
         ...paymentData,
@@ -193,9 +196,28 @@ class NetopiaPayments {
       }
       const contentType = response.headers.get("content-type") || "";
       const bodyText = await response.text();
+
+      // Enhanced logging for debugging
+      console.log("🔍 NETOPIA Response Debug:", {
+        status: response.status,
+        contentType: contentType,
+        bodyLength: bodyText.length,
+        bodyStart: bodyText.substring(0, 200),
+        containsHtml: bodyText.includes("<html"),
+        containsDoctype: bodyText.includes("<!doctype html>"),
+        containsForm: bodyText.includes("<form"),
+        containsSvg: bodyText.includes("card.svg"),
+      });
+
       // If HTML form returned (3DS), return raw HTML
-      // Handle sandbox 3DS HTML form
-      if (contentType.includes("text/html") || bodyText.includes("<html")) {
+      // Handle both sandbox and live 3DS HTML forms
+      if (
+        contentType.includes("text/html") ||
+        bodyText.includes("<html") ||
+        bodyText.includes("<!doctype html>") ||
+        bodyText.includes("<form")
+      ) {
+        console.log("🎯 Detected HTML response, returning as 3DS form");
         return bodyText;
       }
       // Otherwise parse JSON for paymentUrl
@@ -246,7 +268,7 @@ class NetopiaPayments {
         import.meta.env.VITE_NETOPIA_SIGNATURE_LIVE ||
         import.meta.env.VITE_PAYMENT_LIVE_KEY;
       const hasRealLiveCredentials =
-        Boolean(liveSignature) && liveSignature === "2ZOW-PJ5X-HYYC-IENE-APZO";
+        Boolean(liveSignature) && this.isProduction();
 
       // Use correct endpoint based on environment and include live parameter
       const isLive = this.isProduction() && hasRealLiveCredentials;
@@ -392,8 +414,7 @@ const getNetopiaConfig = (): NetopiaConfig => {
     "SANDBOX_SIGNATURE_PLACEHOLDER";
 
   // Verificăm dacă avem credențiale live configurate
-  const hasRealLiveCredentials =
-    Boolean(liveSignature) && liveSignature === "2ZOW-PJ5X-HYYC-IENE-APZO";
+  const hasRealLiveCredentials = Boolean(liveSignature) && isProduction;
 
   const useLive = isProduction && hasRealLiveCredentials;
 
@@ -411,6 +432,13 @@ const getNetopiaConfig = (): NetopiaConfig => {
     sandboxSignatureValue: sandboxSignature?.substring(0, 10) + "...",
     hasRealLiveCredentials,
     environment: import.meta.env.MODE,
+    finalSignature:
+      (useLive
+        ? liveSignature!
+        : useSandbox
+          ? sandboxSignature!
+          : "2ZOW-PJ5X-HYYC-IENE-APZO"
+      )?.substring(0, 10) + "...",
   });
 
   return {

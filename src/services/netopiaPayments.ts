@@ -88,6 +88,27 @@ class NetopiaPayments {
   }
 
   /**
+   * Verifică dacă avem credențiale NETOPIA Live configurate
+   * @returns true dacă sunt configurate credențialele live
+   */
+  private hasLiveCredentials(): boolean {
+    // În production, verificăm dacă avem cheia live configurată
+    return !!(
+      import.meta.env.VITE_PAYMENT_LIVE_KEY &&
+      import.meta.env.VITE_PAYMENT_LIVE_KEY !== "2ZOW-PJ5X-HYYC-IENE-APZO" &&
+      this.isProduction()
+    );
+  }
+
+  /**
+   * Determină automat dacă să folosim modul live
+   * @returns true pentru live mode, false pentru sandbox
+   */
+  private shouldUseLiveMode(): boolean {
+    return this.isProduction() && this.hasLiveCredentials();
+  }
+
+  /**
    * Inițiază o plată prin platforma NETOPIA Payments
    *
    * Procesul respectă standardele PCI DSS și implementează:
@@ -101,15 +122,18 @@ class NetopiaPayments {
    */
   async initiatePayment(paymentData: NetopiaPaymentData): Promise<string> {
     try {
+      const useLiveMode = this.shouldUseLiveMode();
       console.log("Initiating payment with data:", {
         orderId: paymentData.orderId,
         amount: paymentData.amount,
-        live: this.config.live,
+        live: useLiveMode,
+        hasLiveCredentials: this.hasLiveCredentials(),
+        isProduction: this.isProduction(),
         signature: this.config.posSignature?.substring(0, 10) + "...",
       });
 
       // În production, forțează eroare dacă nu avem credențiale live
-      if (this.isProduction() && !this.config.live) {
+      if (this.isProduction() && !useLiveMode) {
         throw new Error(
           "Sistemul de plăți cu cardul este în proces de configurare. Vă rugăm să alegeți plata ramburs pentru moment sau să încercați mai târziu."
         );
@@ -118,7 +142,7 @@ class NetopiaPayments {
       const requestPayload = {
         ...paymentData,
         posSignature: this.config.posSignature,
-        live: this.config.live,
+        live: useLiveMode,
       };
 
       const requestBody = JSON.stringify(requestPayload);
@@ -128,7 +152,7 @@ class NetopiaPayments {
         bodyLength: requestBody.length,
         bodyPreview: requestBody.substring(0, 100),
         posSignature: this.config.posSignature?.substring(0, 10) + "...",
-        live: this.config.live,
+        live: useLiveMode,
       });
 
       // Use dynamic endpoint via getNetlifyEndpoint

@@ -19,10 +19,11 @@ const NETOPIA_CONFIG = {
   },
   live: {
     mode: "live",
-    signature: process.env.NETOPIA_LIVE_SIGNATURE || "2ZOW-PJ5X-HYYC-IENE-APZO",
+    signature: process.env.NETOPIA_LIVE_SIGNATURE,
     endpoint: "https://secure.netopia-payments.com/payment/card",
-    publicKey:
-      process.env.NETOPIA_LIVE_PUBLIC_KEY || "2ZOW-PJ5X-HYYC-IENE-APZO",
+    publicKey: process.env.NETOPIA_LIVE_PUBLIC_KEY,
+    privateKey: process.env.NETOPIA_LIVE_PRIVATE_KEY,
+    certificate: process.env.NETOPIA_LIVE_CERTIFICATE,
   },
 };
 
@@ -273,15 +274,32 @@ export const handler = async (event, context) => {
 
     const isLive = paymentData.live;
     const hasCustomSignature = !!paymentData.posSignature;
+    const hasLiveCredentials = !!(
+      process.env.NETOPIA_LIVE_SIGNATURE &&
+      process.env.NETOPIA_LIVE_PUBLIC_KEY &&
+      process.env.NETOPIA_LIVE_PRIVATE_KEY
+    );
 
-    // Forțăm mereu LIVE mode pentru a evita problema cu SVG-ul
-    let config = NETOPIA_CONFIG.live;
-    console.log("🚀 Forcing LIVE mode to prevent SVG redirect issue.");
-    console.log("🔧 Using configuration:", {
+    // Folosim LIVE mode dacă avem credențiale configurate sau dacă e explicit cerut
+    let config;
+    if (isLive && hasLiveCredentials) {
+      config = NETOPIA_CONFIG.live;
+      console.log("🚀 Using LIVE NETOPIA credentials for production payment.");
+    } else if (!isLive || !hasLiveCredentials) {
+      // Fallback la configurație sandbox pentru development/testing
+      config = NETOPIA_CONFIG.sandbox;
+      console.log("🔧 Using SANDBOX configuration (development/testing mode).");
+    }
+
+    console.log("🔧 Payment configuration:", {
       mode: config.mode,
       endpoint: config.endpoint,
       hasSignature: !!config.signature,
+      hasLiveCredentials: hasLiveCredentials,
+      isLiveRequested: isLive,
     });
+
+    // Verificare finală pentru live mode
     if (isLive && !config.signature) {
       console.error(
         "🚨 PRODUCTION ERROR: Live mode requested but no live signature!"
@@ -293,9 +311,13 @@ export const handler = async (event, context) => {
         NETOPIA_LIVE_PUBLIC_KEY: process.env.NETOPIA_LIVE_PUBLIC_KEY
           ? "SET"
           : "MISSING",
+        NETOPIA_LIVE_PRIVATE_KEY: process.env.NETOPIA_LIVE_PRIVATE_KEY
+          ? "SET"
+          : "MISSING",
         NODE_ENV: process.env.NODE_ENV,
         URL: process.env.URL,
       });
+      throw new Error("NETOPIA Live credentials not properly configured");
     }
 
     // Dacă avem o signature customă din frontend, o folosim
@@ -308,7 +330,7 @@ export const handler = async (event, context) => {
     }
 
     console.log(
-      `✅ Using ${config.signature === "NETOPIA_SANDBOX_TEST_SIGNATURE" ? "SANDBOX" : "LIVE"} Netopia configuration`
+      `✅ Using ${config.mode.toUpperCase()} Netopia configuration with ${hasLiveCredentials ? "LIVE" : "SANDBOX"} credentials`
     );
 
     // Verifică configurația finală

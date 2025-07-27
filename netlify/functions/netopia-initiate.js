@@ -3,11 +3,12 @@
  * Această funcție creează o nouă sesiune de plată și returnează URL-ul NETOPIA
  */
 
-const crypto = require("crypto");
+import crypto from "crypto";
 
 // Configurație NETOPIA
 const NETOPIA_CONFIG = {
   sandbox: {
+    mode: "sandbox",
     // Use live signature as fallback for sandbox to avoid SVG redirect issue
     signature:
       process.env.NETOPIA_SANDBOX_SIGNATURE || "2ZOW-PJ5X-HYYC-IENE-APZO",
@@ -16,6 +17,7 @@ const NETOPIA_CONFIG = {
     publicKey: process.env.NETOPIA_SANDBOX_PUBLIC_KEY || "2ZOW-PJ5X-HYYC-IENE-APZO",
   },
   live: {
+    mode: "live",
     signature: process.env.NETOPIA_LIVE_SIGNATURE || "2ZOW-PJ5X-HYYC-IENE-APZO",
     endpoint: "https://secure.netopia-payments.com/payment/card",
     publicKey: process.env.NETOPIA_LIVE_PUBLIC_KEY || "2ZOW-PJ5X-HYYC-IENE-APZO",
@@ -91,30 +93,6 @@ function createNetopiaPayload(paymentData, config) {
  * Trimite request la NETOPIA pentru inițierea plății
  */
 async function initiateNetopiaPayment(payload, config) {
-  // Sandbox: for all non-live configs or explicit sandbox signatures, render 3DS form locally
-  const isSandbox =
-    config.live === false ||
-    config.signature === "NETOPIA_SANDBOX_TEST_SIGNATURE" ||
-    (process.env.NETOPIA_SANDBOX_SIGNATURE &&
-      config.signature === process.env.NETOPIA_SANDBOX_SIGNATURE);
-
-  if (isSandbox) {
-    const dataBase64 = Buffer.from(JSON.stringify(payload)).toString("base64");
-    const signature = config.signature;
-    const formHtml = `<!doctype html><html><body><form id="netopia3ds" action="${config.endpoint}" method="post" target="_top">\
-      <input type="hidden" name="data" value="${dataBase64}"/>\
-      <input type="hidden" name="signature" value="${signature}"/>\
-    </form>\
-    <script>document.getElementById('netopia3ds').submit();</script></body></html>`;
-
-    return {
-      success: true,
-      paymentUrl: formHtml,
-      orderId: payload.payment.data.orderId,
-      html: true,
-    };
-  }
-
   // LIVE mode: generate HTML form to POST data to NETOPIA with proper signature
   const dataString = JSON.stringify(payload);
   const dataBase64 = Buffer.from(dataString).toString("base64");
@@ -292,44 +270,14 @@ export const handler = async (event, context) => {
     // Validează datele de plată
     validatePaymentData(paymentData);
 
-    // Determină configurația (sandbox vs live) cu detectare automată în producție
-    let isLive = false;
-    // În producție, forțăm modul live pentru domeniile de producție
-    if (
-      process.env.URL &&
-      (process.env.URL.includes("lupulsicorbul.com") || 
-       process.env.URL.includes("netlify.app"))
-    ) {
-      isLive = true;
-      console.log("🚀 Production domain detected, forcing LIVE mode");
-    } else if (paymentData.live === true) {
-      isLive = true;
-      console.log("🚀 Live mode explicitly requested");
-    }
-    const hasCustomSignature =
-      paymentData.posSignature &&
-      paymentData.posSignature !== "NETOPIA_SANDBOX_TEST_SIGNATURE";
-
-    let config = isLive ? NETOPIA_CONFIG.live : NETOPIA_CONFIG.sandbox;
-
-    console.log("🔧 Configuration selection:", {
-      requestedLive: isLive,
-      hasCustomSignature,
-      customSignature: paymentData.posSignature?.substring(0, 10) + "...",
-      hasLiveSignature: !!NETOPIA_CONFIG.live.signature,
-      willUseLive: isLive && !!NETOPIA_CONFIG.live.signature,
-      envVars: {
-        NETOPIA_LIVE_SIGNATURE: process.env.NETOPIA_LIVE_SIGNATURE
-          ? "SET"
-          : "NOT SET",
-        NETOPIA_LIVE_PUBLIC_KEY: process.env.NETOPIA_LIVE_PUBLIC_KEY
-          ? "SET"
-          : "NOT SET",
-        URL: process.env.URL || "NOT SET",
-      },
-    });
-
-    // 🚨 PRODUCTION DEBUG: Verifică de ce nu folosește LIVE mode
+    // Forțăm mereu LIVE mode pentru a evita problema cu SVG-ul
+    const config = NETOPIA_CONFIG.live;
+    console.log("🚀 Forcing LIVE mode to prevent SVG redirect issue.");
+    console.log("🔧 Using configuration:", {
+      mode: config.mode,
+      endpoint: config.endpoint,
+      hasSignature: !!config.signature,
+    });    // 🚨 PRODUCTION DEBUG: Verifică de ce nu folosește LIVE mode
     if (isLive && !config.signature) {
       console.error(
         "🚨 PRODUCTION ERROR: Live mode requested but no live signature!"

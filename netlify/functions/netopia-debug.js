@@ -33,13 +33,13 @@ export const handler = async (event, context) => {
     // Determină modul de funcționare
     const isLive =
       process.env.NETOPIA_LIVE_SIGNATURE &&
-      process.env.NETOPIA_LIVE_SIGNATURE !== "2ZOW-PJ5X-HYYC-IENE-APZO";
+      process.env.NETOPIA_LIVE_SIGNATURE === "2ZOW-PJ5X-HYYC-IENE-APZO";
 
     const config = {
       mode: isLive ? "LIVE" : "SANDBOX",
       signature: isLive
         ? process.env.NETOPIA_LIVE_SIGNATURE?.substring(0, 10) + "..."
-        : "2ZOW-PJ5X-HYYC-IENE-APZO",
+        : "SANDBOX_SIGNATURE_PLACEHOLDER",
       endpoint: isLive
         ? "https://secure.netopia-payments.com/payment/card"
         : "https://secure-sandbox.netopia-payments.com/payment/card",

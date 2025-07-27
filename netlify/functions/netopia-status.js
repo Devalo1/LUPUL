@@ -46,7 +46,7 @@ function simulateStatusCheck(orderId) {
 async function checkNetopiaStatus(orderId, config) {
   try {
     // Pentru sandbox, simulăm verificarea
-    if (config.signature === "2ZOW-PJ5X-HYYC-IENE-APZO") {
+    if (config.signature !== "2ZOW-PJ5X-HYYC-IENE-APZO") {
       console.log("Sandbox mode: Simulating status check for", orderId);
       return simulateStatusCheck(orderId);
     }

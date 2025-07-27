@@ -9,11 +9,12 @@ const nodemailer = require("nodemailer");
 // Configurație NETOPIA
 const NETOPIA_CONFIG = {
   sandbox: {
-    signature: "2ZOW-PJ5X-HYYC-IENE-APZO",
+    signature:
+      process.env.NETOPIA_SANDBOX_SIGNATURE || "SANDBOX_SIGNATURE_PLACEHOLDER",
     publicKey: process.env.NETOPIA_SANDBOX_PUBLIC_KEY,
   },
   live: {
-    signature: process.env.NETOPIA_LIVE_SIGNATURE,
+    signature: process.env.NETOPIA_LIVE_SIGNATURE || "2ZOW-PJ5X-HYYC-IENE-APZO",
     publicKey: process.env.NETOPIA_LIVE_PUBLIC_KEY,
   },
 };

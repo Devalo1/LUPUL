@@ -10,7 +10,7 @@ const nodemailer = require("nodemailer");
  * Configurează transportul pentru emailuri
  */
 function getEmailTransporter() {
-  return nodemailer.createTransporter({
+  return nodemailer.createTransport({
     service: "gmail",
     auth: {
       user: process.env.SMTP_USER || "lupulsicorbul@gmail.com",

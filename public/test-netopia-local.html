@@ -1,0 +1,235 @@
+<!doctype html>
+<html lang="ro">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Test Local Netopia 3DS</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        padding: 20px;
+      }
+      .debug {
+        background: #f0f0f0;
+        padding: 10px;
+        margin: 10px 0;
+        border-radius: 5px;
+      }
+      .error {
+        background: #ffe6e6;
+        color: #d00;
+      }
+      .success {
+        background: #e6ffe6;
+        color: #0a0;
+      }
+      button {
+        padding: 10px 20px;
+        margin: 5px;
+        cursor: pointer;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>🧪 Test Local Netopia 3DS</h1>
+
+    <div class="debug">
+      <h3>1. Test Environment Variables</h3>
+      <button onclick="testEnvVars()">Test Frontend Env Vars</button>
+      <div id="envResult"></div>
+    </div>
+
+    <div class="debug">
+      <h3>2. Test Configuration Logic</h3>
+      <button onclick="testConfig()">Test getNetopiaConfig()</button>
+      <div id="configResult"></div>
+    </div>
+
+    <div class="debug">
+      <h3>3. Test Backend Function</h3>
+      <button onclick="testBackend()">
+        Test /.netlify/functions/netopia-initiate
+      </button>
+      <div id="backendResult"></div>
+    </div>
+
+    <div class="debug">
+      <h3>4. Test Full Payment Flow</h3>
+      <button onclick="testPaymentFlow()">Test Complete Payment</button>
+      <div id="paymentResult"></div>
+    </div>
+
+    <script>
+      // Simulează production environment
+      function simulateProduction() {
+          // Override hostname pentru test
+          Object.defineProperty(window.location, 'hostname', {
+              value: 'lupulsicorbul.com',
+              configurable: true
+          });
+      }
+
+      function testEnvVars() {
+          const result = document.getElementById('envResult');
+          const vars = {
+              VITE_NETOPIA_SIGNATURE_LIVE: import.meta?.env?.VITE_NETOPIA_SIGNATURE_LIVE || 'NOT SET',
+              VITE_NETOPIA_PUBLIC_KEY: import.meta?.env?.VITE_NETOPIA_PUBLIC_KEY ? 'SET (' + import.meta.env.VITE_NETOPIA_PUBLIC_KEY.substring(0, 30) + '...)' : 'NOT SET',
+              VITE_NETOPIA_SIGNATURE_SANDBOX: import.meta?.env?.VITE_NETOPIA_SIGNATURE_SANDBOX || 'NOT SET'
+          };
+
+          result.innerHTML = `<pre>${JSON.stringify(vars, null, 2)}</pre>`;
+      }
+
+      function testConfig() {
+          simulateProduction();
+
+          const isProduction = window.location.hostname === "lupulsicorbul.com";
+          const liveSignature = import.meta?.env?.VITE_NETOPIA_SIGNATURE_LIVE || import.meta?.env?.VITE_PAYMENT_LIVE_KEY;
+          const sandboxSignature = import.meta?.env?.VITE_NETOPIA_SIGNATURE_SANDBOX ||
+              import.meta?.env?.VITE_PAYMENT_SANDBOX_KEY || "2ZOW-PJ5X-HYYC-IENE-APZO";
+
+          const hasRealLiveCredentials = Boolean(liveSignature) &&
+              liveSignature !== "2ZOW-PJ5X-HYYC-IENE-APZO" &&
+              liveSignature !== sandboxSignature;
+
+          const useLive = isProduction && hasRealLiveCredentials;
+
+          const config = {
+              isProduction,
+              liveSignature: liveSignature?.substring(0, 10) + '...',
+              sandboxSignature: sandboxSignature?.substring(0, 10) + '...',
+              hasRealLiveCredentials,
+              useLive,
+              finalPosSignature: (useLive ? liveSignature : sandboxSignature)?.substring(0, 10) + '...',
+              live: Boolean(useLive)
+          };
+
+          const result = document.getElementById('configResult');
+          result.innerHTML = `<pre>${JSON.stringify(config, null, 2)}</pre>`;
+          result.className = useLive ? 'debug success' : 'debug error';
+      }
+
+      async function testBackend() {
+          const testPayload = {
+              orderId: 'TEST' + Date.now(),
+              amount: 100, // 1 RON in bani
+              currency: 'RON',
+              description: 'Test payment',
+              customerInfo: {
+                  firstName: 'Test',
+                  lastName: 'User',
+                  email: 'test@example.com',
+                  phone: '0700000000',
+                  address: 'Test Address',
+                  city: 'Bucuresti',
+                  county: 'Bucuresti',
+                  postalCode: '010000'
+              },
+              posSignature: '2ZOW-PJ5X-HYYC-IENE-APZO', // Test cu sandbox signature
+              live: false // Start with sandbox
+          };
+
+          const result = document.getElementById('backendResult');
+          result.innerHTML = 'Testing backend...';
+
+          try {
+              const response = await fetch('/.netlify/functions/netopia-initiate', {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify(testPayload)
+              });
+
+              const responseText = await response.text();
+              let responseData;
+              try {
+                  responseData = JSON.parse(responseText);
+              } catch (e) {
+                  responseData = { html: responseText };
+              }
+
+              result.innerHTML = `
+                  <strong>Status:</strong> ${response.status}<br>
+                  <strong>Response:</strong><br>
+                  <pre>${JSON.stringify(responseData, null, 2)}</pre>
+              `;
+              result.className = response.ok ? 'debug success' : 'debug error';
+
+          } catch (error) {
+              result.innerHTML = `<strong>Error:</strong> ${error.message}`;
+              result.className = 'debug error';
+          }
+      }
+
+      async function testPaymentFlow() {
+          // Test cu live credentials
+          simulateProduction();
+
+          const liveSignature = import.meta?.env?.VITE_NETOPIA_SIGNATURE_LIVE;
+          if (!liveSignature) {
+              document.getElementById('paymentResult').innerHTML =
+                  '<strong class="error">LIVE signature not found in environment!</strong>';
+              return;
+          }
+
+          const testPayload = {
+              orderId: 'LIVE_TEST_' + Date.now(),
+              amount: 100,
+              currency: 'RON',
+              description: 'Live test payment',
+              customerInfo: {
+                  firstName: 'Test',
+                  lastName: 'Live',
+                  email: 'test@lupulsicorbul.com',
+                  phone: '0700000000',
+                  address: 'Test Address',
+                  city: 'Bucuresti',
+                  county: 'Bucuresti',
+                  postalCode: '010000'
+              },
+              posSignature: liveSignature,
+              live: true // Force live mode
+          };
+
+          const result = document.getElementById('paymentResult');
+          result.innerHTML = 'Testing LIVE payment flow...';
+
+          try {
+              const response = await fetch('/.netlify/functions/netopia-initiate', {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify(testPayload)
+              });
+
+              const responseText = await response.text();
+
+              if (responseText.includes('<form') && responseText.includes('3ds')) {
+                  result.innerHTML = `
+                      <strong class="success">✅ LIVE 3DS Form Generated!</strong><br>
+                      <details>
+                          <summary>View HTML Form</summary>
+                          <pre>${responseText.substring(0, 500)}...</pre>
+                      </details>
+                  `;
+                  result.className = 'debug success';
+              } else {
+                  result.innerHTML = `
+                      <strong class="error">❌ No 3DS form found</strong><br>
+                      <pre>${responseText}</pre>
+                  `;
+                  result.className = 'debug error';
+              }
+
+          } catch (error) {
+              result.innerHTML = `<strong>Error:</strong> ${error.message}`;
+              result.className = 'debug error';
+          }
+      }
+
+      // Auto-run tests on load
+      window.onload = function() {
+          testEnvVars();
+          testConfig();
+      };
+    </script>
+  </body>
+</html>

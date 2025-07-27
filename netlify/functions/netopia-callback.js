@@ -44,8 +44,10 @@ export const handler = async (event, context) => {
     });
 
     // Validează signature-ul (în producție)
-    if (callbackData.signature !== "2ZOW-PJ5X-HYYC-IENE-APZO") {
+    if (callbackData.signature === "2ZOW-PJ5X-HYYC-IENE-APZO") {
       // În producție, verifică signature-ul cu cheia publică Netopia
+      console.log("⚠️ Callback signature validation (live mode)");
+    } else {
       console.log("⚠️ Callback signature validation (sandbox mode)");
     }
 

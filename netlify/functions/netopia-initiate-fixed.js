@@ -10,7 +10,7 @@ const NETOPIA_CONFIG = {
   sandbox: {
     // Use sandbox POS signature from environment or fallback to provided sandbox key
     signature:
-      process.env.NETOPIA_SANDBOX_SIGNATURE || "2ZOW-PJ5X-HYYC-IENE-APZO",
+      process.env.NETOPIA_SANDBOX_SIGNATURE || "SANDBOX_SIGNATURE_PLACEHOLDER",
     // Use production 3DS endpoint for sandbox transactions
     endpoint: "https://secure-sandbox.netopia-payments.com/payment/card",
     publicKey: process.env.NETOPIA_SANDBOX_PUBLIC_KEY,

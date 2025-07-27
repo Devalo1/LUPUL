@@ -357,12 +357,11 @@ const getNetopiaConfig = (): NetopiaConfig => {
   const sandboxSignature =
     import.meta.env.VITE_NETOPIA_SIGNATURE_SANDBOX ||
     import.meta.env.VITE_PAYMENT_SANDBOX_KEY ||
-    "2ZOW-PJ5X-HYYC-IENE-APZO";
+    "SANDBOX_SIGNATURE_PLACEHOLDER";
 
-  // Verificăm dacă avem credențiale live configurate DIFERITE de sandbox
-  const hasRealLiveCredentials = Boolean(liveSignature) && 
-    liveSignature !== "2ZOW-PJ5X-HYYC-IENE-APZO" && 
-    liveSignature !== sandboxSignature;
+  // Verificăm dacă avem credențiale live configurate
+  const hasRealLiveCredentials =
+    Boolean(liveSignature) && liveSignature === "2ZOW-PJ5X-HYYC-IENE-APZO";
 
   const useLive = isProduction && hasRealLiveCredentials;
 

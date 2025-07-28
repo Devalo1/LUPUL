@@ -5,20 +5,28 @@
 
 import crypto from "crypto";
 
-// Configurație NETOPIA
+// Configurație NETOPIA - Conform răspunsului oficial din 28 iulie 2025
+// "Este necesar sa activati mediul de test. Dupa ce vom testa implementarea
+// si ne vom asigura ca totul este in regula, vom aproba contul de comerciant
+// si veti putea trece in mediul de productie."
 const NETOPIA_CONFIG = {
   sandbox: {
-    // Use sandbox POS signature from environment or fallback to provided sandbox key
+    // Sandbox environment pentru testare - API v3 disponibil
     signature:
       process.env.NETOPIA_SANDBOX_SIGNATURE || "SANDBOX_SIGNATURE_PLACEHOLDER",
-    // Use production 3DS endpoint for sandbox transactions
+    // API v3 cu /start endpoint - DOAR în sandbox pentru aprobare
     endpoint: "https://secure.sandbox.netopia-payments.com/payment/card/start",
     publicKey: process.env.NETOPIA_SANDBOX_PUBLIC_KEY,
+    apiVersion: "v3",
+    status: "testing", // În aprobare
   },
   live: {
     signature: process.env.NETOPIA_LIVE_SIGNATURE,
-    endpoint: "https://secure.netopia-payments.com/payment/card/start",
+    // Production folosește API standard până la aprobarea v3
+    endpoint: "https://secure.netopia-payments.com/payment/card",
     publicKey: process.env.NETOPIA_LIVE_PUBLIC_KEY,
+    apiVersion: "v2", // Standard până la aprobare
+    status: "awaiting_approval", // Așteaptă aprobare pentru v3
   },
 };
 
@@ -109,7 +117,7 @@ function createNetopiaPayload(paymentData, config) {
 
 /**
  * Trimite request JSON la NETOPIA pentru inițierea plății
- * Conform API v3: https://netopia-system.stoplight.io/docs/payments-api/d85c6f3d36ce1-create-a-payment-card-start
+ * Compatibil cu API standard /payment/card endpoint
  */
 async function initiateNetopiaPayment(payload, config) {
   console.log("🚀 Sending direct JSON request to NETOPIA API:", {
@@ -120,14 +128,25 @@ async function initiateNetopiaPayment(payload, config) {
   });
 
   try {
-    // Fă request JSON direct la NETOPIA API conform documentației
+    // Fă request JSON direct la NETOPIA API - endpoint-uri diferite pentru sandbox vs live
+    const requestHeaders = {
+      "Content-Type": "application/json",
+      Accept: "application/json",
+    };
+
+    // Pentru sandbox cu /start endpoint (API v3), includem Authorization header
+    if (config.endpoint.includes("/start")) {
+      // API v3 folosește Bearer token pentru autentificare
+      requestHeaders.Authorization = `Bearer ${config.signature}`;
+      console.log("🔐 Using API v3 with Bearer authentication for sandbox");
+    } else {
+      // API standard include signature în payload
+      console.log("🔐 Using standard API with signature in payload");
+    }
+
     const response = await fetch(config.endpoint, {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Accept: "application/json",
-        Authorization: config.signature, // Authorization header cu POS signature
-      },
+      headers: requestHeaders,
       body: JSON.stringify(payload),
     });
 
@@ -217,11 +236,12 @@ async function initiateNetopiaPayment(payload, config) {
     throw new Error("Format de răspuns neașteptat de la NETOPIA");
   } catch (error) {
     console.error("❌ NETOPIA API Request failed:", error);
-    
+
     // Fallback pentru development - simulare locală
     const baseUrl = process.env.URL || "https://lupulsicorbul.com";
-    const isTestingMode = baseUrl.includes("localhost") || config.endpoint.includes("sandbox");
-    
+    const isTestingMode =
+      baseUrl.includes("localhost") || config.endpoint.includes("sandbox");
+
     if (isTestingMode) {
       console.log("🧪 Fallback to local simulation for development/sandbox");
       return {

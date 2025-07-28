@@ -125,8 +125,8 @@ async function initiateNetopiaPayment(payload, config) {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        "Accept": "application/json",
-        "Authorization": config.signature, // Authorization header cu POS signature
+        Accept: "application/json",
+        Authorization: config.signature, // Authorization header cu POS signature
       },
       body: JSON.stringify(payload),
     });
@@ -152,13 +152,16 @@ async function initiateNetopiaPayment(payload, config) {
     if (responseData.payment?.status === 15) {
       // Status 15 = 3-D Secure authentication required
       console.log("� 3DS Authentication required");
-      
+
       if (responseData.customerAction?.type === "Authentication3D") {
         // Returnează form HTML pentru 3DS authentication
         const formData = responseData.customerAction.formData || {};
         const formInputs = Object.entries(formData)
-          .map(([key, value]) => `<input type="hidden" name="${key}" value="${value}"/>`)
-          .join('\n    ');
+          .map(
+            ([key, value]) =>
+              `<input type="hidden" name="${key}" value="${value}"/>`
+          )
+          .join("\n    ");
 
         const form3DS = `<!doctype html>
 <html lang="ro">
@@ -212,14 +215,14 @@ async function initiateNetopiaPayment(payload, config) {
     // Default fallback
     console.error("⚠️ Unexpected NETOPIA response format:", responseData);
     throw new Error("Format de răspuns neașteptat de la NETOPIA");
-
   } catch (error) {
     console.error("❌ NETOPIA API Request failed:", error);
-    
+
     // Fallback pentru development - simulare locală
     const baseUrl = process.env.URL || "https://lupulsicorbul.com";
-    const isTestingMode = baseUrl.includes("localhost") || config.endpoint.includes("sandbox");
-    
+    const isTestingMode =
+      baseUrl.includes("localhost") || config.endpoint.includes("sandbox");
+
     if (isTestingMode) {
       console.log("🧪 Fallback to local simulation for development/sandbox");
       return {

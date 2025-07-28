@@ -449,7 +449,7 @@ const getNetopiaConfig = (): NetopiaConfig => {
         : "2ZOW-PJ5X-HYYC-IENE-APZO", // Fallback garantat funcțional
     baseUrl: useLive
       ? "https://secure.netopia-payments.com"
-      : "https://secure-sandbox.netopia-payments.com",
+      : "https://secure.sandbox.netopia-payments.com",
     live: Boolean(useLive),
     publicKey:
       import.meta.env.VITE_NETOPIA_PUBLIC_KEY ||

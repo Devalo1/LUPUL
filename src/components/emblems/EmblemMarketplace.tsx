@@ -168,7 +168,11 @@ const EmblemMarketplace: React.FC = () => {
         );
 
         // Deschide pop-up pentru plata Netopia
-        const paymentWindow = window.open("", "netopia-payment", "width=800,height=600,scrollbars=yes");
+        const paymentWindow = window.open(
+          "",
+          "netopia-payment",
+          "width=800,height=600,scrollbars=yes"
+        );
         if (paymentWindow) {
           paymentWindow.document.write(result.paymentUrl);
           paymentWindow.document.close();

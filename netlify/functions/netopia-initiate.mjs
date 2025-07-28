@@ -12,12 +12,12 @@ const NETOPIA_CONFIG = {
     signature:
       process.env.NETOPIA_SANDBOX_SIGNATURE || "SANDBOX_SIGNATURE_PLACEHOLDER",
     // Use production 3DS endpoint for sandbox transactions
-    endpoint: "https://secure-sandbox.netopia-payments.com/payment/card",
+    endpoint: "https://secure.sandbox.netopia-payments.com/payment/card/start",
     publicKey: process.env.NETOPIA_SANDBOX_PUBLIC_KEY,
   },
   live: {
     signature: process.env.NETOPIA_LIVE_SIGNATURE,
-    endpoint: "https://secure.netopia-payments.com/payment/card",
+    endpoint: "https://secure.netopia-payments.com/payment/card/start",
     publicKey: process.env.NETOPIA_LIVE_PUBLIC_KEY,
   },
 };

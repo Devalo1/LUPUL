@@ -27,7 +27,7 @@ export const NETOPIA_CONFIG = {
   // Configurații tehnice
   TECHNICAL_CONFIG: {
     // URLs pentru diferite medii
-    SANDBOX_URL: "https://secure-sandbox.netopia-payments.com",
+    SANDBOX_URL: "https://secure.sandbox.netopia-payments.com",
     PRODUCTION_URL: "https://secure.netopia-payments.com",
 
     // Configurări de securitate

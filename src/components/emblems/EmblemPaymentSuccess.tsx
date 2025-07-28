@@ -8,7 +8,6 @@ const EmblemPaymentSuccess: React.FC = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
   const [isProcessing, setIsProcessing] = useState(true);
-  const [success, setSuccess] = useState(false);
 
   useEffect(() => {
     if (user) {
@@ -25,7 +24,6 @@ const EmblemPaymentSuccess: React.FC = () => {
       const userEmblem = await emblemService.getUserEmblem(user!.uid);
 
       if (userEmblem) {
-        setSuccess(true);
         localStorage.removeItem("pendingEmblemPurchase");
       }
 

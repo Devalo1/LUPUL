@@ -3,6 +3,7 @@
 ## Problema Identificată
 
 Ați primit un email de la Netopia care spunea:
+
 > "Din păcate, redirectionarea plății nu se face către endpoint-ul https://secure.sandbox.netopia-payments.com/payment/card/start"
 
 ## Cauza Problemei
@@ -10,10 +11,12 @@ Ați primit un email de la Netopia care spunea:
 Funcția `netopia-initiate-marketplace.mjs` folosea URL-urile vechi de la MobilPay în loc de noile endpoint-uri Netopia:
 
 **❌ Endpoint-uri INCORECTE (vechi):**
+
 - Sandbox: `https://sandboxsecure.mobilpay.ro`
 - Live: `https://secure.mobilpay.ro`
 
 **✅ Endpoint-uri CORECTE (noi):**
+
 - Sandbox: `https://secure-sandbox.netopia-payments.com/payment/card`
 - Live: `https://secure.netopia-payments.com/payment/card`
 
@@ -32,13 +35,14 @@ const NETOPIA_URL = NETOPIA_CONFIG.isLive
 // DUPĂ (corect)
 const NETOPIA_CONFIG = {
   sandbox: {
-    signature: process.env.NETOPIA_SANDBOX_SIGNATURE || "SANDBOX_SIGNATURE_PLACEHOLDER",
+    signature:
+      process.env.NETOPIA_SANDBOX_SIGNATURE || "SANDBOX_SIGNATURE_PLACEHOLDER",
     endpoint: "https://secure-sandbox.netopia-payments.com/payment/card",
     publicKey: process.env.NETOPIA_SANDBOX_PUBLIC_KEY,
   },
   live: {
     signature: process.env.NETOPIA_LIVE_SIGNATURE,
-    endpoint: "https://secure.netopia-payments.com/payment/card", 
+    endpoint: "https://secure.netopia-payments.com/payment/card",
     publicKey: process.env.NETOPIA_LIVE_PUBLIC_KEY,
   },
 };
@@ -111,7 +115,11 @@ Plata se deschide acum într-un pop-up în loc de redirect complet:
 
 ```typescript
 // Deschide pop-up pentru plata Netopia
-const paymentWindow = window.open("", "netopia-payment", "width=800,height=600,scrollbars=yes");
+const paymentWindow = window.open(
+  "",
+  "netopia-payment",
+  "width=800,height=600,scrollbars=yes"
+);
 if (paymentWindow) {
   paymentWindow.document.write(result.paymentUrl);
   paymentWindow.document.close();
@@ -147,7 +155,7 @@ NETOPIA_LIVE_MODE=true
 ✅ **Payload consistent:** Aceeași structură ca în funcția principală  
 ✅ **Debugging îmbunătățit:** Log-uri clare cu endpoint-ul folosit  
 ✅ **UX îmbunătățit:** Pop-up pentru plată în loc de redirect complet  
-✅ **Fallback robust:** Handling pentru cazuri când pop-up-ul e blocat  
+✅ **Fallback robust:** Handling pentru cazuri când pop-up-ul e blocat
 
 ## Note Importante
 

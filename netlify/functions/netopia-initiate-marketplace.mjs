@@ -8,23 +8,27 @@ import crypto from "crypto";
 // Configurare Netopia (aceleași credentiale ca pentru vânzări primare)
 const NETOPIA_CONFIG = {
   sandbox: {
-    signature: process.env.NETOPIA_SANDBOX_SIGNATURE || "SANDBOX_SIGNATURE_PLACEHOLDER",
-    endpoint: "https://secure-sandbox.netopia-payments.com/payment/card",
+    signature:
+      process.env.NETOPIA_SANDBOX_SIGNATURE || "SANDBOX_SIGNATURE_PLACEHOLDER",
+    endpoint: "https://secure.sandbox.netopia-payments.com/payment/card/start",
     publicKey: process.env.NETOPIA_SANDBOX_PUBLIC_KEY,
   },
   live: {
     signature: process.env.NETOPIA_LIVE_SIGNATURE,
-    endpoint: "https://secure.netopia-payments.com/payment/card", 
+    endpoint: "https://secure.netopia-payments.com/payment/card/start",
     publicKey: process.env.NETOPIA_LIVE_PUBLIC_KEY,
   },
 };
 
 // Determină configurația (sandbox vs live)
-const isLive = process.env.NODE_ENV === "production" && 
-                process.env.NETOPIA_LIVE_MODE === "true" &&
-                process.env.NETOPIA_LIVE_SIGNATURE;
+const isLive =
+  process.env.NODE_ENV === "production" &&
+  process.env.NETOPIA_LIVE_MODE === "true" &&
+  process.env.NETOPIA_LIVE_SIGNATURE;
 
-const NETOPIA_CURRENT_CONFIG = isLive ? NETOPIA_CONFIG.live : NETOPIA_CONFIG.sandbox;
+const NETOPIA_CURRENT_CONFIG = isLive
+  ? NETOPIA_CONFIG.live
+  : NETOPIA_CONFIG.sandbox;
 
 /**
  * Creează payload-ul pentru plata marketplace cu structura corectă Netopia
@@ -317,7 +321,10 @@ export const handler = async (event, context) => {
     }
 
     // Verifică configurarea Netopia
-    if (!NETOPIA_CURRENT_CONFIG.signature || !NETOPIA_CURRENT_CONFIG.publicKey) {
+    if (
+      !NETOPIA_CURRENT_CONFIG.signature ||
+      !NETOPIA_CURRENT_CONFIG.publicKey
+    ) {
       throw new Error("Netopia configuration missing");
     }
 

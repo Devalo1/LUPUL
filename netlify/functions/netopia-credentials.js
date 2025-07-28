@@ -1,9 +1,31 @@
 /**
  * NETOPIA Live Credentials - separat pentru a nu depăși limita AWS Lambda de 4KB
+ * Suportă atât variabile de mediu directe cât și în format base64
  */
 
-export const NETOPIA_LIVE_PRIVATE_KEY =
-  process.env.NETOPIA_LIVE_PRIVATE_KEY ||
+// Funcție pentru a decoda din base64 dacă este necesar
+function decodeBase64Credential(envVar, base64EnvVar, fallback) {
+  // Încearcă prima dată variabila directă
+  if (process.env[envVar]) {
+    return process.env[envVar];
+  }
+
+  // Apoi încearcă variabila base64
+  if (process.env[base64EnvVar]) {
+    try {
+      return Buffer.from(process.env[base64EnvVar], "base64").toString("utf-8");
+    } catch (error) {
+      console.error(`Error decoding ${base64EnvVar}:`, error);
+    }
+  }
+
+  // Fallback la valoarea hardcoded
+  return fallback;
+}
+
+export const NETOPIA_LIVE_PRIVATE_KEY = decodeBase64Credential(
+  "NETOPIA_LIVE_PRIVATE_KEY",
+  "NETOPIA_LIVE_PRIVATE_KEY_B64",
   `-----BEGIN RSA PRIVATE KEY-----
 MIICXAIBAAKBgQDgvgno9K9M465g14CoKE0aIvKbSqwE3EvKm6NIcVO0ZQ7za08v
 Xbe508JPioYoTRM2WN7CQTQQgupiRKtyPykE3lxpCMmLqLzpcsq0wm3o9tvCnB8W
@@ -18,10 +40,12 @@ Ao6whtAVphLHV0tGUaoKebK0mmL3ndR0QAFPZDZAelR+dVNLmSQc3/BHUwJAOw1r
 vWsTZEv43BR1Wi6GA4FYUVVjRJbd6b8cFBsKMEPPQwj8R9c042ldCDLUITxFcfFv
 pMG6i1YXb4+4Y9NR0QJBANt0qlS2GsS9S79eWhPkAnw5qxDcOEQeekk5z5jil7yw
 7J0yOEdf46C89U56v2zORfS5Due8YEYgSMRxXdY0/As=
------END RSA PRIVATE KEY-----`;
+-----END RSA PRIVATE KEY-----`
+);
 
-export const NETOPIA_LIVE_CERTIFICATE =
-  process.env.NETOPIA_LIVE_CERTIFICATE ||
+export const NETOPIA_LIVE_CERTIFICATE = decodeBase64Credential(
+  "NETOPIA_LIVE_CERTIFICATE",
+  "NETOPIA_LIVE_CERTIFICATE_B64",
   `-----BEGIN CERTIFICATE-----
 MIIC3zCCAkigAwIBAgIBATANBgkqhkiG9w0BAQsFADCBiDELMAkGA1UEBhMCUk8x
 EjAQBgNVBAgTCUJ1Y2hhcmVzdDESMBAGA1UEBxMJQnVjaGFyZXN0MRAwDgYDVQQK
@@ -39,4 +63,5 @@ MGxzUzQflmkXT1oyIBoetTANBgkqhkiG9w0BAQsFAAOBgQAMnh95YlI+y3XcxrpG
 gNWC9AwVBt61MTid213yuXDGxkouizSGFr1MjP1tk/YkcWdNka9QB3AtCr4bMers
 /2f322soXcrhAOhj5JPVQkF6rlhJxg2JBO+8M5sOJTaxq5YvFHl/o2GGg0UuxWb5
 RbUx6W/CU+uFDgDY8CdZ3hZ7kg==
------END CERTIFICATE-----`;
+-----END CERTIFICATE-----`
+);

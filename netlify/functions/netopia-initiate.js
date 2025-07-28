@@ -18,8 +18,8 @@ const NETOPIA_CONFIG = {
       process.env.NETOPIA_SANDBOX_SIGNATURE ||
       process.env.VITE_NETOPIA_SIGNATURE_SANDBOX ||
       "2ZOW-PJ5X-HYYC-IENE-APZO",
-    // Use live endpoint even for sandbox to avoid redirect issues
-    endpoint: "https://secure.netopia-payments.com/payment/card",
+    // Correct sandbox endpoint with /start suffix
+    endpoint: "https://secure.sandbox.netopia-payments.com/payment/card/start",
     publicKey:
       process.env.NETOPIA_SANDBOX_PUBLIC_KEY ||
       process.env.VITE_NETOPIA_PUBLIC_KEY ||
@@ -32,7 +32,8 @@ const NETOPIA_CONFIG = {
       process.env.NETOPIA_LIVE_SIGNATURE ||
       process.env.VITE_NETOPIA_SIGNATURE_LIVE ||
       "2ZOW-PJ5X-HYYC-IENE-APZO",
-    endpoint: "https://secure.netopia-payments.com/payment/card",
+    // Correct live endpoint with /start suffix
+    endpoint: "https://secure.netopia-payments.com/payment/card/start",
     publicKey:
       process.env.NETOPIA_LIVE_PUBLIC_KEY ||
       process.env.VITE_NETOPIA_PUBLIC_KEY ||
@@ -316,7 +317,17 @@ export const handler = async (event, context) => {
     // Validează datele de plată
     validatePaymentData(paymentData);
 
-    const isLive = paymentData.live;
+    // Forțează modul LIVE în producție pentru domeniile de producție
+    let isLive = paymentData.live;
+    if (
+      process.env.URL &&
+      (process.env.URL.includes("lupulsicorbul.com") ||
+        process.env.URL.includes("netlify.app"))
+    ) {
+      isLive = true;
+      console.log("🚀 Production domain detected, forcing LIVE mode");
+    }
+
     const hasCustomSignature = !!paymentData.posSignature;
     const hasLiveCredentials = !!(
       (process.env.NETOPIA_LIVE_SIGNATURE ||

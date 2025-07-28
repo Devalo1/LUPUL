@@ -204,38 +204,6 @@ service cloud.firestore {
       allow write: if isAdmin();
     }
 
-    // Emblem System - NFT-like emblems
-    match /emblems/{emblemId} {
-      // Users can read their own emblems
-      allow read: if isAuthenticated() && resource.data.userId == request.auth.uid;
-      // Users can create emblems for themselves (minting)
-      allow create: if isAuthenticated() && request.resource.data.userId == request.auth.uid;
-      // Only admins can update/delete emblems
-      allow update, delete: if isAdmin();
-      // Admins can read all emblems
-      allow read: if isAdmin();
-    }
-
-    // Emblem Stock Management - managed by admins
-    match /emblem_stocks/{stockId} {
-      // Authenticated users can read stock information (for display)
-      allow read: if isAuthenticated();
-      // Only admins can modify stock
-      allow write: if isAdmin();
-    }
-
-    // Emblem Purchase History - transaction records
-    match /emblem_purchases/{purchaseId} {
-      // Users can read their own purchases
-      allow read: if isAuthenticated() && resource.data.userId == request.auth.uid;
-      // System can create purchase records
-      allow create: if isAuthenticated();
-      // Only admins can modify purchase records
-      allow update, delete: if isAdmin();
-      // Admins can read all purchases
-      allow read: if isAdmin();
-    }
-
     // Default rule - deny access unless specific rule allows it
     match /{document=**} {
       allow read: if isAdmin();

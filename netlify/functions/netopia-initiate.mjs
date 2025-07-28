@@ -217,11 +217,13 @@ async function initiateNetopiaPayment(payload, config) {
     throw new Error("Format de răspuns neașteptat de la NETOPIA");
   } catch (error) {
     console.error("❌ NETOPIA API Request failed:", error);
-
+    
     // Fallback pentru development - simulare locală
     const baseUrl = process.env.URL || "https://lupulsicorbul.com";
-    if (baseUrl.includes("localhost") || !config.live) {
-      console.log("🧪 Fallback to local simulation for development");
+    const isTestingMode = baseUrl.includes("localhost") || config.endpoint.includes("sandbox");
+    
+    if (isTestingMode) {
+      console.log("🧪 Fallback to local simulation for development/sandbox");
       return {
         success: true,
         paymentUrl: `${baseUrl}/payment-simulation?orderId=${payload.order.orderID}&amount=${payload.order.amount}&currency=${payload.order.currency}&test=1`,
@@ -230,6 +232,8 @@ async function initiateNetopiaPayment(payload, config) {
       };
     }
 
+    // În producție cu LIVE credentials, nu folosim fallback - aruncăm eroarea
+    console.error("🚨 LIVE NETOPIA API failed - no fallback in production");
     throw error;
   }
 }

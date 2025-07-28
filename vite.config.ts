@@ -5,8 +5,12 @@ import path from "path";
 // https://vitejs.dev/config/
 export default defineConfig(({ mode }) => ({
   define: {
-    // Fix React production mode detection - ensure development mode works properly
+    // Fix React production mode detection - ensure proper mode detection
     "process.env.NODE_ENV": JSON.stringify(mode),
+    // Fix React development mode detection
+    __DEV__: mode === "development",
+    // Ensure React runs in proper mode
+    "process.env.REACT_APP_NODE_ENV": JSON.stringify(mode),
     // Fix React refresh globals to prevent production mode warnings
     ...(mode === "development"
       ? {

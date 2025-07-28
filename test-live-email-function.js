@@ -14,28 +14,31 @@ async function testLiveEmailFunction() {
         {
           name: "Test Email Function",
           price: 1000, // 10 RON în bani
-          quantity: 1
-        }
-      ]
+          quantity: 1,
+        },
+      ],
     },
     orderNumber: "TEST-EMAIL-" + Date.now(),
-    totalAmount: 1000 // 10 RON în bani
+    totalAmount: 1000, // 10 RON în bani
   };
 
   try {
     console.log("🧪 Testing LIVE send-order-email function...");
     console.log("📋 Test data:", JSON.stringify(testData, null, 2));
 
-    const response = await fetch("https://lupulsicorbul.com/.netlify/functions/send-order-email", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(testData),
-    });
+    const response = await fetch(
+      "https://lupulsicorbul.com/.netlify/functions/send-order-email",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(testData),
+      }
+    );
 
     const result = await response.json();
-    
+
     console.log("📊 Response status:", response.status);
     console.log("📝 Response data:", JSON.stringify(result, null, 2));
 
@@ -50,7 +53,6 @@ async function testLiveEmailFunction() {
     } else {
       console.log("❌ Test FAILED:", result.error || "Unknown error");
     }
-
   } catch (error) {
     console.error("❌ Test ERROR:", error.message);
   }

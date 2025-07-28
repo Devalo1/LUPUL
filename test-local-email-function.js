@@ -14,28 +14,31 @@ async function testLocalEmailFunction() {
         {
           name: "Test Local Email Function",
           price: 1000, // 10 RON în bani
-          quantity: 1
-        }
-      ]
+          quantity: 1,
+        },
+      ],
     },
     orderNumber: "TEST-LOCAL-" + Date.now(),
-    totalAmount: 1000 // 10 RON în bani
+    totalAmount: 1000, // 10 RON în bani
   };
 
   try {
     console.log("🧪 Testing LOCAL send-order-email function...");
     console.log("📋 Test data:", JSON.stringify(testData, null, 2));
 
-    const response = await fetch("http://localhost:8888/.netlify/functions/send-order-email", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(testData),
-    });
+    const response = await fetch(
+      "http://localhost:8888/.netlify/functions/send-order-email",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(testData),
+      }
+    );
 
     const result = await response.json();
-    
+
     console.log("📊 Response status:", response.status);
     console.log("📝 Response data:", JSON.stringify(result, null, 2));
 
@@ -50,7 +53,6 @@ async function testLocalEmailFunction() {
     } else {
       console.log("❌ Test FAILED:", result.error || "Unknown error");
     }
-
   } catch (error) {
     console.error("❌ Test ERROR:", error.message);
   }

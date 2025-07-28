@@ -127,6 +127,10 @@
 
 .emblem-icon-container {
   margin-bottom: 15px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
 }
 
 .emblem-icon {
@@ -151,29 +155,35 @@
 }
 
 .emblem-image-container {
-  margin: 20px 0;
+  margin: 0;
+  padding: 15px 0;
   display: flex;
   justify-content: center;
   align-items: center;
+  height: 120px;
+  width: 100%;
+  text-align: center;
 }
 
 .emblem-image {
-  width: 120px;
-  height: 120px;
+  width: 100px !important;
+  height: 100px !important;
   object-fit: contain;
-  border-radius: 12px;
-  background: rgba(255, 255, 255, 0.1);
-  padding: 10px;
-  backdrop-filter: blur(5px);
-  border: 2px solid rgba(255, 255, 255, 0.2);
+  background: transparent;
+  border: none;
+  outline: none;
+  box-shadow: none;
   transition:
     transform 0.3s ease,
-    box-shadow 0.3s ease;
+    filter 0.3s ease;
+  filter: drop-shadow(0 6px 12px rgba(0, 0, 0, 0.2));
+  max-width: none !important;
+  max-height: none !important;
 }
 
 .emblem-image:hover {
-  transform: scale(1.05);
-  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+  transform: scale(1.15) translateZ(0);
+  filter: drop-shadow(0 8px 16px rgba(0, 0, 0, 0.35));
 }
 
 .tier-1 .emblem-image {
@@ -317,6 +327,9 @@
   justify-content: center;
   gap: 10px;
   width: 100%;
+  z-index: 10; /* Adăugat pentru a asigura că butonul este clickable */
+  position: relative; /* Adăugat pentru z-index să funcționeze */
+  pointer-events: auto; /* Forțează event-urile să funcționeze */
 }
 
 .purchase-button:hover:not(:disabled) {
@@ -331,6 +344,28 @@
   cursor: not-allowed;
   transform: none;
   box-shadow: none;
+  opacity: 0.5;
+}
+
+.purchase-button--disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Debug info styling */
+.debug-info {
+  font-size: 12px;
+  color: #666;
+  margin-top: 8px;
+  padding: 8px;
+  background-color: rgba(245, 245, 245, 0.9);
+  border-radius: 4px;
+  text-align: left;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.debug-info div {
+  margin: 2px 0;
 }
 
 /* Info section */

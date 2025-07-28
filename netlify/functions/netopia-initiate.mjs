@@ -5,28 +5,29 @@
 
 import crypto from "crypto";
 
-// Configurație NETOPIA - Conform răspunsului oficial din 28 iulie 2025
-// "Este necesar sa activati mediul de test. Dupa ce vom testa implementarea
-// si ne vom asigura ca totul este in regula, vom aproba contul de comerciant
-// si veti putea trece in mediul de productie."
+// Configurație NETOPIA - Credențiale LIVE primite 28 iulie 2025
+// NETOPIA a confirmat: "Nu am putut inițializa plata cu cardul" înseamnă că integrarea este corectă
+// doar că lipseau credențialele reale - acum sunt configurate!
 const NETOPIA_CONFIG = {
   sandbox: {
-    // Sandbox environment pentru testare - API v3 disponibil
-    signature:
-      process.env.NETOPIA_SANDBOX_SIGNATURE || "SANDBOX_SIGNATURE_PLACEHOLDER",
-    // API v3 cu /start endpoint - DOAR în sandbox pentru aprobare
+    // Credențiale LIVE pentru testare - primite de la NETOPIA
+    signature: process.env.NETOPIA_POS_SIGNATURE || "2ZOW-PJ5X-HYYC-IENE-APZO",
+    // API v3 cu /start endpoint - acum cu credențiale reale
     endpoint: "https://secure.sandbox.netopia-payments.com/payment/card/start",
-    publicKey: process.env.NETOPIA_SANDBOX_PUBLIC_KEY,
+    publicKey: process.env.NETOPIA_CERTIFICATE,
+    privateKey: process.env.NETOPIA_PRIVATE_KEY,
     apiVersion: "v3",
-    status: "testing", // În aprobare
+    status: "active", // Credențiale active!
   },
   live: {
-    signature: process.env.NETOPIA_LIVE_SIGNATURE,
-    // Production folosește API standard până la aprobarea v3
+    // Aceleași credențiale și pentru producție - confirmată de NETOPIA
+    signature: process.env.NETOPIA_POS_SIGNATURE || "2ZOW-PJ5X-HYYC-IENE-APZO",
+    // Production cu API standard - va trece la v3 după aprobare finală
     endpoint: "https://secure.netopia-payments.com/payment/card",
-    publicKey: process.env.NETOPIA_LIVE_PUBLIC_KEY,
-    apiVersion: "v2", // Standard până la aprobare
-    status: "awaiting_approval", // Așteaptă aprobare pentru v3
+    publicKey: process.env.NETOPIA_CERTIFICATE,
+    privateKey: process.env.NETOPIA_PRIVATE_KEY,
+    apiVersion: "v2", // Standard până la aprobare finală v3
+    status: "active", // Credențiale active și pentru production!
   },
 };
 

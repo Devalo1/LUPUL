@@ -3,6 +3,7 @@
   max-width: 1200px;
   margin: 0 auto;
   padding: 2rem;
+  padding-top: 6rem; /* Adăugat pentru a evita suprapunerea cu navbar */
   min-height: 100vh;
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   color: white;
@@ -33,6 +34,90 @@
   align-items: center;
   justify-content: center;
   min-height: 50vh;
+}
+
+/* Admin Info Panel */
+.admin-info-panel {
+  background-color: rgba(248, 249, 250, 0.95);
+  border: 1px solid rgba(222, 226, 230, 0.8);
+  border-radius: 8px;
+  padding: 16px;
+  margin-bottom: 24px;
+  backdrop-filter: blur(10px);
+}
+
+.admin-info-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.admin-info-title {
+  margin: 0;
+  color: #495057;
+  font-size: 16px;
+}
+
+.admin-toggle-btn {
+  background: none;
+  border: none;
+  color: #6c757d;
+  cursor: pointer;
+  font-size: 14px;
+  padding: 4px 8px;
+  border-radius: 4px;
+  transition: background-color 0.2s;
+}
+
+.admin-toggle-btn:hover {
+  background-color: rgba(108, 117, 125, 0.1);
+}
+
+.admin-stocks-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 12px;
+}
+
+.admin-stock-item {
+  text-align: center;
+  padding: 8px;
+  background-color: rgba(255, 255, 255, 0.9);
+  border-radius: 4px;
+  transition: transform 0.2s;
+}
+
+.admin-stock-item:hover {
+  transform: translateY(-2px);
+}
+
+.admin-stock-icon {
+  font-size: 24px;
+  margin-bottom: 4px;
+}
+
+.admin-stock-count {
+  font-weight: bold;
+  font-size: 18px;
+}
+
+.admin-stock-count.lupul { color: #4f46e5; }
+.admin-stock-count.corbul { color: #a855f7; }
+.admin-stock-count.gardian { color: #10b981; }
+.admin-stock-count.cautator { color: #f59e0b; }
+
+.admin-stock-label {
+  font-size: 12px;
+  color: #6c757d;
+  margin-top: 4px;
+}
+
+.admin-info-footer {
+  margin-top: 8px;
+  font-size: 11px;
+  color: #6c757d;
+  text-align: center;
 }
 
 .loading-spinner {
@@ -544,5 +629,136 @@
 
   .marketplace-card {
     padding: 1rem;
+  }
+}
+
+/* Admin Information Panel Styles */
+.admin-info-panel {
+  background: rgba(255, 255, 255, 0.95);
+  border-radius: 15px;
+  padding: 20px;
+  margin-bottom: 30px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: #333;
+}
+
+.admin-info-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 15px;
+}
+
+.admin-info-title {
+  font-size: 1.3rem;
+  font-weight: bold;
+  color: #4a5568;
+  display: flex;
+  align-items: center;
+  margin: 0;
+}
+
+.admin-toggle-btn {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  padding: 8px 16px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  font-weight: 500;
+  transition: all 0.3s ease;
+}
+
+.admin-toggle-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+}
+
+.admin-stocks-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 15px;
+  margin: 20px 0;
+}
+
+.admin-stock-item {
+  background: white;
+  border-radius: 12px;
+  padding: 15px;
+  text-align: center;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+  border: 2px solid transparent;
+  transition: all 0.3s ease;
+}
+
+.admin-stock-item:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.12);
+}
+
+.admin-stock-icon {
+  font-size: 2rem;
+  margin-bottom: 8px;
+}
+
+.admin-stock-count {
+  font-size: 2.2rem;
+  font-weight: bold;
+  margin-bottom: 5px;
+}
+
+.admin-stock-count.lupul {
+  color: #4f46e5;
+}
+
+.admin-stock-count.corbul {
+  color: #7c3aed;
+}
+
+.admin-stock-count.gardian {
+  color: #059669;
+}
+
+.admin-stock-count.cautator {
+  color: #d97706;
+}
+
+.admin-stock-label {
+  font-size: 0.85rem;
+  color: #666;
+  font-weight: 500;
+}
+
+.admin-info-footer {
+  font-size: 0.8rem;
+  color: #666;
+  text-align: center;
+  margin-top: 15px;
+  padding-top: 15px;
+  border-top: 1px solid #e2e8f0;
+}
+
+/* Mobile responsiveness for admin panel */
+@media (max-width: 768px) {
+  .admin-info-header {
+    flex-direction: column;
+    gap: 10px;
+    text-align: center;
+  }
+  
+  .admin-stocks-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+  }
+  
+  .admin-stock-count {
+    font-size: 1.8rem;
+  }
+  
+  .admin-info-title {
+    font-size: 1.1rem;
   }
 }

@@ -3,6 +3,7 @@
 ## ⚠️ PROBLEMA CRITICĂ IDENTIFICATĂ
 
 Netopia a trimis email-ul:
+
 > "Din păcate, redirectionarea plății nu se face către endpoint-ul https://secure.sandbox.netopia-payments.com/payment/card/start"
 
 ## 🔍 ANALIZA PROBLEMEI
@@ -10,10 +11,12 @@ Netopia a trimis email-ul:
 Am avut **DOUĂ** probleme în endpoint-uri:
 
 ### Problema 1: Domeniu incorect
+
 - ❌ **Folosim:** `secure-sandbox.netopia-payments.com` (cu cratimă)
 - ✅ **Trebuie:** `secure.sandbox.netopia-payments.com` (cu punct)
 
-### Problema 2: Path incorect  
+### Problema 2: Path incorect
+
 - ❌ **Folosim:** `/payment/card`
 - ✅ **Trebuie:** `/payment/card/start`
 
@@ -33,26 +36,30 @@ const NETOPIA_CONFIG = {
 ## 📋 FIȘIERE CORECTATE
 
 ### 1. ✅ `netlify/functions/netopia-initiate-marketplace.mjs`
+
 ```javascript
 // ÎNAINTE
 endpoint: "https://secure-sandbox.netopia-payments.com/payment/card",
 
-// DUPĂ  
+// DUPĂ
 endpoint: "https://secure.sandbox.netopia-payments.com/payment/card/start",
 ```
 
-### 2. ✅ `netlify/functions/netopia-initiate.mjs` 
+### 2. ✅ `netlify/functions/netopia-initiate.mjs`
+
 ```javascript
 // Funcția principală - corectată pentru consistență
 endpoint: "https://secure.sandbox.netopia-payments.com/payment/card/start",
 ```
 
 ### 3. ✅ `src/config/netopia.config.ts`
+
 ```typescript
 SANDBOX_URL: "https://secure.sandbox.netopia-payments.com",
 ```
 
 ### 4. ✅ `src/services/netopiaPayments.ts`
+
 ```typescript
 baseUrl: "https://secure.sandbox.netopia-payments.com",
 ```
@@ -85,7 +92,7 @@ Echipa Lupul și Corbul
 
 ## 🎯 REZULTATUL AȘTEPTAT
 
-- ✅ Netopia nu va mai trimite email-uri de alertă  
+- ✅ Netopia nu va mai trimite email-uri de alertă
 - ✅ Plățile marketplace vor funcționa perfect
 - ✅ Redirect-ul se va face către endpoint-ul corect
 - ✅ Conformitate 100% cu specificațiile Netopia

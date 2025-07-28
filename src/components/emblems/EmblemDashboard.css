@@ -3,15 +3,18 @@
   max-width: 1200px;
   margin: 0 auto;
   padding: 20px;
+  padding-top: 6rem; /* Adăugat pentru a evita suprapunerea cu navbar */
   background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
   min-height: 100vh;
-  color.progress-fill {
-    height: 100%;
-    background: linear-gradient(45deg, #ffd700, #ffa500);
-    width: 0%;
-    transition: width 0.3s ease;
-    border-radius: 10px;
-  }
+  color: white;
+}
+
+.progress-fill {
+  height: 100%;
+  background: linear-gradient(45deg, #ffd700, #ffa500);
+  width: 0%;
+  transition: width 0.3s ease;
+  border-radius: 10px;
 }
 
 .emblem-dashboard.loading {
@@ -446,6 +449,82 @@
   opacity: 0.8;
 }
 
+/* Marketplace Card */
+.marketplace-card {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border-radius: 20px;
+  padding: 30px;
+  margin: 30px 0;
+  text-align: center;
+}
+
+.marketplace-card h3 {
+  font-size: 1.5rem;
+  margin-bottom: 15px;
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+}
+
+.marketplace-card p {
+  color: rgba(255, 255, 255, 0.9);
+  margin-bottom: 25px;
+  line-height: 1.6;
+}
+
+.marketplace-actions {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 15px;
+}
+
+.marketplace-btn {
+  display: inline-block;
+  background: rgba(255, 255, 255, 0.2);
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  color: white;
+  padding: 15px 30px;
+  border-radius: 25px;
+  text-decoration: none;
+  font-weight: bold;
+  font-size: 1.1rem;
+  transition: all 0.3s ease;
+  backdrop-filter: blur(10px);
+}
+
+.marketplace-btn:hover {
+  background: rgba(255, 255, 255, 0.3);
+  border-color: rgba(255, 255, 255, 0.5);
+  color: white;
+  text-decoration: none;
+  transform: translateY(-2px);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+}
+
+.marketplace-btn.primary {
+  background: #4caf50;
+  border-color: #4caf50;
+}
+
+.marketplace-btn.primary:hover {
+  background: #45a049;
+  border-color: #45a049;
+}
+
+.transfer-status {
+  display: inline-block;
+  background: rgba(76, 175, 80, 0.2);
+  color: #4caf50;
+  padding: 8px 16px;
+  border-radius: 15px;
+  font-size: 0.9rem;
+  font-weight: bold;
+  border: 1px solid rgba(76, 175, 80, 0.3);
+}
+
 /* Responsive Design */
 @media (max-width: 768px) {
   .emblem-dashboard {
@@ -483,5 +562,80 @@
   .event-meta {
     flex-direction: column;
     gap: 10px;
+  }
+}
+
+/* Marketplace Card */
+.marketplace-card {
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
+  border-radius: 20px;
+  padding: 30px;
+  margin-bottom: 30px;
+}
+
+.marketplace-card h3 {
+  font-size: 1.5rem;
+  margin-bottom: 15px;
+  color: #ffd700;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.marketplace-card p {
+  font-size: 1.1rem;
+  line-height: 1.6;
+  margin-bottom: 20px;
+  opacity: 0.9;
+}
+
+.marketplace-actions {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+
+.marketplace-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 15px 25px;
+  border-radius: 15px;
+  text-decoration: none;
+  font-weight: bold;
+  font-size: 1rem;
+  transition: all 0.3s ease;
+}
+
+.marketplace-btn.primary {
+  background: linear-gradient(45deg, #667eea, #764ba2);
+  color: white;
+  box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);
+}
+
+.marketplace-btn.primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
+}
+
+.transfer-status {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #4ade80;
+  font-size: 0.9rem;
+  font-weight: 500;
+}
+
+@media (max-width: 768px) {
+  .marketplace-actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .marketplace-btn {
+    justify-content: center;
   }
 }

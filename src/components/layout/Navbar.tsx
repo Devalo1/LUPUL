@@ -21,6 +21,8 @@ import {
   BriefcaseBusiness,
   Settings,
   Stethoscope,
+  Crown,
+  Gem,
 } from "lucide-react";
 
 const Navbar: React.FC = () => {
@@ -290,6 +292,26 @@ const Navbar: React.FC = () => {
               <CalendarHeart className="w-9 h-9 mb-1 text-blue-200 nav-icon" />
               {/* doar icon, fără text */}
             </Link>{" "}
+            {user && (
+              <Link
+                to="/emblems/mint"
+                className="nav-link flex flex-col items-center gap-1 text-white hover:bg-blue-600 px-2 py-1 rounded-md transition-all duration-300 font-semibold animate-nav-pop nav-text"
+                title="Embleme"
+              >
+                <Crown className="w-9 h-9 mb-1 text-yellow-200 nav-icon" />
+                {/* doar icon, fără text */}
+              </Link>
+            )}{" "}
+            {user && (
+              <Link
+                to="/emblems/marketplace"
+                className="nav-link flex flex-col items-center gap-1 text-white hover:bg-blue-600 px-2 py-1 rounded-md transition-all duration-300 font-semibold animate-nav-pop nav-text"
+                title="Marketplace"
+              >
+                <Gem className="w-9 h-9 mb-1 text-purple-200 nav-icon" />
+                {/* doar icon, fără text */}
+              </Link>
+            )}{" "}
             <Link
               to="/about"
               className="nav-link flex flex-col items-center gap-1 text-white hover:bg-blue-600 px-2 py-1 rounded-md transition-all duration-300 font-semibold animate-nav-pop nav-text"

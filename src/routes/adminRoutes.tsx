@@ -18,6 +18,7 @@ import AdminSettings from "../pages/AdminSettings";
 import AdminOrders from "../pages/AdminOrders";
 import AdminAccounting from "../pages/AdminAccounting";
 import AdminDebugPage from "../pages/AdminDebugPage";
+import AdminEmblems from "../pages/admin/AdminEmblems";
 import { Navigate } from "react-router-dom";
 
 /**
@@ -168,6 +169,27 @@ export const adminRoutes: AdminRoute[] = [
     title: "Contabilitate",
     description: "Gestionează aspectele contabile",
     icon: "accounting",
+  },
+  {
+    path: "/admin/emblems",
+    element: <AdminEmblems />,
+    title: "Embleme NFT",
+    description: "Gestionează sistemul de embleme NFT",
+    icon: "emblems",
+  },
+  {
+    path: "/admin/emblems-marketplace",
+    element: <AdminEmblems />,
+    title: "Marketplace Embleme",
+    description: "Monitorizează marketplace-ul de embleme",
+    icon: "emblems-marketplace",
+  },
+  {
+    path: "/admin/emblems-stats",
+    element: <AdminEmblems />,
+    title: "Statistici Embleme",
+    description: "Analizează statisticile emblemelor",
+    icon: "emblems-stats",
   },
   {
     path: "/admin/debug",

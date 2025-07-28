@@ -1,0 +1,51 @@
+<svg width="100" height="100" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <radialGradient id="wolfGradient" cx="50%" cy="30%" r="70%">
+      <stop offset="0%" style="stop-color:#4f46e5;stop-opacity:1" />
+      <stop offset="50%" style="stop-color:#6366f1;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#1e1b4b;stop-opacity:1" />
+    </radialGradient>
+    <filter id="glow">
+      <feGaussianBlur stdDeviation="3" result="coloredBlur"/>
+      <feMerge> 
+        <feMergeNode in="coloredBlur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+  
+  <!-- Background circle -->
+  <circle cx="50" cy="50" r="48" fill="url(#wolfGradient)" stroke="#fbbf24" stroke-width="2"/>
+  
+  <!-- Wolf head silhouette -->
+  <path d="M35 35 Q50 25 65 35 Q70 40 68 50 Q65 55 60 58 L55 65 Q50 70 45 65 L40 58 Q35 55 32 50 Q30 40 35 35 Z" 
+        fill="#ffffff" opacity="0.9" filter="url(#glow)"/>
+  
+  <!-- Wolf ears -->
+  <path d="M40 32 Q45 28 42 38" fill="#ffffff" opacity="0.8"/>
+  <path d="M60 32 Q55 28 58 38" fill="#ffffff" opacity="0.8"/>
+  
+  <!-- Eyes -->
+  <circle cx="44" cy="42" r="2" fill="#1e1b4b"/>
+  <circle cx="56" cy="42" r="2" fill="#1e1b4b"/>
+  <circle cx="44.5" cy="41.5" r="0.5" fill="#ffffff"/>
+  <circle cx="56.5" cy="41.5" r="0.5" fill="#ffffff"/>
+  
+  <!-- Nose -->
+  <path d="M50 47 L48 50 Q50 51 52 50 Z" fill="#1e1b4b"/>
+  
+  <!-- Wisdom symbol (third eye) -->
+  <circle cx="50" cy="38" r="3" fill="#fbbf24" opacity="0.8"/>
+  <circle cx="50" cy="38" r="1.5" fill="#ffffff"/>
+  
+  <!-- Mystical particles -->
+  <circle cx="20" cy="25" r="1" fill="#fbbf24" opacity="0.6">
+    <animate attributeName="opacity" values="0.3;0.8;0.3" dur="2s" repeatCount="indefinite"/>
+  </circle>
+  <circle cx="80" cy="30" r="1.5" fill="#a855f7" opacity="0.6">
+    <animate attributeName="opacity" values="0.4;0.9;0.4" dur="1.5s" repeatCount="indefinite"/>
+  </circle>
+  <circle cx="75" cy="70" r="1" fill="#06b6d4" opacity="0.6">
+    <animate attributeName="opacity" values="0.2;0.7;0.2" dur="2.5s" repeatCount="indefinite"/>
+  </circle>
+</svg>

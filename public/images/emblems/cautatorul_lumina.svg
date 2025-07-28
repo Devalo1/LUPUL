@@ -1,0 +1,80 @@
+<svg width="100" height="100" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <radialGradient id="lightGradient" cx="50%" cy="30%" r="70%">
+      <stop offset="0%" style="stop-color:#fbbf24;stop-opacity:1" />
+      <stop offset="50%" style="stop-color:#f59e0b;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#d97706;stop-opacity:1" />
+    </radialGradient>
+    <filter id="lightGlow">
+      <feGaussianBlur stdDeviation="3" result="coloredBlur"/>
+      <feMerge> 
+        <feMergeNode in="coloredBlur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+    <linearGradient id="rayGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#fbbf24;stop-opacity:0.8" />
+      <stop offset="50%" style="stop-color:#ffffff;stop-opacity:0.9" />
+      <stop offset="100%" style="stop-color:#f59e0b;stop-opacity:0.8" />
+    </linearGradient>
+  </defs>
+  
+  <!-- Background circle -->
+  <circle cx="50" cy="50" r="48" fill="url(#lightGradient)" stroke="#fbbf24" stroke-width="2"/>
+  
+  <!-- Central light source -->
+  <circle cx="50" cy="50" r="15" fill="#ffffff" filter="url(#lightGlow)" opacity="0.9"/>
+  <circle cx="50" cy="50" r="10" fill="#fbbf24" opacity="0.8"/>
+  <circle cx="50" cy="50" r="6" fill="#ffffff" opacity="0.9"/>
+  
+  <!-- Light rays -->
+  <path d="M50 25 L52 35 L48 35 Z" fill="url(#rayGradient)" filter="url(#lightGlow)"/>
+  <path d="M50 75 L48 65 L52 65 Z" fill="url(#rayGradient)" filter="url(#lightGlow)"/>
+  <path d="M25 50 L35 48 L35 52 Z" fill="url(#rayGradient)" filter="url(#lightGlow)"/>
+  <path d="M75 50 L65 52 L65 48 Z" fill="url(#rayGradient)" filter="url(#lightGlow)"/>
+  
+  <!-- Diagonal rays -->
+  <path d="M35 35 L42 42 L38 46 Z" fill="url(#rayGradient)" filter="url(#lightGlow)" opacity="0.8"/>
+  <path d="M65 35 L58 42 L62 46 Z" fill="url(#rayGradient)" filter="url(#lightGlow)" opacity="0.8"/>
+  <path d="M35 65 L42 58 L38 54 Z" fill="url(#rayGradient)" filter="url(#lightGlow)" opacity="0.8"/>
+  <path d="M65 65 L58 58 L62 54 Z" fill="url(#rayGradient)" filter="url(#lightGlow)" opacity="0.8"/>
+  
+  <!-- Seeker's eye -->
+  <circle cx="50" cy="45" r="3" fill="#1e1b4b" opacity="0.8"/>
+  <circle cx="50" cy="45" r="1.5" fill="#fbbf24"/>
+  <circle cx="50.5" cy="44.5" r="0.5" fill="#ffffff"/>
+  
+  <!-- Enlightenment symbol -->
+  <path d="M50 38 Q45 33 40 38 Q45 43 50 38" fill="#ffffff" opacity="0.7"/>
+  <path d="M50 38 Q55 33 60 38 Q55 43 50 38" fill="#ffffff" opacity="0.7"/>
+  
+  <!-- Wisdom particles -->
+  <circle cx="30" cy="30" r="1" fill="#fbbf24" opacity="0.8">
+    <animate attributeName="opacity" values="0.4;1;0.4" dur="1.5s" repeatCount="indefinite"/>
+    <animate attributeName="r" values="1;1.5;1" dur="1.5s" repeatCount="indefinite"/>
+  </circle>
+  <circle cx="70" cy="30" r="1.2" fill="#ffffff" opacity="0.7">
+    <animate attributeName="opacity" values="0.3;0.9;0.3" dur="2s" repeatCount="indefinite"/>
+    <animate attributeName="r" values="1.2;1.8;1.2" dur="2s" repeatCount="indefinite"/>
+  </circle>
+  <circle cx="30" cy="70" r="1" fill="#f59e0b" opacity="0.8">
+    <animate attributeName="opacity" values="0.4;1;0.4" dur="1.8s" repeatCount="indefinite"/>
+    <animate attributeName="r" values="1;1.4;1" dur="1.8s" repeatCount="indefinite"/>
+  </circle>
+  <circle cx="70" cy="70" r="1.1" fill="#fbbf24" opacity="0.7">
+    <animate attributeName="opacity" values="0.3;0.8;0.3" dur="2.2s" repeatCount="indefinite"/>
+    <animate attributeName="r" values="1.1;1.6;1.1" dur="2.2s" repeatCount="indefinite"/>
+  </circle>
+  
+  <!-- Enlightenment aura -->
+  <circle cx="50" cy="50" r="30" fill="none" stroke="#fbbf24" stroke-width="1" opacity="0.3">
+    <animate attributeName="r" values="30;35;30" dur="3s" repeatCount="indefinite"/>
+    <animate attributeName="opacity" values="0.2;0.5;0.2" dur="3s" repeatCount="indefinite"/>
+  </circle>
+  
+  <!-- Light symbols -->
+  <text x="20" y="25" font-family="serif" font-size="8" fill="#fbbf24" opacity="0.7">✦</text>
+  <text x="80" y="25" font-family="serif" font-size="6" fill="#ffffff" opacity="0.8">✧</text>
+  <text x="20" y="80" font-family="serif" font-size="7" fill="#f59e0b" opacity="0.6">❋</text>
+  <text x="80" y="80" font-family="serif" font-size="8" fill="#fbbf24" opacity="0.7">✦</text>
+</svg>

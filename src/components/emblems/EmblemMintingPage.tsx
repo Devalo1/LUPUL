@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from "react";
 import { useAuth } from "../../contexts/AuthContext";
+import { useNavigate } from "react-router-dom";
 import { emblemService } from "../../services/emblemService";
+import { EmblemStockService } from "../../services/emblemStockService";
 import { EMBLEM_COLLECTIONS } from "../../types/emblem";
 import {
   FaShoppingCart,
@@ -25,6 +27,7 @@ interface EmblemCollection {
 
 const EmblemMintingPage: React.FC = () => {
   const { user } = useAuth();
+  const navigate = useNavigate();
   const [selectedEmblem, setSelectedEmblem] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [userHasEmblem, setUserHasEmblem] = useState(false);
@@ -48,9 +51,11 @@ const EmblemMintingPage: React.FC = () => {
     .sort((a, b) => b.tier - a.tier); // Sort by tier descending
 
   useEffect(() => {
+    // Load stocks for all users (including guests)
+    loadAvailableStocks();
+    // Then check if user already has emblem
     if (user) {
       checkUserEmblem();
-      loadAvailableStocks();
     }
   }, [user]);
 
@@ -66,19 +71,32 @@ const EmblemMintingPage: React.FC = () => {
   };
 
   const loadAvailableStocks = async () => {
-    const stocks: Record<string, number> = {};
-
-    for (const key of Object.keys(EMBLEM_COLLECTIONS)) {
-      try {
-        const available = await emblemService.getAvailableCount(key);
-        stocks[key] = available;
-      } catch (error) {
-        console.error(`Error loading stock for ${key}:`, error);
-        stocks[key] = 0;
+    try {
+      // Get stocks from admin-managed stock service
+      const stockData = await EmblemStockService.getStock();
+      const stocks: Record<string, number> = {
+        lupul_intelepta: stockData.lupul_intelepta,
+        corbul_mistic: stockData.corbul_mistic,
+        gardianul_wellness: stockData.gardianul_wellness,
+        cautatorul_lumina: stockData.cautatorul_lumina,
+      };
+      setAvailableStocks(stocks);
+    } catch (error) {
+      console.error("Error loading stock data:", error);
+      // Fallback to individual service calls if admin stocks unavailable
+      const stocks: Record<string, number> = {};
+      for (const key of Object.keys(EMBLEM_COLLECTIONS)) {
+        try {
+          const available = await emblemService.getAvailableCount(key);
+          stocks[key] = available;
+        } catch (error) {
+          console.error(`Error loading stock for ${key}:`, error);
+          // Fallback to static config available in development
+          stocks[key] = EMBLEM_COLLECTIONS[key].available;
+        }
       }
+      setAvailableStocks(stocks);
     }
-
-    setAvailableStocks(stocks);
   };
 
   const handlePurchase = async (emblemType: string) => {
@@ -204,6 +222,18 @@ const EmblemMintingPage: React.FC = () => {
               </span>
             </div>
 
+            <div className="emblem-image-container">
+              <img 
+                src={collection.image} 
+                alt={collection.name}
+                className="emblem-image"
+                onError={(e) => {
+                  console.error(`Failed to load image: ${collection.image}`);
+                  (e.target as HTMLImageElement).src = "/images/emblems/default.svg";
+                }}
+              />
+            </div>
+
             <p className="emblem-description">{collection.description}</p>
 
             <div className="emblem-benefits">
@@ -217,11 +247,10 @@ const EmblemMintingPage: React.FC = () => {
 
             <div className="emblem-availability">
               <span className="stock-info">
-                Disponibile: {availableStocks[collection.key] || 0} /{" "}
-                {EMBLEM_COLLECTIONS[collection.key].totalSupply}
+                Disponibile: {availableStocks[collection.key] || 0}
               </span>
 
-              {(availableStocks[collection.key] || 0) <= 3 && (
+              {(availableStocks[collection.key] || 0) <= 3 && (availableStocks[collection.key] || 0) > 0 && (
                 <span className="low-stock">⚠️ Stoc redus!</span>
               )}
             </div>
@@ -232,15 +261,27 @@ const EmblemMintingPage: React.FC = () => {
 
             <button
               className="purchase-button"
-              onClick={() => handlePurchase(collection.key)}
+              onClick={() => {
+                if (!user) {
+                  navigate("/login");
+                  return;
+                }
+                handlePurchase(collection.key);
+              }}
               disabled={
-                isLoading || (availableStocks[collection.key] || 0) === 0
+                isLoading ||
+                (availableStocks[collection.key] || 0) === 0 ||
+                userHasEmblem
               }
             >
               {isLoading && selectedEmblem === collection.key ? (
                 <span>🔮 Se inițiază plata...</span>
               ) : (availableStocks[collection.key] || 0) === 0 ? (
                 <span>❌ Epuizat</span>
+              ) : !user ? (
+                <span>🔐 Autentifică-te</span>
+              ) : userHasEmblem ? (
+                <span>✅ Ai deja o emblemă</span>
               ) : (
                 <>
                   <FaShoppingCart /> 💳 Plătește cu Cardul

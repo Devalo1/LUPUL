@@ -3,6 +3,7 @@
   max-width: 1200px;
   margin: 0 auto;
   padding: 20px;
+  padding-top: 6rem; /* Adăugat pentru a evita suprapunerea cu navbar */
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   min-height: 100vh;
   color: white;
@@ -149,6 +150,50 @@
   color: #3498db;
 }
 
+.emblem-image-container {
+  margin: 20px 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.emblem-image {
+  width: 120px;
+  height: 120px;
+  object-fit: contain;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.1);
+  padding: 10px;
+  backdrop-filter: blur(5px);
+  border: 2px solid rgba(255, 255, 255, 0.2);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.emblem-image:hover {
+  transform: scale(1.05);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+}
+
+.tier-1 .emblem-image {
+  border-color: #95a5a6;
+  box-shadow: 0 4px 15px rgba(149, 165, 166, 0.3);
+}
+
+.tier-2 .emblem-image {
+  border-color: #27ae60;
+  box-shadow: 0 4px 15px rgba(39, 174, 96, 0.3);
+}
+
+.tier-3 .emblem-image {
+  border-color: #3498db;
+  box-shadow: 0 4px 15px rgba(52, 152, 219, 0.3);
+}
+
+.tier-4 .emblem-image {
+  border-color: #f39c12;
+  box-shadow: 0 4px 15px rgba(243, 156, 18, 0.3);
+}
+
 .emblem-card h3 {
   font-size: 1.5rem;
   margin-bottom: 10px;
@@ -230,6 +275,13 @@
   font-size: 0.9rem;
   opacity: 0.8;
   margin-bottom: 5px;
+}
+
+.admin-managed-label {
+  font-size: 12px;
+  color: #666;
+  margin-left: 8px;
+  opacity: 0.7;
 }
 
 .low-stock {

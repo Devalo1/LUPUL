@@ -1,0 +1,71 @@
+<svg width="100" height="100" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <radialGradient id="wellnessGradient" cx="50%" cy="30%" r="70%">
+      <stop offset="0%" style="stop-color:#059669;stop-opacity:1" />
+      <stop offset="50%" style="stop-color:#10b981;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#064e3b;stop-opacity:1" />
+    </radialGradient>
+    <filter id="healthGlow">
+      <feGaussianBlur stdDeviation="2" result="coloredBlur"/>
+      <feMerge> 
+        <feMergeNode in="coloredBlur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+    <linearGradient id="leafGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#22c55e;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#15803d;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  
+  <!-- Background circle -->
+  <circle cx="50" cy="50" r="48" fill="url(#wellnessGradient)" stroke="#22c55e" stroke-width="2"/>
+  
+  <!-- Guardian shield shape -->
+  <path d="M50 20 Q65 25 70 40 Q70 55 65 65 Q50 75 50 75 Q50 75 35 65 Q30 55 30 40 Q35 25 50 20 Z" 
+        fill="#ffffff" opacity="0.9" filter="url(#healthGlow)" stroke="#22c55e" stroke-width="1"/>
+  
+  <!-- Heart center (wellness symbol) -->
+  <path d="M50 40 Q45 35 40 40 Q40 45 50 55 Q60 45 60 40 Q55 35 50 40 Z" 
+        fill="#dc2626" filter="url(#healthGlow)"/>
+  
+  <!-- Healing cross -->
+  <rect x="48" y="35" width="4" height="12" fill="#ffffff" rx="1"/>
+  <rect x="44" y="39" width="12" height="4" fill="#ffffff" rx="1"/>
+  
+  <!-- Wellness leaves -->
+  <path d="M35 45 Q30 40 25 45 Q30 50 35 45" fill="url(#leafGradient)" opacity="0.8"/>
+  <path d="M65 45 Q70 40 75 45 Q70 50 65 45" fill="url(#leafGradient)" opacity="0.8"/>
+  <path d="M45 30 Q40 25 45 20 Q50 25 45 30" fill="url(#leafGradient)" opacity="0.8"/>
+  <path d="M55 30 Q60 25 55 20 Q50 25 55 30" fill="url(#leafGradient)" opacity="0.8"/>
+  
+  <!-- Energy waves -->
+  <circle cx="50" cy="50" r="25" fill="none" stroke="#22c55e" stroke-width="1" opacity="0.4">
+    <animate attributeName="r" values="25;30;25" dur="2s" repeatCount="indefinite"/>
+    <animate attributeName="opacity" values="0.2;0.6;0.2" dur="2s" repeatCount="indefinite"/>
+  </circle>
+  <circle cx="50" cy="50" r="20" fill="none" stroke="#10b981" stroke-width="1" opacity="0.5">
+    <animate attributeName="r" values="20;25;20" dur="1.5s" repeatCount="indefinite"/>
+    <animate attributeName="opacity" values="0.3;0.7;0.3" dur="1.5s" repeatCount="indefinite"/>
+  </circle>
+  
+  <!-- Healing particles -->
+  <circle cx="25" cy="35" r="1" fill="#22c55e" opacity="0.7">
+    <animate attributeName="cy" values="35;30;35" dur="2s" repeatCount="indefinite"/>
+    <animate attributeName="opacity" values="0.4;0.9;0.4" dur="2s" repeatCount="indefinite"/>
+  </circle>
+  <circle cx="75" cy="35" r="1" fill="#10b981" opacity="0.6">
+    <animate attributeName="cy" values="35;30;35" dur="1.8s" repeatCount="indefinite"/>
+    <animate attributeName="opacity" values="0.3;0.8;0.3" dur="1.8s" repeatCount="indefinite"/>
+  </circle>
+  <circle cx="25" cy="65" r="1.5" fill="#86efac" opacity="0.6">
+    <animate attributeName="opacity" values="0.3;0.8;0.3" dur="2.2s" repeatCount="indefinite"/>
+  </circle>
+  <circle cx="75" cy="65" r="1" fill="#22c55e" opacity="0.7">
+    <animate attributeName="opacity" values="0.4;0.9;0.4" dur="1.7s" repeatCount="indefinite"/>
+  </circle>
+  
+  <!-- Small wellness symbols -->
+  <text x="20" y="80" font-family="serif" font-size="8" fill="#22c55e" opacity="0.6">♡</text>
+  <text x="80" y="20" font-family="serif" font-size="6" fill="#10b981" opacity="0.7">✚</text>
+</svg>

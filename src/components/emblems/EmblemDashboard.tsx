@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { Link } from "react-router-dom";
 import { useAuth } from "../../contexts/AuthContext";
 import { emblemService } from "../../services/emblemService";
 import { communityEventService } from "../../services/communityEventService";
@@ -232,6 +233,26 @@ const EmblemDashboard: React.FC = () => {
               <span>{benefit}</span>
             </div>
           ))}
+        </div>
+      </div>
+
+      {/* Marketplace Access */}
+      <div className="marketplace-card">
+        <h3>🏪 Marketplace Embleme NFT</h3>
+        <p>
+          Explorează și tranzacționează embleme rare cu alți membri ai
+          comunității. Cumpără embleme unice sau listează emblema ta pentru
+          vânzare.
+        </p>
+        <div className="marketplace-actions">
+          <Link to="/emblems/marketplace" className="marketplace-btn primary">
+            🔍 Explorează Marketplace-ul
+          </Link>
+          {emblem.isTransferable && (
+            <span className="transfer-status">
+              ✅ Emblema ta poate fi listată pentru vânzare
+            </span>
+          )}
         </div>
       </div>
 

@@ -7,6 +7,8 @@ export default defineConfig(({ mode }) => ({
   define: {
     // Disable React refresh functions in production builds
     __REACT_REFRESH__: mode === "development",
+    // Fix pentru React production mode
+    "process.env.NODE_ENV": JSON.stringify(mode),
     // Fix comprehensiv pentru $RefreshSig$ error în toate browserele
     $RefreshReg$: mode === "production" ? "undefined" : "(function() {})",
     $RefreshSig$:

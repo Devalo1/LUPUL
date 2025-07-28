@@ -250,6 +250,18 @@ const SideNavigation: React.FC = () => {
                 <span className="nav-icon">👤</span>
                 <span>Contul Meu</span>
               </Link>
+              
+              {/* Sectiunea Embleme */}
+              <Link to="/emblems/mint" onClick={closeSideNav} className="nav-item">
+                <span className="nav-icon">👑</span>
+                <span>Embleme</span>
+              </Link>
+              
+              <Link to="/emblems/marketplace" onClick={closeSideNav} className="nav-item">
+                <span className="nav-icon">💎</span>
+                <span>Marketplace</span>
+              </Link>
+              
               {/* Admin panel section with detailed submenu */}
               {isAdmin && (
                 <div className="nav-dropdown">

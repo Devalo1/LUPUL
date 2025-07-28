@@ -138,6 +138,32 @@ async function mintEmblemAfterPayment(orderData, paymentStatus) {
       });
     }
 
+    // 3.1. Actualizează stocul admin centralizat
+    const adminStockRef = db.collection("emblem_stocks").doc("current_stock");
+    const adminStockDoc = await adminStockRef.get();
+    
+    if (adminStockDoc.exists) {
+      const currentStock = adminStockDoc.data();
+      const currentAmount = currentStock[orderData.emblemType] || 0;
+      
+      batch.update(adminStockRef, {
+        [orderData.emblemType]: Math.max(0, currentAmount - 1),
+        lastUpdated: Timestamp.now(),
+        updatedBy: "marketplace_sale"
+      });
+      
+      // Log stock change for audit
+      const logRef = db.collection("emblem_stock_logs").doc(`${Date.now()}_marketplace_sale`);
+      batch.set(logRef, {
+        changes: { [orderData.emblemType]: currentAmount - 1 },
+        adminId: "marketplace_sale",
+        timestamp: Timestamp.now(),
+        action: "emblem_sold",
+        orderId: orderData.orderId,
+        userId: orderData.userId
+      });
+    }
+
     // 4. Înregistrează tranzacția
     const transactionRef = db
       .collection("emblemTransactions")

@@ -79,7 +79,11 @@ import AppointmentConfirmation from "../../pages/appointments/AppointmentConfirm
 import SpecialistProfile from "../../pages/appointments/specialist";
 
 // Pagini embleme
-import { EmblemMintingPage, EmblemDashboard } from "../../components/emblems";
+import {
+  EmblemMintingPage,
+  EmblemDashboard,
+  EmblemMarketplace,
+} from "../../components/emblems";
 import EmblemPaymentSuccess from "../../components/emblems/EmblemPaymentSuccess";
 
 const AppRoutes = () => {
@@ -336,6 +340,14 @@ const AppRoutes = () => {
           element={
             <ProtectedRoute>
               <EmblemMintingPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/emblems/marketplace"
+          element={
+            <ProtectedRoute>
+              <EmblemMarketplace />
             </ProtectedRoute>
           }
         />

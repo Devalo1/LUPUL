@@ -1,0 +1,64 @@
+<svg width="100" height="100" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <radialGradient id="ravenGradient" cx="50%" cy="30%" r="70%">
+      <stop offset="0%" style="stop-color:#6b21a8;stop-opacity:1" />
+      <stop offset="50%" style="stop-color:#a855f7;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#1e1b4b;stop-opacity:1" />
+    </radialGradient>
+    <filter id="mysticalGlow">
+      <feGaussianBlur stdDeviation="2" result="coloredBlur"/>
+      <feMerge> 
+        <feMergeNode in="coloredBlur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+    <linearGradient id="featherGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#1f2937;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#4b5563;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  
+  <!-- Background circle -->
+  <circle cx="50" cy="50" r="48" fill="url(#ravenGradient)" stroke="#a855f7" stroke-width="2"/>
+  
+  <!-- Raven body -->
+  <ellipse cx="50" cy="55" rx="15" ry="20" fill="url(#featherGradient)" filter="url(#mysticalGlow)"/>
+  
+  <!-- Raven head -->
+  <circle cx="50" cy="40" r="12" fill="url(#featherGradient)" filter="url(#mysticalGlow)"/>
+  
+  <!-- Beak -->
+  <path d="M50 35 L45 38 Q47 40 50 38 Z" fill="#fbbf24"/>
+  
+  <!-- Eyes -->
+  <circle cx="47" cy="37" r="1.5" fill="#dc2626"/>
+  <circle cx="53" cy="37" r="1.5" fill="#dc2626"/>
+  <circle cx="47.5" cy="36.5" r="0.5" fill="#ffffff"/>
+  <circle cx="53.5" cy="36.5" r="0.5" fill="#ffffff"/>
+  
+  <!-- Wing details -->
+  <path d="M35 50 Q40 45 45 50 Q40 55 35 60 Z" fill="#374151" opacity="0.8"/>
+  <path d="M65 50 Q60 45 55 50 Q60 55 65 60 Z" fill="#374151" opacity="0.8"/>
+  
+  <!-- Mystical aura -->
+  <circle cx="50" cy="50" r="35" fill="none" stroke="#a855f7" stroke-width="1" opacity="0.3">
+    <animate attributeName="r" values="35;40;35" dur="3s" repeatCount="indefinite"/>
+    <animate attributeName="opacity" values="0.2;0.4;0.2" dur="3s" repeatCount="indefinite"/>
+  </circle>
+  
+  <!-- Magical symbols -->
+  <text x="25" y="25" font-family="serif" font-size="8" fill="#a855f7" opacity="0.7">✦</text>
+  <text x="75" y="25" font-family="serif" font-size="6" fill="#fbbf24" opacity="0.6">◊</text>
+  <text x="20" y="75" font-family="serif" font-size="7" fill="#06b6d4" opacity="0.7">✧</text>
+  <text x="80" y="80" font-family="serif" font-size="8" fill="#a855f7" opacity="0.6">❋</text>
+  
+  <!-- Floating mystical particles -->
+  <circle cx="30" cy="30" r="1" fill="#a855f7" opacity="0.6">
+    <animate attributeName="cy" values="30;25;30" dur="2s" repeatCount="indefinite"/>
+    <animate attributeName="opacity" values="0.3;0.8;0.3" dur="2s" repeatCount="indefinite"/>
+  </circle>
+  <circle cx="70" cy="70" r="1.5" fill="#fbbf24" opacity="0.5">
+    <animate attributeName="cx" values="70;75;70" dur="2.5s" repeatCount="indefinite"/>
+    <animate attributeName="opacity" values="0.2;0.7;0.2" dur="2.5s" repeatCount="indefinite"/>
+  </circle>
+</svg>

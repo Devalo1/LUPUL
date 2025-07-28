@@ -11,8 +11,9 @@ const NETOPIA_CONFIG = {
   },
   production: {
     signature: "2ZOW-PJ5X-HYYC-IENE-APZO", 
-    endpoint: "https://secure.netopia-payments.com/payment/card/start", // Când va fi activat
-    fallbackEndpoint: "https://secure.netopia-payments.com/payment/card", // API standard pentru fallback
+    // TEMPORAR: Folosesc direct API standard pentru production
+    endpoint: "https://secure.netopia-payments.com/payment/card", // API standard direct
+    fallbackEndpoint: "https://secure.netopia-payments.com/payment/card", // Same as endpoint
   }
 };
 
@@ -110,12 +111,19 @@ async function callNetopiaAPI(payload, config, isSandbox = false) {
     signature: signature.substring(0, 10) + "..."
   });
 
-  // Headers EXACT conform documentației
+  // Headers conform documentației - cu sau fără Authorization
   const headers = {
     "Content-Type": "application/json",
     "Accept": "application/json",
-    "Authorization": signature // EXACT ca în documentație
   };
+  
+  // Pentru endpoint-uri /start, folosesc Authorization header
+  if (endpoint.includes("/start")) {
+    headers.Authorization = signature; // Bearer token pentru v3
+    console.log("🔐 Using Authorization header for v3 endpoint");
+  } else {
+    console.log("🔐 Using signature in payload for standard API");
+  }
 
   try {
     const response = await fetch(endpoint, {
@@ -129,27 +137,39 @@ async function callNetopiaAPI(payload, config, isSandbox = false) {
     if (!response.ok) {
       const errorText = await response.text();
       console.error(`❌ NETOPIA ${isSandbox ? 'SANDBOX' : 'PRODUCTION'} Error:`, errorText.substring(0, 200));
-      
-      // Pentru production, încearcă fallback la API standard
-      if (!isSandbox && response.status === 404) {
-        console.log("🔄 Trying production fallback API...");
-        return await callNetopiaFallback(payload, config);
-      }
-      
       throw new Error(`NETOPIA API Error: ${response.status}`);
     }
 
-    // Procesează răspunsul JSON conform documentației
-    const data = await response.json();
-    console.log("✅ NETOPIA API Response:", {
-      hasPayment: !!data.payment,
-      status: data.payment?.status,
-      hasPaymentURL: !!data.payment?.paymentURL,
-      hasCustomerAction: !!data.customerAction,
-      actionType: data.customerAction?.type
-    });
-
-    return data;
+    // Procesează răspunsul (poate fi JSON sau HTML/SVG)
+    const contentType = response.headers.get('content-type');
+    
+    if (contentType && contentType.includes('application/json')) {
+      // Răspuns JSON - parsează normal
+      const data = await response.json();
+      console.log("✅ NETOPIA JSON Response:", {
+        hasPayment: !!data.payment,
+        status: data.payment?.status,
+        hasPaymentURL: !!data.payment?.paymentURL,
+        hasCustomerAction: !!data.customerAction,
+        actionType: data.customerAction?.type
+      });
+      return data;
+    } else {
+      // Răspuns HTML/SVG - returnează ca HTML form
+      const htmlResponse = await response.text();
+      console.log("📄 NETOPIA HTML/SVG Response received, length:", htmlResponse.length);
+      
+      return {
+        payment: {
+          status: 15, // Assume 3DS required pentru HTML response
+          paymentURL: null
+        },
+        customerAction: {
+          type: "HTMLForm",
+          formData: { html: htmlResponse }
+        }
+      };
+    }
 
   } catch (error) {
     console.error(`❌ NETOPIA ${isSandbox ? 'SANDBOX' : 'PRODUCTION'} API failed:`, error.message);
@@ -255,7 +275,7 @@ export const handler = async (event, context) => {
     // Creează payload conform documentației oficiale
     const payload = createOfficialPayload(paymentData);
     
-    // Determină mediul (sandbox vs production)
+    // Determină mediul - TEMPORAR: forțez fallback direct în production
     const baseUrl = process.env.URL || "https://lupulsicorbul.com";
     const isProduction = baseUrl.includes("lupulsicorbul.com") && !paymentData.forceSandbox;
     
@@ -265,7 +285,41 @@ export const handler = async (event, context) => {
       willUseSandbox: !isProduction
     });
 
-    // Apelează API-ul NETOPIA
+    // TEMPORAR: În production, folosesc direct fallback-ul (API standard)
+    // deoarece endpoint-ul v3 /start nu e încă activat de NETOPIA
+    if (isProduction) {
+      console.log("🔄 Production mode: using API standard directly (no /start)");
+      // Nu mai încerc /start - folosesc direct API standard
+      const result = await callNetopiaAPI(payload, NETOPIA_CONFIG, false); // false = production
+      
+      // Procesează răspunsul normal
+      if (result.payment) {
+        if (result.payment.paymentURL) {
+          return {
+            statusCode: 200,
+            headers,
+            body: JSON.stringify({
+              success: true,
+              paymentUrl: result.payment.paymentURL,
+              orderId: paymentData.orderId,
+              status: result.payment.status
+            }),
+          };
+        }
+      }
+      
+      // Dacă nu e JSON, încearcă fallback-ul
+      const fallbackResult = await callNetopiaFallback(payload, NETOPIA_CONFIG);
+      if (fallbackResult.customerAction?.formData?.html) {
+        return {
+          statusCode: 200,
+          headers: { "Content-Type": "text/html" },
+          body: fallbackResult.customerAction.formData.html,
+        };
+      }
+    }
+
+    // Pentru sandbox sau development, încearcă API-ul v3 normal
     const result = await callNetopiaAPI(payload, NETOPIA_CONFIG, !isProduction);
 
     // Procesează răspunsul conform documentației

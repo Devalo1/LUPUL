@@ -1,5 +1,7 @@
 /**
- * Funcție Netlify pentru inițierea plăților NETOPIA
+ * Funcție Netlify p    privateKey: process.env.NETOPIA_PRIVATE_KEY,
+    apiVersion: "v2", // Standard până la aprobare finală v3
+    status: "active",ru inițierea plăților NETOPIA
  * Această funcție creează o nouă sesiune de plată și returnează URL-ul NETOPIA
  */
 
@@ -10,20 +12,18 @@ import crypto from "crypto";
 // doar că lipseau credențialele reale - acum sunt configurate!
 const NETOPIA_CONFIG = {
   sandbox: {
-    // Credențiale LIVE pentru testare - primite de la NETOPIA
+    // TEMPORAR: Folosim API standard până când sandbox-ul v3 este activat complet
     signature: process.env.NETOPIA_POS_SIGNATURE || "2ZOW-PJ5X-HYYC-IENE-APZO",
-    // API v3 cu /start endpoint - acum cu credențiale reale
-    endpoint: "https://secure.sandbox.netopia-payments.com/payment/card/start",
+    endpoint: "https://secure.netopia-payments.com/payment/card", // API standard
     publicKey: process.env.NETOPIA_CERTIFICATE,
     privateKey: process.env.NETOPIA_PRIVATE_KEY,
-    apiVersion: "v3",
-    status: "active", // Credențiale active!
+    apiVersion: "v2", // Standard până la activare v3
+    status: "active",
   },
   live: {
-    // Aceleași credențiale și pentru producție - confirmată de NETOPIA
+    // Production cu API standard - credențiale LIVE confirmată de NETOPIA
     signature: process.env.NETOPIA_POS_SIGNATURE || "2ZOW-PJ5X-HYYC-IENE-APZO",
-    // Production cu API standard - va trece la v3 după aprobare finală
-    endpoint: "https://secure.netopia-payments.com/payment/card",
+    endpoint: "https://secure.netopia-payments.com/payment/card", // API standard
     publicKey: process.env.NETOPIA_CERTIFICATE,
     privateKey: process.env.NETOPIA_PRIVATE_KEY,
     apiVersion: "v2", // Standard până la aprobare finală v3
@@ -129,21 +129,14 @@ async function initiateNetopiaPayment(payload, config) {
   });
 
   try {
-    // Fă request JSON direct la NETOPIA API - endpoint-uri diferite pentru sandbox vs live
+    // Headers pentru API standard (v2) - nu mai încercăm v3 până la activare
     const requestHeaders = {
       "Content-Type": "application/json",
       Accept: "application/json",
     };
 
-    // Pentru sandbox cu /start endpoint (API v3), includem Authorization header
-    if (config.endpoint.includes("/start")) {
-      // API v3 folosește Bearer token pentru autentificare
-      requestHeaders.Authorization = `Bearer ${config.signature}`;
-      console.log("🔐 Using API v3 with Bearer authentication for sandbox");
-    } else {
-      // API standard include signature în payload
-      console.log("🔐 Using standard API with signature in payload");
-    }
+    // API standard folosește signature în payload, nu în headers
+    console.log("🔐 Using standard API with signature in payload");
 
     const response = await fetch(config.endpoint, {
       method: "POST",

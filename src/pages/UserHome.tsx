@@ -95,6 +95,8 @@ const ArticleDisplay = ({
   const [readPosition, setReadPosition] = useState(0);
   const [isBookmarked, setIsBookmarked] = useState(false);
   const contentRef = useRef<HTMLDivElement>(null);
+  const progressBarRef1 = useRef<HTMLDivElement>(null);
+  const progressBarRef2 = useRef<HTMLDivElement>(null);
   const { user } = useAuth();
 
   // Check if the article has multiple gallery images
@@ -161,6 +163,22 @@ const ArticleDisplay = ({
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
+
+  // Update progress bars when readPosition changes
+  useEffect(() => {
+    if (progressBarRef1.current) {
+      progressBarRef1.current.style.setProperty(
+        "--progress-width",
+        `${readPosition}%`
+      );
+    }
+    if (progressBarRef2.current) {
+      progressBarRef2.current.style.setProperty(
+        "--progress-width",
+        `${readPosition}%`
+      );
+    }
+  }, [readPosition]);
 
   // Format article content with special formatting
   const formatContent = (content: string) => {
@@ -297,8 +315,8 @@ const ArticleDisplay = ({
           {/* Reading progress indicator */}
           <div className="fixed top-0 left-0 right-0 h-1 bg-gray-200 z-50">
             <div
-              className={`h-full bg-blue-600 transition-all duration-300 ease-out ${styles.progressBar}`}
-              style={{ width: `${readPosition}%` }}
+              ref={progressBarRef1}
+              className={`${styles.dynamicProgressBar} transition-all duration-300 ease-out`}
             ></div>
           </div>
           <div className="bg-yellow-50 rounded-lg overflow-hidden my-4 shadow-xl max-w-4xl mx-auto transform transition-all duration-500 animate-slideInUp">
@@ -617,8 +635,8 @@ const ArticleDisplay = ({
           {/* Reading progress indicator */}
           <div className="fixed top-0 left-0 right-0 h-1 bg-gray-200 z-50">
             <div
-              className={`h-full bg-blue-600 transition-all duration-300 ease-out ${styles.progressBar}`}
-              style={{ width: `${readPosition}%` }}
+              ref={progressBarRef2}
+              className={`${styles.dynamicProgressBar} transition-all duration-300 ease-out`}
             ></div>
           </div>
           <div
@@ -954,10 +972,7 @@ const UserHome: React.FC = () => {
                 const data = doc.data();
 
                 // Only include published articles or all articles if we're in development
-                if (
-                  data.published === true ||
-                  process.env.NODE_ENV === "development"
-                ) {
+                if (data.published === true || import.meta.env.DEV) {
                   fetchedArticles.push({
                     id: doc.id,
                     title: data.title || "Titlu lipsă",
@@ -989,7 +1004,7 @@ const UserHome: React.FC = () => {
               const personalizedArticles = fetchedArticles.map((article) => {
                 let personalizedContent = article.content;
                 personalizedContent = personalizedContent.replace(
-                  "${user?.displayName || \"prieten\"}",
+                  '${user?.displayName || "prieten"}',
                   userDisplayName
                 );
 

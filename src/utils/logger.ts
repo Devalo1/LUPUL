@@ -5,14 +5,14 @@
  */
 
 // Check if we're in development mode
-const isDevelopment = process.env.NODE_ENV !== "production";
+const isDevelopment = import.meta.env.DEV;
 
 // Log levels with numeric priorities
 enum LogLevel {
   DEBUG = 0,
   INFO = 1,
   WARN = 2,
-  ERROR = 3
+  ERROR = 3,
 }
 
 // Current log level - DEBUG in development, INFO in production
@@ -21,10 +21,10 @@ const currentLogLevel = isDevelopment ? LogLevel.DEBUG : LogLevel.INFO;
 // Console style configurations for different log levels
 const logStyles = {
   debug: "color: #6b7280", // gray
-  info: "color: #3b82f6",  // blue
-  warn: "color: #f59e0b",  // amber
+  info: "color: #3b82f6", // blue
+  warn: "color: #f59e0b", // amber
   error: "color: #ef4444", // red
-  component: "color: #10b981; font-weight: bold" // green, bold
+  component: "color: #10b981; font-weight: bold", // green, bold
 };
 
 /**
@@ -32,11 +32,11 @@ const logStyles = {
  */
 class Logger {
   private component: string;
-  
+
   constructor(component = "App") {
     this.component = component;
   }
-  
+
   /**
    * Create a new logger instance for a specific component
    */
@@ -50,56 +50,56 @@ class Logger {
   debug(message: string, ...args: unknown[]): void {
     if (this.shouldLog(LogLevel.DEBUG)) {
       console.log(
-        `%c[DEBUG]%c [${this.component}]: ${message}`, 
-        logStyles.debug, 
-        logStyles.component, 
+        `%c[DEBUG]%c [${this.component}]: ${message}`,
+        logStyles.debug,
+        logStyles.component,
         ...args
       );
     }
   }
-  
+
   /**
    * Log an info message
    */
   info(message: string, ...args: unknown[]): void {
     if (this.shouldLog(LogLevel.INFO)) {
       console.info(
-        `%c[INFO]%c [${this.component}]: ${message}`, 
-        logStyles.info, 
-        logStyles.component, 
+        `%c[INFO]%c [${this.component}]: ${message}`,
+        logStyles.info,
+        logStyles.component,
         ...args
       );
     }
   }
-  
+
   /**
    * Log a warning message
    */
   warn(message: string, ...args: unknown[]): void {
     if (this.shouldLog(LogLevel.WARN)) {
       console.warn(
-        `%c[WARN]%c [${this.component}]: ${message}`, 
-        logStyles.warn, 
-        logStyles.component, 
+        `%c[WARN]%c [${this.component}]: ${message}`,
+        logStyles.warn,
+        logStyles.component,
         ...args
       );
     }
   }
-  
+
   /**
    * Log an error message
    */
   error(message: string, ...args: unknown[]): void {
     if (this.shouldLog(LogLevel.ERROR)) {
       console.error(
-        `%c[ERROR]%c [${this.component}]: ${message}`, 
-        logStyles.error, 
-        logStyles.component, 
+        `%c[ERROR]%c [${this.component}]: ${message}`,
+        logStyles.error,
+        logStyles.component,
         ...args
       );
     }
   }
-  
+
   /**
    * Start a timer for performance measurement
    */
@@ -108,7 +108,7 @@ class Logger {
       console.time(label);
     }
   }
-  
+
   /**
    * End a timer and log the elapsed time
    */
@@ -117,7 +117,7 @@ class Logger {
       console.timeEnd(label);
     }
   }
-  
+
   /**
    * Determine if a message at the given level should be logged
    */

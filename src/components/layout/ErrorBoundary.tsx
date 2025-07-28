@@ -34,7 +34,7 @@ class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
     // Putem înregistra eroarea într-un serviciu de raportare a erorilor
     console.error("Eroare prinsă de ErrorBoundary:", error, errorInfo);
     this.setState({
-      errorInfo
+      errorInfo,
     });
   }
 
@@ -48,11 +48,14 @@ class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
       return (
         <div className="min-h-screen bg-gray-100 p-8">
           <div className="max-w-4xl mx-auto bg-white p-8 rounded-lg shadow-lg">
-            <h1 className="text-2xl font-bold text-red-600 mb-4">Ceva nu a funcționat corect</h1>
+            <h1 className="text-2xl font-bold text-red-600 mb-4">
+              Ceva nu a funcționat corect
+            </h1>
             <p className="text-gray-700 mb-4">
-              Aplicația a întâmpinat o eroare. Vă rugăm să reîncărcați pagina sau să încercați din nou mai târziu.
+              Aplicația a întâmpinat o eroare. Vă rugăm să reîncărcați pagina
+              sau să încercați din nou mai târziu.
             </p>
-            
+
             <div className="mb-4">
               <button
                 onClick={() => window.location.reload()}
@@ -61,12 +64,16 @@ class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
                 Reîncarcă pagina
               </button>
             </div>
-            
-            {process.env.NODE_ENV === "development" && (
+
+            {import.meta.env.DEV && (
               <div className="mt-6 bg-gray-100 p-4 rounded-md">
-                <h2 className="text-lg font-semibold mb-2">Detalii eroare (vizibile doar în mediul de dezvoltare):</h2>
-                <p className="text-red-600 mb-2">{this.state.error?.toString()}</p>
-                
+                <h2 className="text-lg font-semibold mb-2">
+                  Detalii eroare (vizibile doar în mediul de dezvoltare):
+                </h2>
+                <p className="text-red-600 mb-2">
+                  {this.state.error?.toString()}
+                </p>
+
                 <div className="overflow-auto max-h-64 bg-gray-800 text-white p-4 rounded-md text-sm">
                   <pre>{this.state.errorInfo?.componentStack}</pre>
                 </div>

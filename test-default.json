@@ -1,0 +1,10 @@
+﻿{
+  "orderId": "TEST_DEFAULT",
+  "amount": 100,
+  "description": "Test default production",
+  "customerInfo": {
+    "email": "test@test.com",
+    "firstName": "Test",
+    "lastName": "User"
+  }
+}

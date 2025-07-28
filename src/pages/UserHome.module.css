@@ -4,6 +4,13 @@
   transition: width 0.3s ease-in-out;
 }
 
+.dynamicProgressBar {
+  height: 100%;
+  background-color: #2563eb; /* blue-600 */
+  transition: width 0.3s ease-in-out;
+  width: var(--progress-width, 0%);
+}
+
 .romanianPatternBackground {
   background-image: url("/images/romanian-pattern.png");
   background-repeat: repeat;
@@ -64,4 +71,15 @@
   width: 100%;
   height: 192px; /* h-48 equivalent */
   object-fit: cover;
+}
+
+/* Mobile navbar spacing fixes */
+@media (max-width: 768px) {
+  .mobileNavbarSpacing {
+    padding-top: 5rem; /* Account for mobile navbar height */
+  }
+
+  .brandSection {
+    margin-top: 1rem; /* Additional spacing for brand elements */
+  }
 }

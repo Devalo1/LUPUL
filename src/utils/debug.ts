@@ -1,5 +1,5 @@
 // Flag to determine if we're in development mode
-const isDevelopment = process.env.NODE_ENV === "development" || import.meta.env.DEV;
+const isDevelopment = import.meta.env.DEV;
 
 // Logger implementation
 export const logger = {
@@ -16,7 +16,11 @@ export const logger = {
   warn: (_message: string, _options?: Record<string, unknown>) => {
     // Removed console.warn statement
   },
-  error: (_message: string, _error?: unknown, _options?: Record<string, unknown>) => {
+  error: (
+    _message: string,
+    _error?: unknown,
+    _options?: Record<string, unknown>
+  ) => {
     // Removed console.error statement
   },
   time: (_label: string) => {
@@ -28,7 +32,7 @@ export const logger = {
     if (isDevelopment) {
       // Removed console.timeEnd statement
     }
-  }
+  },
 };
 
 // Component event logger
@@ -39,10 +43,10 @@ export const logComponentEvent = (
 ): void => {
   if (!isDevelopment) return;
 
-  logger.debug(
-    `Component ${componentName} - ${event}`,
-    { context: "Component", data: _details }
-  );
+  logger.debug(`Component ${componentName} - ${event}`, {
+    context: "Component",
+    data: _details,
+  });
 };
 
 /**
@@ -71,6 +75,6 @@ export const logErrorBoundary = (
 ): void => {
   logger.error(`Error Boundary (${componentName})`, error, {
     context: "ErrorBoundary",
-    data: { componentStack: errorInfo.componentStack }
+    data: { componentStack: errorInfo.componentStack },
   });
 };

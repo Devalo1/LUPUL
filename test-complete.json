@@ -1,0 +1,12 @@
+﻿{
+  "orderId": "TEST_123",
+  "amount": 1,
+  "currency": "RON",
+  "description": "Test payment",
+  "forceSandbox": false,
+  "customerInfo": {
+    "email": "test@test.com",
+    "firstName": "Test",
+    "lastName": "User"
+  }
+}

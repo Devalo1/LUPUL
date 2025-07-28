@@ -9,7 +9,7 @@ const NETOPIA_CONFIG = {
     endpoint: "https://secure.sandbox.netopia-payments.com/payment/card/start",
   },
   production: {
-    signature: "2ZOW-PJ5X-HYYC-IENE-APZO", 
+    signature: "2ZOW-PJ5X-HYYC-IENE-APZO",
     endpoint: "https://secure.netopia-payments.com/payment/card", // Endpoint care funcționează
   },
 };
@@ -44,13 +44,13 @@ const testPayload = {
     dateTime: new Date().toISOString(),
     description: "Test payment lupulsicorbul.com",
     orderID: "TEST_" + Date.now(),
-    amount: 10.00,
+    amount: 10.0,
     currency: "RON",
     billing: {
       email: "test@lupulsicorbul.com",
       phone: "+40712345678",
       firstName: "Test",
-      lastName: "User", 
+      lastName: "User",
       city: "Bucuresti",
       country: 642,
       countryName: "Romania",
@@ -63,7 +63,7 @@ const testPayload = {
       phone: "+40712345678",
       firstName: "Test",
       lastName: "User",
-      city: "Bucuresti", 
+      city: "Bucuresti",
       country: 642,
       state: "Bucuresti",
       postalCode: "123456",
@@ -74,7 +74,7 @@ const testPayload = {
         name: "Produs test",
         code: "TEST_" + Date.now(),
         category: "digital",
-        price: 10.00,
+        price: 10.0,
         vat: 19,
       },
     ],
@@ -96,18 +96,18 @@ async function testNetopiaEndpoint(endpoint, signature, name) {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        Accept: "application/json", 
+        Accept: "application/json",
         Authorization: signature, // Conform documentației NETOPIA
       },
       body: JSON.stringify(testPayload),
     });
 
     console.log(`   Status: ${response.status} ${response.statusText}`);
-    
+
     if (response.ok) {
       const contentType = response.headers.get("content-type");
       console.log(`   Content-Type: ${contentType}`);
-      
+
       if (contentType && contentType.includes("application/json")) {
         const data = await response.json();
         console.log(`   ✅ SUCCESS - JSON Response:`, {

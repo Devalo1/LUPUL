@@ -20,7 +20,7 @@ class DebugErrorBoundary extends Component<Props, State> {
     this.state = {
       hasError: false,
       error: null,
-      errorInfo: null
+      errorInfo: null,
     };
   }
 
@@ -28,13 +28,13 @@ class DebugErrorBoundary extends Component<Props, State> {
     return {
       hasError: true,
       error,
-      errorInfo: null
+      errorInfo: null,
     };
   }
 
   componentDidCatch(error: Error, errorInfo: ErrorInfo): void {
     this.setState({ errorInfo });
-    
+
     // Log error details
     logger.debug(`🔴 Error in ${this.props.componentName || "component"}`);
     logger.error("Error details:", error);
@@ -47,13 +47,13 @@ class DebugErrorBoundary extends Component<Props, State> {
       if (this.props.fallback) {
         return this.props.fallback;
       }
-      
+
       return (
         <div className="p-4 bg-red-50 border border-red-200 rounded-md">
           <h3 className="text-lg font-medium text-red-800">
             A apărut o eroare în {this.props.componentName || "acest component"}
           </h3>
-          {process.env.NODE_ENV === "development" && this.state.error && (
+          {import.meta.env.DEV && this.state.error && (
             <div className="mt-2">
               <p className="text-sm text-red-600">{this.state.error.message}</p>
             </div>

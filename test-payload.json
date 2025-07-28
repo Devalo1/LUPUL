@@ -1,0 +1,10 @@
+{
+  "orderId": "TEST_123",
+  "amount": 1,
+  "description": "Test payment",
+  "customerInfo": {
+    "email": "test@test.com",
+    "firstName": "Test",
+    "lastName": "User"
+  }
+}

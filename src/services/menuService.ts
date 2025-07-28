@@ -1,8 +1,10 @@
 import axios from "axios";
 
-const API_URL = process.env.NODE_ENV === "production" 
-  ? "https://us-central1-lupul-sicorbul.cloudfunctions.net" 
-  : "http://localhost:5001/lupul-sicorbul/us-central1";
+// Use Vite's environment detection instead of process.env.NODE_ENV
+const isDevelopment = import.meta.env.DEV;
+const API_URL = isDevelopment
+  ? "http://localhost:5001/lupul-sicorbul/us-central1"
+  : "https://us-central1-lupul-sicorbul.cloudfunctions.net";
 
 export interface MenuProduct {
   id: string;
@@ -37,7 +39,8 @@ export const HARDCODED_MENU: MenuData = {
         pret: 10,
         inStock: true,
         category: "gogosi",
-        image: "https://images.unsplash.com/photo-1551024601-bec78aea704b?q=80&w=500&auto=format&fit=crop"
+        image:
+          "https://images.unsplash.com/photo-1551024601-bec78aea704b?q=80&w=500&auto=format&fit=crop",
       },
       {
         id: "gogosi-mare",
@@ -46,7 +49,8 @@ export const HARDCODED_MENU: MenuData = {
         pret: 15,
         inStock: true,
         category: "gogosi",
-        image: "https://images.pexels.com/photos/3656119/pexels-photo-3656119.jpeg?auto=compress&cs=tinysrgb&w=500"
+        image:
+          "https://images.pexels.com/photos/3656119/pexels-photo-3656119.jpeg?auto=compress&cs=tinysrgb&w=500",
       },
       {
         id: "glazura-ciocolata",
@@ -55,12 +59,15 @@ export const HARDCODED_MENU: MenuData = {
         pret: 2,
         inStock: true,
         category: "topping",
-        image: "https://images.unsplash.com/photo-1575377222312-dd1a63a51638?q=80&w=500&auto=format&fit=crop"
-      }
+        image:
+          "https://images.unsplash.com/photo-1575377222312-dd1a63a51638?q=80&w=500&auto=format&fit=crop",
+      },
     ],
-    extraInfo: ["Arome disponibile: ciocolată, ciocolată albă, fructe de pădure, căpșuni, caramel, kiwi, dulceață, etc."]
+    extraInfo: [
+      "Arome disponibile: ciocolată, ciocolată albă, fructe de pădure, căpșuni, caramel, kiwi, dulceață, etc.",
+    ],
   },
-  
+
   // Secțiunea Cafea
   cafea: {
     nume: "CAFEA",
@@ -72,7 +79,8 @@ export const HARDCODED_MENU: MenuData = {
         pret: 5,
         inStock: true,
         category: "cafea",
-        image: "https://images.unsplash.com/photo-1514432324607-a09d9b4aefdd?q=80&w=500&auto=format&fit=crop"
+        image:
+          "https://images.unsplash.com/photo-1514432324607-a09d9b4aefdd?q=80&w=500&auto=format&fit=crop",
       },
       {
         id: "cafea-lapte",
@@ -81,7 +89,8 @@ export const HARDCODED_MENU: MenuData = {
         pret: 10,
         inStock: true,
         category: "cafea",
-        image: "https://images.unsplash.com/photo-1534778101976-62847782c213?q=80&w=500&auto=format&fit=crop"
+        image:
+          "https://images.unsplash.com/photo-1534778101976-62847782c213?q=80&w=500&auto=format&fit=crop",
       },
       {
         id: "cappuccino",
@@ -90,11 +99,12 @@ export const HARDCODED_MENU: MenuData = {
         pret: 10,
         inStock: true,
         category: "cafea",
-        image: "https://images.unsplash.com/photo-1572442388796-11668a67e53d?q=80&w=500&auto=format&fit=crop"
-      }
-    ]
+        image:
+          "https://images.unsplash.com/photo-1572442388796-11668a67e53d?q=80&w=500&auto=format&fit=crop",
+      },
+    ],
   },
-  
+
   // Secțiunea Clătite
   clatite: {
     nume: "CLĂTITE",
@@ -106,12 +116,13 @@ export const HARDCODED_MENU: MenuData = {
         pret: 8,
         inStock: true,
         category: "clatite",
-        image: "https://images.unsplash.com/photo-1565299543923-37dd37887442?q=80&w=500&auto=format&fit=crop"
-      }
+        image:
+          "https://images.unsplash.com/photo-1565299543923-37dd37887442?q=80&w=500&auto=format&fit=crop",
+      },
     ],
-    extraInfo: ["Arome disponibile: ciocolată, ciocolată albă, afine, etc."]
+    extraInfo: ["Arome disponibile: ciocolată, ciocolată albă, afine, etc."],
   },
-  
+
   // Secțiunea Shake
   shake: {
     nume: "SHAKE",
@@ -123,7 +134,8 @@ export const HARDCODED_MENU: MenuData = {
         pret: 10,
         inStock: true,
         category: "shake",
-        image: "https://images.unsplash.com/photo-1541658016709-82535e94bc69?q=80&w=500&auto=format&fit=crop"
+        image:
+          "https://images.unsplash.com/photo-1541658016709-82535e94bc69?q=80&w=500&auto=format&fit=crop",
       },
       {
         id: "shake-proteic",
@@ -132,11 +144,12 @@ export const HARDCODED_MENU: MenuData = {
         pret: 12,
         inStock: true,
         category: "shake",
-        image: "https://images.unsplash.com/photo-1563805042-7684c019e1cb?q=80&w=500&auto=format&fit=crop"
-      }
-    ]
+        image:
+          "https://images.unsplash.com/photo-1563805042-7684c019e1cb?q=80&w=500&auto=format&fit=crop",
+      },
+    ],
   },
-  
+
   // Secțiunea Oferte Speciale
   oferte: {
     nume: "OFERTĂ SPECIALĂ",
@@ -148,72 +161,76 @@ export const HARDCODED_MENU: MenuData = {
         pret: 12,
         inStock: true,
         category: "oferte",
-        image: "https://images.unsplash.com/photo-1495214783159-3503fd1b572d?q=80&w=500&auto=format&fit=crop"
-      }
-    ]
-  }
+        image:
+          "https://images.unsplash.com/photo-1495214783159-3503fd1b572d?q=80&w=500&auto=format&fit=crop",
+      },
+    ],
+  },
 };
 
 export const fetchMenuItems = async (): Promise<MenuData> => {
-  // In development mode, check if emulators are likely running
-  const isEmulatorRunning = async (): Promise<boolean> => {
-    if (process.env.NODE_ENV === "production") return true;
-    
-    try {
-      // Try a quick ping with a short timeout
-      await axios.get(`${API_URL}`, { 
-        timeout: 500,  // Very short timeout just to check connectivity
-      });
-      return true;
-    } catch (error) {
-      console.log("Firebase emulators don't appear to be running, using hardcoded menu data");
-      return false;
-    }
-  };
-
-  // If emulators aren't running in dev mode, return hardcoded data immediately
-  if (process.env.NODE_ENV !== "production") {
-    const emulatorRunning = await isEmulatorRunning();
-    if (!emulatorRunning) {
-      return HARDCODED_MENU;
-    }
+  // In development mode, always use hardcoded data unless Firebase emulators are explicitly running
+  if (isDevelopment) {
+    console.log(
+      "🔧 Development mode detected - using hardcoded menu data to avoid CORS issues"
+    );
+    return HARDCODED_MENU;
   }
-  
+
   try {
     // Încercăm să obținem datele de la API cu un timeout rezonabil
     const response = await axios.get(`${API_URL}/getMenuItems`, {
-      timeout: 3000 // 3 second timeout
+      timeout: 3000, // 3 second timeout
     });
-    
+
     if (response.data && response.data.success) {
       return response.data.data;
     } else {
-      console.warn("API returned unsuccessful response, using hardcoded menu data");
+      console.warn(
+        "API returned unsuccessful response, using hardcoded menu data"
+      );
       return HARDCODED_MENU;
     }
   } catch (error) {
     // More informative error message based on error type
     if (axios.isAxiosError(error) && error.code === "ECONNREFUSED") {
-      console.warn("Connection to menu API refused - emulators may not be running");
+      console.warn(
+        "Connection to menu API refused - emulators may not be running"
+      );
     } else if (axios.isAxiosError(error) && error.code === "ETIMEDOUT") {
       console.warn("Connection to menu API timed out");
     } else {
       console.error("Error fetching menu items:", error);
     }
-    
+
     // Always fall back to hardcoded data
     return HARDCODED_MENU;
   }
 };
 
-export const fetchMenuCategory = async (category: string): Promise<MenuCategory> => {
+export const fetchMenuCategory = async (
+  category: string
+): Promise<MenuCategory> => {
+  // In development mode, always use hardcoded data
+  if (isDevelopment) {
+    console.log(
+      `🔧 Development mode - returning hardcoded data for category: ${category}`
+    );
+    return HARDCODED_MENU[category] || HARDCODED_MENU.gogosi; // Default fallback
+  }
+
   try {
-    const response = await axios.get(`${API_URL}/getMenuItems?category=${category}`);
-    
+    const response = await axios.get(
+      `${API_URL}/getMenuItems?category=${category}`
+    );
+
     if (response.data && response.data.success) {
       return response.data.data[category];
     } else {
-      console.error(`Failed to fetch menu category ${category}:`, response.data);
+      console.error(
+        `Failed to fetch menu category ${category}:`,
+        response.data
+      );
       // Returnam categoria hardcodata ca backup
       return HARDCODED_MENU[category] || HARDCODED_MENU.gogosi; // Default fallback
     }
@@ -227,5 +244,5 @@ export const fetchMenuCategory = async (category: string): Promise<MenuCategory>
 export default {
   fetchMenuItems,
   fetchMenuCategory,
-  HARDCODED_MENU
+  HARDCODED_MENU,
 };

@@ -340,6 +340,11 @@ img {
 
 /* Responsive improvements */
 @media (max-width: 768px) {
+  /* Fix for navbar overlap on mobile */
+  .hero-section {
+    padding-top: 5rem; /* Account for mobile navbar height */
+  }
+
   .text-6xl {
     font-size: 3rem;
   }
@@ -459,7 +464,17 @@ html {
 /* Mobile optimization */
 @media (max-width: 640px) {
   .hero-section {
-    padding: 2rem 1rem;
+    padding: 6rem 1rem 2rem; /* Increased top padding for smaller screens */
+  }
+
+  .brand-section {
+    margin-bottom: 1.5rem; /* Reduced margin to compensate for extra padding */
+  }
+
+  .brand-logo {
+    width: 6rem;
+    height: 6rem; /* Slightly smaller logo on very small screens */
+    margin-bottom: 1rem;
   }
 
   .feature-grid {

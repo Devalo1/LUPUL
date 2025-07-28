@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Netopia Checkout Fix</title>
+</head>
+<body>
+    <h1>Test Netopia Checkout Fix</h1>
+    <button onclick="testNetopiaFlow()">Test Plată Netopia (cu fix pentru blank page)</button>
+    
+    <div id="result"></div>
+    
+    <script>
+        async function testNetopiaFlow() {
+            const resultDiv = document.getElementById('result');
+            resultDiv.innerHTML = '<p>🔄 Testing enhanced Netopia flow...</p>';
+            
+            // Simulez exact ce face noul cod din Checkout.tsx
+            const testPayload = {
+                orderId: 'TEST_ENHANCED_' + Date.now(),
+                amount: 100,
+                currency: 'RON',
+                description: 'Test enhanced checkout flow',
+                customerInfo: {
+                    firstName: 'Test',
+                    lastName: 'Customer',
+                    email: 'test@lupulsicorbul.com',
+                    phone: '0700000000',
+                    address: 'Test Address',
+                    city: 'Bucuresti',
+                    county: 'Bucuresti',
+                    postalCode: '010000'
+                },
+                posSignature: '2ZOW-PJ5X-HYYC-IENE-APZO',
+                live: true
+            };
+            
+            console.log("🚀 Inițiez plata Netopia cu payload:", testPayload);
+            
+            try {
+                // Apelare directă la funcția Netlify pentru debugging complet
+                const netopiaUrl = '/.netlify/functions/netopia-initiate';
+                console.log("🌐 Endpoint Netopia:", netopiaUrl);
+
+                const response = await fetch(netopiaUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json; charset=utf-8' },
+                    body: JSON.stringify(testPayload),
+                });
+
+                // LOGGING COMPLET pentru debugging
+                console.log("📡 Netopia response status:", response.status);
+                console.log("📋 Netopia response headers:", Object.fromEntries(response.headers.entries()));
+
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    console.error("❌ Netopia HTTP Error:", {
+                        status: response.status,
+                        statusText: response.statusText,
+                        body: errorText.substring(0, 500),
+                    });
+                    throw new Error(`Eroare HTTP ${response.status}: ${response.statusText}`);
+                }
+
+                // Citesc răspunsul ca text pentru debugging complet
+                const responseText = await response.text();
+                console.log("🔍 Netopia RAW response:", {
+                    length: responseText.length,
+                    contentType: response.headers.get('content-type'),
+                    firstChars: responseText.substring(0, 200),
+                    containsHtml: responseText.includes('<html'),
+                    containsForm: responseText.includes('<form'),
+                    containsSvg: responseText.includes('card.svg'),
+                    containsPaymentURL: responseText.includes('paymentURL'),
+                });
+
+                // Încerc să parsez JSON dacă e posibil
+                let parsedData = null;
+                let paymentURL = null;
+
+                if (response.headers.get('content-type')?.includes('application/json')) {
+                    try {
+                        parsedData = JSON.parse(responseText);
+                        console.log("✅ Parsed JSON from Netopia:", parsedData);
+                        
+                        // Verific unde e URL-ul de plată
+                        paymentURL = parsedData.paymentUrl || parsedData.paymentURL || parsedData.customerAction?.url;
+                        console.log("🔍 Extracted paymentURL:", paymentURL);
+                        
+                    } catch (parseError) {
+                        console.error("❌ Failed to parse JSON:", parseError);
+                        console.log("Raw response that failed to parse:", responseText);
+                    }
+                }
+
+                // Acum decid ce să fac în funcție de ce am primit
+                if (responseText.includes('<html') || responseText.includes('<!doctype')) {
+                    console.log("📄 Detected HTML response - would open popup for form");
+                    resultDiv.innerHTML = '<p>✅ SUCCESS: Detected HTML form - would open popup and load form content</p>';
+                    
+                } else if (paymentURL && typeof paymentURL === 'string' && paymentURL.length > 0) {
+                    console.log("🔗 Detected valid paymentURL - would redirect");
+                    resultDiv.innerHTML = `<p>✅ SUCCESS: Detected valid paymentURL: ${paymentURL}</p>`;
+                    
+                } else if (responseText.includes('card.svg')) {
+                    console.error("❌ Detected SVG response - this causes blank page!");
+                    resultDiv.innerHTML = '<p>❌ ERROR DETECTED: Netopia returned SVG instead of payment form! This would have caused blank page but now we catch it.</p>';
+                    
+                } else {
+                    console.error("❌ Unknown response format from Netopia");
+                    resultDiv.innerHTML = `<p>❌ ERROR: Unknown response format. Content-Type: ${response.headers.get('content-type')}, Length: ${responseText.length}</p>`;
+                }
+
+            } catch (error) {
+                console.error("❌ Complete Netopia error:", error);
+                resultDiv.innerHTML = `<p>❌ ERROR: ${error.message}</p>`;
+            }
+        }
+    </script>
+</body>
+</html>

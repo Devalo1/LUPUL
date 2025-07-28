@@ -30,7 +30,8 @@ import {
   FaEdit as _FaEdit,
   FaGraduationCap as _FaGraduationCap,
 } from "react-icons/fa";
-import _SpecialistServices from "../components/SpecialistServices";
+import EnhancedSpecialistServices from "../components/EnhancedSpecialistServices";
+import SpecialistSearch from "../components/SpecialistSearch";
 import SimpleSpecialistCalendar from "../components/SimpleSpecialistCalendar";
 import ScheduleManager from "../components/ScheduleManager";
 import CVEditForm from "../components/CVEditForm";
@@ -133,7 +134,13 @@ const SpecialistPanel: React.FC = () => {
     "all" | "pending" | "confirmed" | "completed" | "cancelled"
   >("all");
   const [activeTab, _setActiveTab] = useState<
-    "appointments" | "sessions" | "services" | "calendar" | "schedule" | "cv"
+    | "appointments"
+    | "sessions"
+    | "services"
+    | "calendar"
+    | "schedule"
+    | "cv"
+    | "search"
   >("appointments");
   const [_showSessionForm, _setShowSessionForm] = useState(false);
   const [_newSession, _setNewSession] = useState<
@@ -1214,6 +1221,32 @@ const SpecialistPanel: React.FC = () => {
               </button>
 
               <button
+                onClick={() => _setActiveTab("search")}
+                className={`${
+                  activeTab === "search"
+                    ? "bg-blue-600 text-white shadow-md"
+                    : "bg-gray-50 text-gray-700 hover:bg-gray-100 hover:text-gray-900"
+                } flex-1 min-w-0 relative rounded-md px-4 py-3 text-sm font-medium transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2`}
+              >
+                <div className="flex items-center justify-center">
+                  <svg
+                    className="w-4 h-4 mr-2"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+                    />
+                  </svg>
+                  <span>Căutare Specialiști</span>
+                </div>
+              </button>
+
+              <button
                 onClick={() => _setActiveTab("calendar")}
                 className={`${
                   activeTab === "calendar"
@@ -1657,87 +1690,30 @@ const SpecialistPanel: React.FC = () => {
           </div>
         )}
 
-        {activeTab === "services" && (
+        {activeTab === "services" && <EnhancedSpecialistServices />}
+
+        {activeTab === "search" && (
           <div className="bg-white shadow rounded-lg">
             <div className="px-6 py-4 border-b border-gray-200">
               <h3 className="text-lg font-medium text-gray-900">
-                Serviciile mele
+                Căutare Specialiști
               </h3>
               <p className="mt-1 text-sm text-gray-500">
-                Gestionează serviciile pe care le oferi clienților
+                Caută specialiști după nume și specializare pentru colaborare și
+                referințe
               </p>
             </div>
             <div className="p-6">
-              {_loadingServices ? (
-                <div className="text-center py-12">
-                  <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-blue-500 mx-auto mb-4"></div>
-                  <p className="text-gray-600">Se încarcă serviciile...</p>
-                </div>
-              ) : _specialistServices.length === 0 ? (
-                <div className="text-center py-12">
-                  <svg
-                    className="mx-auto h-12 w-12 text-gray-400"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-2m-2 0H7m5 0v-5a2 2 0 00-2-2H8a2 2 0 00-2 2v5m2 0V9a2 2 0 012-2h2a2 2 0 012 2v8"
-                    />
-                  </svg>
-                  <h3 className="mt-4 text-lg font-medium text-gray-900">
-                    Nu aveți servicii configurate
-                  </h3>
-                  <p className="mt-2 text-gray-500">
-                    Adăugați servicii pentru a începe să primiți programări.
-                  </p>
-                </div>
-              ) : (
-                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-                  {_specialistServices.map((service) => (
-                    <div
-                      key={service.id}
-                      className="border border-gray-200 rounded-lg p-4 hover:bg-gray-50 transition-colors"
-                    >
-                      <div className="flex items-start justify-between">
-                        <div className="flex-1">
-                          <h4 className="text-lg font-medium text-gray-900">
-                            {service.name}
-                          </h4>
-                          <p className="mt-1 text-sm text-gray-600">
-                            {service.description}
-                          </p>
-                          <div className="mt-2 flex items-center justify-between">
-                            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                              {service.category}
-                            </span>
-                            <span className="text-sm font-medium text-gray-900">
-                              {service.price} RON
-                            </span>
-                          </div>
-                          <div className="mt-2 text-sm text-gray-500">
-                            Durată: {service.duration} minute
-                          </div>
-                        </div>
-                      </div>
-                      <div className="mt-3 flex items-center justify-between">
-                        <span
-                          className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
-                            service.isActive
-                              ? "bg-green-100 text-green-800"
-                              : "bg-red-100 text-red-800"
-                          }`}
-                        >
-                          {service.isActive ? "Activ" : "Inactiv"}
-                        </span>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
+              <SpecialistSearch
+                onSearch={(filters) => {
+                  console.log("Căutare cu filtrele:", filters);
+                }}
+                onClear={() => {
+                  console.log("Șterge filtrele de căutare");
+                }}
+                loading={false}
+                totalResults={0}
+              />
             </div>
           </div>
         )}

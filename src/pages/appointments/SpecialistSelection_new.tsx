@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import {
   FaUserMd,
@@ -153,7 +153,7 @@ const SpecialistSelection: React.FC = () => {
   }, []);
 
   // Handle search
-  const handleSearch = useCallback(async (filters: SearchFilters) => {
+  const handleSearch = async (filters: SearchFilters) => {
     setSearchLoading(true);
     try {
       const result = await searchSpecialists(filters, 50);
@@ -187,13 +187,13 @@ const SpecialistSelection: React.FC = () => {
     } finally {
       setSearchLoading(false);
     }
-  }, []);
+  };
 
   // Handle search clear
-  const handleClearSearch = useCallback(() => {
+  const handleClearSearch = () => {
     setFilteredSpecialists(specialists);
     setTotalResults(specialists.length);
-  }, [specialists]);
+  };
 
   const handleContinue = () => {
     if (selectedSpecialist) {

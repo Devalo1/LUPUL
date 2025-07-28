@@ -80,6 +80,7 @@ import SpecialistProfile from "../../pages/appointments/specialist";
 
 // Pagini embleme
 import { EmblemMintingPage, EmblemDashboard } from "../../components/emblems";
+import EmblemPaymentSuccess from "../../components/emblems/EmblemPaymentSuccess";
 
 const AppRoutes = () => {
   return (
@@ -335,6 +336,14 @@ const AppRoutes = () => {
           element={
             <ProtectedRoute>
               <EmblemMintingPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/emblems/payment-success"
+          element={
+            <ProtectedRoute>
+              <EmblemPaymentSuccess />
             </ProtectedRoute>
           }
         />

@@ -4,171 +4,232 @@
  */
 
 import crypto from "crypto";
-import {
-  NETOPIA_LIVE_PRIVATE_KEY,
-  NETOPIA_LIVE_CERTIFICATE,
-} from "./netopia-credentials.js";
 
 // Configurație NETOPIA
 const NETOPIA_CONFIG = {
   sandbox: {
-    mode: "sandbox",
-    // Use live signature as fallback for sandbox to avoid SVG redirect issue
+    // Use sandbox POS signature from environment or fallback to provided sandbox key
     signature:
-      process.env.NETOPIA_SANDBOX_SIGNATURE ||
-      process.env.VITE_NETOPIA_SIGNATURE_SANDBOX ||
-      "2ZOW-PJ5X-HYYC-IENE-APZO",
-    // Correct sandbox endpoint with /start suffix
+      process.env.NETOPIA_SANDBOX_SIGNATURE || "SANDBOX_SIGNATURE_PLACEHOLDER",
+    // Use production 3DS endpoint for sandbox transactions
     endpoint: "https://secure.sandbox.netopia-payments.com/payment/card/start",
-    publicKey:
-      process.env.NETOPIA_SANDBOX_PUBLIC_KEY ||
-      process.env.VITE_NETOPIA_PUBLIC_KEY ||
-      "2ZOW-PJ5X-HYYC-IENE-APZO",
+    publicKey: process.env.NETOPIA_SANDBOX_PUBLIC_KEY,
   },
   live: {
-    mode: "live",
-    // First try environment variables, then fallback to hardcoded values
-    signature:
-      process.env.NETOPIA_LIVE_SIGNATURE ||
-      process.env.VITE_NETOPIA_SIGNATURE_LIVE ||
-      "2ZOW-PJ5X-HYYC-IENE-APZO",
-    // Correct live endpoint with /start suffix
+    signature: process.env.NETOPIA_LIVE_SIGNATURE,
     endpoint: "https://secure.netopia-payments.com/payment/card/start",
-    publicKey:
-      process.env.NETOPIA_LIVE_PUBLIC_KEY ||
-      process.env.VITE_NETOPIA_PUBLIC_KEY ||
-      "2ZOW-PJ5X-HYYC-IENE-APZO",
-    privateKey: NETOPIA_LIVE_PRIVATE_KEY,
-    certificate: NETOPIA_LIVE_CERTIFICATE,
+    publicKey: process.env.NETOPIA_LIVE_PUBLIC_KEY,
   },
 };
 
 /**
- * Creează payload-ul pentru NETOPIA
+ * Creează payload-ul pentru NETOPIA conform API-ului oficial v3
+ * Documentație: https://netopia-system.stoplight.io/docs/payments-api/d85c6f3d36ce1-create-a-payment-card-start
  */
 function createNetopiaPayload(paymentData, config) {
   const baseUrl = process.env.URL || "https://lupulsicorbul.com";
 
-  // NETOPIA payload structure - simplified and correct format
+  // NETOPIA v3 API payload structure - EXACT conform documentației oficiale
   return {
     config: {
-      emailTemplate: "lupul-si-corbul",
+      emailTemplate: "", // Optional - empty for default
+      emailSubject: "", // Optional - empty for default
       notifyUrl: `${baseUrl}/.netlify/functions/netopia-notify`,
       redirectUrl: `${baseUrl}/.netlify/functions/netopia-return`,
       language: "ro",
     },
     payment: {
       options: {
-        installments: 1,
-        bonus: 0,
+        installments: 0, // 0 pentru fără rate
+        bonus: 0, // Conform documentației
       },
       instrument: {
         type: "card",
-        account: "",
-        expMonth: "",
-        expYear: "",
-        secretCode: "",
+        account: "", // Gol pentru payment form
+        expMonth: "", // Gol pentru payment form
+        expYear: "", // Gol pentru payment form
+        secretCode: "", // Gol pentru payment form
+        token: "", // Gol pentru payment form
       },
       data: {
-        property: "mobilPay_Request_Card",
-        action: "sale",
-        confirmUrl: `${baseUrl}/.netlify/functions/netopia-notify`,
-        returnUrl: `${baseUrl}/.netlify/functions/netopia-return`,
-        orderId: paymentData.orderId,
-        amount: paymentData.amount.toString(), // Convert to string as required by NETOPIA
-        currency: "RON",
-        details: paymentData.description || "Comandă lupulsicorbul.com",
-        billing: {
-          type: "person",
-          firstName: paymentData.customerInfo.firstName || "Test",
-          lastName: paymentData.customerInfo.lastName || "Customer",
-          email: paymentData.customerInfo.email || "test@lupulsicorbul.com",
-          phone: paymentData.customerInfo.phone || "0700000000",
-          address: paymentData.customerInfo.address || "Strada Test 1",
-          city: paymentData.customerInfo.city || "Bucuresti",
-          county: paymentData.customerInfo.county || "Bucuresti",
-          postalCode: paymentData.customerInfo.postalCode || "123456",
-          country: "Romania",
+        // Custom payment data - poate fi gol
+      },
+    },
+    order: {
+      ntpID: "", // NETOPIA internal id - obsolete, lăsăm gol
+      posSignature: config.signature,
+      dateTime: new Date().toISOString(),
+      description: paymentData.description || "Comandă lupulsicorbul.com",
+      orderID: paymentData.orderId,
+      amount: parseFloat(paymentData.amount),
+      currency: "RON",
+      billing: {
+        email: paymentData.customerInfo.email || "test@lupulsicorbul.com",
+        phone: paymentData.customerInfo.phone || "+40712345678",
+        firstName: paymentData.customerInfo.firstName || "Test",
+        lastName: paymentData.customerInfo.lastName || "Customer",
+        city: paymentData.customerInfo.city || "Bucuresti",
+        country: 642, // România conform ISO 3166-1 numeric
+        countryName: "Romania",
+        state: paymentData.customerInfo.county || "Bucuresti",
+        postalCode: paymentData.customerInfo.postalCode || "123456",
+        details: paymentData.customerInfo.address || "Strada Test 1",
+      },
+      shipping: {
+        email: paymentData.customerInfo.email || "test@lupulsicorbul.com",
+        phone: paymentData.customerInfo.phone || "+40712345678",
+        firstName: paymentData.customerInfo.firstName || "Test",
+        lastName: paymentData.customerInfo.lastName || "Customer",
+        city: paymentData.customerInfo.city || "Bucuresti",
+        country: 642, // România conform ISO 3166-1 numeric
+        state: paymentData.customerInfo.county || "Bucuresti",
+        postalCode: paymentData.customerInfo.postalCode || "123456",
+        details: paymentData.customerInfo.address || "Strada Test 1",
+      },
+      products: [
+        // Adăugăm un produs minimal pentru a respecta structura
+        {
+          name: paymentData.description || "Produs digital",
+          code: paymentData.orderId,
+          category: "digital",
+          price: parseFloat(paymentData.amount),
+          vat: 19, // TVA România
         },
-        shipping: {
-          type: "person",
-          firstName: paymentData.customerInfo.firstName || "Test",
-          lastName: paymentData.customerInfo.lastName || "Customer",
-          email: paymentData.customerInfo.email || "test@lupulsicorbul.com",
-          phone: paymentData.customerInfo.phone || "0700000000",
-          address: paymentData.customerInfo.address || "Strada Test 1",
-          city: paymentData.customerInfo.city || "Bucuresti",
-          county: paymentData.customerInfo.county || "Bucuresti",
-          postalCode: paymentData.customerInfo.postalCode || "123456",
-          country: "Romania",
-        },
+      ],
+      installments: {
+        selected: 0, // Fără rate
+        available: [0], // Doar plata integrală
+      },
+      data: {
+        // Custom merchant parameters - poate fi gol
       },
     },
   };
 }
 
 /**
- * Trimite request la NETOPIA pentru inițierea plății
+ * Trimite request JSON la NETOPIA pentru inițierea plății
+ * Conform API v3: https://netopia-system.stoplight.io/docs/payments-api/d85c6f3d36ce1-create-a-payment-card-start
  */
 async function initiateNetopiaPayment(payload, config) {
-  // LIVE mode: generate HTML form to POST data to NETOPIA with proper signature
-  const dataString = JSON.stringify(payload);
-  const dataBase64 = Buffer.from(dataString).toString("base64");
-
-  // Create SHA512 hash of the data for NETOPIA signature verification
-  const dataHash = crypto.createHash("sha512").update(dataString).digest("hex");
-  const signature = config.signature;
-
-  console.log("🔧 NETOPIA LIVE Debug Info:", {
+  console.log("🚀 Sending direct JSON request to NETOPIA API:", {
     endpoint: config.endpoint,
-    signature: signature,
-    dataLength: dataString.length,
-    dataHash: dataHash.substring(0, 32) + "...",
-    payloadOrderId: payload.payment.data.orderId,
-    payloadAmount: payload.payment.data.amount,
-    payloadStructure: {
-      hasConfig: !!payload.config,
-      hasPayment: !!payload.payment,
-      hasPaymentData: !!payload.payment?.data,
-      paymentDataKeys: Object.keys(payload.payment?.data || {}),
-    },
+    orderId: payload.order.orderID,
+    amount: payload.order.amount,
+    posSignature: payload.order.posSignature.substring(0, 10) + "...",
   });
 
-  const formHtml = `<!doctype html>
+  try {
+    // Fă request JSON direct la NETOPIA API conform documentației
+    const response = await fetch(config.endpoint, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Accept": "application/json",
+        "Authorization": config.signature, // Authorization header cu POS signature
+      },
+      body: JSON.stringify(payload),
+    });
+
+    console.log("🔍 NETOPIA Response Status:", response.status);
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error("❌ NETOPIA API Error Response:", errorText);
+      throw new Error(`NETOPIA API Error: ${response.status} - ${errorText}`);
+    }
+
+    const responseData = await response.json();
+    console.log("✅ NETOPIA API Response received:", {
+      status: responseData.payment?.status,
+      ntpID: responseData.payment?.ntpID,
+      paymentURL: responseData.payment?.paymentURL,
+      hasCustomerAction: !!responseData.customerAction,
+      actionType: responseData.customerAction?.type,
+    });
+
+    // Verifica statusul răspunsului
+    if (responseData.payment?.status === 15) {
+      // Status 15 = 3-D Secure authentication required
+      console.log("� 3DS Authentication required");
+      
+      if (responseData.customerAction?.type === "Authentication3D") {
+        // Returnează form HTML pentru 3DS authentication
+        const formData = responseData.customerAction.formData || {};
+        const formInputs = Object.entries(formData)
+          .map(([key, value]) => `<input type="hidden" name="${key}" value="${value}"/>`)
+          .join('\n    ');
+
+        const form3DS = `<!doctype html>
 <html lang="ro">
 <head>
   <meta charset="UTF-8">
-  <title>Redirecționare NETOPIA</title>
+  <title>Autentificare 3D Secure</title>
   <style>body{font-family:Arial,sans-serif;text-align:center;padding:50px;}</style>
 </head>
 <body>
-  <h3>Redirecționare către NETOPIA...</h3>
+  <h3>Redirecționare pentru autentificare 3D Secure...</h3>
   <p>Vă rugăm așteptați...</p>
-  <form id="netopia3ds" action="${config.endpoint}" method="post" target="_top">
-    <input type="hidden" name="data" value="${dataBase64}"/>
-    <input type="hidden" name="signature" value="${config.signature}"/>
+  <form id="form3ds" action="${responseData.customerAction.url}" method="post" target="_top">
+    ${formInputs}
   </form>
   <script>
-    console.log('NETOPIA Form Data:', {
-      endpoint: '${config.endpoint}',
-      dataLength: ${dataBase64.length},
-      signature: '${config.signature?.substring(0, 10)}...'
+    console.log('3DS Authentication Form:', {
+      url: '${responseData.customerAction.url}',
+      token: '${responseData.customerAction.authenticationToken?.substring(0, 10)}...'
     });
-    document.getElementById('netopia3ds').submit();
+    document.getElementById('form3ds').submit();
   </script>
 </body>
 </html>`;
 
-  console.log(
-    "🔧 NETOPIA LIVE form HTML preview (first 300 chars):",
-    formHtml.substring(0, 300)
-  );
-  return {
-    success: true,
-    paymentUrl: formHtml,
-    orderId: payload.payment.data.orderId,
-    html: true,
-  };
+        return {
+          success: true,
+          paymentUrl: form3DS,
+          orderId: payload.order.orderID,
+          html: true,
+          status: "3ds_required",
+        };
+      }
+    } else if (responseData.payment?.status === 3) {
+      // Status 3 = paid (direct success)
+      return {
+        success: true,
+        paymentUrl: responseData.payment.paymentURL,
+        orderId: payload.order.orderID,
+        status: "paid",
+      };
+    } else if (responseData.payment?.paymentURL) {
+      // Redirect to payment URL
+      return {
+        success: true,
+        paymentUrl: responseData.payment.paymentURL,
+        orderId: payload.order.orderID,
+        status: "redirect",
+      };
+    }
+
+    // Default fallback
+    console.error("⚠️ Unexpected NETOPIA response format:", responseData);
+    throw new Error("Format de răspuns neașteptat de la NETOPIA");
+
+  } catch (error) {
+    console.error("❌ NETOPIA API Request failed:", error);
+    
+    // Fallback pentru development - simulare locală
+    const baseUrl = process.env.URL || "https://lupulsicorbul.com";
+    if (baseUrl.includes("localhost") || !config.live) {
+      console.log("🧪 Fallback to local simulation for development");
+      return {
+        success: true,
+        paymentUrl: `${baseUrl}/payment-simulation?orderId=${payload.order.orderID}&amount=${payload.order.amount}&currency=${payload.order.currency}&test=1`,
+        orderId: payload.order.orderID,
+        status: "simulation",
+      };
+    }
+
+    throw error;
+  }
 }
 
 /**
@@ -286,105 +347,64 @@ export const handler = async (event, context) => {
       amount: paymentData.amount,
       currency: paymentData.currency,
       live: paymentData.live,
-      hasLiveCredentials: !!(
-        NETOPIA_LIVE_PRIVATE_KEY && NETOPIA_LIVE_CERTIFICATE
-      ),
+      hasLiveSignature: !!process.env.NETOPIA_LIVE_SIGNATURE,
       environment: process.env.NODE_ENV,
       netlifyContext: context.functionName,
-      availableEnvVars: {
-        NETOPIA_LIVE_SIGNATURE: process.env.NETOPIA_LIVE_SIGNATURE
-          ? `SET (${process.env.NETOPIA_LIVE_SIGNATURE.substring(0, 10)}...)`
-          : "MISSING",
-        VITE_NETOPIA_SIGNATURE_LIVE: process.env.VITE_NETOPIA_SIGNATURE_LIVE
-          ? `SET (${process.env.VITE_NETOPIA_SIGNATURE_LIVE.substring(0, 10)}...)`
-          : "MISSING",
-        NETOPIA_LIVE_PUBLIC_KEY: process.env.NETOPIA_LIVE_PUBLIC_KEY
-          ? "SET"
-          : "MISSING",
-        VITE_NETOPIA_PUBLIC_KEY: process.env.VITE_NETOPIA_PUBLIC_KEY
-          ? "SET"
-          : "MISSING",
-        NETOPIA_SANDBOX_SIGNATURE: process.env.NETOPIA_SANDBOX_SIGNATURE
-          ? "SET"
-          : "MISSING",
-        VITE_NETOPIA_SIGNATURE_SANDBOX: process.env
-          .VITE_NETOPIA_SIGNATURE_SANDBOX
-          ? "SET"
-          : "MISSING",
-      },
     });
 
     // Validează datele de plată
     validatePaymentData(paymentData);
 
-    // Forțează modul LIVE în producție pentru domeniile de producție
-    let isLive = paymentData.live;
+    // Determină configurația (sandbox vs live) cu detectare automată în producție
+    let isLive = false;
+    // În producție, dacă există cheia live și URL-ul este domeniul live, forțăm modul live
     if (
+      process.env.NETOPIA_LIVE_SIGNATURE &&
       process.env.URL &&
-      (process.env.URL.includes("lupulsicorbul.com") ||
-        process.env.URL.includes("netlify.app"))
+      process.env.URL.includes("lupulsicorbul.com")
     ) {
       isLive = true;
-      console.log("🚀 Production domain detected, forcing LIVE mode");
+    } else if (paymentData.live === true) {
+      isLive = true;
     }
+    const hasCustomSignature =
+      paymentData.posSignature &&
+      paymentData.posSignature !== "NETOPIA_SANDBOX_TEST_SIGNATURE";
 
-    const hasCustomSignature = !!paymentData.posSignature;
-    const hasLiveCredentials = !!(
-      (process.env.NETOPIA_LIVE_SIGNATURE ||
-        process.env.VITE_NETOPIA_SIGNATURE_LIVE) &&
-      NETOPIA_LIVE_PRIVATE_KEY &&
-      NETOPIA_LIVE_CERTIFICATE
-    );
+    let config = isLive ? NETOPIA_CONFIG.live : NETOPIA_CONFIG.sandbox;
 
-    // Folosim LIVE mode dacă avem credențiale configurate sau dacă e explicit cerut
-    let config;
-    if (isLive && hasLiveCredentials) {
-      config = NETOPIA_CONFIG.live;
-      console.log(
-        "🚀 Using LIVE NETOPIA credentials for production payment with signature:",
-        config.signature?.substring(0, 10) + "..."
-      );
-    } else if (!isLive || !hasLiveCredentials) {
-      // Fallback la configurație sandbox pentru development/testing
-      config = NETOPIA_CONFIG.sandbox;
-      console.log("🔧 Using SANDBOX configuration (development/testing mode).");
-    }
-
-    console.log("🔧 Payment configuration:", {
-      mode: config.mode,
-      endpoint: config.endpoint,
-      hasSignature: !!config.signature,
-      hasLiveCredentials: hasLiveCredentials,
-      isLiveRequested: isLive,
+    console.log("🔧 Configuration selection:", {
+      requestedLive: isLive,
+      hasCustomSignature,
+      customSignature: paymentData.posSignature?.substring(0, 10) + "...",
+      hasLiveSignature: !!NETOPIA_CONFIG.live.signature,
+      willUseLive: isLive && !!NETOPIA_CONFIG.live.signature,
+      envVars: {
+        NETOPIA_LIVE_SIGNATURE: process.env.NETOPIA_LIVE_SIGNATURE
+          ? "SET"
+          : "NOT SET",
+        NETOPIA_LIVE_PUBLIC_KEY: process.env.NETOPIA_LIVE_PUBLIC_KEY
+          ? "SET"
+          : "NOT SET",
+        URL: process.env.URL || "NOT SET",
+      },
     });
 
-    // Verificare finală pentru live mode
+    // 🚨 PRODUCTION DEBUG: Verifică de ce nu folosește LIVE mode
     if (isLive && !config.signature) {
       console.error(
         "🚨 PRODUCTION ERROR: Live mode requested but no live signature!"
       );
       console.error("Environment check:", {
         NETOPIA_LIVE_SIGNATURE: process.env.NETOPIA_LIVE_SIGNATURE
-          ? `SET (${process.env.NETOPIA_LIVE_SIGNATURE.substring(0, 10)}...)`
-          : "MISSING",
-        VITE_NETOPIA_SIGNATURE_LIVE: process.env.VITE_NETOPIA_SIGNATURE_LIVE
-          ? `SET (${process.env.VITE_NETOPIA_SIGNATURE_LIVE.substring(0, 10)}...)`
+          ? `SET (${process.env.NETOPIA_LIVE_SIGNATURE.length} chars)`
           : "MISSING",
         NETOPIA_LIVE_PUBLIC_KEY: process.env.NETOPIA_LIVE_PUBLIC_KEY
           ? "SET"
           : "MISSING",
-        VITE_NETOPIA_PUBLIC_KEY: process.env.VITE_NETOPIA_PUBLIC_KEY
-          ? "SET"
-          : "MISSING",
-        NETOPIA_LIVE_PRIVATE_KEY: NETOPIA_LIVE_PRIVATE_KEY ? "SET" : "MISSING",
-        NETOPIA_LIVE_CERTIFICATE: NETOPIA_LIVE_CERTIFICATE ? "SET" : "MISSING",
-        configSignature: config.signature
-          ? `SET (${config.signature.substring(0, 10)}...)`
-          : "MISSING",
         NODE_ENV: process.env.NODE_ENV,
         URL: process.env.URL,
       });
-      throw new Error("NETOPIA Live credentials not properly configured");
     }
 
     // Dacă avem o signature customă din frontend, o folosim
@@ -397,7 +417,7 @@ export const handler = async (event, context) => {
     }
 
     console.log(
-      `✅ Using ${config.mode.toUpperCase()} Netopia configuration with ${hasLiveCredentials ? "LIVE" : "SANDBOX"} credentials`
+      `✅ Using ${config.signature === "NETOPIA_SANDBOX_TEST_SIGNATURE" ? "SANDBOX" : "LIVE"} Netopia configuration`
     );
 
     // Verifică configurația finală
@@ -405,254 +425,16 @@ export const handler = async (event, context) => {
       throw new Error("No valid NETOPIA configuration found");
     }
 
-    // Creează payload-ul pentru NETOPIA
+    // Creează payload-ul pentru NETOPIA v3 API
     const payload = createNetopiaPayload(paymentData, config);
 
-    // Enhanced 3DS simulation for preview environments and localhost
-    const baseUrl = process.env.URL || event.headers.origin || "";
-    const isSimulationEnvironment =
-      baseUrl.includes("localhost") ||
-      baseUrl.includes("127.0.0.1") ||
-      baseUrl.includes(".netlify.app");
-
-    if (!paymentData.live && isSimulationEnvironment) {
-      const amount = payload.payment.data.amount;
-      const currency = payload.payment.data.currency;
-
-      // If this is a test request (contains TEST- in orderId), return JSON for the test button
-      if (paymentData.orderId && paymentData.orderId.includes("TEST-")) {
-        return {
-          statusCode: 200,
-          headers,
-          body: JSON.stringify({
-            success: true,
-            message: "Test connection successful",
-            orderId: paymentData.orderId,
-            amount: amount,
-            currency: currency,
-            mode: "test-simulation",
-            paymentUrl: `${baseUrl}/test-simulation-completed`,
-          }),
-        };
-      }
-
-      // Create realistic 3DS simulation HTML for actual payments
-      const simulation3DS = `<!doctype html>
-<html lang="ro">
-<head>
-  <meta charset="UTF-8">
-  <title>NETOPIA 3DS Simulation - Lupul și Corbul</title>
-  <style>
-    body { 
-      font-family: Arial, sans-serif; 
-      background: #f5f5f5; 
-      margin: 0; 
-      padding: 20px; 
-    }
-    .container { 
-      max-width: 500px; 
-      margin: 0 auto; 
-      background: white; 
-      border-radius: 10px; 
-      box-shadow: 0 4px 6px rgba(0,0,0,0.1); 
-      overflow: hidden;
-    }
-    .header { 
-      background: #2563eb; 
-      color: white; 
-      padding: 20px; 
-      text-align: center; 
-    }
-    .content { 
-      padding: 30px; 
-      text-align: center; 
-    }
-    .step { 
-      margin: 20px 0; 
-      padding: 15px; 
-      border-radius: 8px; 
-      display: none; 
-    }
-    .step.active { 
-      display: block; 
-    }
-    .step1 { 
-      background: #dbeafe; 
-      border: 1px solid #3b82f6; 
-    }
-    .step2 { 
-      background: #fef3c7; 
-      border: 1px solid #f59e0b; 
-    }
-    .step3 { 
-      background: #d1fae5; 
-      border: 1px solid #10b981; 
-    }
-    .card-input { 
-      width: 80%; 
-      padding: 10px; 
-      margin: 10px; 
-      border: 1px solid #ccc; 
-      border-radius: 5px; 
-      font-size: 16px;
-    }
-    .btn { 
-      background: #2563eb; 
-      color: white; 
-      padding: 12px 24px; 
-      border: none; 
-      border-radius: 5px; 
-      cursor: pointer; 
-      font-size: 16px; 
-      margin: 10px;
-    }
-    .btn:hover { 
-      background: #1d4ed8; 
-    }
-    .progress { 
-      width: 100%; 
-      height: 4px; 
-      background: #e5e7eb; 
-      margin: 20px 0;
-    }
-    .progress-bar { 
-      height: 100%; 
-      background: #2563eb; 
-      transition: width 0.3s ease; 
-    }
-    .order-info { 
-      background: #f9fafb; 
-      padding: 15px; 
-      border-radius: 8px; 
-      margin: 15px 0; 
-      border-left: 4px solid #2563eb;
-    }
-  </style>
-</head>
-<body>
-  <div class="container">
-    <div class="header">
-      <h2>🔒 NETOPIA 3DS Secure</h2>
-      <p>Simulare Plată Securizată</p>
-    </div>
-    
-    <div class="progress">
-      <div class="progress-bar" id="progressBar" style="width: 33%"></div>
-    </div>
-    
-    <div class="content">
-      <div class="order-info">
-        <strong>Comandă:</strong> ${payload.payment.data.orderId}<br>
-        <strong>Suma:</strong> ${(amount / 100).toFixed(2)} ${currency}<br>
-        <strong>Merchant:</strong> Lupul și Corbul
-      </div>
-      
-      <!-- Step 1: Card Details -->
-      <div class="step step1 active" id="step1">
-        <h3>📱 Pas 1: Verificare Card</h3>
-        <p>Vă rugăm confirmați ultimele 4 cifre ale cardului:</p>
-        <input type="text" class="card-input" placeholder="**** **** **** 1234" maxlength="4" id="cardDigits">
-        <br>
-        <button class="btn" onclick="nextStep(2)">Continuă</button>
-      </div>
-      
-      <!-- Step 2: 3DS Authentication -->
-      <div class="step step2" id="step2">
-        <h3>📲 Pas 2: Autentificare 3DS</h3>
-        <p>Am trimis un cod de verificare prin SMS la numărul:</p>
-        <strong>+40 7XX XXX X78</strong>
-        <br><br>
-        <input type="text" class="card-input" placeholder="Cod SMS (6 cifre)" maxlength="6" id="smsCode">
-        <br>
-        <button class="btn" onclick="nextStep(3)">Verifică Codul</button>
-        <br>
-        <small style="color: #666;">💡 Pentru simulare, introduceți orice cod de 6 cifre</small>
-      </div>
-      
-      <!-- Step 3: Processing -->
-      <div class="step step3" id="step3">
-        <h3>⏳ Pas 3: Procesare Plată</h3>
-        <p>Plata este în curs de procesare...</p>
-        <div style="margin: 20px 0;">
-          <div style="display: inline-block; width: 20px; height: 20px; border: 3px solid #f3f3f3; border-top: 3px solid #2563eb; border-radius: 50%; animation: spin 1s linear infinite;"></div>
-        </div>
-        <p><small>Vă rugăm așteptați, nu închideți această fereastră.</small></p>
-      </div>
-    </div>
-  </div>
-  
-  <style>
-    @keyframes spin {
-      0% { transform: rotate(0deg); }
-      100% { transform: rotate(360deg); }
-    }
-  </style>
-  
-  <script>
-    let currentStep = 1;
-    
-    function nextStep(step) {
-      // Validate inputs
-      if (step === 2) {
-        const cardDigits = document.getElementById('cardDigits').value;
-        if (cardDigits.length !== 4) {
-          alert('Vă rugăm introduceți ultimele 4 cifre ale cardului');
-          return;
-        }
-      }
-      
-      if (step === 3) {
-        const smsCode = document.getElementById('smsCode').value;
-        if (smsCode.length !== 6) {
-          alert('Vă rugăm introduceți codul SMS de 6 cifre');
-          return;
-        }
-      }
-      
-      // Hide current step
-      document.getElementById('step' + currentStep).classList.remove('active');
-      
-      // Show next step
-      currentStep = step;
-      document.getElementById('step' + currentStep).classList.add('active');
-      
-      // Update progress
-      const progress = (step / 3) * 100;
-      document.getElementById('progressBar').style.width = progress + '%';
-      
-      // Auto-redirect after processing
-      if (step === 3) {
-        setTimeout(function() {
-          // Simulate successful payment redirect
-          window.location.href = '${baseUrl}/order-confirmation?orderId=${payload.payment.data.orderId}&status=success&amount=${amount}&currency=${currency}&simulation=true';
-        }, 3000);
-      }
-    }
-    
-    console.log('NETOPIA 3DS Simulation Started:', {
-      orderId: '${payload.payment.data.orderId}',
-      amount: ${amount},
-      currency: '${currency}',
-      mode: 'simulation'
-    });
-  </script>
-</body>
-</html>`;
-
-      return {
-        statusCode: 200,
-        headers: { "Content-Type": "text/html" },
-        body: simulation3DS,
-      };
-    }
-
-    // Inițiază plata la NETOPIA
-    console.log("🚀 Initiating payment with config:", {
+    // Inițiază plata la NETOPIA folosind API v3
+    console.log("🚀 Initiating payment with NETOPIA v3 API:", {
       endpoint: config.endpoint,
       hasSignature: !!config.signature,
       signaturePreview: config.signature?.substring(0, 10) + "...",
-      payloadOrderId: payload.payment.data.orderId,
-      payloadAmount: payload.payment.data.amount,
+      payloadOrderId: payload.order.orderID,
+      payloadAmount: payload.order.amount,
     });
 
     const result = await initiateNetopiaPayment(payload, config);

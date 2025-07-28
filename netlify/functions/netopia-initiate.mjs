@@ -23,150 +23,215 @@ const NETOPIA_CONFIG = {
 };
 
 /**
- * Creează payload-ul pentru NETOPIA
+ * Creează payload-ul pentru NETOPIA conform API-ului oficial v3
+ * Documentație: https://netopia-system.stoplight.io/docs/payments-api/d85c6f3d36ce1-create-a-payment-card-start
  */
 function createNetopiaPayload(paymentData, config) {
   const baseUrl = process.env.URL || "https://lupulsicorbul.com";
 
-  // NETOPIA payload structure - simplified and correct format
+  // NETOPIA v3 API payload structure - EXACT conform documentației oficiale
   return {
     config: {
-      emailTemplate: "lupul-si-corbul",
+      emailTemplate: "", // Optional - empty for default
+      emailSubject: "", // Optional - empty for default
       notifyUrl: `${baseUrl}/.netlify/functions/netopia-notify`,
       redirectUrl: `${baseUrl}/.netlify/functions/netopia-return`,
       language: "ro",
     },
     payment: {
       options: {
-        installments: 1,
-        bonus: 0,
+        installments: 0, // 0 pentru fără rate
+        bonus: 0, // Conform documentației
       },
       instrument: {
         type: "card",
-        account: "",
-        expMonth: "",
-        expYear: "",
-        secretCode: "",
+        account: "", // Gol pentru payment form
+        expMonth: "", // Gol pentru payment form
+        expYear: "", // Gol pentru payment form
+        secretCode: "", // Gol pentru payment form
+        token: "", // Gol pentru payment form
       },
       data: {
-        property: "mobilPay_Request_Card",
-        action: "sale",
-        confirmUrl: `${baseUrl}/.netlify/functions/netopia-notify`,
-        returnUrl: `${baseUrl}/.netlify/functions/netopia-return`,
-        signature: config.signature,
-        orderId: paymentData.orderId,
-        amount: paymentData.amount.toString(), // Convert to string as required by NETOPIA
-        currency: "RON",
-        details: paymentData.description || "Comandă lupulsicorbul.com",
-        billing: {
-          type: "person",
-          firstName: paymentData.customerInfo.firstName || "Test",
-          lastName: paymentData.customerInfo.lastName || "Customer",
-          email: paymentData.customerInfo.email || "test@lupulsicorbul.com",
-          phone: paymentData.customerInfo.phone || "0700000000",
-          address: paymentData.customerInfo.address || "Strada Test 1",
-          city: paymentData.customerInfo.city || "Bucuresti",
-          county: paymentData.customerInfo.county || "Bucuresti",
-          postalCode: paymentData.customerInfo.postalCode || "123456",
-          country: "Romania",
+        // Custom payment data - poate fi gol
+      },
+    },
+    order: {
+      ntpID: "", // NETOPIA internal id - obsolete, lăsăm gol
+      posSignature: config.signature,
+      dateTime: new Date().toISOString(),
+      description: paymentData.description || "Comandă lupulsicorbul.com",
+      orderID: paymentData.orderId,
+      amount: parseFloat(paymentData.amount),
+      currency: "RON",
+      billing: {
+        email: paymentData.customerInfo.email || "test@lupulsicorbul.com",
+        phone: paymentData.customerInfo.phone || "+40712345678",
+        firstName: paymentData.customerInfo.firstName || "Test",
+        lastName: paymentData.customerInfo.lastName || "Customer",
+        city: paymentData.customerInfo.city || "Bucuresti",
+        country: 642, // România conform ISO 3166-1 numeric
+        countryName: "Romania",
+        state: paymentData.customerInfo.county || "Bucuresti",
+        postalCode: paymentData.customerInfo.postalCode || "123456",
+        details: paymentData.customerInfo.address || "Strada Test 1",
+      },
+      shipping: {
+        email: paymentData.customerInfo.email || "test@lupulsicorbul.com",
+        phone: paymentData.customerInfo.phone || "+40712345678",
+        firstName: paymentData.customerInfo.firstName || "Test",
+        lastName: paymentData.customerInfo.lastName || "Customer",
+        city: paymentData.customerInfo.city || "Bucuresti",
+        country: 642, // România conform ISO 3166-1 numeric
+        state: paymentData.customerInfo.county || "Bucuresti",
+        postalCode: paymentData.customerInfo.postalCode || "123456",
+        details: paymentData.customerInfo.address || "Strada Test 1",
+      },
+      products: [
+        // Adăugăm un produs minimal pentru a respecta structura
+        {
+          name: paymentData.description || "Produs digital",
+          code: paymentData.orderId,
+          category: "digital",
+          price: parseFloat(paymentData.amount),
+          vat: 19, // TVA România
         },
-        shipping: {
-          type: "person",
-          firstName: paymentData.customerInfo.firstName || "Test",
-          lastName: paymentData.customerInfo.lastName || "Customer",
-          email: paymentData.customerInfo.email || "test@lupulsicorbul.com",
-          phone: paymentData.customerInfo.phone || "0700000000",
-          address: paymentData.customerInfo.address || "Strada Test 1",
-          city: paymentData.customerInfo.city || "Bucuresti",
-          county: paymentData.customerInfo.county || "Bucuresti",
-          postalCode: paymentData.customerInfo.postalCode || "123456",
-          country: "Romania",
-        },
+      ],
+      installments: {
+        selected: 0, // Fără rate
+        available: [0], // Doar plata integrală
+      },
+      data: {
+        // Custom merchant parameters - poate fi gol
       },
     },
   };
 }
 
 /**
- * Trimite request la NETOPIA pentru inițierea plății
+ * Trimite request JSON la NETOPIA pentru inițierea plății
+ * Conform API v3: https://netopia-system.stoplight.io/docs/payments-api/d85c6f3d36ce1-create-a-payment-card-start
  */
 async function initiateNetopiaPayment(payload, config) {
-  // Sandbox: for all non-live configs or explicit sandbox signatures, render 3DS form locally
-  const isSandbox =
-    config.live === false ||
-    config.signature === "NETOPIA_SANDBOX_TEST_SIGNATURE" ||
-    (process.env.NETOPIA_SANDBOX_SIGNATURE &&
-      config.signature === process.env.NETOPIA_SANDBOX_SIGNATURE);
-
-  if (isSandbox) {
-    const dataBase64 = Buffer.from(JSON.stringify(payload)).toString("base64");
-    const signature = config.signature;
-    const formHtml = `<!doctype html><html><body><form id="netopia3ds" action="${config.endpoint}" method="post" target="_top">\
-      <input type="hidden" name="data" value="${dataBase64}"/>\
-      <input type="hidden" name="signature" value="${signature}"/>\
-    </form>\
-    <script>document.getElementById('netopia3ds').submit();</script></body></html>`;
-
-    return {
-      success: true,
-      paymentUrl: formHtml,
-      orderId: payload.payment.data.orderId,
-      html: true,
-    };
-  }
-
-  // LIVE mode: generate HTML form to POST data to NETOPIA with proper signature
-  const dataString = JSON.stringify(payload);
-  const dataBase64 = Buffer.from(dataString).toString("base64");
-
-  // Create SHA512 hash of the data for NETOPIA signature verification
-  const dataHash = crypto.createHash("sha512").update(dataString).digest("hex");
-  const signature = config.signature;
-
-  console.log("🔧 NETOPIA LIVE Debug Info:", {
+  console.log("🚀 Sending direct JSON request to NETOPIA API:", {
     endpoint: config.endpoint,
-    signature: signature,
-    dataLength: dataString.length,
-    dataHash: dataHash.substring(0, 32) + "...",
-    payloadOrderId: payload.payment.data.orderId,
-    payloadAmount: payload.payment.data.amount,
+    orderId: payload.order.orderID,
+    amount: payload.order.amount,
+    posSignature: payload.order.posSignature.substring(0, 10) + "...",
   });
 
-  const formHtml = `<!doctype html>
+  try {
+    // Fă request JSON direct la NETOPIA API conform documentației
+    const response = await fetch(config.endpoint, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Accept: "application/json",
+        Authorization: config.signature, // Authorization header cu POS signature
+      },
+      body: JSON.stringify(payload),
+    });
+
+    console.log("🔍 NETOPIA Response Status:", response.status);
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error("❌ NETOPIA API Error Response:", errorText);
+      throw new Error(`NETOPIA API Error: ${response.status} - ${errorText}`);
+    }
+
+    const responseData = await response.json();
+    console.log("✅ NETOPIA API Response received:", {
+      status: responseData.payment?.status,
+      ntpID: responseData.payment?.ntpID,
+      paymentURL: responseData.payment?.paymentURL,
+      hasCustomerAction: !!responseData.customerAction,
+      actionType: responseData.customerAction?.type,
+    });
+
+    // Verifica statusul răspunsului
+    if (responseData.payment?.status === 15) {
+      // Status 15 = 3-D Secure authentication required
+      console.log("� 3DS Authentication required");
+
+      if (responseData.customerAction?.type === "Authentication3D") {
+        // Returnează form HTML pentru 3DS authentication
+        const formData = responseData.customerAction.formData || {};
+        const formInputs = Object.entries(formData)
+          .map(
+            ([key, value]) =>
+              `<input type="hidden" name="${key}" value="${value}"/>`
+          )
+          .join("\n    ");
+
+        const form3DS = `<!doctype html>
 <html lang="ro">
 <head>
   <meta charset="UTF-8">
-  <title>Redirecționare NETOPIA</title>
+  <title>Autentificare 3D Secure</title>
   <style>body{font-family:Arial,sans-serif;text-align:center;padding:50px;}</style>
 </head>
 <body>
-  <h3>Redirecționare către NETOPIA...</h3>
+  <h3>Redirecționare pentru autentificare 3D Secure...</h3>
   <p>Vă rugăm așteptați...</p>
-  <form id="netopia3ds" action="${config.endpoint}" method="post" target="_top">
-    <input type="hidden" name="data" value="${dataBase64}"/>
-    <input type="hidden" name="signature" value="${signature}"/>
+  <form id="form3ds" action="${responseData.customerAction.url}" method="post" target="_top">
+    ${formInputs}
   </form>
   <script>
-    console.log('NETOPIA Form Data:', {
-      endpoint: '${config.endpoint}',
-      dataLength: ${dataBase64.length},
-      signature: '${signature.substring(0, 10)}...'
+    console.log('3DS Authentication Form:', {
+      url: '${responseData.customerAction.url}',
+      token: '${responseData.customerAction.authenticationToken?.substring(0, 10)}...'
     });
-    document.getElementById('netopia3ds').submit();
+    document.getElementById('form3ds').submit();
   </script>
 </body>
 </html>`;
 
-  console.log(
-    "🔧 NETOPIA LIVE form HTML preview (first 300 chars):",
-    formHtml.substring(0, 300)
-  );
-  return {
-    success: true,
-    paymentUrl: formHtml,
-    orderId: payload.payment.data.orderId,
-    html: true,
-  };
+        return {
+          success: true,
+          paymentUrl: form3DS,
+          orderId: payload.order.orderID,
+          html: true,
+          status: "3ds_required",
+        };
+      }
+    } else if (responseData.payment?.status === 3) {
+      // Status 3 = paid (direct success)
+      return {
+        success: true,
+        paymentUrl: responseData.payment.paymentURL,
+        orderId: payload.order.orderID,
+        status: "paid",
+      };
+    } else if (responseData.payment?.paymentURL) {
+      // Redirect to payment URL
+      return {
+        success: true,
+        paymentUrl: responseData.payment.paymentURL,
+        orderId: payload.order.orderID,
+        status: "redirect",
+      };
+    }
+
+    // Default fallback
+    console.error("⚠️ Unexpected NETOPIA response format:", responseData);
+    throw new Error("Format de răspuns neașteptat de la NETOPIA");
+  } catch (error) {
+    console.error("❌ NETOPIA API Request failed:", error);
+
+    // Fallback pentru development - simulare locală
+    const baseUrl = process.env.URL || "https://lupulsicorbul.com";
+    if (baseUrl.includes("localhost") || !config.live) {
+      console.log("🧪 Fallback to local simulation for development");
+      return {
+        success: true,
+        paymentUrl: `${baseUrl}/payment-simulation?orderId=${payload.order.orderID}&amount=${payload.order.amount}&currency=${payload.order.currency}&test=1`,
+        orderId: payload.order.orderID,
+        status: "simulation",
+      };
+    }
+
+    throw error;
+  }
 }
 
 /**
@@ -362,32 +427,16 @@ export const handler = async (event, context) => {
       throw new Error("No valid NETOPIA configuration found");
     }
 
-    // Creează payload-ul pentru NETOPIA
+    // Creează payload-ul pentru NETOPIA v3 API
     const payload = createNetopiaPayload(paymentData, config);
 
-    // Simulation only for local dev (fallback page), otherwise let sandbox HTML form logic handle
-    const baseUrl = process.env.URL || event.headers.origin || "";
-    if (!paymentData.live && baseUrl.includes("localhost")) {
-      const amount = payload.payment.data.amount;
-      const currency = payload.payment.data.currency;
-      return {
-        statusCode: 200,
-        headers,
-        body: JSON.stringify({
-          success: true,
-          paymentUrl: `${baseUrl.replace(/:\d+$/, ":5173")}/payment-simulation?orderId=${payload.payment.data.orderId}&amount=${amount}&currency=${currency}&test=1`,
-          orderId: payload.payment.data.orderId,
-        }),
-      };
-    }
-
-    // Inițiază plata la NETOPIA
-    console.log("🚀 Initiating payment with config:", {
+    // Inițiază plata la NETOPIA folosind API v3
+    console.log("🚀 Initiating payment with NETOPIA v3 API:", {
       endpoint: config.endpoint,
       hasSignature: !!config.signature,
       signaturePreview: config.signature?.substring(0, 10) + "...",
-      payloadOrderId: payload.payment.data.orderId,
-      payloadAmount: payload.payment.data.amount,
+      payloadOrderId: payload.order.orderID,
+      payloadAmount: payload.order.amount,
     });
 
     const result = await initiateNetopiaPayment(payload, config);

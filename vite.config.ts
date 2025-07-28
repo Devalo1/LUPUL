@@ -5,16 +5,20 @@ import path from "path";
 // https://vitejs.dev/config/
 export default defineConfig(({ mode }) => ({
   define: {
-    // Fix React production mode detection
+    // Fix React production mode detection - ensure development mode works properly
     "process.env.NODE_ENV": JSON.stringify(mode),
-    // Disable React refresh functions in production builds
+    // Only enable React refresh in development
     __REACT_REFRESH__: mode === "development",
-    // Fix comprehensiv pentru $RefreshSig$ error în toate browserele
-    $RefreshReg$: mode === "production" ? "undefined" : "(function() {})",
-    $RefreshSig$:
-      mode === "production"
-        ? "undefined"
-        : "(function() { return function() {}; })",
+    // Properly handle React refresh globals
+    ...(mode === "development"
+      ? {
+          $RefreshReg$: "(function() {})",
+          $RefreshSig$: "(function() { return function() {}; })",
+        }
+      : {
+          $RefreshReg$: "undefined",
+          $RefreshSig$: "undefined",
+        }),
   },
   plugins: [
     react({

@@ -1,6 +1,6 @@
 /**
  * NETOPIA Payment Initiate - FIXED FOR BLANK PAGE ISSUE
- * 
+ *
  * ROOT CAUSE: The current implementation sends JSON to Netopia, which returns SVG.
  * SOLUTION: Generate HTML form that POSTs to Netopia with proper data structure.
  */
@@ -10,7 +10,8 @@ import crypto from "crypto";
 // Configurație NETOPIA
 const NETOPIA_CONFIG = {
   sandbox: {
-    signature: process.env.NETOPIA_SANDBOX_SIGNATURE || "2ZOW-PJ5X-HYYC-IENE-APZO",
+    signature:
+      process.env.NETOPIA_SANDBOX_SIGNATURE || "2ZOW-PJ5X-HYYC-IENE-APZO",
     endpoint: "https://secure.sandbox.netopia-payments.com/payment/card/start",
     publicKey: process.env.NETOPIA_SANDBOX_PUBLIC_KEY,
   },
@@ -294,12 +295,14 @@ export const handler = async (event, context) => {
 
     // Determină configurația (sandbox vs live)
     const baseUrl = process.env.URL || "https://lupulsicorbul.com";
-    const isProduction = baseUrl.includes("lupulsicorbul.com") && !baseUrl.includes("localhost");
-    const hasLiveCredentials = !!(process.env.NETOPIA_LIVE_SIGNATURE);
-    
+    const isProduction =
+      baseUrl.includes("lupulsicorbul.com") && !baseUrl.includes("localhost");
+    const hasLiveCredentials = !!process.env.NETOPIA_LIVE_SIGNATURE;
+
     // Forțează sandbox dacă nu avem credențiale live
-    const useLive = isProduction && hasLiveCredentials && paymentData.live !== false;
-    
+    const useLive =
+      isProduction && hasLiveCredentials && paymentData.live !== false;
+
     const config = useLive ? NETOPIA_CONFIG.live : NETOPIA_CONFIG.sandbox;
 
     console.log("🔧 Environment configuration:", {
@@ -330,7 +333,6 @@ export const handler = async (event, context) => {
       headers: { ...headers, "Content-Type": "text/html; charset=utf-8" },
       body: formHtml,
     };
-
   } catch (error) {
     console.error("❌ Error in NETOPIA initiate:", error);
 

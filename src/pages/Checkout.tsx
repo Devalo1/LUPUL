@@ -12,8 +12,11 @@ const isDevelopment =
   import.meta.env.DEV ||
   window.location.port === "8888" ||
   window.location.hostname === "localhost";
-// Netlify function URL for order submission
-const FUNCTION_URL = "/.netlify/functions/send-order-email";
+
+// Netlify function URL for order submission - use correct port in development
+const FUNCTION_URL = isDevelopment
+  ? "http://localhost:8888/.netlify/functions/send-order-email"
+  : "/.netlify/functions/send-order-email";
 
 const Checkout: React.FC = () => {
   const { items, total, clearCart, shippingCost, finalTotal } = useCart();
@@ -350,7 +353,8 @@ const Checkout: React.FC = () => {
             console.log("🚀 Inițiez plata Netopia cu payload:", paymentData);
 
             // Apelare directă la funcția Netlify pentru debugging complet
-            const netopiaUrl = netopiaService.getNetlifyEndpoint("netopia-initiate");
+            const netopiaUrl =
+              netopiaService.getNetlifyEndpoint("netopia-initiate");
             console.log("🌐 Endpoint Netopia:", netopiaUrl);
 
             const response = await fetch(netopiaUrl, {
@@ -361,7 +365,10 @@ const Checkout: React.FC = () => {
 
             // LOGGING COMPLET pentru debugging
             console.log("📡 Netopia response status:", response.status);
-            console.log("📋 Netopia response headers:", Object.fromEntries(response.headers.entries()));
+            console.log(
+              "📋 Netopia response headers:",
+              Object.fromEntries(response.headers.entries())
+            );
 
             if (!response.ok) {
               const errorText = await response.text();
@@ -370,7 +377,9 @@ const Checkout: React.FC = () => {
                 statusText: response.statusText,
                 body: errorText.substring(0, 500),
               });
-              throw new Error(`Eroare HTTP ${response.status}: ${response.statusText}`);
+              throw new Error(
+                `Eroare HTTP ${response.status}: ${response.statusText}`
+              );
             }
 
             // Citesc răspunsul ca text pentru debugging complet
@@ -389,15 +398,19 @@ const Checkout: React.FC = () => {
             let parsedData: any = null;
             let paymentURL: string | null = null;
 
-            if (response.headers.get("content-type")?.includes("application/json")) {
+            if (
+              response.headers.get("content-type")?.includes("application/json")
+            ) {
               try {
                 parsedData = JSON.parse(responseText);
                 console.log("✅ Parsed JSON from Netopia:", parsedData);
-                
+
                 // Verific unde e URL-ul de plată
-                paymentURL = parsedData.paymentUrl || parsedData.paymentURL || parsedData.customerAction?.url;
+                paymentURL =
+                  parsedData.paymentUrl ||
+                  parsedData.paymentURL ||
+                  parsedData.customerAction?.url;
                 console.log("� Extracted paymentURL:", paymentURL);
-                
               } catch (parseError) {
                 console.error("❌ Failed to parse JSON:", parseError);
                 console.log("Raw response that failed to parse:", responseText);
@@ -405,10 +418,13 @@ const Checkout: React.FC = () => {
             }
 
             // Acum decid ce să fac în funcție de ce am primit
-            if (responseText.includes("<html") || responseText.includes("<!doctype")) {
+            if (
+              responseText.includes("<html") ||
+              responseText.includes("<!doctype")
+            ) {
               // E HTML form - deschid popup și îl încarcă
               console.log("📄 Detected HTML response - opening popup for form");
-              
+
               popup = window.open(
                 "about:blank",
                 "netopia3ds",
@@ -416,7 +432,9 @@ const Checkout: React.FC = () => {
               );
 
               if (!popup) {
-                throw new Error("Nu s-a putut deschide fereastra de plată securizată. Te rugăm să permiți pop-up-uri și să încerci din nou.");
+                throw new Error(
+                  "Nu s-a putut deschide fereastra de plată securizată. Te rugăm să permiți pop-up-uri și să încerci din nou."
+                );
               }
 
               // Scriu conținutul HTML în popup
@@ -426,11 +444,14 @@ const Checkout: React.FC = () => {
               popup.focus();
 
               console.log("✅ HTML form loaded in popup");
-
-            } else if (paymentURL && typeof paymentURL === "string" && paymentURL.length > 0) {
+            } else if (
+              paymentURL &&
+              typeof paymentURL === "string" &&
+              paymentURL.length > 0
+            ) {
               // Am primit un URL valid - deschid popup și redirecționez
               console.log("🔗 Detected valid paymentURL - redirecting");
-              
+
               popup = window.open(
                 paymentURL,
                 "netopia3ds",
@@ -438,22 +459,27 @@ const Checkout: React.FC = () => {
               );
 
               if (!popup) {
-                throw new Error("Nu s-a putut deschide fereastra de plată securizată. Te rugăm să permiți pop-up-uri și să încerci din nou.");
+                throw new Error(
+                  "Nu s-a putut deschide fereastra de plată securizată. Te rugăm să permiți pop-up-uri și să încerci din nou."
+                );
               }
 
               console.log("✅ Redirected to paymentURL:", paymentURL);
-
             } else if (responseText.includes("card.svg")) {
               // E acel SVG care cauzează blank page
-              console.error("❌ Detected SVG response - this causes blank page!");
-              throw new Error("Netopia a returnat un SVG în loc de formular de plată. Acest lucru indică o problemă de configurare.");
-
+              console.error(
+                "❌ Detected SVG response - this causes blank page!"
+              );
+              throw new Error(
+                "Netopia a returnat un SVG în loc de formular de plată. Acest lucru indică o problemă de configurare."
+              );
             } else {
               // Nu știu ce e - afișez eroare detaliată
               console.error("❌ Unknown response format from Netopia");
-              throw new Error(`Format necunoscut de răspuns de la Netopia. Content-Type: ${response.headers.get("content-type")}, Length: ${responseText.length}`);
+              throw new Error(
+                `Format necunoscut de răspuns de la Netopia. Content-Type: ${response.headers.get("content-type")}, Length: ${responseText.length}`
+              );
             }
-
           } catch (netopiaError: any) {
             // Închid popup-ul dacă s-a deschis
             if (popup) {
@@ -467,7 +493,8 @@ const Checkout: React.FC = () => {
             });
 
             // Afișez eroarea detaliată utilizatorului
-            const errorMessage = netopiaError.message || "Eroare necunoscută la inițierea plății";
+            const errorMessage =
+              netopiaError.message || "Eroare necunoscută la inițierea plății";
             throw new Error(`Eroare Netopia: ${errorMessage}`);
           }
           return;

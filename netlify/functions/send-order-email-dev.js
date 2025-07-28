@@ -51,7 +51,8 @@ export const handler = async (event, context) => {
     console.log("📋 Detalii comandă:", {
       orderNumber,
       totalAmount: totalAmount + " (raw value)",
-      client: `${orderData.firstName || orderData.name} ${orderData.lastName || ""}`.trim(),
+      client:
+        `${orderData.firstName || orderData.name} ${orderData.lastName || ""}`.trim(),
       phone: orderData.phone,
       address: `${orderData.address}, ${orderData.city}, ${orderData.county}`,
       items: orderData.items?.length || 0,
@@ -70,7 +71,7 @@ Dragă ${orderData.firstName || orderData.name},
 Îți mulțumim pentru comanda ta! Detaliile comenzii sunt următoarele:
 
 PRODUSE COMANDATE:
-${orderData.items?.map((item) => `- ${item.name} x ${item.quantity} = ${(item.price * item.quantity / 100).toFixed(2)} RON`).join("\n") || "- Nu au fost găsite produse"}
+${orderData.items?.map((item) => `- ${item.name} x ${item.quantity} = ${((item.price * item.quantity) / 100).toFixed(2)} RON`).join("\n") || "- Nu au fost găsite produse"}
 
 Total: ${(totalAmount / 100).toFixed(2)} RON
 
@@ -101,7 +102,7 @@ Detalii comandă:
 - Total: ${(totalAmount / 100).toFixed(2)} RON
 
 Produse:
-${orderData.items?.map((item) => `- ${item.name} (${item.quantity}x) = ${(item.price * item.quantity / 100).toFixed(2)} RON`).join("\n") || "- Nu au fost găsite produse"}
+${orderData.items?.map((item) => `- ${item.name} (${item.quantity}x) = ${((item.price * item.quantity) / 100).toFixed(2)} RON`).join("\n") || "- Nu au fost găsite produse"}
 
 Accesați panoul de administrare pentru a procesa această comandă.
 
@@ -136,7 +137,6 @@ Sistem automatizat Lupul și Corbul
         },
       }),
     };
-
   } catch (error) {
     console.error("❌ Eroare procesare comandă:", error);
 

@@ -28,12 +28,6 @@ const Checkout: React.FC = () => {
     phone: "",
     paymentMethod: "cash",
   });
-  const [cardData, setCardData] = useState({
-    cardNumber: "",
-    expiryDate: "",
-    cvv: "",
-    cardHolderName: "",
-  });
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [testResult, setTestResult] = useState<string>("");
@@ -54,38 +48,6 @@ const Checkout: React.FC = () => {
   ) => {
     const { name, value } = e.target;
     setFormData({ ...formData, [name]: value });
-  };
-
-  const handleCardInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
-    let formattedValue = value;
-
-    // Formatare automată pentru numărul cardului
-    if (name === "cardNumber") {
-      // Eliminăm toate caracterele non-numerice
-      formattedValue = value.replace(/\D/g, "");
-      // Adăugăm spații la fiecare 4 cifre
-      formattedValue = formattedValue.replace(/(\d{4})(?=\d)/g, "$1 ");
-      // Limităm la 19 caractere (16 cifre + 3 spații)
-      formattedValue = formattedValue.substring(0, 19);
-    }
-
-    // Formatare automată pentru data expirării (MM/YY)
-    if (name === "expiryDate") {
-      formattedValue = value.replace(/\D/g, "");
-      if (formattedValue.length >= 2) {
-        formattedValue =
-          formattedValue.substring(0, 2) + "/" + formattedValue.substring(2, 4);
-      }
-      formattedValue = formattedValue.substring(0, 5);
-    }
-
-    // Limitare CVV la 3-4 cifre
-    if (name === "cvv") {
-      formattedValue = value.replace(/\D/g, "").substring(0, 4);
-    }
-
-    setCardData({ ...cardData, [name]: formattedValue });
   };
 
   // Test function for Netopia
@@ -312,77 +274,6 @@ const Checkout: React.FC = () => {
     return simulateEmailSending();
   };
 
-  // Validate card number using Luhn algorithm
-  const luhnCheck = (num: string): boolean => {
-    let sum = 0;
-    let shouldDouble = false;
-    for (let i = num.length - 1; i >= 0; i--) {
-      let digit = parseInt(num.charAt(i), 10);
-      if (shouldDouble) {
-        digit *= 2;
-        if (digit > 9) digit -= 9;
-      }
-      sum += digit;
-      shouldDouble = !shouldDouble;
-    }
-    return sum % 10 === 0;
-  };
-
-  const validateCardData = () => {
-    if (!cardData.cardHolderName.trim()) {
-      setError("Te rugăm să introduci numele de pe card.");
-      return false;
-    }
-
-    const cardNumber = cardData.cardNumber.replace(/\s/g, "");
-    if (!cardNumber || cardNumber.length < 13 || cardNumber.length > 19) {
-      setError(
-        "Numărul cardului nu este valid. Te rugăm să introduci un număr valid de 13-19 cifre."
-      );
-      return false;
-    }
-    // Check card number validity via Luhn algorithm
-    if (!luhnCheck(cardNumber)) {
-      setError(
-        "Numărul cardului nu este valid conform algoritmului Luhn. Te rugăm să verifici numărul cardului."
-      );
-      return false;
-    }
-
-    // Validate expiry date format MM/YY
-    if (!cardData.expiryDate || !/^\d{2}\/\d{2}$/.test(cardData.expiryDate)) {
-      setError(
-        "Te rugăm să introduci data expirării în formatul MM/YY (ex: 07/25)."
-      );
-      return false;
-    }
-    const [monthStr, yearStr] = cardData.expiryDate.split("/");
-    const monthNum = parseInt(monthStr, 10);
-    const yearNum = parseInt(yearStr, 10);
-    if (isNaN(monthNum) || monthNum < 1 || monthNum > 12) {
-      setError(
-        "Luna expirării nu este validă. Te rugăm să verifici data expirării."
-      );
-      return false;
-    }
-    // Check if expiry date is in the past
-    const expiryDate = new Date(2000 + yearNum, monthNum - 1);
-    const currentDate = new Date();
-    currentDate.setDate(1);
-    if (expiryDate < currentDate) {
-      setError("Cardul a expirat. Te rugăm să folosești un card valid.");
-      return false;
-    }
-
-    // Validate CVV is numeric and 3-4 digits
-    if (!/^[0-9]{3,4}$/.test(cardData.cvv)) {
-      setError("CVV-ul trebuie să conțină 3 sau 4 cifre numerice.");
-      return false;
-    }
-
-    return true;
-  };
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
@@ -391,17 +282,11 @@ const Checkout: React.FC = () => {
     try {
       console.log("Inițierea trimiterii comenzii:", { ...formData, items });
 
-      // Dacă utilizatorul a ales plata cu cardul, validăm și redirectăm către Netopia
+      // Dacă utilizatorul a ales plata cu cardul, redirecționăm către Netopia
       if (formData.paymentMethod === "card") {
-        console.log("Plată cu cardul selectată, validăm datele...");
-
-        // Validăm datele cardului
-        if (!validateCardData()) {
-          setIsSubmitting(false);
-          return;
-        }
-
-        console.log("✅ Datele cardului sunt valide, inițializăm Netopia...");
+        console.log(
+          "Plată cu cardul selectată, redirecționăm către Netopia..."
+        );
 
         // Salvăm datele comenzii în localStorage pentru după plată
         const orderData = {
@@ -413,11 +298,6 @@ const Checkout: React.FC = () => {
           totalAmount: finalTotal,
           items: items,
           paymentMethod: "card",
-          cardData: {
-            // Salvăm doar ultimele 4 cifre pentru securitate
-            lastFour: cardData.cardNumber.replace(/\s/g, "").slice(-4),
-            cardHolderName: cardData.cardHolderName,
-          },
           date: new Date().toISOString(),
         };
 
@@ -755,82 +635,48 @@ const Checkout: React.FC = () => {
               {formData.paymentMethod === "card" && (
                 <div className="mt-3 p-4 bg-blue-50 border border-blue-200 rounded">
                   <p className="text-sm text-blue-800 mb-4">
-                    <strong>🔐 Plată securizată cu cardul</strong>
+                    <strong>
+                      🔐 Plată securizată cu cardul prin Netopia Payments
+                    </strong>
                   </p>
 
-                  {/* Formular pentru datele cardului */}
-                  <div className="space-y-4">
-                    {/* Numele titularului cardului */}
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Numele de pe card *
-                      </label>
-                      <input
-                        type="text"
-                        name="cardHolderName"
-                        value={cardData.cardHolderName}
-                        onChange={handleCardInputChange}
-                        placeholder="Ex: JOHN DOE"
-                        className="w-full border border-gray-300 rounded px-3 py-2 text-gray-800 bg-white focus:bg-white focus:text-gray-800 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 uppercase"
-                        required
-                      />
-                    </div>
-
-                    {/* Numărul cardului */}
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Numărul cardului *
-                      </label>
-                      <input
-                        type="text"
-                        name="cardNumber"
-                        value={cardData.cardNumber}
-                        onChange={handleCardInputChange}
-                        placeholder="1234 5678 9012 3456"
-                        className="w-full border border-gray-300 rounded px-3 py-2 text-gray-800 bg-white focus:bg-white focus:text-gray-800 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 font-mono"
-                        required
-                      />
-                    </div>
-
-                    {/* Data expirării și CVV */}
-                    <div className="grid grid-cols-2 gap-4">
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">
-                          Data expirării *
-                        </label>
-                        <input
-                          type="text"
-                          name="expiryDate"
-                          value={cardData.expiryDate}
-                          onChange={handleCardInputChange}
-                          placeholder="MM/YY"
-                          className="w-full border border-gray-300 rounded px-3 py-2 text-gray-800 bg-white focus:bg-white focus:text-gray-800 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 font-mono"
-                          required
-                        />
+                  {/* Informații importante despre fluxul de plată */}
+                  <div className="space-y-3">
+                    <div className="flex items-start space-x-3">
+                      <div className="flex-shrink-0 w-6 h-6 bg-blue-600 text-white rounded-full flex items-center justify-center text-xs font-bold">
+                        1
                       </div>
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">
-                          CVV/CVC *
-                        </label>
-                        <input
-                          type="text"
-                          name="cvv"
-                          value={cardData.cvv}
-                          onChange={handleCardInputChange}
-                          placeholder="123"
-                          className="w-full border border-gray-300 rounded px-3 py-2 text-gray-800 bg-white focus:bg-white focus:text-gray-800 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 font-mono"
-                          required
-                        />
+                      <p className="text-sm text-blue-800">
+                        Veți fi redirecționat către pagina securizată Netopia
+                        Payments
+                      </p>
+                    </div>
+                    <div className="flex items-start space-x-3">
+                      <div className="flex-shrink-0 w-6 h-6 bg-blue-600 text-white rounded-full flex items-center justify-center text-xs font-bold">
+                        2
                       </div>
+                      <p className="text-sm text-blue-800">
+                        Introduceți datele cardului în mediul securizat Netopia
+                      </p>
+                    </div>
+                    <div className="flex items-start space-x-3">
+                      <div className="flex-shrink-0 w-6 h-6 bg-blue-600 text-white rounded-full flex items-center justify-center text-xs font-bold">
+                        3
+                      </div>
+                      <p className="text-sm text-blue-800">
+                        După confirmare, veți fi adus înapoi pentru confirmarea
+                        comenzii
+                      </p>
                     </div>
                   </div>
 
                   {/* Informații de securitate */}
                   <div className="mt-4 p-3 bg-green-50 border border-green-200 rounded">
                     <p className="text-xs text-green-800">
-                      🔒 <strong>Securitate garantată:</strong> Datele cardului
-                      sunt procesate prin Netopia Payments, certificat PCI DSS
-                      Level 1. Informațiile tale sunt complet securizate.
+                      🔒 <strong>Securitate PCI-DSS:</strong> Datele cardului
+                      sunt procesate exclusiv prin Netopia Payments, certificat
+                      PCI DSS Level 1. Nu colectăm sau stocăm informații
+                      sensibile ale cardului.
                     </p>
                   </div>
 

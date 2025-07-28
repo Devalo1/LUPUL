@@ -11,6 +11,8 @@ import {
   Timestamp,
   addDoc as _addDoc,
   deleteDoc as _deleteDoc,
+  updateDoc,
+  serverTimestamp,
 } from "firebase/firestore";
 import { firestore } from "../firebase";
 import { isUserSpecialist } from "../utils/authUtils";
@@ -29,6 +31,9 @@ import {
   FaGraduationCap as _FaGraduationCap,
 } from "react-icons/fa";
 import _SpecialistServices from "../components/SpecialistServices";
+import SimpleSpecialistCalendar from "../components/SimpleSpecialistCalendar";
+import ScheduleManager from "../components/ScheduleManager";
+import CVEditForm from "../components/CVEditForm";
 // CVEditForm removed as unused
 
 interface Appointment {
@@ -128,7 +133,7 @@ const SpecialistPanel: React.FC = () => {
     "all" | "pending" | "confirmed" | "completed" | "cancelled"
   >("all");
   const [activeTab, _setActiveTab] = useState<
-    "appointments" | "sessions" | "services"
+    "appointments" | "sessions" | "services" | "calendar" | "schedule" | "cv"
   >("appointments");
   const [_showSessionForm, _setShowSessionForm] = useState(false);
   const [_newSession, _setNewSession] = useState<
@@ -186,8 +191,118 @@ const SpecialistPanel: React.FC = () => {
   const [_specialistCV, setSpecialistCV] = useState<any>(null);
   const [_loadingCV, setLoadingCV] = useState(false);
   const [_profileData, _setProfileData] = useState<any>(null);
+  const [_cvData, _setCvData] = useState<any>(null);
 
   const navigate = useNavigate();
+
+  // CV handlers
+  // Funcție pentru sincronizarea datelor de specialist
+  const syncSpecialistData = async () => {
+    if (!user?.uid) return;
+
+    try {
+      // Încarcă CV-ul și sincronizează cu profilul de specialist
+      const cvRef = doc(firestore, "specialistCV", user.uid);
+      const cvDoc = await getDoc(cvRef);
+
+      if (cvDoc.exists()) {
+        const cvData = cvDoc.data();
+
+        // Actualizează profilul de specialist cu datele din CV
+        try {
+          const specialistRef = doc(firestore, "specialists", user.uid);
+          await updateDoc(specialistRef, {
+            description: cvData.bio || cvData.description || "",
+            name:
+              cvData.personalInfo?.fullName || user.displayName || user.email,
+            updatedAt: serverTimestamp(),
+          });
+          console.log("Specialist profile synced with CV data");
+        } catch (error) {
+          console.log("Specialist document might not exist yet:", error);
+        }
+      }
+    } catch (error) {
+      console.error("Error syncing specialist data:", error);
+    }
+  };
+
+  // Rulează sincronizarea la încărcare
+  useEffect(() => {
+    if (isSpecialist && user?.uid) {
+      syncSpecialistData();
+    }
+  }, [isSpecialist, user?.uid]);
+
+  const handleSaveCV = async (cvData: any) => {
+    try {
+      setLoadingCV(true);
+
+      if (user?.uid) {
+        // Salvează CV-ul în Firestore
+        const cvRef = doc(firestore, "specialistCV", user.uid);
+        await updateDoc(cvRef, {
+          ...cvData,
+          updatedAt: serverTimestamp(),
+        });
+
+        // Sincronizează descrierea cu colecția specialists pentru programări
+        try {
+          const specialistRef = doc(firestore, "specialists", user.uid);
+          const specialistData = {
+            description: cvData.bio || cvData.description || "",
+            name:
+              cvData.personalInfo?.fullName || user.displayName || user.email,
+            updatedAt: serverTimestamp(),
+          };
+
+          // Încearcă să actualizeze documentul de specialist
+          await updateDoc(specialistRef, specialistData);
+          console.log("Specialist profile updated with CV data");
+        } catch (specialistError) {
+          console.log(
+            "Specialist document might not exist, this is normal:",
+            specialistError
+          );
+        }
+
+        // Sincronizează și cu colecția users pentru consistență
+        try {
+          const userRef = doc(firestore, "users", user.uid);
+          await updateDoc(userRef, {
+            description: cvData.bio || cvData.description || "",
+            displayName: cvData.personalInfo?.fullName || user.displayName,
+            updatedAt: serverTimestamp(),
+          });
+          console.log("User profile updated with CV data");
+        } catch (userError) {
+          console.log("Could not update user profile:", userError);
+        }
+
+        _setCvData(cvData);
+        setAlertMessage({
+          type: "success",
+          message:
+            "CV-ul a fost salvat cu succes și sincronizat cu profilul de programări!",
+        });
+
+        // Clear success message after 3 seconds
+        setTimeout(() => setAlertMessage(null), 3000);
+      }
+    } catch (error) {
+      console.error("Error saving CV:", error);
+      setAlertMessage({
+        type: "error",
+        message: "A apărut o eroare la salvarea CV-ului. Încercați din nou.",
+      });
+    } finally {
+      setLoadingCV(false);
+    }
+  };
+
+  const handleCancelCV = () => {
+    // Nu face nimic, rămâne în tab
+  };
   const location = useLocation();
 
   // Formular de sesiune specială - îmbunătățit cu mai multe opțiuni
@@ -423,10 +538,24 @@ const SpecialistPanel: React.FC = () => {
         _setSpecialSessions(sessionsData);
       } catch (error) {
         console.error("Eroare la încărcarea sesiunilor speciale:", error);
+
+        let errorMessage =
+          "A apărut o eroare la încărcarea sesiunilor speciale.";
+
+        // Check if it's a permission error
+        if (error && typeof error === "object" && "code" in error) {
+          if (error.code === "permission-denied") {
+            errorMessage =
+              "Nu aveți permisiunea să accesați sesiunile speciale. Contactați administratorul.";
+          } else if (error.code === "unavailable") {
+            errorMessage =
+              "Serviciul este temporar indisponibil. Încercați din nou în câteva momente.";
+          }
+        }
+
         setAlertMessage({
           type: "error",
-          message:
-            "A apărut o eroare la încărcarea sesiunilor speciale. Vă rugăm încercați din nou.",
+          message: errorMessage,
         });
       } finally {
         setLoadingSessions(false);
@@ -620,6 +749,8 @@ const SpecialistPanel: React.FC = () => {
     const fetchPendingSpecializationRequests = async () => {
       if (!user || !isSpecialist) return;
 
+      console.log("Fetching specialization requests for user:", user.uid);
+
       try {
         const requestsRef = collection(
           firestore,
@@ -656,6 +787,25 @@ const SpecialistPanel: React.FC = () => {
         }
       } catch (error) {
         console.error("Error fetching specialization change requests:", error);
+
+        // Set a user-friendly error message for specialization requests
+        let errorMessage =
+          "A apărut o eroare la încărcarea cererilor de specializare.";
+
+        if (error && typeof error === "object" && "code" in error) {
+          if (error.code === "permission-denied") {
+            errorMessage =
+              "Nu aveți permisiunea să accesați cererile de specializare. Contactați administratorul.";
+          } else if (error.code === "unavailable") {
+            errorMessage =
+              "Serviciul este temporar indisponibil. Încercați din nou în câteva momente.";
+          }
+        }
+
+        setAlertMessage({
+          type: "error",
+          message: errorMessage,
+        });
       }
     };
 
@@ -933,55 +1083,216 @@ const SpecialistPanel: React.FC = () => {
 
       {/* Main Content */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Navigation Tabs */}
+        {/* Mesaj de ghid pentru specialiști */}
+        <div className="mb-6 bg-blue-50 border-l-4 border-blue-400 p-4 rounded">
+          <div className="flex">
+            <div className="flex-shrink-0">
+              <svg
+                className="h-5 w-5 text-blue-400"
+                viewBox="0 0 20 20"
+                fill="currentColor"
+              >
+                <path
+                  fillRule="evenodd"
+                  d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z"
+                  clipRule="evenodd"
+                />
+              </svg>
+            </div>
+            <div className="ml-3">
+              <p className="text-sm text-blue-700">
+                <strong>Ghid rapid:</strong> Folosește tab-ul "Program
+                Săptămânal" pentru a seta orele disponibile pentru programări.
+                Modificările din "Editează CV" se vor reflecta automat în
+                descrierea ta din sistemul de programări.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        {/* Navigation Tabs - Îmbunătățit pentru vizibilitate */}
         <div className="mb-8">
-          <nav className="flex space-x-8" aria-label="Tabs">
-            <button
-              onClick={() => _setActiveTab("appointments")}
-              className={`${
-                activeTab === "appointments"
-                  ? "border-blue-500 text-blue-600"
-                  : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
-              } whitespace-nowrap py-2 px-1 border-b-2 font-medium text-sm transition-colors`}
-            >
-              Programări
-              {_appointments.length > 0 && (
-                <span className="ml-2 bg-blue-100 text-blue-600 py-0.5 px-2 rounded-full text-xs">
-                  {_appointments.length}
-                </span>
-              )}
-            </button>
-            <button
-              onClick={() => _setActiveTab("sessions")}
-              className={`${
-                activeTab === "sessions"
-                  ? "border-blue-500 text-blue-600"
-                  : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
-              } whitespace-nowrap py-2 px-1 border-b-2 font-medium text-sm transition-colors`}
-            >
-              Sesiuni Speciale
-              {_specialSessions.length > 0 && (
-                <span className="ml-2 bg-green-100 text-green-600 py-0.5 px-2 rounded-full text-xs">
-                  {_specialSessions.length}
-                </span>
-              )}
-            </button>
-            <button
-              onClick={() => _setActiveTab("services")}
-              className={`${
-                activeTab === "services"
-                  ? "border-blue-500 text-blue-600"
-                  : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
-              } whitespace-nowrap py-2 px-1 border-b-2 font-medium text-sm transition-colors`}
-            >
-              Servicii
-              {_specialistServices.length > 0 && (
-                <span className="ml-2 bg-purple-100 text-purple-600 py-0.5 px-2 rounded-full text-xs">
-                  {_specialistServices.length}
-                </span>
-              )}
-            </button>
-          </nav>
+          <div className="bg-white shadow-sm border border-gray-200 rounded-lg p-1">
+            <nav className="flex flex-wrap gap-1" aria-label="Tabs">
+              <button
+                onClick={() => _setActiveTab("appointments")}
+                className={`${
+                  activeTab === "appointments"
+                    ? "bg-blue-600 text-white shadow-md"
+                    : "bg-gray-50 text-gray-700 hover:bg-gray-100 hover:text-gray-900"
+                } flex-1 min-w-0 relative rounded-md px-4 py-3 text-sm font-medium transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2`}
+              >
+                <div className="flex items-center justify-center">
+                  <svg
+                    className="w-4 h-4 mr-2"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
+                    />
+                  </svg>
+                  <span>Programări</span>
+                  {_appointments.length > 0 && (
+                    <span
+                      className={`ml-2 ${activeTab === "appointments" ? "bg-blue-500 text-white" : "bg-blue-100 text-blue-600"} py-0.5 px-2 rounded-full text-xs font-semibold`}
+                    >
+                      {_appointments.length}
+                    </span>
+                  )}
+                </div>
+              </button>
+
+              <button
+                onClick={() => _setActiveTab("sessions")}
+                className={`${
+                  activeTab === "sessions"
+                    ? "bg-blue-600 text-white shadow-md"
+                    : "bg-gray-50 text-gray-700 hover:bg-gray-100 hover:text-gray-900"
+                } flex-1 min-w-0 relative rounded-md px-4 py-3 text-sm font-medium transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2`}
+              >
+                <div className="flex items-center justify-center">
+                  <svg
+                    className="w-4 h-4 mr-2"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"
+                    />
+                  </svg>
+                  <span>Sesiuni Speciale</span>
+                  {_specialSessions.length > 0 && (
+                    <span
+                      className={`ml-2 ${activeTab === "sessions" ? "bg-green-500 text-white" : "bg-green-100 text-green-600"} py-0.5 px-2 rounded-full text-xs font-semibold`}
+                    >
+                      {_specialSessions.length}
+                    </span>
+                  )}
+                </div>
+              </button>
+
+              <button
+                onClick={() => _setActiveTab("services")}
+                className={`${
+                  activeTab === "services"
+                    ? "bg-blue-600 text-white shadow-md"
+                    : "bg-gray-50 text-gray-700 hover:bg-gray-100 hover:text-gray-900"
+                } flex-1 min-w-0 relative rounded-md px-4 py-3 text-sm font-medium transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2`}
+              >
+                <div className="flex items-center justify-center">
+                  <svg
+                    className="w-4 h-4 mr-2"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2-2v2m8 0V6a2 2 0 012 2v6a2 2 0 01-2 2H6a2 2 0 01-2-2V8a2 2 0 012-2V6z"
+                    />
+                  </svg>
+                  <span>Servicii</span>
+                  {_specialistServices.length > 0 && (
+                    <span
+                      className={`ml-2 ${activeTab === "services" ? "bg-purple-500 text-white" : "bg-purple-100 text-purple-600"} py-0.5 px-2 rounded-full text-xs font-semibold`}
+                    >
+                      {_specialistServices.length}
+                    </span>
+                  )}
+                </div>
+              </button>
+
+              <button
+                onClick={() => _setActiveTab("calendar")}
+                className={`${
+                  activeTab === "calendar"
+                    ? "bg-blue-600 text-white shadow-md"
+                    : "bg-gray-50 text-gray-700 hover:bg-gray-100 hover:text-gray-900"
+                } flex-1 min-w-0 relative rounded-md px-4 py-3 text-sm font-medium transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2`}
+              >
+                <div className="flex items-center justify-center">
+                  <svg
+                    className="w-4 h-4 mr-2"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"
+                    />
+                  </svg>
+                  <span>Calendar</span>
+                </div>
+              </button>
+
+              <button
+                onClick={() => _setActiveTab("schedule")}
+                className={`${
+                  activeTab === "schedule"
+                    ? "bg-blue-600 text-white shadow-md"
+                    : "bg-gray-50 text-gray-700 hover:bg-gray-100 hover:text-gray-900"
+                } flex-1 min-w-0 relative rounded-md px-4 py-3 text-sm font-medium transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2`}
+              >
+                <div className="flex items-center justify-center">
+                  <svg
+                    className="w-4 h-4 mr-2"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
+                    />
+                  </svg>
+                  <span className="hidden sm:inline">Program Săptămânal</span>
+                  <span className="sm:hidden">Program</span>
+                </div>
+              </button>
+
+              <button
+                onClick={() => _setActiveTab("cv")}
+                className={`${
+                  activeTab === "cv"
+                    ? "bg-blue-600 text-white shadow-md"
+                    : "bg-gray-50 text-gray-700 hover:bg-gray-100 hover:text-gray-900"
+                } flex-1 min-w-0 relative rounded-md px-4 py-3 text-sm font-medium transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2`}
+              >
+                <div className="flex items-center justify-center">
+                  <svg
+                    className="w-4 h-4 mr-2"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
+                    />
+                  </svg>
+                  <span>Editează CV</span>
+                </div>
+              </button>
+            </nav>
+          </div>
         </div>
 
         {/* Tab Content */}
@@ -1427,6 +1738,55 @@ const SpecialistPanel: React.FC = () => {
                   ))}
                 </div>
               )}
+            </div>
+          </div>
+        )}
+
+        {activeTab === "calendar" && (
+          <div className="bg-white shadow rounded-lg">
+            <div className="px-6 py-4 border-b border-gray-200">
+              <h3 className="text-lg font-medium text-gray-900">
+                Calendar programări
+              </h3>
+              <p className="mt-1 text-sm text-gray-500">
+                Vizualizează programările și gestionează disponibilitatea
+              </p>
+            </div>
+            <div className="p-6">
+              <SimpleSpecialistCalendar specialistId={user?.uid} />
+            </div>
+          </div>
+        )}
+
+        {activeTab === "schedule" && (
+          <div>
+            <ScheduleManager
+              specialistId={user?.uid || ""}
+              onScheduleUpdate={(schedule) => {
+                console.log("Schedule updated:", schedule);
+                // Refresh appointments or other dependent data if needed
+              }}
+            />
+          </div>
+        )}
+
+        {activeTab === "cv" && (
+          <div className="bg-white shadow rounded-lg">
+            <div className="px-6 py-4 border-b border-gray-200">
+              <h3 className="text-lg font-medium text-gray-900">
+                Editează CV-ul profesional
+              </h3>
+              <p className="mt-1 text-sm text-gray-500">
+                Actualizează informațiile din CV-ul tău pentru clienți
+              </p>
+            </div>
+            <div className="p-6">
+              <CVEditForm
+                initialData={_specialistCV}
+                onSave={handleSaveCV}
+                onCancel={handleCancelCV}
+                userId={user?.uid}
+              />
             </div>
           </div>
         )}

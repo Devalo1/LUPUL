@@ -1,10 +1,10 @@
 import React, { createContext, useState, useEffect, ReactNode } from "react";
 import { useNavigate } from "react-router-dom";
-import { 
-  onAuthStateChanged, 
-  signInWithEmailAndPassword, 
-  signOut, 
-  User
+import {
+  onAuthStateChanged,
+  signInWithEmailAndPassword,
+  signOut,
+  User,
 } from "firebase/auth";
 import { auth } from "../firebase";
 
@@ -20,7 +20,9 @@ interface AuthContextType {
 // Create the context with a default value that matches the type
 const AuthContext = createContext<AuthContextType | null>(null);
 
-export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
+export const AuthProvider: React.FC<{ children: ReactNode }> = ({
+  children,
+}) => {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
@@ -52,7 +54,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   };
 
   const redirectToAppointments = () => {
-    navigate("/appointments");
+    navigate("/appointments/specialist");
   };
 
   const value: AuthContextType = {

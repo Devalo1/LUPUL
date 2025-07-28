@@ -1,7 +1,25 @@
 import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { FaArrowLeft, FaStar, FaRegStar, FaStarHalfAlt, FaCalendarAlt, FaCheck, FaUser, FaCheckCircle } from "react-icons/fa";
-import { collection, getDocs, query, where, orderBy, getDoc, doc, addDoc, serverTimestamp } from "firebase/firestore";
+import {
+  FaArrowLeft,
+  FaStar,
+  FaRegStar,
+  FaStarHalfAlt,
+  FaCalendarAlt,
+  FaUser,
+  FaCheckCircle,
+} from "react-icons/fa";
+import {
+  collection,
+  getDocs,
+  query,
+  where,
+  orderBy,
+  getDoc,
+  doc,
+  addDoc,
+  serverTimestamp,
+} from "firebase/firestore";
 import { db } from "../../firebase";
 import { getSpecialistData } from "../../utils/specialistUtils";
 import SpecialistAvatar from "../../components/SpecialistAvatar";
@@ -64,41 +82,43 @@ const SpecialistProfile: React.FC = () => {
   const navigate = useNavigate();
   const [specialist, setSpecialist] = useState<SpecialistProfile | null>(null);
   const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState<"about" | "cv" | "reviews" | "events">("about");
+  const [activeTab, setActiveTab] = useState<
+    "about" | "cv" | "reviews" | "events"
+  >("about");
 
   // State for reviews and ratings
   const [reviews, setReviews] = useState<Review[]>([]);
   const [averageRating, setAverageRating] = useState(0);
   const [userHasReviewed, setUserHasReviewed] = useState(false);
-  
+
   // New review state
   const [newReview, setNewReview] = useState({
     rating: 0,
     comment: "",
-    submitting: false
+    submitting: false,
   });
   const { currentUser } = useAuth();
 
   // Helper function to safely format dates from either Date objects or Firestore Timestamps
   const formatReviewDate = (dateValue: any): string => {
     if (!dateValue) return "";
-    
+
     try {
       // If it's a standard Date object
       if (dateValue instanceof Date) {
         return dateValue.toLocaleDateString();
       }
-      
+
       // If it's a Firestore Timestamp with seconds property
       if (dateValue && typeof dateValue.seconds === "number") {
         return new Date(dateValue.seconds * 1000).toLocaleDateString();
       }
-      
+
       // If it's a Firestore Timestamp with toDate() method
       if (dateValue && typeof dateValue.toDate === "function") {
         return dateValue.toDate().toLocaleDateString();
       }
-      
+
       // Last resort - try to create a new date from it
       return new Date(dateValue).toLocaleDateString();
     } catch (error) {
@@ -115,20 +135,28 @@ const SpecialistProfile: React.FC = () => {
         setLoading(true);
 
         // Fetch specialist data using the utility function
-        const specialistData = await getSpecialistData(specialistId) as SpecialistDataResult;
+        const specialistData = (await getSpecialistData(
+          specialistId
+        )) as SpecialistDataResult;
 
         if (specialistData) {
           // Format specialist data safely accessing properties with type assertions to avoid TS errors
           const formattedData: SpecialistProfile = {
             id: specialistData.id,
-            name: (specialistData as any).name || (specialistData as any).fullName || "",
+            name:
+              (specialistData as any).name ||
+              (specialistData as any).fullName ||
+              "",
             photoURL: (specialistData as any).photoURL || "",
             email: (specialistData as any).email || "",
             phone: (specialistData as any).phone || "",
             specialties: (specialistData as any).specialties || [],
             services: (specialistData as any).services || [],
             experience: (specialistData as any).experience || 0,
-            bio: (specialistData as any).bio || (specialistData as any).description || "",
+            bio:
+              (specialistData as any).bio ||
+              (specialistData as any).description ||
+              "",
             education: (specialistData as any).education || [],
             certifications: (specialistData as any).certifications || [],
             languages: (specialistData as any).languages || [],
@@ -146,12 +174,19 @@ const SpecialistProfile: React.FC = () => {
           setReviews(reviewsList);
 
           // Calculate average rating
-          const totalRating = reviewsList.reduce((sum, review) => sum + review.rating, 0);
-          setAverageRating(reviewsList.length > 0 ? totalRating / reviewsList.length : 0);
+          const totalRating = reviewsList.reduce(
+            (sum, review) => sum + review.rating,
+            0
+          );
+          setAverageRating(
+            reviewsList.length > 0 ? totalRating / reviewsList.length : 0
+          );
 
           // Check if the current user has already reviewed this specialist
           if (currentUser) {
-            const hasReviewed = reviewsList.some(review => review.author.id === currentUser.uid);
+            const hasReviewed = reviewsList.some(
+              (review) => review.author.id === currentUser.uid
+            );
             setUserHasReviewed(hasReviewed);
           }
         } else {
@@ -231,7 +266,7 @@ const SpecialistProfile: React.FC = () => {
           }
         }
       }
-      
+
       // Set the state after processing all reviews
       setUserHasReviewed(currentUserHasReviewed);
       return reviews;
@@ -263,7 +298,7 @@ const SpecialistProfile: React.FC = () => {
   const ReviewsSection = () => {
     // Function to handle star click for new review
     const handleStarClick = (rating: number) => {
-      setNewReview(prev => ({ ...prev, rating }));
+      setNewReview((prev) => ({ ...prev, rating }));
     };
 
     // Function to render clickable stars for review submission
@@ -294,7 +329,7 @@ const SpecialistProfile: React.FC = () => {
         toast.error("Trebuie să fiți autentificat pentru a lăsa o recenzie.");
         return;
       }
-      
+
       // Verifică din nou dacă utilizatorul a lăsat deja o recenzie
       if (userHasReviewed) {
         toast.error("Ați lăsat deja o recenzie pentru acest specialist.");
@@ -302,12 +337,14 @@ const SpecialistProfile: React.FC = () => {
       }
 
       if (newReview.rating === 0) {
-        toast.error("Vă rugăm să acordați un rating înainte de a trimite recenzia.");
+        toast.error(
+          "Vă rugăm să acordați un rating înainte de a trimite recenzia."
+        );
         return;
       }
-      
+
       try {
-        setNewReview(prev => ({ ...prev, submitting: true }));
+        setNewReview((prev) => ({ ...prev, submitting: true }));
 
         // Add the review to Firestore
         await addDoc(collection(db, "specialistReviews"), {
@@ -315,30 +352,37 @@ const SpecialistProfile: React.FC = () => {
           userId: currentUser.uid,
           rating: newReview.rating,
           comment: newReview.comment,
-          createdAt: serverTimestamp()
+          createdAt: serverTimestamp(),
         });
 
         // Fetch the updated reviews
         const updatedReviews = await fetchSpecialistReviews(specialistId || "");
         setReviews(updatedReviews);
-        
+
         // Recalculate average rating
-        const totalRating = updatedReviews.reduce((sum, review) => sum + review.rating, 0);
-        setAverageRating(updatedReviews.length > 0 ? totalRating / updatedReviews.length : 0);
+        const totalRating = updatedReviews.reduce(
+          (sum, review) => sum + review.rating,
+          0
+        );
+        setAverageRating(
+          updatedReviews.length > 0 ? totalRating / updatedReviews.length : 0
+        );
 
         // Reset the form and set userHasReviewed to true
         setNewReview({
           rating: 0,
           comment: "",
-          submitting: false
+          submitting: false,
         });
         setUserHasReviewed(true);
-        
+
         toast.success("Recenzia dvs. a fost adăugată cu succes!");
       } catch (error) {
         console.error("Error submitting review:", error);
-        toast.error("A apărut o eroare la trimiterea recenziei. Vă rugăm să încercați din nou.");
-        setNewReview(prev => ({ ...prev, submitting: false }));
+        toast.error(
+          "A apărut o eroare la trimiterea recenziei. Vă rugăm să încercați din nou."
+        );
+        setNewReview((prev) => ({ ...prev, submitting: false }));
       }
     };
 
@@ -351,12 +395,12 @@ const SpecialistProfile: React.FC = () => {
             <form onSubmit={handleSubmitReview}>
               <div className="mb-4">
                 <label className="block text-gray-700 mb-2">Rating</label>
-                <div className="flex space-x-1">
-                  {renderClickableStars()}
-                </div>
+                <div className="flex space-x-1">{renderClickableStars()}</div>
               </div>
               <div className="mb-4">
-                <label htmlFor="comment" className="block text-gray-700 mb-2">Comentariu</label>
+                <label htmlFor="comment" className="block text-gray-700 mb-2">
+                  Comentariu
+                </label>
                 <textarea
                   id="comment"
                   rows={4}
@@ -365,7 +409,7 @@ const SpecialistProfile: React.FC = () => {
                   value={newReview.comment}
                   onChange={(e) => {
                     const newValue = e.target.value;
-                    setNewReview(prev => ({ ...prev, comment: newValue }));
+                    setNewReview((prev) => ({ ...prev, comment: newValue }));
                   }}
                 ></textarea>
               </div>
@@ -389,11 +433,14 @@ const SpecialistProfile: React.FC = () => {
           <div className="bg-green-50 rounded-lg p-6 shadow mb-8">
             <div className="flex items-center">
               <FaCheckCircle className="text-green-500 mr-2" />
-              <p>Ați lăsat deja o recenzie pentru acest specialist. Mulțumim pentru feedback!</p>
+              <p>
+                Ați lăsat deja o recenzie pentru acest specialist. Mulțumim
+                pentru feedback!
+              </p>
             </div>
           </div>
         )}
-        
+
         {/* Login prompt if user is not logged in */}
         {!currentUser && (
           <div className="bg-blue-50 rounded-lg p-6 shadow mb-8">
@@ -402,7 +449,13 @@ const SpecialistProfile: React.FC = () => {
             </p>
             <div className="text-center">
               <button
-                onClick={() => navigate("/login", { state: { returnUrl: `/appointments/specialist/${specialistId}` } })}
+                onClick={() =>
+                  navigate("/login", {
+                    state: {
+                      returnUrl: `/appointments/specialist/${specialistId}`,
+                    },
+                  })
+                }
                 className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
               >
                 Autentificare
@@ -410,16 +463,23 @@ const SpecialistProfile: React.FC = () => {
             </div>
           </div>
         )}
-        
+
         {/* Existing reviews */}
-        <h3 className="text-xl font-semibold mb-4">Recenzii ({reviews.length})</h3>
+        <h3 className="text-xl font-semibold mb-4">
+          Recenzii ({reviews.length})
+        </h3>
         {reviews.length === 0 ? (
           <div className="text-center py-10">
-            <p className="text-gray-500">Acest specialist nu are încă recenzii.</p>
+            <p className="text-gray-500">
+              Acest specialist nu are încă recenzii.
+            </p>
           </div>
         ) : (
           reviews.map((review) => (
-            <div key={review.id} className="bg-white rounded-lg p-4 shadow mb-4">
+            <div
+              key={review.id}
+              className="bg-white rounded-lg p-4 shadow mb-4"
+            >
               <div className="flex items-center mb-2">
                 <div className="w-10 h-10 rounded-full overflow-hidden mr-3">
                   {review.author.photoURL ? (
@@ -439,7 +499,9 @@ const SpecialistProfile: React.FC = () => {
                   <div className="flex items-center">
                     {renderStars(review.rating)}
                     <span className="ml-2 text-sm text-gray-500">
-                      {review.createdAt ? formatReviewDate(review.createdAt) : ""}
+                      {review.createdAt
+                        ? formatReviewDate(review.createdAt)
+                        : ""}
                     </span>
                   </div>
                 </div>
@@ -470,7 +532,10 @@ const SpecialistProfile: React.FC = () => {
       };
 
       // Save to session storage
-      sessionStorage.setItem("appointmentData", JSON.stringify(appointmentData));
+      sessionStorage.setItem(
+        "appointmentData",
+        JSON.stringify(appointmentData)
+      );
 
       // Navigate to the service selection step
       navigate("/appointments/service", { state: { appointmentData } });
@@ -491,8 +556,13 @@ const SpecialistProfile: React.FC = () => {
     return (
       <div className="min-h-screen bg-gradient-to-br from-blue-50 to-purple-50 flex flex-col justify-center items-center p-4">
         <div className="bg-white rounded-xl shadow-lg p-8 max-w-md w-full text-center">
-          <h1 className="text-2xl font-bold text-red-600 mb-4">Specialist negăsit</h1>
-          <p className="text-gray-600 mb-6">Nu am putut găsi specialistul solicitat. Este posibil ca acesta să nu mai fie disponibil.</p>
+          <h1 className="text-2xl font-bold text-red-600 mb-4">
+            Specialist negăsit
+          </h1>
+          <p className="text-gray-600 mb-6">
+            Nu am putut găsi specialistul solicitat. Este posibil ca acesta să
+            nu mai fie disponibil.
+          </p>
           <button
             onClick={handleBack}
             className="px-6 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition"
@@ -508,13 +578,13 @@ const SpecialistProfile: React.FC = () => {
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-purple-50">
       <div className="container mx-auto px-4 py-12">
         {/* Back button */}
-        <button 
+        <button
           onClick={handleBack}
           className="flex items-center text-blue-600 hover:text-blue-800 mb-6 transition"
         >
           <FaArrowLeft className="mr-2" /> Înapoi
         </button>
-        
+
         {/* Specialist header section */}
         <div className="bg-white rounded-xl shadow-lg overflow-hidden">
           <div className="bg-gradient-to-r from-blue-500 to-purple-600 p-8 md:p-12 relative">
@@ -529,31 +599,35 @@ const SpecialistProfile: React.FC = () => {
                 />
               </div>
               <div className="md:ml-8 text-center md:text-left">
-                <h1 className="text-3xl md:text-4xl font-bold mb-2">{specialist.name}</h1>
-                
+                <h1 className="text-3xl md:text-4xl font-bold mb-2">
+                  {specialist.name}
+                </h1>
+
                 {/* Rating badge */}
                 <div className="inline-flex items-center bg-white bg-opacity-20 rounded-full px-3 py-1 mb-4">
-                  <div className="flex mr-2">
-                    {renderStars(averageRating)}
-                  </div>
-                  <span>{averageRating.toFixed(1)} ({reviews.length} recenzii)</span>
+                  <div className="flex mr-2">{renderStars(averageRating)}</div>
+                  <span>
+                    {averageRating.toFixed(1)} ({reviews.length} recenzii)
+                  </span>
                 </div>
-                
+
                 {/* Contact info */}
                 <div className="mt-4 space-y-1">
                   {specialist.email && (
                     <p className="text-blue-100">
-                      <span className="font-semibold">Email:</span> {specialist.email}
+                      <span className="font-semibold">Email:</span>{" "}
+                      {specialist.email}
                     </p>
                   )}
                   {specialist.phone && (
                     <p className="text-blue-100">
-                      <span className="font-semibold">Telefon:</span> {specialist.phone}
+                      <span className="font-semibold">Telefon:</span>{" "}
+                      {specialist.phone}
                     </p>
                   )}
                 </div>
               </div>
-              
+
               {/* Book appointment button for desktop */}
               <div className="hidden md:block ml-auto">
                 <button
@@ -566,53 +640,130 @@ const SpecialistProfile: React.FC = () => {
               </div>
             </div>
           </div>
-          
-          {/* Tab navigation */}
-          <div className="border-b">
-            <nav className="flex">
-              <button
-                className={`px-6 py-4 text-lg font-medium border-b-2 transition ${
-                  activeTab === "about"
-                    ? "border-blue-500 text-blue-600"
-                    : "border-transparent text-gray-500 hover:text-gray-700"
-                }`}
-                onClick={() => setActiveTab("about")}
-              >
-                Despre
-              </button>
-              <button
-                className={`px-6 py-4 text-lg font-medium border-b-2 transition ${
-                  activeTab === "cv"
-                    ? "border-blue-500 text-blue-600"
-                    : "border-transparent text-gray-500 hover:text-gray-700"
-                }`}
-                onClick={() => setActiveTab("cv")}
-              >
-                CV Profesional
-              </button>
-              <button
-                className={`px-6 py-4 text-lg font-medium border-b-2 transition ${
-                  activeTab === "reviews"
-                    ? "border-blue-500 text-blue-600"
-                    : "border-transparent text-gray-500 hover:text-gray-700"
-                }`}
-                onClick={() => setActiveTab("reviews")}
-              >
-                Recenzii ({reviews.length})
-              </button>
-              <button
-                className={`px-6 py-4 text-lg font-medium border-b-2 transition ${
-                  activeTab === "events"
-                    ? "border-blue-500 text-blue-600"
-                    : "border-transparent text-gray-500 hover:text-gray-700"
-                }`}
-                onClick={() => setActiveTab("events")}
-              >
-                Evenimente Parteneri
-              </button>
-            </nav>
+
+          {/* Tab navigation - Design Modern și Estetic */}
+          <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border-b border-gray-200">
+            <div className="bg-white/80 backdrop-blur-sm">
+              <nav className="flex justify-center max-w-4xl mx-auto">
+                <button
+                  className={`relative px-8 py-4 text-base font-medium transition-all duration-300 ${
+                    activeTab === "about"
+                      ? "text-white bg-gradient-to-r from-blue-600 to-blue-700 shadow-lg scale-105"
+                      : "text-gray-700 bg-white hover:text-blue-600 hover:bg-blue-50 hover:shadow-md"
+                  } first:rounded-l-xl last:rounded-r-xl border-r border-gray-200 last:border-r-0`}
+                  onClick={() => setActiveTab("about")}
+                >
+                  <div className="flex items-center space-x-2">
+                    <svg
+                      className="w-5 h-5"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
+                      />
+                    </svg>
+                    <span>Despre</span>
+                  </div>
+                  {activeTab === "about" && (
+                    <div className="absolute -bottom-1 left-1/2 transform -translate-x-1/2 w-8 h-1 bg-blue-500 rounded-full"></div>
+                  )}
+                </button>
+
+                <button
+                  className={`relative px-8 py-4 text-base font-medium transition-all duration-300 ${
+                    activeTab === "cv"
+                      ? "text-white bg-gradient-to-r from-blue-600 to-blue-700 shadow-lg scale-105"
+                      : "text-gray-700 bg-white hover:text-blue-600 hover:bg-blue-50 hover:shadow-md"
+                  } first:rounded-l-xl last:rounded-r-xl border-r border-gray-200 last:border-r-0`}
+                  onClick={() => setActiveTab("cv")}
+                >
+                  <div className="flex items-center space-x-2">
+                    <svg
+                      className="w-5 h-5"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                      />
+                    </svg>
+                    <span>CV Profesional</span>
+                  </div>
+                  {activeTab === "cv" && (
+                    <div className="absolute -bottom-1 left-1/2 transform -translate-x-1/2 w-8 h-1 bg-blue-500 rounded-full"></div>
+                  )}
+                </button>
+
+                <button
+                  className={`relative px-8 py-4 text-base font-medium transition-all duration-300 ${
+                    activeTab === "reviews"
+                      ? "text-white bg-gradient-to-r from-blue-600 to-blue-700 shadow-lg scale-105"
+                      : "text-gray-700 bg-white hover:text-blue-600 hover:bg-blue-50 hover:shadow-md"
+                  } first:rounded-l-xl last:rounded-r-xl border-r border-gray-200 last:border-r-0`}
+                  onClick={() => setActiveTab("reviews")}
+                >
+                  <div className="flex items-center space-x-2">
+                    <svg
+                      className="w-5 h-5"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"
+                      />
+                    </svg>
+                    <span>Recenzii ({reviews.length})</span>
+                  </div>
+                  {activeTab === "reviews" && (
+                    <div className="absolute -bottom-1 left-1/2 transform -translate-x-1/2 w-8 h-1 bg-blue-500 rounded-full"></div>
+                  )}
+                </button>
+
+                <button
+                  className={`relative px-8 py-4 text-base font-medium transition-all duration-300 ${
+                    activeTab === "events"
+                      ? "text-white bg-gradient-to-r from-blue-600 to-blue-700 shadow-lg scale-105"
+                      : "text-gray-700 bg-white hover:text-blue-600 hover:bg-blue-50 hover:shadow-md"
+                  } first:rounded-l-xl last:rounded-r-xl border-r border-gray-200 last:border-r-0`}
+                  onClick={() => setActiveTab("events")}
+                >
+                  <div className="flex items-center space-x-2">
+                    <svg
+                      className="w-5 h-5"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
+                      />
+                    </svg>
+                    <span>Evenimente</span>
+                  </div>
+                  {activeTab === "events" && (
+                    <div className="absolute -bottom-1 left-1/2 transform -translate-x-1/2 w-8 h-1 bg-blue-500 rounded-full"></div>
+                  )}
+                </button>
+              </nav>
+            </div>
           </div>
-          
+
           {/* Tab content */}
           <div className="p-6 md:p-8">
             {/* About tab */}
@@ -620,30 +771,41 @@ const SpecialistProfile: React.FC = () => {
               <div className="prose max-w-none">
                 <h2 className="text-2xl font-bold mb-4">Despre</h2>
                 <p className="text-gray-700 leading-relaxed mb-6">
-                  {specialist.bio || "Nu există informații biografice disponibile pentru acest specialist."}
+                  {specialist.bio ||
+                    "Nu există informații biografice disponibile pentru acest specialist."}
                 </p>
-                
+
                 {/* Specialties section */}
-                {specialist.specialties && specialist.specialties.length > 0 && (
-                  <div className="mt-6">
-                    <h3 className="text-xl font-semibold mb-4">Specializări</h3>
-                    <div className="flex flex-wrap gap-2">
-                      {specialist.specialties.map((specialty, index) => (
-                        <span key={index} className="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm">
-                          {specialty}
-                        </span>
-                      ))}
+                {specialist.specialties &&
+                  specialist.specialties.length > 0 && (
+                    <div className="mt-6">
+                      <h3 className="text-xl font-semibold mb-4">
+                        Specializări
+                      </h3>
+                      <div className="flex flex-wrap gap-2">
+                        {specialist.specialties.map((specialty, index) => (
+                          <span
+                            key={index}
+                            className="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm"
+                          >
+                            {specialty}
+                          </span>
+                        ))}
+                      </div>
                     </div>
-                  </div>
-                )}
-                
+                  )}
+
                 {/* Services section */}
                 {specialist.services && specialist.services.length > 0 && (
                   <div className="mt-6">
-                    <h3 className="text-xl font-semibold mb-4">Servicii oferite</h3>
+                    <h3 className="text-xl font-semibold mb-4">
+                      Servicii oferite
+                    </h3>
                     <ul className="list-disc pl-5 space-y-2">
                       {specialist.services.map((service, index) => (
-                        <li key={index} className="text-gray-700">{service}</li>
+                        <li key={index} className="text-gray-700">
+                          {service}
+                        </li>
                       ))}
                     </ul>
                   </div>
@@ -651,153 +813,269 @@ const SpecialistProfile: React.FC = () => {
               </div>
             )}
 
-            {/* CV tab */}
+            {/* CV tab - Sincronizat cu datele reale ale specialistului */}
             {activeTab === "cv" && (
-              <div>
-                <h2 className="text-2xl font-bold mb-6">CV Profesional</h2>
-                
-                {/* Experience section */}
-                <div className="mb-10">
-                  <h3 className="text-xl font-semibold mb-4 border-b pb-2 text-blue-700">
-                    Experiență profesională
-                  </h3>
-                  <div className="space-y-6">
-                    <div className="flex">
-                      <div className="flex-none w-2 h-2 mt-2 rounded-full bg-blue-500"></div>
-                      <div className="ml-4">
-                        <h4 className="font-medium">Senior Specialist</h4>
-                        <p className="text-gray-600">Centrul de Sănătate Integrativă</p>
-                        <p className="text-sm text-gray-500">2018 - Prezent</p>
-                        <p className="mt-2 text-gray-700">
-                          Coordonare programe de terapie, dezvoltare protocoale de tratament, 
-                          consultanță individuală, organizare workshopuri și training-uri.
-                        </p>
-                      </div>
-                    </div>
-                    
-                    <div className="flex">
-                      <div className="flex-none w-2 h-2 mt-2 rounded-full bg-blue-500"></div>
-                      <div className="ml-4">
-                        <h4 className="font-medium">Specialist</h4>
-                        <p className="text-gray-600">Institutul de Dezvoltare Personală</p>
-                        <p className="text-sm text-gray-500">2013 - 2018</p>
-                        <p className="mt-2 text-gray-700">
-                          Implementare programe terapeutice, evaluare și diagnostic, 
-                          colaborare interdisciplinară pentru cazuri complexe.
-                        </p>
-                      </div>
-                    </div>
-                    
-                    <div className="flex">
-                      <div className="flex-none w-2 h-2 mt-2 rounded-full bg-blue-500"></div>
-                      <div className="ml-4">
-                        <h4 className="font-medium">Asistent</h4>
-                        <p className="text-gray-600">Clinica de Recuperare</p>
-                        <p className="text-sm text-gray-500">2010 - 2013</p>
-                        <p className="mt-2 text-gray-700">
-                          Asistență în dezvoltarea planurilor de intervenție, monitorizare progres, 
-                          participare activă în echipa multidisciplinară.
-                        </p>
-                      </div>
+              <div className="bg-gradient-to-br from-blue-50 to-indigo-50 min-h-screen -m-6 md:-m-8 p-6 md:p-8">
+                <div className="max-w-4xl mx-auto">
+                  {/* Header CV cu design modern */}
+                  <div className="bg-white rounded-2xl shadow-xl p-8 mb-8 border border-blue-100">
+                    <div className="text-center mb-8">
+                      <div className="bg-gradient-to-r from-blue-600 to-indigo-600 w-20 h-1 mx-auto mb-4 rounded-full"></div>
+                      <h2 className="text-3xl font-bold text-gray-800 mb-2">
+                        CV Profesional
+                      </h2>
+                      <p className="text-blue-600 font-medium">
+                        Sincronizat automat cu panoul specialistului
+                      </p>
                     </div>
                   </div>
-                </div>
-                
-                {/* Education section */}
-                <div className="mb-10">
-                  <h3 className="text-xl font-semibold mb-4 border-b pb-2 text-blue-700">
-                    Educație
-                  </h3>
-                  <div className="space-y-6">
-                    {specialist.education && specialist.education.length > 0 ? (
-                      specialist.education.map((edu, index) => (
-                        <div key={`education-${index}`} className="flex">
-                          <div className="flex-none w-2 h-2 mt-2 rounded-full bg-blue-500"></div>
-                          <div className="ml-4">
-                            <p className="font-medium">{edu}</p>
+
+                  {/* Despre specialist */}
+                  <div className="bg-white rounded-2xl shadow-lg p-8 mb-8 border border-blue-100">
+                    <h3 className="text-2xl font-bold text-gray-800 mb-6 flex items-center">
+                      <div className="w-8 h-8 bg-gradient-to-r from-blue-500 to-indigo-500 rounded-lg mr-3 flex items-center justify-center">
+                        <svg
+                          className="w-4 h-4 text-white"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
+                          />
+                        </svg>
+                      </div>
+                      Despre Specialist
+                    </h3>
+                    <p className="text-gray-700 text-lg leading-relaxed mb-6">
+                      {specialist?.bio ||
+                        "Specialist dedicat cu experiență în oferirea serviciilor de calitate în domeniul sănătății și terapiei."}
+                    </p>
+
+                    {specialist?.specialties &&
+                      specialist.specialties.length > 0 && (
+                        <div>
+                          <h4 className="text-lg font-semibold text-gray-800 mb-3">
+                            Specializări
+                          </h4>
+                          <div className="flex flex-wrap gap-2">
+                            {specialist.specialties.map((specialty, index) => (
+                              <span
+                                key={index}
+                                className="px-4 py-2 bg-gradient-to-r from-blue-100 to-indigo-100 text-blue-800 rounded-full text-sm font-medium border border-blue-200"
+                              >
+                                {specialty}
+                              </span>
+                            ))}
                           </div>
                         </div>
-                      ))
-                    ) : (
-                      <p className="text-gray-500">Nu există informații despre educație pentru acest specialist.</p>
-                    )}
+                      )}
                   </div>
-                </div>
-                
-                {/* Certifications section */}
-                <div className="mb-10">
-                  <h3 className="text-xl font-semibold mb-4 border-b pb-2 text-blue-700">
-                    Certificări și acreditări
-                  </h3>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    {specialist.certifications && specialist.certifications.length > 0 ? (
-                      specialist.certifications.map((cert, index) => (
-                        <div key={`cert-${index}`} className="flex items-start">
-                          <FaCheck className="text-green-500 mt-1 mr-2 flex-shrink-0" />
-                          <span>{cert}</span>
-                        </div>
-                      ))
-                    ) : (
-                      <p className="text-gray-500">Nu există informații despre certificări pentru acest specialist.</p>
-                    )}
-                  </div>
-                </div>
-                
-                {/* Languages section */}
-                <div className="mb-10">
-                  <h3 className="text-xl font-semibold mb-4 border-b pb-2 text-blue-700">
-                    Limbi vorbite
-                  </h3>
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    {specialist.languages && specialist.languages.length > 0 ? (
-                      specialist.languages.map((lang, index) => (
-                        <div key={`lang-${index}`} className="flex items-center">
-                          <div className="w-3 h-3 rounded-full bg-blue-500 mr-2"></div>
-                          <span>{lang}</span>
-                        </div>
-                      ))
-                    ) : (
-                      <p className="text-gray-500">Nu există informații despre limbile vorbite de acest specialist.</p>
-                    )}
-                  </div>
-                </div>
-                
-                {/* Publications/Awards (only if available) */}
-                {(specialist.publications && specialist.publications.length > 0) && (
-                  <div className="mb-10">
-                    <h3 className="text-xl font-semibold mb-4 border-b pb-2 text-blue-700">
-                      Publicații
+
+                  {/* Experiență profesională */}
+                  <div className="bg-white rounded-2xl shadow-lg p-8 mb-8 border border-blue-100">
+                    <h3 className="text-2xl font-bold text-gray-800 mb-6 flex items-center">
+                      <div className="w-8 h-8 bg-gradient-to-r from-green-500 to-emerald-500 rounded-lg mr-3 flex items-center justify-center">
+                        <svg
+                          className="w-4 h-4 text-white"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2-2v2m8 0V6a2 2 0 012 2v6a2 2 0 01-2 2H6a2 2 0 01-2-2V8a2 2 0 012-2V6z"
+                          />
+                        </svg>
+                      </div>
+                      Experiență Profesională
                     </h3>
-                    <ul className="list-disc pl-6 space-y-2">
-                      {specialist.publications.map((pub, index) => (
-                        <li key={`pub-${index}`}>{pub}</li>
-                      ))}
-                    </ul>
+
+                    <div className="space-y-6">
+                      {specialist?.experience && specialist.experience > 0 ? (
+                        <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl p-6 border border-blue-200">
+                          <h4 className="text-xl font-bold text-gray-800">
+                            Specialist{" "}
+                            {specialist.specialties?.[0] ||
+                              "în domeniul sănătății"}
+                          </h4>
+                          <p className="text-blue-600 font-medium mt-1">
+                            {specialist.experience}{" "}
+                            {specialist.experience === 1 ? "an" : "ani"} de
+                            experiență
+                          </p>
+                          <p className="text-gray-700 mt-3 leading-relaxed">
+                            {specialist.bio ||
+                              "Experiență vastă în oferirea serviciilor de specialitate, cu focus pe dezvoltarea planurilor de tratament personalizate."}
+                          </p>
+                        </div>
+                      ) : (
+                        <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl p-6 border border-blue-200">
+                          <h4 className="text-xl font-bold text-gray-800">
+                            Specialist Profesionist
+                          </h4>
+                          <p className="text-blue-600 font-medium mt-1">
+                            Experiență în domeniu
+                          </p>
+                          <p className="text-gray-700 mt-3 leading-relaxed">
+                            {specialist?.bio ||
+                              "Specialist cu pregătire profesională dedicată pentru servicii de înaltă calitate."}
+                          </p>
+                        </div>
+                      )}
+                    </div>
                   </div>
-                )}
-                {(specialist.awards && specialist.awards.length > 0) && (
-                  <div>
-                    <h3 className="text-xl font-semibold mb-4 border-b pb-2 text-blue-700">
-                      Premii și distincții
+
+                  {/* Educație - Doar dacă există date */}
+                  {specialist?.education && specialist.education.length > 0 && (
+                    <div className="bg-white rounded-2xl shadow-lg p-8 mb-8 border border-blue-100">
+                      <h3 className="text-2xl font-bold text-gray-800 mb-6 flex items-center">
+                        <div className="w-8 h-8 bg-gradient-to-r from-purple-500 to-pink-500 rounded-lg mr-3 flex items-center justify-center">
+                          <svg
+                            className="w-4 h-4 text-white"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth={2}
+                              d="M12 14l9-5-9-5-9 5 9 5zm0 0l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14z"
+                            />
+                          </svg>
+                        </div>
+                        Educație și Formare
+                      </h3>
+
+                      <div className="space-y-4">
+                        {specialist.education.map((edu, index) => (
+                          <div
+                            key={index}
+                            className="bg-gradient-to-r from-purple-50 to-pink-50 rounded-lg p-4 border border-purple-200"
+                          >
+                            <p className="text-gray-800 font-medium">{edu}</p>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Certificări - Doar dacă există date */}
+                  {specialist?.certifications &&
+                    specialist.certifications.length > 0 && (
+                      <div className="bg-white rounded-2xl shadow-lg p-8 mb-8 border border-blue-100">
+                        <h3 className="text-2xl font-bold text-gray-800 mb-6 flex items-center">
+                          <div className="w-8 h-8 bg-gradient-to-r from-emerald-500 to-teal-500 rounded-lg mr-3 flex items-center justify-center">
+                            <svg
+                              className="w-4 h-4 text-white"
+                              fill="none"
+                              stroke="currentColor"
+                              viewBox="0 0 24 24"
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth={2}
+                                d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z"
+                              />
+                            </svg>
+                          </div>
+                          Certificări și Acreditări
+                        </h3>
+
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          {specialist.certifications.map((cert, index) => (
+                            <div
+                              key={index}
+                              className="bg-gradient-to-r from-emerald-50 to-teal-50 rounded-lg p-4 border border-emerald-200 flex items-start"
+                            >
+                              <svg
+                                className="w-5 h-5 text-emerald-600 mt-0.5 mr-3 flex-shrink-0"
+                                fill="none"
+                                stroke="currentColor"
+                                viewBox="0 0 24 24"
+                              >
+                                <path
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                  strokeWidth={2}
+                                  d="M5 13l4 4L19 7"
+                                />
+                              </svg>
+                              <span className="text-gray-800 font-medium">
+                                {cert}
+                              </span>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                  {/* Limbi vorbite */}
+                  <div className="bg-white rounded-2xl shadow-lg p-8 border border-blue-100">
+                    <h3 className="text-2xl font-bold text-gray-800 mb-6 flex items-center">
+                      <div className="w-8 h-8 bg-gradient-to-r from-orange-500 to-red-500 rounded-lg mr-3 flex items-center justify-center">
+                        <svg
+                          className="w-4 h-4 text-white"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M3 5h12M9 3v2m1.048 9.5A18.022 18.022 0 016.412 9m6.088 9h7M11 21l5-10 5 10M12.751 5C11.783 10.77 8.07 15.61 3 18.129"
+                          />
+                        </svg>
+                      </div>
+                      Limbi Vorbite
                     </h3>
-                    <ul className="list-disc pl-6 space-y-2">
-                      {specialist.awards.map((award, index) => (
-                        <li key={`award-${index}`}>{award}</li>
-                      ))}
-                    </ul>
+
+                    <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                      {specialist?.languages &&
+                      specialist.languages.length > 0 ? (
+                        specialist.languages.map((lang, index) => (
+                          <div
+                            key={index}
+                            className="bg-gradient-to-r from-orange-50 to-red-50 rounded-lg p-4 border border-orange-200 flex items-center"
+                          >
+                            <div className="w-3 h-3 bg-gradient-to-r from-orange-500 to-red-500 rounded-full mr-3"></div>
+                            <span className="text-gray-800 font-medium">
+                              {lang}
+                            </span>
+                          </div>
+                        ))
+                      ) : (
+                        <div className="bg-gradient-to-r from-orange-50 to-red-50 rounded-lg p-4 border border-orange-200 flex items-center">
+                          <div className="w-3 h-3 bg-gradient-to-r from-orange-500 to-red-500 rounded-full mr-3"></div>
+                          <span className="text-gray-800 font-medium">
+                            Română
+                          </span>
+                        </div>
+                      )}
+                    </div>
                   </div>
-                )}
+                </div>
               </div>
             )}
 
             {/* Reviews tab */}
             {activeTab === "reviews" && <ReviewsSection />}
-            
+
             {/* Partener events tab */}
             {activeTab === "events" && (
               <div>
-                <h2 className="text-2xl font-bold mb-6">Evenimente organizate de partener</h2>
-                
+                <h2 className="text-2xl font-bold mb-6">
+                  Evenimente organizate de partener
+                </h2>
+
                 <div className="specialistEventList">
                   {loading ? (
                     <div className="flex justify-center py-8">
@@ -811,7 +1089,7 @@ const SpecialistProfile: React.FC = () => {
             )}
           </div>
         </div>
-        
+
         {/* Book appointment button for mobile */}
         <div className="md:hidden mt-6">
           <button

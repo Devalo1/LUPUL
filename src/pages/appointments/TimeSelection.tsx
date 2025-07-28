@@ -4,6 +4,10 @@ import { FaClock, FaInfoCircle } from "react-icons/fa";
 import { collection, query, where, getDocs } from "firebase/firestore";
 import { db } from "../../firebase";
 import { AppointmentState } from "../../types/appointment";
+import {
+  ensureValidSchedule,
+  convertJSDay,
+} from "../../utils/specialistSchedule";
 import "../../styles/AppointmentSteps.css";
 
 interface TimeSlot {
@@ -158,6 +162,44 @@ const TimeSelection: React.FC = () => {
               },
             ],
           });
+        } else {
+          // Create a fallback specialist with basic schedule if not found
+          setSpecialist({
+            id: appointmentData.specialistId,
+            name: "Specialist",
+            schedule: [
+              {
+                dayOfWeek: 1,
+                startTime: "09:00",
+                endTime: "17:00",
+                available: true,
+              },
+              {
+                dayOfWeek: 2,
+                startTime: "09:00",
+                endTime: "17:00",
+                available: true,
+              },
+              {
+                dayOfWeek: 3,
+                startTime: "09:00",
+                endTime: "17:00",
+                available: true,
+              },
+              {
+                dayOfWeek: 4,
+                startTime: "09:00",
+                endTime: "17:00",
+                available: true,
+              },
+              {
+                dayOfWeek: 5,
+                startTime: "09:00",
+                endTime: "17:00",
+                available: true,
+              },
+            ],
+          });
         }
       } catch (error) {
         console.error("Error fetching specialist info:", error);
@@ -216,17 +258,26 @@ const TimeSelection: React.FC = () => {
 
       const selectedDate = new Date(appointmentData.date);
       // JS day is 0-indexed with 0 = Sunday, we want 1 = Monday, 7 = Sunday
-      const dayOfWeek = selectedDate.getDay() === 0 ? 7 : selectedDate.getDay();
+      const dayOfWeek = convertJSDay(selectedDate.getDay());
+
+      console.log(`Selected date: ${selectedDate}, dayOfWeek: ${dayOfWeek}`);
+
+      // Ensure specialist has a valid schedule
+      const validSchedule = ensureValidSchedule(specialist.schedule);
+      console.log("Specialist schedule:", validSchedule);
 
       // Get schedule for the selected day
-      const scheduleForDay = specialist.schedule?.find(
+      const scheduleForDay = validSchedule.find(
         (s) => s.dayOfWeek === dayOfWeek && s.available
       );
 
+      console.log(`Schedule for day ${dayOfWeek}:`, scheduleForDay);
+
       if (!scheduleForDay) {
+        console.log("No schedule found for this day");
         setTimeSlots([]);
         setError(
-          "Nu există intervale orare disponibile pentru ziua selectată."
+          "Specialistul nu este disponibil în ziua selectată. Vă rugăm să alegeți altă zi."
         );
         setFetchingData(false);
         return;

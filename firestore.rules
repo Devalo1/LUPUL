@@ -168,6 +168,28 @@ service cloud.firestore {
       allow read: if isAdmin();
     }
 
+    // Special Sessions - sesiuni speciale create de specialiști
+    match /specialSessions/{sessionId} {
+      // Specialiștii pot crea, citi și modifica propriile sesiuni
+      allow read: if isAuthenticated();
+      allow create: if isAuthenticated() && request.resource.data.specialistId == request.auth.uid;
+      allow update, delete: if isAuthenticated() && resource.data.specialistId == request.auth.uid;
+      // Admins pot face orice
+      allow read, write: if isAdmin();
+    }
+
+    // Specialization Change Requests - cereri de schimbare a specializării
+    match /specializationChangeRequests/{requestId} {
+      // Specialiștii pot crea cereri pentru ei înșiși
+      allow create: if isAuthenticated() && request.resource.data.userId == request.auth.uid;
+      // Specialiștii pot citi propriile cereri
+      allow read: if isAuthenticated() && resource.data.userId == request.auth.uid;
+      // Doar adminii pot aproba/respinge cereri
+      allow update, delete: if isAdmin();
+      // Adminii pot citi toate cererile
+      allow read: if isAdmin();
+    }
+
     // Admin emails collection - for managing admin permissions
     match /admin_emails/{emailId} {
       // Only admins can read and write

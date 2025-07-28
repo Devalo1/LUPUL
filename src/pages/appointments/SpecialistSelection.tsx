@@ -32,6 +32,9 @@ interface Specialist {
   phone?: string;
   services?: string[];
   isActive?: boolean; // Proprietate adăugată pentru a rezolva eroarea TS2339
+  rating?: number;
+  reviewCount?: number;
+  experience?: number;
 }
 
 const SpecialistSelection: React.FC = () => {
@@ -220,6 +223,9 @@ const SpecialistSelection: React.FC = () => {
                   email: data.email || "",
                   phone: data.phone || "",
                   services: data.services || [],
+                  rating: data.rating || 0,
+                  reviewCount: data.reviewCount || 0,
+                  experience: data.experience || 0,
                 } as Specialist;
               })
               // Păstrăm doar specialiștii activi, dar logăm câți au fost excluși
@@ -385,6 +391,9 @@ const SpecialistSelection: React.FC = () => {
                   "Specialist în domeniul sănătății și stării de bine.",
                 serviceType:
                   userData.serviceType || userData.specializationCategory || "",
+                rating: userData.rating || 0,
+                reviewCount: userData.reviewCount || 0,
+                experience: userData.experience || 0,
                 isActive: true,
                 schedule: userData.schedule || [
                   {
@@ -680,7 +689,7 @@ const SpecialistSelection: React.FC = () => {
                 </div>
                 <div className="flex justify-between mt-8">
                   <a
-                    href="/appointments"
+                    href="/dashboard"
                     className="px-6 py-2 text-blue-600 hover:underline transition"
                   >
                     Înapoi

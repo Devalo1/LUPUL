@@ -4,6 +4,10 @@ import { FaCalendarAlt, FaInfoCircle } from "react-icons/fa";
 import { collection, query, where, getDocs } from "firebase/firestore";
 import { db } from "../../firebase";
 import { AppointmentState } from "../../types/appointment";
+import {
+  ensureValidSchedule,
+  convertJSDay,
+} from "../../utils/specialistSchedule";
 import "../../styles/AppointmentSteps.css";
 
 interface Day {
@@ -25,6 +29,8 @@ interface Specialist {
 }
 
 const DateSelection: React.FC = () => {
+  console.log("DateSelection component loaded");
+
   const navigate = useNavigate();
   const location = useLocation();
   const [days, setDays] = useState<Day[]>([]);
@@ -68,9 +74,16 @@ const DateSelection: React.FC = () => {
 
   // Redirect back if previous steps are not completed
   useEffect(() => {
+    console.log("DateSelection redirect check:", {
+      specialistId: appointmentData.specialistId,
+      serviceId: appointmentData.serviceId,
+    });
+
     if (!appointmentData.specialistId) {
+      console.log("No specialist ID, redirecting to specialist selection");
       navigate("/appointments/specialist");
     } else if (!appointmentData.serviceId) {
+      console.log("No service ID, redirecting to service selection");
       navigate("/appointments/service", { state: { appointmentData } });
     }
   }, [appointmentData, navigate]);
@@ -157,9 +170,50 @@ const DateSelection: React.FC = () => {
               },
             ],
           });
+        } else {
+          // Create a fallback specialist with basic schedule if not found
+          setSpecialist({
+            id: appointmentData.specialistId,
+            name: "Specialist",
+            schedule: [
+              {
+                dayOfWeek: 1,
+                startTime: "09:00",
+                endTime: "17:00",
+                available: true,
+              },
+              {
+                dayOfWeek: 2,
+                startTime: "09:00",
+                endTime: "17:00",
+                available: true,
+              },
+              {
+                dayOfWeek: 3,
+                startTime: "09:00",
+                endTime: "17:00",
+                available: true,
+              },
+              {
+                dayOfWeek: 4,
+                startTime: "09:00",
+                endTime: "17:00",
+                available: true,
+              },
+              {
+                dayOfWeek: 5,
+                startTime: "09:00",
+                endTime: "17:00",
+                available: true,
+              },
+            ],
+          });
         }
       } catch (error) {
         console.error("Error fetching specialist info:", error);
+        setError(
+          "Eroare la încărcarea informațiilor specialistului. Vă rugăm să reîncercați."
+        );
       }
     };
 
@@ -177,20 +231,29 @@ const DateSelection: React.FC = () => {
       const generatedDays: Day[] = [];
       const today = new Date();
 
-      const specialistSchedule = specialist.schedule || [];
+      // Ensure specialist has a valid schedule
+      const specialistSchedule = ensureValidSchedule(specialist.schedule);
 
-      // Generate days for the next 2 weeks
-      for (let i = 1; i <= 14; i++) {
+      console.log("Specialist schedule:", specialistSchedule);
+
+      // Generate days for the next 4 weeks (more options for users)
+      for (let i = 1; i <= 28; i++) {
         const date = new Date(today);
         date.setDate(today.getDate() + i);
 
         // Convert JS day (0=Sunday) to our format (1=Monday, 7=Sunday)
-        const dayOfWeek = date.getDay() === 0 ? 7 : date.getDay();
+        const dayOfWeek = convertJSDay(date.getDay());
+
+        console.log(
+          `Checking day ${i}: ${date.toDateString()}, dayOfWeek: ${dayOfWeek}`
+        );
 
         // Check if specialist is available on this day
         const scheduleForDay = specialistSchedule.find(
           (s) => s.dayOfWeek === dayOfWeek && s.available
         );
+
+        console.log(`Schedule for day ${dayOfWeek}:`, scheduleForDay);
 
         if (scheduleForDay) {
           const formattedDate = date.toISOString().split("T")[0];
@@ -205,10 +268,30 @@ const DateSelection: React.FC = () => {
             dayName: date.toLocaleDateString("ro-RO", { weekday: "long" }),
             hasSlots: true,
           });
+
+          console.log("Generated day:", {
+            date: formattedDate,
+            formattedDate: date.toLocaleDateString("ro-RO", {
+              day: "numeric",
+              month: "long",
+              year: "numeric",
+            }),
+            dayName: date.toLocaleDateString("ro-RO", { weekday: "long" }),
+          });
         }
       }
 
+      console.log(
+        `Generated ${generatedDays.length} available days:`,
+        generatedDays
+      );
       setDays(generatedDays);
+
+      if (generatedDays.length === 0) {
+        setError(
+          "Nu s-au putut genera zile disponibile pentru acest specialist. Vă rugăm să contactați administratorul."
+        );
+      }
     } catch (error) {
       console.error("Error generating days:", error);
       setError(
@@ -240,7 +323,55 @@ const DateSelection: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-purple-50">
-      <div className="container mx-auto px-4 py-12">
+      <div className="container mx-auto px-4 py-8">
+        <style>
+          {`
+            /* CSS specific pentru vizibilitatea datelor în selecția de date */
+            .date-selection-container .font-medium,
+            .date-selection-container .date-display {
+              color: #111827 !important;
+              font-weight: 600 !important;
+              font-size: 16px !important;
+              opacity: 1 !important;
+              text-shadow: none !important;
+              background-color: transparent !important;
+              display: block !important;
+              visibility: visible !important;
+            }
+          
+          .date-selection-container .text-gray-500 {
+            color: #6b7280 !important;
+            opacity: 1 !important;
+          }
+          
+          .date-selection-container .border-blue-500.bg-blue-50 .font-medium,
+          .date-selection-container .border-blue-500.bg-blue-50 .date-display {
+            color: #1e40af !important;
+            font-weight: 700 !important;
+          }
+          
+          .date-selection-container .border p {
+            opacity: 1 !important;
+            visibility: visible !important;
+          }
+          
+          /* Fix pentru hover */
+          .date-selection-container .hover\\:border-blue-300:hover .font-medium,
+          .date-selection-container .hover\\:border-blue-300:hover .date-display {
+            color: #111827 !important;
+          }
+          
+          /* Asigură că toate elementele din cardurile de date sunt vizibile */
+          .date-selection-container > div > div {
+            background-color: white !important;
+          }
+          
+          .date-selection-container > div > div * {
+            opacity: 1 !important;
+            visibility: visible !important;
+          }
+        `}
+        </style>
         <div className="bg-white rounded-xl shadow-lg p-8 mb-8">
           <h1 className="text-3xl font-bold mb-2 text-gray-800">
             Programează o Ședință
@@ -333,7 +464,7 @@ const DateSelection: React.FC = () => {
                       </div>
                     </div>
                   ) : (
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 date-selection-container">
                       {days.map((day) => (
                         <div
                           key={day.date}
@@ -343,11 +474,14 @@ const DateSelection: React.FC = () => {
                               : "border-gray-200 hover:border-blue-300"
                           }`}
                           onClick={() => setSelectedDate(day.date)}
+                          title={`Selectează data: ${day.formattedDate}`}
                         >
                           <p className="text-sm text-gray-500 capitalize">
                             {day.dayName}
                           </p>
-                          <p className="font-medium">{day.formattedDate}</p>
+                          <p className="font-medium date-display">
+                            📅 {day.formattedDate}
+                          </p>
                           <p className="text-xs mt-1 text-gray-500">
                             Program disponibil
                           </p>

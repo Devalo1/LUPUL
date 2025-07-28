@@ -576,7 +576,7 @@ const Dashboard: React.FC = () => {
               Magazin
             </button>
             <button
-              onClick={() => navigate("/appointments")}
+              onClick={() => navigate("/appointments/specialist")}
               className="p-3 bg-purple-600 text-white rounded-md hover:bg-purple-700 transition duration-200 text-sm font-medium flex flex-col items-center"
             >
               <svg

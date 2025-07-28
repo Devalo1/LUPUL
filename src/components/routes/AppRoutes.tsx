@@ -70,6 +70,14 @@ import MedicalRoutes from "../../routes/MedicalRoutes";
 // Pagini specialiști
 import SpecialistPanel from "../../pages/SpecialistPanel";
 
+// Pagini appointments
+import SpecialistSelection from "../../pages/appointments/SpecialistSelection";
+import ServiceSelection from "../../pages/appointments/ServiceSelection";
+import DateSelection from "../../pages/appointments/DateSelection";
+import TimeSelection from "../../pages/appointments/TimeSelection";
+import AppointmentConfirmation from "../../pages/appointments/AppointmentConfirmation";
+import SpecialistProfile from "../../pages/appointments/specialist";
+
 // Pagini embleme
 import { EmblemMintingPage, EmblemDashboard } from "../../components/emblems";
 
@@ -222,6 +230,54 @@ const AppRoutes = () => {
           }
         />
         <Route
+          path="/appointments/specialist"
+          element={
+            <ProtectedRoute>
+              <SpecialistSelection />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/appointments/specialist/:specialistId"
+          element={
+            <ProtectedRoute>
+              <SpecialistProfile />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/appointments/service"
+          element={
+            <ProtectedRoute>
+              <ServiceSelection />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/appointments/date"
+          element={
+            <ProtectedRoute>
+              <DateSelection />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/appointments/time"
+          element={
+            <ProtectedRoute>
+              <TimeSelection />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/appointments/confirm"
+          element={
+            <ProtectedRoute>
+              <AppointmentConfirmation />
+            </ProtectedRoute>
+          }
+        />
+        <Route
           path="/programari"
           element={
             <ProtectedRoute>
@@ -327,7 +383,7 @@ const AppRoutes = () => {
         <Route path="/therapy" element={<Navigate to="/terapie" replace />} />
         <Route
           path="/appointments-list"
-          element={<Navigate to="/appointments" replace />}
+          element={<Navigate to="/appointments/specialist" replace />}
         />
         <Route
           path="/programari-lista"
@@ -344,7 +400,7 @@ const AppRoutes = () => {
         <Route path="/my-profile" element={<Navigate to="/profil" replace />} />
         <Route
           path="/appointments/list"
-          element={<Navigate to="/appointments" replace />}
+          element={<Navigate to="/appointments/specialist" replace />}
         />
         <Route
           path="/programari/lista"

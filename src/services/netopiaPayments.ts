@@ -69,7 +69,7 @@ class NetopiaPayments {
   /**
    * Detectează mediul de rulare pentru endpoint-uri
    */
-  private getNetlifyEndpoint(functionName: string): string {
+  public getNetlifyEndpoint(functionName: string): string {
     if (this.isProduction()) {
       // Use relative path in production - absolute URLs cause routing issues
       return `/.netlify/functions/${functionName}`;

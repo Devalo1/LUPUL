@@ -310,8 +310,17 @@ const Checkout: React.FC = () => {
           );
 
           // Verificăm că finalTotal este definit
+          console.log("🛒 Cart debug:", {
+            total,
+            shippingCost,
+            finalTotal,
+            itemsCount: items.length,
+          });
+
           if (!finalTotal || finalTotal <= 0) {
-            throw new Error("Suma totală nu este validă");
+            const errorMsg = `Suma totală nu este validă. Debug: total=${total}, shippingCost=${shippingCost}, finalTotal=${finalTotal}, items=${items.length}`;
+            console.error("❌ Cart validation error:", errorMsg);
+            throw new Error(errorMsg);
           }
 
           // Creăm obiectul de plată folosind serviciul
@@ -333,38 +342,133 @@ const Checkout: React.FC = () => {
             `Comandă ${orderData.orderNumber} - ${items.length} produse`
           );
 
-          // Open popup early to avoid browser blocking
-          const popup = window.open(
-            "about:blank",
-            "netopia3ds",
-            "width=400,height=600"
-          );
+          // FIXUL PENTRU BLANK PAGE: Nu deschid popup-ul imediat!
+          // Mai întâi obțin răspunsul de la Netopia, apoi decid ce să fac
+          let popup: Window | null = null;
+
           try {
-            const paymentResponse =
-              await netopiaService.initiatePayment(paymentData);
-            if (paymentResponse.trim().startsWith("<")) {
-              if (popup) {
-                // Inject target into form and write HTML
-                const htmlWithTarget = paymentResponse.replace(
-                  /<form/i,
-                  '<form target="netopia3ds" ' // add space after attribute
-                );
-                popup.document.write(htmlWithTarget);
-                popup.document.close();
-              } else {
-                setError(
-                  "Nu s-a putut deschide fereastra de plată securizată. Te rugăm să permiți pop-up-uri și să încerci din nou."
-                );
-              }
-            } else {
-              // Close blank popup and redirect
-              if (popup) popup.close();
-              window.location.href = paymentResponse;
+            console.log("🚀 Inițiez plata Netopia cu payload:", paymentData);
+
+            // Apelare directă la funcția Netlify pentru debugging complet
+            const netopiaUrl = netopiaService.getNetlifyEndpoint("netopia-initiate");
+            console.log("🌐 Endpoint Netopia:", netopiaUrl);
+
+            const response = await fetch(netopiaUrl, {
+              method: "POST",
+              headers: { "Content-Type": "application/json; charset=utf-8" },
+              body: JSON.stringify(paymentData),
+            });
+
+            // LOGGING COMPLET pentru debugging
+            console.log("📡 Netopia response status:", response.status);
+            console.log("📋 Netopia response headers:", Object.fromEntries(response.headers.entries()));
+
+            if (!response.ok) {
+              const errorText = await response.text();
+              console.error("❌ Netopia HTTP Error:", {
+                status: response.status,
+                statusText: response.statusText,
+                body: errorText.substring(0, 500),
+              });
+              throw new Error(`Eroare HTTP ${response.status}: ${response.statusText}`);
             }
-          } catch (err) {
-            // Close popup on error
-            if (popup) popup.close();
-            throw err;
+
+            // Citesc răspunsul ca text pentru debugging complet
+            const responseText = await response.text();
+            console.log("🔍 Netopia RAW response:", {
+              length: responseText.length,
+              contentType: response.headers.get("content-type"),
+              firstChars: responseText.substring(0, 200),
+              containsHtml: responseText.includes("<html"),
+              containsForm: responseText.includes("<form"),
+              containsSvg: responseText.includes("card.svg"),
+              containsPaymentURL: responseText.includes("paymentURL"),
+            });
+
+            // Încerc să parsez JSON dacă e posibil
+            let parsedData: any = null;
+            let paymentURL: string | null = null;
+
+            if (response.headers.get("content-type")?.includes("application/json")) {
+              try {
+                parsedData = JSON.parse(responseText);
+                console.log("✅ Parsed JSON from Netopia:", parsedData);
+                
+                // Verific unde e URL-ul de plată
+                paymentURL = parsedData.paymentUrl || parsedData.paymentURL || parsedData.customerAction?.url;
+                console.log("� Extracted paymentURL:", paymentURL);
+                
+              } catch (parseError) {
+                console.error("❌ Failed to parse JSON:", parseError);
+                console.log("Raw response that failed to parse:", responseText);
+              }
+            }
+
+            // Acum decid ce să fac în funcție de ce am primit
+            if (responseText.includes("<html") || responseText.includes("<!doctype")) {
+              // E HTML form - deschid popup și îl încarcă
+              console.log("📄 Detected HTML response - opening popup for form");
+              
+              popup = window.open(
+                "about:blank",
+                "netopia3ds",
+                "width=600,height=700,scrollbars=yes,resizable=yes"
+              );
+
+              if (!popup) {
+                throw new Error("Nu s-a putut deschide fereastra de plată securizată. Te rugăm să permiți pop-up-uri și să încerci din nou.");
+              }
+
+              // Scriu conținutul HTML în popup
+              popup.document.open();
+              popup.document.write(responseText);
+              popup.document.close();
+              popup.focus();
+
+              console.log("✅ HTML form loaded in popup");
+
+            } else if (paymentURL && typeof paymentURL === "string" && paymentURL.length > 0) {
+              // Am primit un URL valid - deschid popup și redirecționez
+              console.log("🔗 Detected valid paymentURL - redirecting");
+              
+              popup = window.open(
+                paymentURL,
+                "netopia3ds",
+                "width=600,height=700,scrollbars=yes,resizable=yes"
+              );
+
+              if (!popup) {
+                throw new Error("Nu s-a putut deschide fereastra de plată securizată. Te rugăm să permiți pop-up-uri și să încerci din nou.");
+              }
+
+              console.log("✅ Redirected to paymentURL:", paymentURL);
+
+            } else if (responseText.includes("card.svg")) {
+              // E acel SVG care cauzează blank page
+              console.error("❌ Detected SVG response - this causes blank page!");
+              throw new Error("Netopia a returnat un SVG în loc de formular de plată. Acest lucru indică o problemă de configurare.");
+
+            } else {
+              // Nu știu ce e - afișez eroare detaliată
+              console.error("❌ Unknown response format from Netopia");
+              throw new Error(`Format necunoscut de răspuns de la Netopia. Content-Type: ${response.headers.get("content-type")}, Length: ${responseText.length}`);
+            }
+
+          } catch (netopiaError: any) {
+            // Închid popup-ul dacă s-a deschis
+            if (popup) {
+              popup.close();
+            }
+
+            console.error("❌ Eroare completă Netopia:", {
+              message: netopiaError.message,
+              stack: netopiaError.stack,
+              name: netopiaError.name,
+            });
+
+            // Afișez eroarea detaliată utilizatorului
+            const errorMessage = netopiaError.message || "Eroare necunoscută la inițierea plății";
+            throw new Error(`Eroare Netopia: ${errorMessage}`);
           }
           return;
         } catch (netopiaError) {
@@ -752,6 +856,38 @@ const Checkout: React.FC = () => {
                   className="w-full bg-green-600 hover:bg-green-700 text-white py-2 px-4 rounded-md transition-colors font-medium mb-2"
                 >
                   🧪 Test Netopia Connection
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    console.log("🧪 Testing popup mechanism...");
+                    const testPopup = window.open(
+                      "about:blank",
+                      "test",
+                      "width=600,height=700,scrollbars=yes,resizable=yes"
+                    );
+                    if (testPopup) {
+                      testPopup.document.write(`
+                        <html>
+                          <head><title>Test Popup</title></head>
+                          <body style="font-family: Arial; text-align: center; padding: 50px;">
+                            <h2>✅ Popup Test Successful!</h2>
+                            <p>This popup opened correctly.</p>
+                            <button onclick="window.close()">Close</button>
+                          </body>
+                        </html>
+                      `);
+                      testPopup.document.close();
+                      testPopup.focus();
+                    } else {
+                      alert(
+                        "❌ Popup blocked! Please allow popups for this site."
+                      );
+                    }
+                  }}
+                  className="w-full bg-purple-600 hover:bg-purple-700 text-white py-2 px-4 rounded-md transition-colors font-medium mb-2"
+                >
+                  🧪 Test Popup Mechanism
                 </button>
                 {testResult && (
                   <div className="p-2 bg-gray-100 rounded border text-sm font-mono">

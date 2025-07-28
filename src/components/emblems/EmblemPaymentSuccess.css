@@ -1,0 +1,37 @@
+/* EmblemPaymentSuccess Component Styles */
+
+.emblem-payment-container {
+  text-align: center;
+  padding: 50px;
+}
+
+.emblem-payment-processing-spinner {
+  font-size: 3rem;
+  animation: spin 1s linear infinite;
+}
+
+.emblem-payment-success-icon {
+  font-size: 4rem;
+  color: green;
+}
+
+.emblem-payment-success-button {
+  padding: 15px 30px;
+  font-size: 1.2rem;
+  background-color: #4CAF50;
+  color: white;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  margin: 20px;
+  transition: background-color 0.3s ease;
+}
+
+.emblem-payment-success-button:hover {
+  background-color: #45a049;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}

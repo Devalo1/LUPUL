@@ -3,6 +3,7 @@ import { useAuth } from "../../contexts/AuthContext";
 import { emblemService } from "../../services/emblemService";
 import { useNavigate } from "react-router-dom";
 import { FaCheckCircle, FaSpinner } from "react-icons/fa";
+import "./EmblemPaymentSuccess.css";
 
 const EmblemPaymentSuccess: React.FC = () => {
   const { user } = useAuth();
@@ -36,10 +37,8 @@ const EmblemPaymentSuccess: React.FC = () => {
 
   if (isProcessing) {
     return (
-      <div style={{ textAlign: "center", padding: "50px" }}>
-        <FaSpinner
-          style={{ fontSize: "3rem", animation: "spin 1s linear infinite" }}
-        />
+      <div className="emblem-payment-container">
+        <FaSpinner className="emblem-payment-processing-spinner" />
         <h1>🔮 Crearea emblemei tale NFT...</h1>
         <p>Plata ta a fost procesată cu succes!</p>
       </div>
@@ -47,22 +46,13 @@ const EmblemPaymentSuccess: React.FC = () => {
   }
 
   return (
-    <div style={{ textAlign: "center", padding: "50px" }}>
-      <FaCheckCircle style={{ fontSize: "4rem", color: "green" }} />
+    <div className="emblem-payment-container">
+      <FaCheckCircle className="emblem-payment-success-icon" />
       <h1>🎉 Felicitări!</h1>
       <p>Emblema ta NFT a fost creată cu succes!</p>
       <button
         onClick={() => navigate("/emblems/dashboard")}
-        style={{
-          padding: "15px 30px",
-          fontSize: "1.2rem",
-          backgroundColor: "#4CAF50",
-          color: "white",
-          border: "none",
-          borderRadius: "10px",
-          cursor: "pointer",
-          margin: "20px",
-        }}
+        className="emblem-payment-success-button"
       >
         Vezi Dashboard-ul Tău
       </button>

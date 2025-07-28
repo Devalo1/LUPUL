@@ -7,15 +7,14 @@ export default defineConfig(({ mode }) => ({
   define: {
     // Fix React production mode detection - ensure development mode works properly
     "process.env.NODE_ENV": JSON.stringify(mode),
-    // Only enable React refresh in development
-    __REACT_REFRESH__: mode === "development",
-    // Properly handle React refresh globals
+    // Fix React refresh globals to prevent production mode warnings
     ...(mode === "development"
       ? {
-          $RefreshReg$: "(function() {})",
-          $RefreshSig$: "(function() { return function() {}; })",
+          // Development mode: enable React refresh
+          global: "globalThis",
         }
       : {
+          // Production mode: disable React refresh completely
           $RefreshReg$: "undefined",
           $RefreshSig$: "undefined",
         }),

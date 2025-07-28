@@ -9,6 +9,7 @@ import {
 } from "react-icons/fa";
 import { doc, updateDoc, getDoc } from "firebase/firestore";
 import { db } from "../firebase";
+import "../styles/ScheduleManager.css";
 
 interface ScheduleDay {
   dayOfWeek: number; // 1=Monday, 7=Sunday
@@ -252,13 +253,13 @@ const ScheduleManager: React.FC<ScheduleManagerProps> = ({
                         }
                         disabled={!daySchedule.available}
                         aria-label={`Ora de început pentru ${dayInfo.name}`}
-                        className={`px-2 py-1 border rounded text-sm ${
+                        className={`schedule-time-input ${
                           daySchedule.available
-                            ? "border-gray-300 bg-white"
+                            ? "border-gray-300 bg-white text-gray-800"
                             : "border-gray-200 bg-gray-100 text-gray-400"
                         }`}
                       />
-                      <span className="text-gray-400">-</span>
+                      <span className="schedule-time-separator">-</span>
                       <input
                         type="time"
                         value={daySchedule.endTime}
@@ -267,9 +268,9 @@ const ScheduleManager: React.FC<ScheduleManagerProps> = ({
                         }
                         disabled={!daySchedule.available}
                         aria-label={`Ora de sfârșit pentru ${dayInfo.name}`}
-                        className={`px-2 py-1 border rounded text-sm ${
+                        className={`schedule-time-input ${
                           daySchedule.available
-                            ? "border-gray-300 bg-white"
+                            ? "border-gray-300 bg-white text-gray-800"
                             : "border-gray-200 bg-gray-100 text-gray-400"
                         }`}
                       />

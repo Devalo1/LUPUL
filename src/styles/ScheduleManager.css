@@ -1,0 +1,55 @@
+/* Stiluri pentru Schedule Manager - Fix pentru vizibilitatea orelor */
+
+.schedule-time-input {
+  min-width: 80px !important;
+  font-size: 14px !important;
+  font-weight: 500 !important;
+  padding: 8px 12px !important;
+  border: 1px solid #d1d5db !important;
+  border-radius: 6px !important;
+  background-color: #ffffff !important;
+  color: #374151 !important;
+  opacity: 1 !important;
+}
+
+.schedule-time-input:disabled {
+  background-color: #f3f4f6 !important;
+  color: #9ca3af !important;
+  border-color: #e5e7eb !important;
+}
+
+.schedule-time-input:focus {
+  border-color: #3b82f6 !important;
+  box-shadow: 0 0 0 1px #3b82f6 !important;
+  outline: none !important;
+}
+
+.schedule-time-separator {
+  color: #6b7280 !important;
+  font-weight: bold !important;
+  font-size: 16px !important;
+}
+
+/* Specific fix pentru WebKit browsers */
+.schedule-time-input::-webkit-datetime-edit-text {
+  color: inherit !important;
+}
+
+.schedule-time-input::-webkit-datetime-edit-hour-field,
+.schedule-time-input::-webkit-datetime-edit-minute-field {
+  color: inherit !important;
+  font-weight: 500 !important;
+}
+
+/* Fix pentru Firefox */
+.schedule-time-input::-moz-placeholder {
+  color: #9ca3af !important;
+  opacity: 1 !important;
+}
+
+/* Ensure visibility on all browsers */
+.schedule-time-input {
+  -webkit-appearance: none !important;
+  -moz-appearance: textfield !important;
+  appearance: none !important;
+}

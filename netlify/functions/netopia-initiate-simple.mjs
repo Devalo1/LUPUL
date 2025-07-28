@@ -18,16 +18,16 @@ const NETOPIA_LIVE_CONFIG = {
  */
 function createSimplePayload(paymentData) {
   const baseUrl = process.env.URL || "https://lupulsicorbul.com";
-  
+
   return {
     config: {
       notifyUrl: `${baseUrl}/.netlify/functions/netopia-notify`,
       redirectUrl: `${baseUrl}/.netlify/functions/netopia-return`,
-      language: "ro"
+      language: "ro",
     },
     payment: {
       options: { installments: 0, bonus: 0 },
-      instrument: { type: "card" }
+      instrument: { type: "card" },
     },
     order: {
       posSignature: NETOPIA_LIVE_CONFIG.signature,
@@ -46,16 +46,18 @@ function createSimplePayload(paymentData) {
         countryName: "Romania",
         state: paymentData.customerInfo?.county || "Bucuresti",
         postalCode: paymentData.customerInfo?.postalCode || "123456",
-        details: paymentData.customerInfo?.address || "Strada Test 1"
+        details: paymentData.customerInfo?.address || "Strada Test 1",
       },
-      products: [{
-        name: paymentData.description || "Produs digital",
-        code: paymentData.orderId,
-        category: "digital",
-        price: parseFloat(paymentData.amount),
-        vat: 19
-      }]
-    }
+      products: [
+        {
+          name: paymentData.description || "Produs digital",
+          code: paymentData.orderId,
+          category: "digital",
+          price: parseFloat(paymentData.amount),
+          vat: 19,
+        },
+      ],
+    },
   };
 }
 
@@ -84,7 +86,7 @@ export const handler = async (event, context) => {
 
   try {
     console.log("🚀 NETOPIA SIMPLE - Starting payment initiation");
-    
+
     // Parse request data
     let paymentData;
     try {
@@ -114,19 +116,19 @@ export const handler = async (event, context) => {
 
     // Creează payload și trimite la NETOPIA
     const payload = createSimplePayload(paymentData);
-    
+
     console.log("🔄 Sending to NETOPIA API standard:", {
       endpoint: NETOPIA_LIVE_CONFIG.endpoint,
       orderId: payload.order.orderID,
       amount: payload.order.amount,
-      signature: NETOPIA_LIVE_CONFIG.signature.substring(0, 10) + "..."
+      signature: NETOPIA_LIVE_CONFIG.signature.substring(0, 10) + "...",
     });
 
     const response = await fetch(NETOPIA_LIVE_CONFIG.endpoint, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        "Accept": "application/json",
+        Accept: "application/json",
       },
       body: JSON.stringify(payload),
     });
@@ -140,17 +142,17 @@ export const handler = async (event, context) => {
     }
 
     // Procesează răspunsul
-    const contentType = response.headers.get('content-type');
-    
-    if (contentType && contentType.includes('application/json')) {
+    const contentType = response.headers.get("content-type");
+
+    if (contentType && contentType.includes("application/json")) {
       // Răspuns JSON - API v2/v3 response
       const data = await response.json();
       console.log("✅ JSON Response received:", {
         hasPayment: !!data.payment,
         status: data.payment?.status,
-        hasPaymentURL: !!data.payment?.paymentURL
+        hasPaymentURL: !!data.payment?.paymentURL,
       });
-      
+
       if (data.payment?.paymentURL) {
         return {
           statusCode: 200,
@@ -166,7 +168,7 @@ export const handler = async (event, context) => {
       // Răspuns HTML - redirect page sau form
       const htmlResponse = await response.text();
       console.log("📄 HTML Response received, length:", htmlResponse.length);
-      
+
       return {
         statusCode: 200,
         headers: { "Content-Type": "text/html" },
@@ -175,10 +177,9 @@ export const handler = async (event, context) => {
     }
 
     throw new Error("Unexpected response format from NETOPIA");
-
   } catch (error) {
     console.error("❌ Error in payment initiation:", error.message);
-    
+
     return {
       statusCode: 400,
       headers,

@@ -27,6 +27,7 @@ https://netopia-system.stoplight.io/docs/payments-api/d85c6f3d36ce1-create-a-pay
 ✅ **Production** `/payment/card` - **200 OK** (fallback funcțional)
 
 Statusul **401 Unauthorized** pe sandbox confirmă că implementarea noastră este CORECTĂ:
+
 1. ✅ Endpoint-ul corect este accesat (`/payment/card/start`)
 2. ✅ Payload-ul JSON este formatat conform documentației v3
 3. ✅ Headers-urile sunt corecte (Content-Type: application/json)
@@ -36,6 +37,7 @@ Statusul **401 Unauthorized** pe sandbox confirmă că implementarea noastră es
 ## IMPLEMENTAREA TEHNICĂ
 
 **Payload JSON EXACT conform documentației:**
+
 ```json
 {
   "config": {
@@ -52,16 +54,25 @@ Statusul **401 Unauthorized** pe sandbox confirmă că implementarea noastră es
     "dateTime": "2025-07-28T14:40:55.000Z",
     "description": "Comandă lupulsicorbul.com",
     "orderID": "LP123456",
-    "amount": 25.00,
+    "amount": 25.0,
     "currency": "RON",
-    "billing": { /* date complete client */ },
-    "shipping": { /* date complete livrare */ },
-    "products": [{ /* produse complete cu VAT */ }]
+    "billing": {
+      /* date complete client */
+    },
+    "shipping": {
+      /* date complete livrare */
+    },
+    "products": [
+      {
+        /* produse complete cu VAT */
+      }
+    ]
   }
 }
 ```
 
 **Headers pentru sandbox:**
+
 ```
 Content-Type: application/json
 Accept: application/json
@@ -77,6 +88,7 @@ Conform răspunsului vostru, vă rog să **activați mediul de test** pentru:
 **Contact:** Dumitru Popa - 0775346243
 
 **Ce avem nevoie:**
+
 1. **Activarea sandbox-ului** pentru endpoint-ul `/payment/card/start`
 2. **Credențialele de testare** (SANDBOX_SIGNATURE, PUBLIC_KEY)
 3. **Confirmarea** că implementarea noastră va fi testată
@@ -92,6 +104,7 @@ Conform răspunsului vostru, vă rog să **activați mediul de test** pentru:
 ## URGENȚA BUSINESS
 
 În acest moment clienții noștri primesc eroarea:
+
 ```
 "Nu am putut inițializa plata cu cardul. Te rugăm să încerci din nou sau să alegi plata ramburs."
 ```
@@ -118,6 +131,7 @@ Dezvoltator platforma lupulsicorbul.com
 **P.S.** Implementarea este complet ready - statusul 401 pe sandbox confirmă că totul este corect implementat și necesită doar activarea din partea voastră pentru testare.
 
 **Documentație tehnică disponibilă:**
+
 - Logs complete cu request/response
 - Cod sursă implementare v3 API
 - Raport tehnic detaliat de testare

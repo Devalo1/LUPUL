@@ -5,19 +5,19 @@
  * Configurez credențialele reale primite de la NETOPIA
  */
 
-import fs from 'fs';
-import path from 'path';
-import { fileURLToPath } from 'url';
+import fs from "fs";
+import path from "path";
+import { fileURLToPath } from "url";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-console.log('🔑 NETOPIA Live Configuration Started');
-console.log('===================================================');
+console.log("🔑 NETOPIA Live Configuration Started");
+console.log("===================================================");
 
 // Credențialele primite de la NETOPIA
 const NETOPIA_CREDENTIALS = {
-  posSignature: '2ZOW-PJ5X-HYYC-IENE-APZO',
+  posSignature: "2ZOW-PJ5X-HYYC-IENE-APZO",
   privateKey: `-----BEGIN RSA PRIVATE KEY-----
 MIICXAIBAAKBgQDgvgno9K9M465g14CoKE0aIvKbSqwE3EvKm6NIcVO0ZQ7za08v
 Xbe508JPioYoTRM2WN7CQTQQgupiRKtyPykE3lxpCMmLqLzpcsq0wm3o9tvCnB8W
@@ -50,45 +50,61 @@ MGxzUzQflmkXT1oyIBoetTANBgkqhkiG9w0BAQsFAAOBgQAMnh95YlI+y3XcxrpG
 gNWC9AwVBt61MTid213yuXDGxkouizSGFr1MjP1tk/YkcWdNka9QB3AtCr4bMers
 /2f322soXcrhAOhj5JPVQkF6rlhJxg2JBO+8M5sOJTaxq5YvFHl/o2GGg0UuxWb5
 RbUx6W/CU+uFDgDY8CdZ3hZ7kg==
------END CERTIFICATE-----`
+-----END CERTIFICATE-----`,
 };
 
-console.log('✅ Credențiale NETOPIA încărcate:');
+console.log("✅ Credențiale NETOPIA încărcate:");
 console.log(`🔑 POS Signature: ${NETOPIA_CREDENTIALS.posSignature}`);
-console.log(`🔐 Private Key: ${NETOPIA_CREDENTIALS.privateKey.substring(0, 50)}...`);
-console.log(`📜 Certificate: ${NETOPIA_CREDENTIALS.certificate.substring(0, 50)}...`);
+console.log(
+  `🔐 Private Key: ${NETOPIA_CREDENTIALS.privateKey.substring(0, 50)}...`
+);
+console.log(
+  `📜 Certificate: ${NETOPIA_CREDENTIALS.certificate.substring(0, 50)}...`
+);
 
 // Actualizez .env file
-const envPath = path.join(__dirname, '.env');
-let envContent = '';
+const envPath = path.join(__dirname, ".env");
+let envContent = "";
 
 try {
   if (fs.existsSync(envPath)) {
-    envContent = fs.readFileSync(envPath, 'utf8');
+    envContent = fs.readFileSync(envPath, "utf8");
   }
 } catch (error) {
-  console.log('📝 Creating new .env file...');
+  console.log("📝 Creating new .env file...");
 }
 
 // Actualizez variabilele NETOPIA
 const updateEnvVar = (content, key, value) => {
-  const regex = new RegExp(`^${key}=.*$`, 'm');
+  const regex = new RegExp(`^${key}=.*$`, "m");
   const newLine = `${key}=${value}`;
-  
+
   if (regex.test(content)) {
     return content.replace(regex, newLine);
   } else {
-    return content + (content.endsWith('\n') ? '' : '\n') + newLine + '\n';
+    return content + (content.endsWith("\n") ? "" : "\n") + newLine + "\n";
   }
 };
 
-envContent = updateEnvVar(envContent, 'NETOPIA_POS_SIGNATURE', NETOPIA_CREDENTIALS.posSignature);
-envContent = updateEnvVar(envContent, 'NETOPIA_PRIVATE_KEY', NETOPIA_CREDENTIALS.privateKey.replace(/\n/g, '\\n'));
-envContent = updateEnvVar(envContent, 'NETOPIA_CERTIFICATE', NETOPIA_CREDENTIALS.certificate.replace(/\n/g, '\\n'));
+envContent = updateEnvVar(
+  envContent,
+  "NETOPIA_POS_SIGNATURE",
+  NETOPIA_CREDENTIALS.posSignature
+);
+envContent = updateEnvVar(
+  envContent,
+  "NETOPIA_PRIVATE_KEY",
+  NETOPIA_CREDENTIALS.privateKey.replace(/\n/g, "\\n")
+);
+envContent = updateEnvVar(
+  envContent,
+  "NETOPIA_CERTIFICATE",
+  NETOPIA_CREDENTIALS.certificate.replace(/\n/g, "\\n")
+);
 
 fs.writeFileSync(envPath, envContent);
-console.log('✅ .env file updated with NETOPIA credentials');
+console.log("✅ .env file updated with NETOPIA credentials");
 
-console.log('===================================================');
-console.log('🚀 Configuration Complete!');
-console.log('📧 Acum poți testa plățile cu credențialele reale!');
+console.log("===================================================");
+console.log("🚀 Configuration Complete!");
+console.log("📧 Acum poți testa plățile cu credențialele reale!");

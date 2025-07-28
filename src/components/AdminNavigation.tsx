@@ -241,13 +241,16 @@ const AdminNavigation: React.FC = () => {
             </svg>
             Programări
           </Link>
-          
           {/* Secțiunea Embleme */}
           <div className="relative group">
             <Link
               to="/admin/emblems"
               className={`py-4 px-4 font-medium transition-colors flex items-center ${
-                isCategoryActive(["/admin/emblems", "/admin/emblems-marketplace", "/admin/emblems-stats"])
+                isCategoryActive([
+                  "/admin/emblems",
+                  "/admin/emblems-marketplace",
+                  "/admin/emblems-stats",
+                ])
                   ? "border-b-2 border-blue-600 text-blue-600"
                   : "text-gray-500 hover:text-gray-700"
               }`}
@@ -285,7 +288,6 @@ const AdminNavigation: React.FC = () => {
               </div>
             </div>
           </div>
-          
           {/* Secțiunea Utilizatori */}
           <div className="relative group">
             <Link
@@ -611,7 +613,6 @@ const AdminNavigation: React.FC = () => {
                 <span className="font-medium text-base">Programări</span>
               </div>
             </Link>
-            
             {/* Embleme dropdown */}
             <div className="rounded-lg overflow-hidden bg-gray-50">
               <button
@@ -670,7 +671,6 @@ const AdminNavigation: React.FC = () => {
                 </div>
               )}
             </div>
-            
             {/* Utilizatori dropdown */}
             <div className="rounded-lg overflow-hidden bg-gray-50">
               <button

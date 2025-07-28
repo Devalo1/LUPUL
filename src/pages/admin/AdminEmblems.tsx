@@ -1,7 +1,11 @@
 import React, { useState, useEffect } from "react";
 import { Save, RotateCcw } from "lucide-react";
 import { emblemMarketplaceService } from "../../services/emblemMarketplaceService";
-import { EmblemStockService, EmblemStock, EmblemType } from "../../services/emblemStockService";
+import {
+  EmblemStockService,
+  EmblemStock,
+  EmblemType,
+} from "../../services/emblemStockService";
 import { useAuth } from "../../hooks/useAuth";
 import { Emblem } from "../../types/emblem";
 
@@ -22,7 +26,7 @@ const AdminEmblems: React.FC = () => {
     gardianul_wellness: 0,
     cautatorul_lumina: 0,
     lastUpdated: new Date(),
-    updatedBy: "system"
+    updatedBy: "system",
   });
   const [stats, setStats] = useState({
     totalEmblems: 0,
@@ -51,17 +55,17 @@ const AdminEmblems: React.FC = () => {
   const loadEmblemData = async () => {
     try {
       setLoading(true);
-      
+
       // Load all emblems (you'll need to implement this in emblemService)
       // For now, we'll use a placeholder
       const allEmblems: EmblemWithUser[] = [];
-      
+
       // Load marketplace listings
       const listings = await emblemMarketplaceService.getMarketplaceListings();
-      
+
       setEmblems(allEmblems);
       setMarketplaceListings(listings);
-      
+
       // Calculate stats
       setStats({
         totalEmblems: allEmblems.length,
@@ -69,7 +73,6 @@ const AdminEmblems: React.FC = () => {
         totalSales: 0, // You'll need to implement this
         totalRevenue: 0, // You'll need to implement this
       });
-      
     } catch (error) {
       console.error("Error loading emblem data:", error);
     } finally {
@@ -79,37 +82,37 @@ const AdminEmblems: React.FC = () => {
 
   const getEmblemTypeDisplay = (type: string) => {
     const types: { [key: string]: string } = {
-      "lupul_intelepta": "🐺 Lupul Înțeleapta",
-      "corbul_mistic": "🐦 Corbul Mistic", 
-      "gardianul_wellness": "💚 Gardianul Wellness",
-      "cautatorul_lumina": "✨ Căutătorul Lumina"
+      lupul_intelepta: "🐺 Lupul Înțeleapta",
+      corbul_mistic: "🐦 Corbul Mistic",
+      gardianul_wellness: "💚 Gardianul Wellness",
+      cautatorul_lumina: "✨ Căutătorul Lumina",
     };
     return types[type] || type;
   };
 
   const getRarityColor = (rarity: string) => {
     const colors: { [key: string]: string } = {
-      "common": "text-gray-600 bg-gray-100",
-      "rare": "text-blue-600 bg-blue-100", 
-      "epic": "text-purple-600 bg-purple-100",
-      "legendary": "text-yellow-600 bg-yellow-100"
+      common: "text-gray-600 bg-gray-100",
+      rare: "text-blue-600 bg-blue-100",
+      epic: "text-purple-600 bg-purple-100",
+      legendary: "text-yellow-600 bg-yellow-100",
     };
     return colors[rarity] || "text-gray-600 bg-gray-100";
   };
 
   const updateStock = (type: EmblemType, newStock: number) => {
     if (newStock < 0) return;
-    setEmblemStocks(prev => ({
+    setEmblemStocks((prev) => ({
       ...prev,
       [type]: newStock,
       lastUpdated: new Date(),
-      updatedBy: user?.uid || "unknown"
+      updatedBy: user?.uid || "unknown",
     }));
   };
 
   const saveStockChanges = async () => {
     if (!user) return;
-    
+
     try {
       setStockLoading(true);
       await EmblemStockService.updateStock(emblemStocks, user.uid);
@@ -124,7 +127,7 @@ const AdminEmblems: React.FC = () => {
 
   const resetAllStocks = async () => {
     if (!user) return;
-    
+
     if (confirm("Ești sigur că vrei să resetezi toate stocurile la 100?")) {
       try {
         setStockLoading(true);
@@ -158,7 +161,8 @@ const AdminEmblems: React.FC = () => {
           🏆 Gestionare Embleme NFT
         </h1>
         <p className="text-gray-600">
-          Administrează sistemul de embleme și monitorizează activitatea utilizatorilor
+          Administrează sistemul de embleme și monitorizează activitatea
+          utilizatorilor
         </p>
       </div>
 
@@ -169,7 +173,9 @@ const AdminEmblems: React.FC = () => {
             <div className="text-blue-600 text-2xl mr-3">🎯</div>
             <div>
               <p className="text-sm font-medium text-gray-600">Total Embleme</p>
-              <p className="text-2xl font-bold text-gray-900">{stats.totalEmblems}</p>
+              <p className="text-2xl font-bold text-gray-900">
+                {stats.totalEmblems}
+              </p>
             </div>
           </div>
         </div>
@@ -178,8 +184,12 @@ const AdminEmblems: React.FC = () => {
           <div className="flex items-center">
             <div className="text-green-600 text-2xl mr-3">🏪</div>
             <div>
-              <p className="text-sm font-medium text-gray-600">Active pe Marketplace</p>
-              <p className="text-2xl font-bold text-gray-900">{stats.activeListings}</p>
+              <p className="text-sm font-medium text-gray-600">
+                Active pe Marketplace
+              </p>
+              <p className="text-2xl font-bold text-gray-900">
+                {stats.activeListings}
+              </p>
             </div>
           </div>
         </div>
@@ -189,7 +199,9 @@ const AdminEmblems: React.FC = () => {
             <div className="text-purple-600 text-2xl mr-3">💰</div>
             <div>
               <p className="text-sm font-medium text-gray-600">Total Vânzări</p>
-              <p className="text-2xl font-bold text-gray-900">{stats.totalSales}</p>
+              <p className="text-2xl font-bold text-gray-900">
+                {stats.totalSales}
+              </p>
             </div>
           </div>
         </div>
@@ -199,7 +211,9 @@ const AdminEmblems: React.FC = () => {
             <div className="text-yellow-600 text-2xl mr-3">📈</div>
             <div>
               <p className="text-sm font-medium text-gray-600">Venit Total</p>
-              <p className="text-2xl font-bold text-gray-900">{stats.totalRevenue} RON</p>
+              <p className="text-2xl font-bold text-gray-900">
+                {stats.totalRevenue} RON
+              </p>
             </div>
           </div>
         </div>
@@ -217,61 +231,72 @@ const AdminEmblems: React.FC = () => {
             {Object.entries(emblemStocks)
               .filter(([key]) => key !== "lastUpdated" && key !== "updatedBy")
               .map(([type, stock]) => (
-              <div key={type} className="bg-gray-50 rounded-lg p-4">
-                <div className="flex items-center justify-between mb-4">
-                  <div className="text-center">
-                    <img 
-                      src={`/images/emblems/${type}.svg`}
-                      alt={getEmblemTypeDisplay(type as EmblemType)}
-                      className="w-16 h-16 mx-auto mb-2 rounded-full border-2 border-gray-300"
-                      onError={(e) => {
-                        e.currentTarget.src = "/images/emblems/default.svg";
-                      }}
+                <div key={type} className="bg-gray-50 rounded-lg p-4">
+                  <div className="flex items-center justify-between mb-4">
+                    <div className="text-center">
+                      <img
+                        src={`/images/emblems/${type}.svg`}
+                        alt={getEmblemTypeDisplay(type as EmblemType)}
+                        className="w-16 h-16 mx-auto mb-2 rounded-full border-2 border-gray-300"
+                        onError={(e) => {
+                          e.currentTarget.src = "/images/emblems/default.svg";
+                        }}
+                      />
+                      <h3 className="font-semibold text-gray-900 text-sm">
+                        {getEmblemTypeDisplay(type as EmblemType)}
+                      </h3>
+                    </div>
+                  </div>
+
+                  <div className="text-center mb-4">
+                    <span className="text-2xl font-bold text-blue-600">
+                      {stock as number}
+                    </span>
+                    <p className="text-xs text-gray-500">bucăți disponibile</p>
+                  </div>
+
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() =>
+                        updateStock(type as EmblemType, (stock as number) - 1)
+                      }
+                      className="flex-1 bg-red-500 text-white px-3 py-1 rounded text-sm hover:bg-red-600 transition-colors"
+                      disabled={(stock as number) <= 0}
+                    >
+                      -1
+                    </button>
+                    <button
+                      onClick={() =>
+                        updateStock(type as EmblemType, (stock as number) + 1)
+                      }
+                      className="flex-1 bg-green-500 text-white px-3 py-1 rounded text-sm hover:bg-green-600 transition-colors"
+                    >
+                      +1
+                    </button>
+                  </div>
+
+                  <div className="mt-2">
+                    <input
+                      type="number"
+                      value={stock as number}
+                      onChange={(e) =>
+                        updateStock(
+                          type as EmblemType,
+                          parseInt(e.target.value) || 0
+                        )
+                      }
+                      className="w-full px-2 py-1 border border-gray-300 rounded text-sm text-center"
+                      min="0"
+                      placeholder="Stoc"
+                      title={`Stoc pentru ${getEmblemTypeDisplay(type as EmblemType)}`}
                     />
-                    <h3 className="font-semibold text-gray-900 text-sm">
-                      {getEmblemTypeDisplay(type as EmblemType)}
-                    </h3>
                   </div>
                 </div>
-                
-                <div className="text-center mb-4">
-                  <span className="text-2xl font-bold text-blue-600">{stock as number}</span>
-                  <p className="text-xs text-gray-500">bucăți disponibile</p>
-                </div>
-                
-                <div className="flex gap-2">
-                  <button 
-                    onClick={() => updateStock(type as EmblemType, (stock as number) - 1)}
-                    className="flex-1 bg-red-500 text-white px-3 py-1 rounded text-sm hover:bg-red-600 transition-colors"
-                    disabled={(stock as number) <= 0}
-                  >
-                    -1
-                  </button>
-                  <button 
-                    onClick={() => updateStock(type as EmblemType, (stock as number) + 1)}
-                    className="flex-1 bg-green-500 text-white px-3 py-1 rounded text-sm hover:bg-green-600 transition-colors"
-                  >
-                    +1
-                  </button>
-                </div>
-                
-                <div className="mt-2">
-                  <input
-                    type="number"
-                    value={stock as number}
-                    onChange={(e) => updateStock(type as EmblemType, parseInt(e.target.value) || 0)}
-                    className="w-full px-2 py-1 border border-gray-300 rounded text-sm text-center"
-                    min="0"
-                    placeholder="Stoc"
-                    title={`Stoc pentru ${getEmblemTypeDisplay(type as EmblemType)}`}
-                  />
-                </div>
-              </div>
-            ))}
+              ))}
           </div>
-          
+
           <div className="mt-6 flex gap-4">
-            <button 
+            <button
               onClick={saveStockChanges}
               disabled={stockLoading}
               className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-2 disabled:opacity-50"
@@ -279,7 +304,7 @@ const AdminEmblems: React.FC = () => {
               <Save size={16} />
               {stockLoading ? "Se salvează..." : "Salvează Modificările"}
             </button>
-            <button 
+            <button
               onClick={resetAllStocks}
               disabled={stockLoading}
               className="bg-yellow-600 text-white px-6 py-2 rounded-lg hover:bg-yellow-700 transition-colors flex items-center gap-2 disabled:opacity-50"
@@ -344,15 +369,18 @@ const AdminEmblems: React.FC = () => {
                         </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
-                        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getRarityColor(listing.emblem.metadata?.rarity || "common")}`}>
+                        <span
+                          className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getRarityColor(listing.emblem.metadata?.rarity || "common")}`}
+                        >
                           {listing.emblem.metadata?.rarity || "common"}
                         </span>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        {listing.listedDate?.toDate?.() 
-                          ? new Date(listing.listedDate.toDate()).toLocaleDateString("ro-RO")
-                          : "Data necunoscută"
-                        }
+                        {listing.listedDate?.toDate?.()
+                          ? new Date(
+                              listing.listedDate.toDate()
+                            ).toLocaleDateString("ro-RO")
+                          : "Data necunoscută"}
                       </td>
                     </tr>
                   ))}
@@ -376,12 +404,12 @@ const AdminEmblems: React.FC = () => {
               <span className="mr-2">📊</span>
               Vedere Detaliată Statistici
             </button>
-            
+
             <button className="flex items-center justify-center px-4 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors">
               <span className="mr-2">🎁</span>
               Acordă Emblemă Gratuită
             </button>
-            
+
             <button className="flex items-center justify-center px-4 py-3 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors">
               <span className="mr-2">🔧</span>
               Configurări Sistem

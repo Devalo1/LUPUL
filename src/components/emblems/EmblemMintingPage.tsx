@@ -223,13 +223,14 @@ const EmblemMintingPage: React.FC = () => {
             </div>
 
             <div className="emblem-image-container">
-              <img 
-                src={collection.image} 
+              <img
+                src={collection.image}
                 alt={collection.name}
                 className="emblem-image"
                 onError={(e) => {
                   console.error(`Failed to load image: ${collection.image}`);
-                  (e.target as HTMLImageElement).src = "/images/emblems/default.svg";
+                  (e.target as HTMLImageElement).src =
+                    "/images/emblems/default.svg";
                 }}
               />
             </div>
@@ -250,9 +251,10 @@ const EmblemMintingPage: React.FC = () => {
                 Disponibile: {availableStocks[collection.key] || 0}
               </span>
 
-              {(availableStocks[collection.key] || 0) <= 3 && (availableStocks[collection.key] || 0) > 0 && (
-                <span className="low-stock">⚠️ Stoc redus!</span>
-              )}
+              {(availableStocks[collection.key] || 0) <= 3 &&
+                (availableStocks[collection.key] || 0) > 0 && (
+                  <span className="low-stock">⚠️ Stoc redus!</span>
+                )}
             </div>
 
             <div className="emblem-price">

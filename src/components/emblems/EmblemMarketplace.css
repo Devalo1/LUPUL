@@ -102,10 +102,18 @@
   font-size: 18px;
 }
 
-.admin-stock-count.lupul { color: #4f46e5; }
-.admin-stock-count.corbul { color: #a855f7; }
-.admin-stock-count.gardian { color: #10b981; }
-.admin-stock-count.cautator { color: #f59e0b; }
+.admin-stock-count.lupul {
+  color: #4f46e5;
+}
+.admin-stock-count.corbul {
+  color: #a855f7;
+}
+.admin-stock-count.gardian {
+  color: #10b981;
+}
+.admin-stock-count.cautator {
+  color: #f59e0b;
+}
 
 .admin-stock-label {
   font-size: 12px;
@@ -748,16 +756,16 @@
     gap: 10px;
     text-align: center;
   }
-  
+
   .admin-stocks-grid {
     grid-template-columns: repeat(2, 1fr);
     gap: 10px;
   }
-  
+
   .admin-stock-count {
     font-size: 1.8rem;
   }
-  
+
   .admin-info-title {
     font-size: 1.1rem;
   }

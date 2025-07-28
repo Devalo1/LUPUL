@@ -35,7 +35,14 @@ const EmblemMarketplace: React.FC = () => {
   const [showMyEmblem, setShowMyEmblem] = useState(false);
   const [listingPrice, setListingPrice] = useState<string>("");
   const [isListing, setIsListing] = useState(false);
-  const [adminStocks, setAdminStocks] = useState<{ lupul_intelepta: number; corbul_mistic: number; gardianul_wellness: number; cautatorul_lumina: number; lastUpdated: Date; updatedBy: string } | null>(null);
+  const [adminStocks, setAdminStocks] = useState<{
+    lupul_intelepta: number;
+    corbul_mistic: number;
+    gardianul_wellness: number;
+    cautatorul_lumina: number;
+    lastUpdated: Date;
+    updatedBy: string;
+  } | null>(null);
   const [showAdminInfo, setShowAdminInfo] = useState(false);
 
   const emblemIcons = {
@@ -252,42 +259,51 @@ const EmblemMarketplace: React.FC = () => {
               <FaWarehouse style={{ marginRight: "8px" }} />
               Stocuri Admin - Actualizat din Panel
             </h3>
-            <button 
+            <button
               onClick={() => setShowAdminInfo(!showAdminInfo)}
               className="admin-toggle-btn"
             >
               {showAdminInfo ? "Ascunde" : "Afișează"}
             </button>
           </div>
-          
+
           {showAdminInfo && (
             <div className="admin-stocks-grid">
               <div className="admin-stock-item">
                 <div className="admin-stock-icon">🐺</div>
-                <div className="admin-stock-count lupul">{adminStocks.lupul_intelepta}</div>
+                <div className="admin-stock-count lupul">
+                  {adminStocks.lupul_intelepta}
+                </div>
                 <div className="admin-stock-label">Lupul Înțeleapta</div>
               </div>
               <div className="admin-stock-item">
                 <div className="admin-stock-icon">🐦</div>
-                <div className="admin-stock-count corbul">{adminStocks.corbul_mistic}</div>
+                <div className="admin-stock-count corbul">
+                  {adminStocks.corbul_mistic}
+                </div>
                 <div className="admin-stock-label">Corbul Mistic</div>
               </div>
               <div className="admin-stock-item">
                 <div className="admin-stock-icon">💚</div>
-                <div className="admin-stock-count gardian">{adminStocks.gardianul_wellness}</div>
+                <div className="admin-stock-count gardian">
+                  {adminStocks.gardianul_wellness}
+                </div>
                 <div className="admin-stock-label">Gardianul Wellness</div>
               </div>
               <div className="admin-stock-item">
                 <div className="admin-stock-icon">✨</div>
-                <div className="admin-stock-count cautator">{adminStocks.cautatorul_lumina}</div>
+                <div className="admin-stock-count cautator">
+                  {adminStocks.cautatorul_lumina}
+                </div>
                 <div className="admin-stock-label">Căutătorul Lumina</div>
               </div>
             </div>
           )}
-          
+
           <div className="admin-info-footer">
-            Ultima actualizare: {adminStocks.lastUpdated.toLocaleString("ro-RO")} • 
-            Actualizat de: {adminStocks.updatedBy}
+            Ultima actualizare:{" "}
+            {adminStocks.lastUpdated.toLocaleString("ro-RO")} • Actualizat de:{" "}
+            {adminStocks.updatedBy}
           </div>
         </div>
       )}

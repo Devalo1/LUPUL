@@ -40,7 +40,9 @@ const EmblemPaymentSuccess: React.FC = () => {
       <div className="payment-processing">
         <FaSpinner className="spinner-icon" />
         <h1 className="processing-title">🔮 Crearea emblemei tale NFT...</h1>
-        <p className="processing-message">Plata ta a fost procesată cu succes!</p>
+        <p className="processing-message">
+          Plata ta a fost procesată cu succes!
+        </p>
       </div>
     );
   }

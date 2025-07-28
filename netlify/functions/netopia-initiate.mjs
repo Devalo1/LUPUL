@@ -8,7 +8,8 @@ const NETOPIA_CONFIG = {
   sandbox: {
     signature: "2ZOW-PJ5X-HYYC-IENE-APZO",
     endpoint: "https://secure.sandbox.netopia-payments.com/payment/card/start",
-    verifyEndpoint: "https://secure.sandbox.netopia-payments.com/payment/card/verify-auth",
+    verifyEndpoint:
+      "https://secure.sandbox.netopia-payments.com/payment/card/verify-auth",
   },
   production: {
     signature: "2ZOW-PJ5X-HYYC-IENE-APZO",
@@ -146,7 +147,9 @@ async function callNetopiaAPI(payload, config, isSandbox = false) {
         return await callNetopiaFallback(payload, config);
       }
 
-      throw new Error(`NETOPIA API Error: ${response.status} - ${errorText.substring(0, 100)}`);
+      throw new Error(
+        `NETOPIA API Error: ${response.status} - ${errorText.substring(0, 100)}`
+      );
     }
 
     const contentType = response.headers.get("content-type");
@@ -283,12 +286,21 @@ export const handler = async (event, context) => {
 
     const payload = createNetopiaPayload(paymentData);
 
+    // Respectă forceSandbox explicit din payload
     const baseUrl = process.env.URL || "https://lupulsicorbul.com";
-    const isProduction =
-      baseUrl.includes("lupulsicorbul.com") && !paymentData.forceSandbox;
-
-    console.log("🎯 Environment detection:", {
+    let isProduction;
+    
+    if (paymentData.forceSandbox === true) {
+      isProduction = false; // Forțează sandbox
+    } else if (paymentData.forceSandbox === false) {
+      isProduction = true; // Forțează production
+    } else {
+      // Pentru localhost, folosește production ca default pentru testare
+      // În production adevărată, va fi automat production
+      isProduction = true; // DEFAULT: Production pentru testare
+    }    console.log("🎯 Environment detection:", {
       baseUrl,
+      forceSandbox: paymentData.forceSandbox,
       isProduction,
       willUseSandbox: !isProduction,
     });

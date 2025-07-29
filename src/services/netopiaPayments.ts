@@ -95,14 +95,27 @@ class NetopiaPayments {
     // În producție, considerăm că avem credențiale live dacă variabilele sunt setate
     const liveKey = import.meta.env.VITE_PAYMENT_LIVE_KEY;
     const liveSignature = import.meta.env.VITE_NETOPIA_SIGNATURE_LIVE;
+    const isProduction = this.isProduction();
 
-    return !!(
+    console.log("🔍 Checking live credentials:", {
+      hasLiveKey: !!liveKey,
+      hasLiveSignature: !!liveSignature,
+      liveKeyPreview: liveKey ? liveKey.substring(0, 10) + "..." : "undefined",
+      liveSignaturePreview: liveSignature ? liveSignature.substring(0, 10) + "..." : "undefined",
+      isProduction,
+      hostname: window.location.hostname
+    });
+
+    const hasValidCredentials = !!(
       liveKey &&
       liveSignature &&
       liveKey !== "SANDBOX_SIGNATURE_PLACEHOLDER" &&
       liveSignature !== "SANDBOX_SIGNATURE_PLACEHOLDER" &&
-      this.isProduction()
+      isProduction
     );
+
+    console.log("✅ Live credentials valid:", hasValidCredentials);
+    return hasValidCredentials;
   }
 
   /**
@@ -113,20 +126,32 @@ class NetopiaPayments {
     // FORȚĂM SANDBOX MODE pentru testing și dezvoltare
     // Pentru plăți reale în producție, această logică va fi modificată
     
-    // Verifică dacă este un test explicit (orderId conține "TEST-")
-    const isTestOrder = window.location.search.includes("test=1") || 
-                       localStorage.getItem("netopia_force_sandbox") === "true";
+    // Verifică flag-ul de forțare sandbox din localStorage
+    const forceSandbox = localStorage.getItem("netopia_force_sandbox") === "true";
     
-    if (isTestOrder) {
-      console.log("🧪 Forcing SANDBOX mode for testing");
+    if (forceSandbox) {
+      console.log("🧪 Forcing SANDBOX mode - localStorage flag detected");
+      return false;
+    }
+    
+    // Verifică dacă URL-ul conține parametri de test
+    const hasTestParam = window.location.search.includes("test=1");
+    
+    if (hasTestParam) {
+      console.log("🧪 Forcing SANDBOX mode - test=1 parameter detected");
       return false;
     }
     
     // În producție, întotdeauna folosim live mode dacă avem credențialele
     if (this.isProduction()) {
-      return this.hasLiveCredentials();
+      console.log("🏭 Production mode detected, checking credentials...");
+      const hasCredentials = this.hasLiveCredentials();
+      console.log("🔑 Has live credentials:", hasCredentials);
+      return hasCredentials;
     }
+    
     // În development, folosim sandbox
+    console.log("🛠️ Development mode - using sandbox");
     return false;
   }
 
@@ -144,14 +169,20 @@ class NetopiaPayments {
    */
   async initiatePayment(paymentData: NetopiaPaymentData): Promise<string> {
     try {
+      console.log("🚀 INITIATING PAYMENT - Debug Info:");
+      console.log("📍 Current URL:", window.location.href);
+      console.log("🏷️ LocalStorage sandbox flag:", localStorage.getItem("netopia_force_sandbox"));
+      
       const useLiveMode = this.shouldUseLiveMode();
-      console.log("Initiating payment with data:", {
+      
+      console.log("💰 Payment initiation details:", {
         orderId: paymentData.orderId,
         amount: paymentData.amount,
         live: useLiveMode,
         hasLiveCredentials: this.hasLiveCredentials(),
         isProduction: this.isProduction(),
         signature: this.config.posSignature?.substring(0, 10) + "...",
+        hostname: window.location.hostname
       });
 
       const requestPayload = {

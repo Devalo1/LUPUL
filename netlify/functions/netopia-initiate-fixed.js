@@ -296,17 +296,24 @@ exports.handler = async (event, context) => {
 
     // Determină configurația (sandbox vs live) cu detectare automată în producție
     let isLive = false;
-    // În producție, forțăm modul live pentru domeniile de producție
-    if (
-      process.env.URL &&
-      (process.env.URL.includes("lupulsicorbul.com") ||
-        process.env.URL.includes("netlify.app"))
-    ) {
-      isLive = true;
-      console.log("🚀 Production domain detected, forcing LIVE mode");
+    
+    // IMPORTANT: Respectă explicit live: false pentru teste, indiferent de domeniu
+    if (paymentData.live === false) {
+      isLive = false;
+      console.log("🧪 Test mode explicitly requested (live: false) - using SANDBOX");
     } else if (paymentData.live === true) {
       isLive = true;
       console.log("🚀 Live mode explicitly requested");
+    } else {
+      // În producție, forțăm modul live pentru domeniile de producție doar dacă nu e test explicit
+      if (
+        process.env.URL &&
+        (process.env.URL.includes("lupulsicorbul.com") ||
+          process.env.URL.includes("netlify.app"))
+      ) {
+        isLive = true;
+        console.log("🚀 Production domain detected, forcing LIVE mode");
+      }
     }
     const hasCustomSignature =
       paymentData.posSignature &&

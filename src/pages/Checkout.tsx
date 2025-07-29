@@ -414,15 +414,20 @@ const Checkout: React.FC = () => {
           try {
             console.log("🚀 Inițiez plata Netopia cu payload:", paymentData);
 
-            // Apelare directă la funcția Netlify pentru debugging complet
+            // Use browser-compatible endpoint for real payments too
             const netopiaUrl = netopiaService.getNetlifyEndpoint(
-              "netopia-initiate-fixed"
+              "netopia-browser-fix"
             );
             console.log("🌐 Endpoint Netopia:", netopiaUrl);
 
             const response = await fetch(netopiaUrl, {
               method: "POST",
-              headers: { "Content-Type": "application/json; charset=utf-8" },
+              headers: {
+                "Content-Type": "application/json; charset=utf-8",
+                Accept: "text/html,application/json,*/*",
+                "Cache-Control": "no-cache",
+              },
+              credentials: "same-origin",
               body: JSON.stringify(paymentData),
             });
 

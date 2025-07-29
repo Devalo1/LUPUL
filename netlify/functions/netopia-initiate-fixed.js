@@ -369,11 +369,23 @@ exports.handler = async (event, context) => {
     // Creează payload-ul pentru NETOPIA
     const payload = createNetopiaPayload(paymentData, config);
 
-    // Simulation only for local dev (fallback page), otherwise let sandbox HTML form logic handle
+    // Simulation pentru development local ȘI pentru testing în producție
     const baseUrl = process.env.URL || event.headers.origin || "";
-    if (!paymentData.live && baseUrl.includes("localhost")) {
+    const isLocalDev = baseUrl.includes("localhost");
+    const isTestOrder = paymentData.orderId && paymentData.orderId.includes("TEST-");
+    
+    // Simulare dacă suntem în local dev SAU dacă este comandă de test în producție
+    if (!paymentData.live && (isLocalDev || isTestOrder)) {
       const amount = payload.payment.data.amount;
       const currency = payload.payment.data.currency;
+      
+      console.log("🧪 Simulation mode activated:", {
+        isLocalDev,
+        isTestOrder,
+        baseUrl,
+        orderId: paymentData.orderId,
+        live: paymentData.live
+      });
       
       // Detectează mediul corect pentru URL-ul de simulare
       let simulationUrl;

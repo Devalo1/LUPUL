@@ -77,7 +77,7 @@ export const handler = async (event, context) => {
       signature: isLive
         ? liveSignature?.substring(0, 10) + "..."
         : "SANDBOX_MODE",
-      endpoint: "https://secure.netopia-payments.com/payment/card", // Always use live endpoint
+      endpoint: "https://secure.netopia-payments.com/payment/card/start", // Always use live endpoint
       hasCredentials: hasLiveCredentials,
       credentialsDetails: {
         privateKeyLength: NETOPIA_LIVE_PRIVATE_KEY

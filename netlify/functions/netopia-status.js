@@ -7,7 +7,7 @@
 const NETOPIA_CONFIG = {
   sandbox: {
     signature: "2ZOW-PJ5X-HYYC-IENE-APZO",
-    endpoint: "https://secure-sandbox.netopia-payments.com/query",
+    endpoint: "https://secure.sandbox.netopia-payments.com/query",
     publicKey: process.env.NETOPIA_SANDBOX_PUBLIC_KEY,
   },
   live: {

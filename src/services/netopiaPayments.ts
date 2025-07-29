@@ -110,6 +110,18 @@ class NetopiaPayments {
    * @returns true pentru live mode, false pentru sandbox
    */
   private shouldUseLiveMode(): boolean {
+    // FORȚĂM SANDBOX MODE pentru testing și dezvoltare
+    // Pentru plăți reale în producție, această logică va fi modificată
+    
+    // Verifică dacă este un test explicit (orderId conține "TEST-")
+    const isTestOrder = window.location.search.includes("test=1") || 
+                       localStorage.getItem("netopia_force_sandbox") === "true";
+    
+    if (isTestOrder) {
+      console.log("🧪 Forcing SANDBOX mode for testing");
+      return false;
+    }
+    
     // În producție, întotdeauna folosim live mode dacă avem credențialele
     if (this.isProduction()) {
       return this.hasLiveCredentials();

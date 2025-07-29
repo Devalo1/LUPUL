@@ -56,6 +56,11 @@ const Checkout: React.FC = () => {
   // Test function for Netopia v1.x
   const testNetopiaConnection = async () => {
     setTestResult("Testing v1.x...");
+    
+    // Setează flag-ul pentru sandbox mode chiar și în producție
+    localStorage.setItem("netopia_force_sandbox", "true");
+    console.log("🧪 Forcing sandbox mode for testing");
+    
     try {
       const testData = {
         orderId: "TEST-" + Date.now(),
@@ -125,6 +130,11 @@ const Checkout: React.FC = () => {
   // Test function for Netopia API v2.x
   const testNetopiaV2API = async () => {
     setTestResult("Testing API v2.x...");
+    
+    // Setează flag-ul pentru sandbox mode chiar și în producție
+    localStorage.setItem("netopia_force_sandbox", "true");
+    console.log("🧪 Forcing sandbox mode for v2.x testing");
+    
     try {
       const { testNetopiaV2API } = await import("../services/netopiaPayments");
 
@@ -318,6 +328,10 @@ const Checkout: React.FC = () => {
     e.preventDefault();
     setError(null);
     setIsSubmitting(true);
+
+    // Pentru plățile reale, eliminăm flag-ul de test
+    localStorage.removeItem("netopia_force_sandbox");
+    console.log("💳 Real payment mode - sandbox flag removed");
 
     try {
       console.log("Inițierea trimiterii comenzii:", { ...formData, items });

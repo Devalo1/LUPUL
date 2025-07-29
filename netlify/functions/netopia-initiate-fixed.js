@@ -370,8 +370,10 @@ exports.handler = async (event, context) => {
     const payload = createNetopiaPayload(paymentData, config);
 
     // Simulation pentru development local ȘI pentru testing în producție
-    const baseUrl = process.env.URL || event.headers.origin || "";
-    const isLocalDev = baseUrl.includes("localhost");
+    // Folosește origin-ul cererii pentru a determina mediul corect
+    const requestOrigin = event.headers.origin || "";
+    const baseUrl = requestOrigin || process.env.URL || "https://lupulsicorbul.com";
+    const isLocalDev = baseUrl.includes("localhost") || baseUrl.includes("127.0.0.1");
     const isTestOrder = paymentData.orderId && paymentData.orderId.includes("TEST-");
     
     // Simulare dacă suntem în local dev SAU dacă este comandă de test în producție
@@ -383,13 +385,15 @@ exports.handler = async (event, context) => {
         isLocalDev,
         isTestOrder,
         baseUrl,
+        requestOrigin,
+        host: event.headers.host,
         orderId: paymentData.orderId,
         live: paymentData.live
       });
       
       // Detectează mediul corect pentru URL-ul de simulare
       let simulationUrl;
-      if (baseUrl.includes("localhost") || baseUrl.includes("127.0.0.1")) {
+      if (isLocalDev) {
         // Development - folosește localhost cu port 5173
         simulationUrl = `http://localhost:5173/payment-simulation?orderId=${payload.payment.data.orderId}&amount=${amount}&currency=${currency}&test=1`;
       } else {

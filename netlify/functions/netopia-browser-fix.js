@@ -546,18 +546,25 @@ exports.handler = async (event, context) => {
     const isProduction = baseUrl.includes("lupulsicorbul.com") && !baseUrl.includes("localhost");
     const hasLiveCredentials = !!process.env.NETOPIA_LIVE_SIGNATURE;
     
+    // FORȚEAZĂ SANDBOX pentru comenzile de test, indiferent de mediu
+    const isTestOrder = paymentData.orderId.includes("TEST-");
+    const forceSandbox = isTestOrder || paymentData.live === false;
+    
     // Logica pentru live/sandbox
-    const useLive = isProduction && hasLiveCredentials && paymentData.live !== false;
+    const useLive = isProduction && hasLiveCredentials && !forceSandbox && paymentData.live !== false;
     const config = useLive ? NETOPIA_CONFIG.live : NETOPIA_CONFIG.sandbox;
     
     console.log("🔧 Configuration:", {
       baseUrl,
       isProduction,
       hasLiveCredentials,
+      isTestOrder,
+      forceSandbox,
       useLive,
       endpoint: config.endpoint,
       signature: config.signature.substring(0, 10) + "...",
-      browser: browser.name
+      browser: browser.name,
+      orderId: paymentData.orderId
     });
     
     // Verifică signature
@@ -565,11 +572,17 @@ exports.handler = async (event, context) => {
       throw new Error("Configurație NETOPIA lipsă");
     }
     
-    // Pentru comenzi de test, folosește simularea
-    if (paymentData.orderId.includes("TEST-") && !paymentData.live) {
+    // Pentru comenzi de test, folosește ÎNTOTDEAUNA simularea pentru a evita SVG redirect
+    if (paymentData.orderId.includes("TEST-") || !paymentData.live || !useLive) {
       const simulationUrl = `${baseUrl}/payment-simulation?orderId=${paymentData.orderId}&amount=${paymentData.amount}&currency=${paymentData.currency}&test=1`;
       
-      console.log("🧪 Using simulation for test order:", simulationUrl);
+      console.log("🧪 Using simulation for test order:", {
+        orderId: paymentData.orderId,
+        isTest: paymentData.orderId.includes("TEST-"),
+        isLive: paymentData.live,
+        useLive: useLive,
+        simulationUrl: simulationUrl
+      });
       
       return {
         statusCode: 200,
@@ -577,7 +590,9 @@ exports.handler = async (event, context) => {
         body: JSON.stringify({
           success: true,
           paymentUrl: simulationUrl,
-          orderId: paymentData.orderId
+          orderId: paymentData.orderId,
+          mode: "simulation",
+          reason: paymentData.orderId.includes("TEST-") ? "TEST order" : !useLive ? "Sandbox mode" : "Development"
         })
       };
     }

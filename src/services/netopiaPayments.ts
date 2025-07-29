@@ -227,11 +227,15 @@ class NetopiaPayments {
         live: useLiveMode,
       });
 
-      // Use new browser-compatible endpoint
-      const netopiaUrl = this.getNetlifyEndpoint("netopia-browser-fix");
-
-      console.log("🌐 Netopia endpoint:", netopiaUrl);
-      console.log("🔍 DEBUG: Using BROWSER-COMPATIBLE endpoint with CORS fix");
+      // Use special endpoint for TEST orders in production to avoid SVG redirect
+      let netopiaUrl;
+      if (this.isProduction() && paymentData.orderId.includes("TEST-")) {
+        netopiaUrl = this.getNetlifyEndpoint("netopia-production-test");
+        console.log("🧪 Using PRODUCTION TEST endpoint for TEST order");
+      } else {
+        netopiaUrl = this.getNetlifyEndpoint("netopia-browser-fix");
+        console.log("🔍 Using standard BROWSER-COMPATIBLE endpoint");
+      }
 
       const response = await fetch(netopiaUrl, {
         method: "POST",

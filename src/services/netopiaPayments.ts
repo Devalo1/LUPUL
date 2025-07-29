@@ -101,9 +101,11 @@ class NetopiaPayments {
       hasLiveKey: !!liveKey,
       hasLiveSignature: !!liveSignature,
       liveKeyPreview: liveKey ? liveKey.substring(0, 10) + "..." : "undefined",
-      liveSignaturePreview: liveSignature ? liveSignature.substring(0, 10) + "..." : "undefined",
+      liveSignaturePreview: liveSignature
+        ? liveSignature.substring(0, 10) + "..."
+        : "undefined",
       isProduction,
-      hostname: window.location.hostname
+      hostname: window.location.hostname,
     });
 
     const hasValidCredentials = !!(
@@ -125,23 +127,24 @@ class NetopiaPayments {
   private shouldUseLiveMode(): boolean {
     // FORȚĂM SANDBOX MODE pentru testing și dezvoltare
     // Pentru plăți reale în producție, această logică va fi modificată
-    
+
     // Verifică flag-ul de forțare sandbox din localStorage
-    const forceSandbox = localStorage.getItem("netopia_force_sandbox") === "true";
-    
+    const forceSandbox =
+      localStorage.getItem("netopia_force_sandbox") === "true";
+
     if (forceSandbox) {
       console.log("🧪 Forcing SANDBOX mode - localStorage flag detected");
       return false;
     }
-    
+
     // Verifică dacă URL-ul conține parametri de test
     const hasTestParam = window.location.search.includes("test=1");
-    
+
     if (hasTestParam) {
       console.log("🧪 Forcing SANDBOX mode - test=1 parameter detected");
       return false;
     }
-    
+
     // În producție, întotdeauna folosim live mode dacă avem credențialele
     if (this.isProduction()) {
       console.log("🏭 Production mode detected, checking credentials...");
@@ -149,7 +152,7 @@ class NetopiaPayments {
       console.log("🔑 Has live credentials:", hasCredentials);
       return hasCredentials;
     }
-    
+
     // În development, folosim sandbox
     console.log("🛠️ Development mode - using sandbox");
     return false;
@@ -160,7 +163,7 @@ class NetopiaPayments {
    */
   private detectBrowser(): { name: string; strict: boolean } {
     const ua = navigator.userAgent.toLowerCase();
-    
+
     if (ua.includes("chrome") && ua.includes("brave")) {
       return { name: "brave", strict: true };
     } else if (ua.includes("firefox")) {
@@ -172,7 +175,7 @@ class NetopiaPayments {
     } else if (ua.includes("safari")) {
       return { name: "safari", strict: true };
     }
-    
+
     return { name: "unknown", strict: true };
   }
 
@@ -191,14 +194,22 @@ class NetopiaPayments {
   async initiatePayment(paymentData: NetopiaPaymentData): Promise<string> {
     try {
       const browser = this.detectBrowser();
-      
+
       console.log("🚀 INITIATING PAYMENT - Debug Info:");
-      console.log("🌐 Browser detected:", browser.name, "- Strict CORS:", browser.strict);
+      console.log(
+        "🌐 Browser detected:",
+        browser.name,
+        "- Strict CORS:",
+        browser.strict
+      );
       console.log("📍 Current URL:", window.location.href);
-      console.log("🏷️ LocalStorage sandbox flag:", localStorage.getItem("netopia_force_sandbox"));
-      
+      console.log(
+        "🏷️ LocalStorage sandbox flag:",
+        localStorage.getItem("netopia_force_sandbox")
+      );
+
       const useLiveMode = this.shouldUseLiveMode();
-      
+
       console.log("💰 Payment initiation details:", {
         orderId: paymentData.orderId,
         amount: paymentData.amount,
@@ -208,7 +219,7 @@ class NetopiaPayments {
         signature: this.config.posSignature?.substring(0, 10) + "...",
         hostname: window.location.hostname,
         browser: browser.name,
-        browserStrict: browser.strict
+        browserStrict: browser.strict,
       });
 
       const requestPayload = {
@@ -239,14 +250,14 @@ class NetopiaPayments {
 
       const response = await fetch(netopiaUrl, {
         method: "POST",
-        headers: { 
+        headers: {
           "Content-Type": "application/json; charset=utf-8",
-          "Accept": "text/html,application/json,*/*",
-          "Cache-Control": "no-cache"
+          Accept: "text/html,application/json,*/*",
+          "Cache-Control": "no-cache",
         },
         body: requestBody,
         // Add credentials for CORS compatibility
-        credentials: "same-origin"
+        credentials: "same-origin",
       });
       if (!response.ok) {
         const errorText = await response.text();
@@ -319,9 +330,10 @@ class NetopiaPayments {
       return data.paymentUrl;
     } catch (error) {
       console.error("Eroare NETOPIA:", error);
-      
+
       const browser = this.detectBrowser();
-      const errorMessage = error instanceof Error ? error.message : "Eroare necunoscută";
+      const errorMessage =
+        error instanceof Error ? error.message : "Eroare necunoscută";
 
       // Mesaje specifice pentru browsere diferite
       if (errorMessage.includes("Failed to fetch")) {

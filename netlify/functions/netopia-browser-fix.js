@@ -1,11 +1,11 @@
 /**
  * NETOPIA Browser Compatibility Fix
  * Soluția pentru diferențele CORS între Brave/Firefox și Edge/Chrome
- * 
+ *
  * PROBLEMA:
  * - Brave: ❌ Failed to fetch (CORS strict)
  * - Edge: ✅ Success dar redirect către card.svg
- * 
+ *
  * SOLUȚIA:
  * - Headers CORS extinși pentru toate browser-ele
  * - Configurația endpoint-urilor optimizată
@@ -17,7 +17,8 @@ const crypto = require("crypto");
 // Configurație NETOPIA adaptată pentru compatibilitate browser
 const NETOPIA_CONFIG = {
   sandbox: {
-    signature: process.env.NETOPIA_SANDBOX_SIGNATURE || "2ZOW-PJ5X-HYYC-IENE-APZO",
+    signature:
+      process.env.NETOPIA_SANDBOX_SIGNATURE || "2ZOW-PJ5X-HYYC-IENE-APZO",
     // Folosim endpoint-ul live și pentru sandbox pentru a evita problemele SVG
     endpoint: "https://secure.netopia-payments.com/payment/card/start",
     publicKey: process.env.NETOPIA_SANDBOX_PUBLIC_KEY,
@@ -34,25 +35,25 @@ const NETOPIA_CONFIG = {
  */
 function getCORSHeaders(event) {
   const origin = event.headers.origin || event.headers.Origin || "*";
-  
+
   return {
     "Access-Control-Allow-Origin": origin,
     "Access-Control-Allow-Headers": [
       "Content-Type",
-      "Authorization", 
+      "Authorization",
       "X-Requested-With",
       "Accept",
       "Origin",
       "User-Agent",
-      "Cache-Control"
+      "Cache-Control",
     ].join(", "),
     "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
     "Access-Control-Allow-Credentials": "true",
     "Access-Control-Max-Age": "86400", // 24 hours
-    "Vary": "Origin",
+    Vary: "Origin",
     "Cache-Control": "no-cache, no-store, must-revalidate",
-    "Pragma": "no-cache",
-    "Expires": "0"
+    Pragma: "no-cache",
+    Expires: "0",
   };
 }
 
@@ -61,7 +62,7 @@ function getCORSHeaders(event) {
  */
 function detectBrowser(userAgent) {
   const ua = (userAgent || "").toLowerCase();
-  
+
   if (ua.includes("chrome") && ua.includes("brave")) {
     return { name: "brave", strict: true };
   } else if (ua.includes("firefox")) {
@@ -73,7 +74,7 @@ function detectBrowser(userAgent) {
   } else if (ua.includes("safari")) {
     return { name: "safari", strict: true };
   }
-  
+
   return { name: "unknown", strict: true };
 }
 
@@ -82,7 +83,7 @@ function detectBrowser(userAgent) {
  */
 function createOptimizedNetopiaPayload(paymentData, config) {
   const baseUrl = process.env.URL || "https://lupulsicorbul.com";
-  
+
   // Payload în format exact cerut de NETOPIA pentru a evita SVG redirect
   return {
     config: {
@@ -444,33 +445,33 @@ function generateNetopiaForm(payload, config, browser) {
  */
 function validatePaymentData(paymentData) {
   const required = ["orderId", "amount", "currency", "description"];
-  
+
   for (const field of required) {
     if (!paymentData[field]) {
       throw new Error(`Câmp obligatoriu lipsă: ${field}`);
     }
   }
-  
+
   if (!paymentData.customerInfo) {
     throw new Error("Informațiile clientului sunt obligatorii");
   }
-  
+
   const customerRequired = ["firstName", "lastName", "email", "phone"];
   for (const field of customerRequired) {
     if (!paymentData.customerInfo[field]) {
       throw new Error(`Câmp client obligatoriu lipsă: ${field}`);
     }
   }
-  
+
   if (typeof paymentData.amount !== "number" || paymentData.amount <= 0) {
     throw new Error("Suma trebuie să fie un număr pozitiv");
   }
-  
+
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
   if (!emailRegex.test(paymentData.customerInfo.email)) {
     throw new Error("Adresa de email nu este validă");
   }
-  
+
   return true;
 }
 
@@ -481,35 +482,35 @@ exports.handler = async (event, context) => {
   const userAgent = event.headers["user-agent"] || "";
   const browser = detectBrowser(userAgent);
   const corsHeaders = getCORSHeaders(event);
-  
+
   console.log("🌐 Browser compatibility check:", {
     userAgent: userAgent.substring(0, 100),
     browser: browser.name,
     strict: browser.strict,
     method: event.httpMethod,
-    origin: event.headers.origin
+    origin: event.headers.origin,
   });
-  
+
   // Enhanced CORS handling
   if (event.httpMethod === "OPTIONS") {
     return {
       statusCode: 200,
       headers: corsHeaders,
-      body: ""
+      body: "",
     };
   }
-  
+
   if (event.httpMethod !== "POST") {
     return {
       statusCode: 405,
       headers: { ...corsHeaders, "Content-Type": "application/json" },
-      body: JSON.stringify({ error: "Numai POST request-uri sunt permise" })
+      body: JSON.stringify({ error: "Numai POST request-uri sunt permise" }),
     };
   }
-  
+
   try {
     console.log("🚀 NETOPIA Browser Fix - Processing payment");
-    
+
     // Parse request body cu handling îmbunătățit
     let paymentData;
     try {
@@ -525,35 +526,40 @@ exports.handler = async (event, context) => {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
         body: JSON.stringify({
           error: "Format JSON invalid",
-          details: jsonError.message
-        })
+          details: jsonError.message,
+        }),
       };
     }
-    
+
     console.log("📝 Payment data:", {
       orderId: paymentData.orderId,
       amount: paymentData.amount,
       currency: paymentData.currency,
       live: paymentData.live,
-      hasCustomerInfo: !!paymentData.customerInfo
+      hasCustomerInfo: !!paymentData.customerInfo,
     });
-    
+
     // Validare date
     validatePaymentData(paymentData);
-    
+
     // Determină configurația (sandbox vs live)
     const baseUrl = process.env.URL || "https://lupulsicorbul.com";
-    const isProduction = baseUrl.includes("lupulsicorbul.com") && !baseUrl.includes("localhost");
+    const isProduction =
+      baseUrl.includes("lupulsicorbul.com") && !baseUrl.includes("localhost");
     const hasLiveCredentials = !!process.env.NETOPIA_LIVE_SIGNATURE;
-    
+
     // FORȚEAZĂ SANDBOX pentru comenzile de test, indiferent de mediu
     const isTestOrder = paymentData.orderId.includes("TEST-");
     const forceSandbox = isTestOrder || paymentData.live === false;
-    
+
     // Logica pentru live/sandbox
-    const useLive = isProduction && hasLiveCredentials && !forceSandbox && paymentData.live !== false;
+    const useLive =
+      isProduction &&
+      hasLiveCredentials &&
+      !forceSandbox &&
+      paymentData.live !== false;
     const config = useLive ? NETOPIA_CONFIG.live : NETOPIA_CONFIG.sandbox;
-    
+
     console.log("🔧 Configuration:", {
       baseUrl,
       isProduction,
@@ -564,26 +570,30 @@ exports.handler = async (event, context) => {
       endpoint: config.endpoint,
       signature: config.signature.substring(0, 10) + "...",
       browser: browser.name,
-      orderId: paymentData.orderId
+      orderId: paymentData.orderId,
     });
-    
+
     // Verifică signature
     if (!config.signature) {
       throw new Error("Configurație NETOPIA lipsă");
     }
-    
+
     // Pentru comenzi de test, folosește ÎNTOTDEAUNA simularea pentru a evita SVG redirect
-    if (paymentData.orderId.includes("TEST-") || !paymentData.live || !useLive) {
+    if (
+      paymentData.orderId.includes("TEST-") ||
+      !paymentData.live ||
+      !useLive
+    ) {
       const simulationUrl = `${baseUrl}/payment-simulation?orderId=${paymentData.orderId}&amount=${paymentData.amount}&currency=${paymentData.currency}&test=1`;
-      
+
       console.log("🧪 Using simulation for test order:", {
         orderId: paymentData.orderId,
         isTest: paymentData.orderId.includes("TEST-"),
         isLive: paymentData.live,
         useLive: useLive,
-        simulationUrl: simulationUrl
+        simulationUrl: simulationUrl,
       });
-      
+
       return {
         statusCode: 200,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
@@ -592,29 +602,32 @@ exports.handler = async (event, context) => {
           paymentUrl: simulationUrl,
           orderId: paymentData.orderId,
           mode: "simulation",
-          reason: paymentData.orderId.includes("TEST-") ? "TEST order" : !useLive ? "Sandbox mode" : "Development"
-        })
+          reason: paymentData.orderId.includes("TEST-")
+            ? "TEST order"
+            : !useLive
+              ? "Sandbox mode"
+              : "Development",
+        }),
       };
     }
-    
+
     // Creează payload NETOPIA optimizat
     const payload = createOptimizedNetopiaPayload(paymentData, config);
-    
+
     // Generează formular HTML optimizat pentru browser
     const formHtml = generateNetopiaForm(payload, config, browser);
-    
+
     console.log("✅ Payment form generated successfully for", browser.name);
-    
+
     // Returnează HTML form pentru popup
     return {
       statusCode: 200,
       headers: { ...corsHeaders, "Content-Type": "text/html; charset=utf-8" },
-      body: formHtml
+      body: formHtml,
     };
-    
   } catch (error) {
     console.error("❌ Error in NETOPIA browser fix:", error);
-    
+
     return {
       statusCode: 400,
       headers: { ...corsHeaders, "Content-Type": "application/json" },
@@ -622,8 +635,8 @@ exports.handler = async (event, context) => {
         error: "Inițierea plății a eșuat",
         message: error.message,
         orderId: paymentData?.orderId || "necunoscut",
-        browser: browser.name
-      })
+        browser: browser.name,
+      }),
     };
   }
 };

@@ -4,11 +4,11 @@
  * prin returnarea ÎNTOTDEAUNA a simulării pentru comenzile TEST-*
  */
 
-const { handler: browserFixHandler } = require('./netopia-browser-fix');
+const { handler: browserFixHandler } = require("./netopia-browser-fix");
 
 exports.handler = async (event, context) => {
   console.log("🧪 NETOPIA Production Test - Override pentru comenzile TEST");
-  
+
   // Parse request body pentru a verifica dacă e comandă TEST
   let paymentData;
   try {
@@ -22,26 +22,29 @@ exports.handler = async (event, context) => {
     return {
       statusCode: 400,
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ error: "Invalid JSON" })
+      body: JSON.stringify({ error: "Invalid JSON" }),
     };
   }
 
   // Dacă e comandă TEST în producție, FORȚEAZĂ simularea
   if (paymentData.orderId && paymentData.orderId.includes("TEST-")) {
-    console.log("🚨 TEST order detected in production - FORCING simulation mode");
-    
+    console.log(
+      "🚨 TEST order detected in production - FORCING simulation mode"
+    );
+
     const baseUrl = process.env.URL || "https://lupulsicorbul.com";
     const simulationUrl = `${baseUrl}/payment-simulation?orderId=${paymentData.orderId}&amount=${paymentData.amount}&currency=${paymentData.currency}&test=1&forced=true`;
-    
+
     const corsHeaders = {
       "Access-Control-Allow-Origin": event.headers.origin || "*",
-      "Access-Control-Allow-Headers": "Content-Type, Authorization, X-Requested-With, Accept, Origin, User-Agent, Cache-Control",
+      "Access-Control-Allow-Headers":
+        "Content-Type, Authorization, X-Requested-With, Accept, Origin, User-Agent, Cache-Control",
       "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
       "Access-Control-Allow-Credentials": "true",
-      "Vary": "Origin",
-      "Cache-Control": "no-cache, no-store, must-revalidate"
+      Vary: "Origin",
+      "Cache-Control": "no-cache, no-store, must-revalidate",
     };
-    
+
     return {
       statusCode: 200,
       headers: { ...corsHeaders, "Content-Type": "application/json" },
@@ -50,11 +53,11 @@ exports.handler = async (event, context) => {
         paymentUrl: simulationUrl,
         orderId: paymentData.orderId,
         mode: "forced-simulation",
-        reason: "TEST order in production - SVG redirect prevention"
-      })
+        reason: "TEST order in production - SVG redirect prevention",
+      }),
     };
   }
-  
+
   // Pentru comenzile non-TEST, folosește handler-ul normal
   console.log("📦 Non-TEST order - using normal browser fix handler");
   return browserFixHandler(event, context);

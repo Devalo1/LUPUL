@@ -56,11 +56,11 @@ const Checkout: React.FC = () => {
   // Test function for Netopia v1.x
   const testNetopiaConnection = async () => {
     setTestResult("Testing v1.x...");
-    
+
     // Setează flag-ul pentru sandbox mode chiar și în producție
     localStorage.setItem("netopia_force_sandbox", "true");
     console.log("🧪 Forcing sandbox mode for testing");
-    
+
     try {
       const testData = {
         orderId: "TEST-" + Date.now(),
@@ -88,14 +88,18 @@ const Checkout: React.FC = () => {
       console.log("📝 JSON string length:", jsonString.length);
       console.log("📝 JSON string preview:", jsonString.substring(0, 50));
 
+      // Use browser-compatible endpoint for tests and proxy through Vite dev server
       const netopiaEndpoint = isDevelopment
-        ? "http://localhost:8888/.netlify/functions/netopia-initiate-fixed"
-        : "/.netlify/functions/netopia-initiate-fixed";
+        ? "/api/netopia-browser-fix"
+        : "/.netlify/functions/netopia-browser-fix";
       const response = await fetch(netopiaEndpoint, {
         method: "POST",
         headers: {
           "Content-Type": "application/json; charset=utf-8",
+          Accept: "text/html,application/json,*/*",
+          "Cache-Control": "no-cache",
         },
+        credentials: "same-origin",
         body: jsonString,
       });
 
@@ -130,11 +134,11 @@ const Checkout: React.FC = () => {
   // Test function for Netopia API v2.x
   const testNetopiaV2API = async () => {
     setTestResult("Testing API v2.x...");
-    
+
     // Setează flag-ul pentru sandbox mode chiar și în producție
     localStorage.setItem("netopia_force_sandbox", "true");
     console.log("🧪 Forcing sandbox mode for v2.x testing");
-    
+
     try {
       const { testNetopiaV2API } = await import("../services/netopiaPayments");
 

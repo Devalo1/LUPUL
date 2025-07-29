@@ -391,7 +391,14 @@ const Checkout: React.FC = () => {
           timestamp: new Date().toISOString(),
         };
 
-        const cookieValue = btoa(JSON.stringify(cookieRecoveryData));
+        // Funcție pentru encoding Unicode-safe (în loc de btoa care nu suportă diacritice)
+        const unicodeBase64Encode = (str: string) => {
+          return btoa(encodeURIComponent(str).replace(/%([0-9A-F]{2})/g, (_, p1) => 
+            String.fromCharCode(parseInt(p1, 16))
+          ));
+        };
+
+        const cookieValue = unicodeBase64Encode(JSON.stringify(cookieRecoveryData));
         document.cookie = `orderRecovery_${realOrderId}=${cookieValue}; max-age=86400; path=/; SameSite=Lax`;
         console.log("🍪 Date recovery salvate în cookie pentru:", realOrderId);
 

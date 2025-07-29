@@ -100,7 +100,7 @@ export const handler = async (event, context) => {
 
     // Fallback la credențiale cunoscute pentru producție
     const smtpUser = process.env.SMTP_USER || "lupulsicorbul@gmail.com";
-    const smtpPass = process.env.SMTP_PASS || "lraf ziyj xyii ssas"; // Aceeași parolă ca în netopia-notify.js
+    const smtpPass = process.env.SMTP_PASS; // Folosim doar variabila de mediu pentru securitate
 
     // Pentru dezvoltare, permitem și testarea emailurilor reale
     // Dacă SMTP_PASS este "test-development-mode", simulăm

@@ -117,8 +117,15 @@ const PaymentPage: React.FC = () => {
         timestamp: new Date().toISOString(),
       };
 
+      // Funcție pentru encoding Unicode-safe (în loc de btoa care nu suportă diacritice)
+      const unicodeBase64Encode = (str: string) => {
+        return btoa(encodeURIComponent(str).replace(/%([0-9A-F]{2})/g, (_, p1) => 
+          String.fromCharCode(parseInt(p1, 16))
+        ));
+      };
+
       // Salvează în cookie cu expirare de 24h
-      const cookieValue = btoa(JSON.stringify(recoveryData)); // Encodare base64
+      const cookieValue = unicodeBase64Encode(JSON.stringify(recoveryData)); // Encodare base64 Unicode-safe
       document.cookie = `orderRecovery_${paymentData.orderId}=${cookieValue}; max-age=86400; path=/; SameSite=Lax`;
 
       console.log(

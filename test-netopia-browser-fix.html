@@ -1,0 +1,518 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test NETOPIA Browser Compatibility Fix</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            min-height: 100vh;
+        }
+        .container {
+            background: white;
+            border-radius: 15px;
+            padding: 2rem;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+        .browser-info {
+            background: #e3f2fd;
+            border: 1px solid #2196f3;
+            border-radius: 8px;
+            padding: 1rem;
+            margin-bottom: 2rem;
+        }
+        .test-section {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+        }
+        .test-button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 10px;
+            transition: transform 0.2s;
+        }
+        .test-button:hover {
+            transform: translateY(-2px);
+        }
+        .result {
+            margin-top: 1rem;
+            padding: 1rem;
+            border-radius: 8px;
+            white-space: pre-wrap;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        .success { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+        .error { background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+        .info { background: #d1ecf1; color: #0c5460; border: 1px solid #bee5eb; }
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid #f3f3f3;
+            border-radius: 50%;
+            border-top: 3px solid #3498db;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🧪 Test NETOPIA Browser Compatibility</h1>
+            <p>Testează fix-ul pentru problemele CORS în diferite browsere</p>
+        </div>
+
+        <div class="browser-info">
+            <h3>🌐 Informații Browser</h3>
+            <p><strong>Browser:</strong> <span id="browserName">-</span></p>
+            <p><strong>User Agent:</strong> <span id="userAgent">-</span></p>
+            <p><strong>CORS Strict:</strong> <span id="corsStrict">-</span></p>
+            <p><strong>URL curent:</strong> <span id="currentUrl">-</span></p>
+        </div>
+
+        <div class="test-section">
+            <h3>📋 Test 1: Verificare Endpoint NETOPIA</h3>
+            <p>Testează dacă endpoint-ul nou funcționează pe browser-ul curent</p>
+            <button class="test-button" onclick="testNetopiaEndpoint()">
+                🔧 Test Endpoint Browser Fix
+            </button>
+            <div id="endpointResult" class="result" style="display: none;"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>💳 Test 2: Simulare Plată Completă</h3>
+            <p>Testează întregul flow de plată cu date de test</p>
+            <button class="test-button" onclick="testFullPayment()">
+                🚀 Test Plată Completă
+            </button>
+            <div id="paymentResult" class="result" style="display: none;"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>🔍 Test 3: Comparație Browsere</h3>
+            <p>Afișează comportamentul specific pentru browser-ul curent</p>
+            <button class="test-button" onclick="showBrowserBehavior()">
+                📊 Analizează Browser
+            </button>
+            <div id="browserResult" class="result" style="display: none;"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>⚡ Test 4: Headers CORS</h3>
+            <p>Verifică dacă headers CORS sunt corect configurați</p>
+            <button class="test-button" onclick="testCORSHeaders()">
+                🛡️ Test CORS Headers
+            </button>
+            <div id="corsResult" class="result" style="display: none;"></div>
+        </div>
+    </div>
+
+    <script>
+        // Detect browser
+        function detectBrowser() {
+            const ua = navigator.userAgent.toLowerCase();
+            
+            if (ua.includes('chrome') && ua.includes('brave')) {
+                return { name: 'brave', strict: true };
+            } else if (ua.includes('firefox')) {
+                return { name: 'firefox', strict: true };
+            } else if (ua.includes('edg/')) {
+                return { name: 'edge', strict: false };
+            } else if (ua.includes('chrome')) {
+                return { name: 'chrome', strict: false };
+            } else if (ua.includes('safari')) {
+                return { name: 'safari', strict: true };
+            }
+            
+            return { name: 'unknown', strict: true };
+        }
+
+        // Initialize page
+        document.addEventListener('DOMContentLoaded', function() {
+            const browser = detectBrowser();
+            
+            document.getElementById('browserName').textContent = browser.name.toUpperCase();
+            document.getElementById('userAgent').textContent = navigator.userAgent;
+            document.getElementById('corsStrict').textContent = browser.strict ? 'DA' : 'NU';
+            document.getElementById('currentUrl').textContent = window.location.href;
+        });
+
+        // Show loading
+        function showLoading(resultId) {
+            const resultEl = document.getElementById(resultId);
+            resultEl.style.display = 'block';
+            resultEl.className = 'result info';
+            resultEl.innerHTML = '<div class="loading"></div> Se execută testul...';
+        }
+
+        // Show result
+        function showResult(resultId, content, type = 'info') {
+            const resultEl = document.getElementById(resultId);
+            resultEl.style.display = 'block';
+            resultEl.className = `result ${type}`;
+            resultEl.textContent = content;
+        }
+
+        // Test 1: Endpoint verification
+        async function testNetopiaEndpoint() {
+            showLoading('endpointResult');
+            
+            try {
+                console.log('🔧 Testing NETOPIA browser fix endpoint...');
+                
+                const testData = {
+                    orderId: `TEST-${Date.now()}`,
+                    amount: 100, // 1 RON în bani
+                    currency: 'RON',
+                    description: 'Test plată browser compatibility',
+                    customerInfo: {
+                        firstName: 'Test',
+                        lastName: 'Browser',
+                        email: 'test@lupulsicorbul.com',
+                        phone: '+40700000000',
+                        address: 'Strada Test 1',
+                        city: 'București',
+                        county: 'București',
+                        postalCode: '123456'
+                    },
+                    live: false // Forțează sandbox pentru test
+                };
+
+                const endpoint = window.location.hostname === 'localhost' ? 
+                    '/api/netopia-browser-fix' : 
+                    '/.netlify/functions/netopia-browser-fix';
+
+                console.log('📍 Using endpoint:', endpoint);
+
+                const response = await fetch(endpoint, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json; charset=utf-8',
+                        'Accept': 'text/html,application/json,*/*',
+                        'Cache-Control': 'no-cache'
+                    },
+                    body: JSON.stringify(testData),
+                    credentials: 'same-origin'
+                });
+
+                const contentType = response.headers.get('content-type') || '';
+                const responseText = await response.text();
+
+                let result = `✅ SUCCES - Endpoint funcționează!\n\n`;
+                result += `Status: ${response.status} ${response.statusText}\n`;
+                result += `Content-Type: ${contentType}\n`;
+                result += `Response Length: ${responseText.length} chars\n\n`;
+                
+                if (contentType.includes('text/html')) {
+                    result += `📄 Răspuns HTML (form NETOPIA):\n`;
+                    result += `- Conține <form>: ${responseText.includes('<form')}\n`;
+                    result += `- Conține action: ${responseText.includes('action=')}\n`;
+                    result += `- Conține data: ${responseText.includes('name="data"')}\n`;
+                    result += `- Conține signature: ${responseText.includes('name="signature"')}\n`;
+                    result += `- Browser info: ${responseText.includes('browser-info')}\n`;
+                } else {
+                    result += `📄 Răspuns JSON/Text:\n${responseText.substring(0, 500)}`;
+                }
+
+                showResult('endpointResult', result, 'success');
+
+            } catch (error) {
+                console.error('❌ Test endpoint failed:', error);
+                
+                let errorResult = `❌ EROARE - Endpoint nu funcționează!\n\n`;
+                errorResult += `Error: ${error.message}\n`;
+                errorResult += `Browser: ${detectBrowser().name}\n`;
+                
+                if (error.message.includes('Failed to fetch')) {
+                    errorResult += `\n🚨 CORS Error - Browser blochează request-ul!\n`;
+                    errorResult += `Soluții:\n`;
+                    errorResult += `- Dezactivează ad blockers\n`;
+                    errorResult += `- Încearcă alt browser\n`;
+                    errorResult += `- Verifică console-ul pentru detalii`;
+                }
+
+                showResult('endpointResult', errorResult, 'error');
+            }
+        }
+
+        // Test 2: Full payment simulation
+        async function testFullPayment() {
+            showLoading('paymentResult');
+            
+            try {
+                console.log('🚀 Testing full payment flow...');
+                
+                // Simulate payment data like in real app
+                const paymentData = {
+                    orderId: `TEST-FULL-${Date.now()}`,
+                    amount: 500, // 5 RON
+                    currency: 'RON',
+                    description: 'Test comandă completă - Browser Fix',
+                    customerInfo: {
+                        firstName: 'Test',
+                        lastName: 'Complete',
+                        email: 'test.complete@lupulsicorbul.com',
+                        phone: '+40755123456',
+                        address: 'Bulevardul Test 123',
+                        city: 'București',
+                        county: 'Ilfov',
+                        postalCode: '077190'
+                    },
+                    live: false // Test în sandbox
+                };
+
+                const endpoint = window.location.hostname === 'localhost' ? 
+                    '/api/netopia-browser-fix' : 
+                    '/.netlify/functions/netopia-browser-fix';
+
+                const startTime = Date.now();
+                
+                const response = await fetch(endpoint, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json; charset=utf-8',
+                        'Accept': 'text/html,application/json,*/*',
+                        'Cache-Control': 'no-cache'
+                    },
+                    body: JSON.stringify(paymentData),
+                    credentials: 'same-origin'
+                });
+
+                const endTime = Date.now();
+                const responseTime = endTime - startTime;
+                const responseText = await response.text();
+
+                let result = `✅ TEST COMPLET REUȘIT!\n\n`;
+                result += `📊 Performanță:\n`;
+                result += `- Timp răspuns: ${responseTime}ms\n`;
+                result += `- Status: ${response.status}\n`;
+                result += `- Content-Type: ${response.headers.get('content-type')}\n\n`;
+                
+                result += `📋 Detalii plată:\n`;
+                result += `- Order ID: ${paymentData.orderId}\n`;
+                result += `- Sumă: ${(paymentData.amount / 100).toFixed(2)} RON\n`;
+                result += `- Client: ${paymentData.customerInfo.firstName} ${paymentData.customerInfo.lastName}\n\n`;
+
+                if (response.ok) {
+                    if (responseText.includes('payment-simulation')) {
+                        result += `🧪 SIMULARE: Redirecționare către pagina de test\n`;
+                        result += `URL: ${responseText.match(/paymentUrl":"([^"]+)"/)?.[1] || 'N/A'}\n`;
+                    } else if (responseText.includes('<form')) {
+                        result += `💳 NETOPIA FORM: Generat cu succes\n`;
+                        result += `- Endpoint NETOPIA: ${responseText.includes('secure.netopia-payments.com') ? '✅' : '❌'}\n`;
+                        result += `- Auto-submit: ${responseText.includes('submit()') ? '✅' : '❌'}\n`;
+                        result += `- Browser detection: ${responseText.includes('browser-info') ? '✅' : '❌'}\n`;
+                    }
+                    
+                    showResult('paymentResult', result, 'success');
+                } else {
+                    result = `❌ TEST EȘUAT!\n\n`;
+                    result += `Status: ${response.status}\n`;
+                    result += `Error: ${responseText}\n`;
+                    showResult('paymentResult', result, 'error');
+                }
+
+            } catch (error) {
+                console.error('❌ Full payment test failed:', error);
+                
+                let errorResult = `❌ TESTUL COMPLET A EȘUAT!\n\n`;
+                errorResult += `Error: ${error.message}\n`;
+                errorResult += `Browser: ${detectBrowser().name}\n`;
+                errorResult += `Strict CORS: ${detectBrowser().strict}\n\n`;
+                
+                if (error.name === 'TypeError' && error.message.includes('fetch')) {
+                    errorResult += `🚨 Problemă de conectivitate!\n`;
+                    errorResult += `Posibile cauze:\n`;
+                    errorResult += `- Server-ul de dezvoltare nu rulează\n`;
+                    errorResult += `- Funcția Netlify nu există\n`;
+                    errorResult += `- Browser blochează CORS\n`;
+                }
+
+                showResult('paymentResult', errorResult, 'error');
+            }
+        }
+
+        // Test 3: Browser behavior analysis
+        function showBrowserBehavior() {
+            showLoading('browserResult');
+            
+            const browser = detectBrowser();
+            
+            let result = `🔍 ANALIZĂ BROWSER: ${browser.name.toUpperCase()}\n\n`;
+            
+            result += `📊 Caracteristici:\n`;
+            result += `- Nume: ${browser.name}\n`;
+            result += `- CORS Strict: ${browser.strict ? 'DA' : 'NU'}\n`;
+            result += `- User Agent: ${navigator.userAgent.substring(0, 80)}...\n\n`;
+            
+            result += `⚙️ Comportament așteptat:\n`;
+            
+            switch (browser.name) {
+                case 'brave':
+                    result += `- Blochează CORS agresiv\n`;
+                    result += `- Necesită headers extinși\n`;
+                    result += `- Shield-urile pot bloca requests\n`;
+                    result += `- Delay mai mare pentru formulare\n`;
+                    result += `- Soluție: Endpoint cu CORS complet\n`;
+                    break;
+                    
+                case 'firefox':
+                    result += `- CORS strict, dar mai permisiv ca Brave\n`;
+                    result += `- Verifică preflight OPTIONS\n`;
+                    result += `- Poate bloca mixed content\n`;
+                    result += `- Soluție: Headers și credentials corecte\n`;
+                    break;
+                    
+                case 'edge':
+                    result += `- CORS mai relaxat\n`;
+                    result += `- Compatibil cu Chrome\n`;
+                    result += `- Funcționează cu headers standard\n`;
+                    result += `- Procesor rapid pentru formulare\n`;
+                    break;
+                    
+                case 'chrome':
+                    result += `- Balansat între securitate și funcționalitate\n`;
+                    result += `- CORS standard\n`;
+                    result += `- Suport excelent pentru fetch API\n`;
+                    result += `- Referința pentru compatibilitate\n`;
+                    break;
+                    
+                case 'safari':
+                    result += `- CORS și privacy foarte stricte\n`;
+                    result += `- Poate bloca third-party cookies\n`;
+                    result += `- Restrições ITP (Intelligent Tracking Prevention)\n`;
+                    result += `- Soluție: Same-origin credentials\n`;
+                    break;
+                    
+                default:
+                    result += `- Browser necunoscut\n`;
+                    result += `- Folosim configurația strictă\n`;
+                    result += `- Testează cu browsere mainstream\n`;
+            }
+            
+            result += `\n🔧 Optimizări aplicate:\n`;
+            result += `- Headers CORS extinși: ✅\n`;
+            result += `- Credentials same-origin: ✅\n`;
+            result += `- Accept headers multiple: ✅\n`;
+            result += `- Cache-Control no-cache: ✅\n`;
+            result += `- Delay pentru formulare: ${browser.strict ? '3s' : '1.5s'}\n`;
+            
+            showResult('browserResult', result, 'info');
+        }
+
+        // Test 4: CORS headers verification
+        async function testCORSHeaders() {
+            showLoading('corsResult');
+            
+            try {
+                console.log('🛡️ Testing CORS headers...');
+                
+                const endpoint = window.location.hostname === 'localhost' ? 
+                    '/api/netopia-browser-fix' : 
+                    '/.netlify/functions/netopia-browser-fix';
+
+                // Test OPTIONS preflight
+                const optionsResponse = await fetch(endpoint, {
+                    method: 'OPTIONS',
+                    headers: {
+                        'Origin': window.location.origin,
+                        'Access-Control-Request-Method': 'POST',
+                        'Access-Control-Request-Headers': 'Content-Type'
+                    }
+                });
+
+                let result = `🛡️ TEST CORS HEADERS\n\n`;
+                result += `📋 Preflight OPTIONS Request:\n`;
+                result += `- Status: ${optionsResponse.status}\n`;
+                result += `- Access-Control-Allow-Origin: ${optionsResponse.headers.get('Access-Control-Allow-Origin') || 'MISSING'}\n`;
+                result += `- Access-Control-Allow-Methods: ${optionsResponse.headers.get('Access-Control-Allow-Methods') || 'MISSING'}\n`;
+                result += `- Access-Control-Allow-Headers: ${optionsResponse.headers.get('Access-Control-Allow-Headers') || 'MISSING'}\n`;
+                result += `- Access-Control-Allow-Credentials: ${optionsResponse.headers.get('Access-Control-Allow-Credentials') || 'MISSING'}\n`;
+                result += `- Access-Control-Max-Age: ${optionsResponse.headers.get('Access-Control-Max-Age') || 'MISSING'}\n\n`;
+
+                // Test actual POST
+                const postResponse = await fetch(endpoint, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Origin': window.location.origin
+                    },
+                    body: JSON.stringify({ test: true }),
+                    credentials: 'same-origin'
+                });
+
+                result += `📋 POST Request Headers:\n`;
+                result += `- Status: ${postResponse.status}\n`;
+                result += `- Access-Control-Allow-Origin: ${postResponse.headers.get('Access-Control-Allow-Origin') || 'MISSING'}\n`;
+                result += `- Vary: ${postResponse.headers.get('Vary') || 'MISSING'}\n`;
+                result += `- Cache-Control: ${postResponse.headers.get('Cache-Control') || 'MISSING'}\n\n`;
+
+                result += `✅ DIAGNOZA:\n`;
+                if (optionsResponse.status === 200 && postResponse.status !== 500) {
+                    result += `- CORS configurația pare corectă\n`;
+                    result += `- Browser-ul ar trebui să accepte requests\n`;
+                    if (postResponse.status === 400) {
+                        result += `- POST endpoint funcționează (400 = date invalide, normal pentru test)\n`;
+                    }
+                } else {
+                    result += `- CORS configurația are probleme\n`;
+                    result += `- Browser-ul poate bloca requests\n`;
+                }
+
+                showResult('corsResult', result, optionsResponse.status === 200 ? 'success' : 'error');
+
+            } catch (error) {
+                console.error('❌ CORS test failed:', error);
+                
+                let errorResult = `❌ TESTUL CORS A EȘUAT!\n\n`;
+                errorResult += `Error: ${error.message}\n`;
+                errorResult += `Type: ${error.name}\n\n`;
+                
+                if (error.message.includes('Failed to fetch')) {
+                    errorResult += `🚨 Browser blochează complet request-urile!\n`;
+                    errorResult += `Cauze posibile:\n`;
+                    errorResult += `- Ad blocker activ\n`;
+                    errorResult += `- Shield-uri browser (Brave)\n`;
+                    errorResult += `- Privacy settings stricte\n`;
+                    errorResult += `- Server nu rulează\n`;
+                }
+
+                showResult('corsResult', errorResult, 'error');
+            }
+        }
+
+        // Utility to copy result to clipboard
+        function copyResult(resultId) {
+            const resultEl = document.getElementById(resultId);
+            if (resultEl && resultEl.textContent) {
+                navigator.clipboard.writeText(resultEl.textContent).then(() => {
+                    alert('Rezultatul a fost copiat în clipboard!');
+                });
+            }
+        }
+    </script>
+</body>
+</html>

@@ -156,6 +156,27 @@ class NetopiaPayments {
   }
 
   /**
+   * Detectează browser-ul pentru optimizări specifice
+   */
+  private detectBrowser(): { name: string; strict: boolean } {
+    const ua = navigator.userAgent.toLowerCase();
+    
+    if (ua.includes("chrome") && ua.includes("brave")) {
+      return { name: "brave", strict: true };
+    } else if (ua.includes("firefox")) {
+      return { name: "firefox", strict: true };
+    } else if (ua.includes("edg/")) {
+      return { name: "edge", strict: false };
+    } else if (ua.includes("chrome")) {
+      return { name: "chrome", strict: false };
+    } else if (ua.includes("safari")) {
+      return { name: "safari", strict: true };
+    }
+    
+    return { name: "unknown", strict: true };
+  }
+
+  /**
    * Inițiază o plată prin platforma NETOPIA Payments
    *
    * Procesul respectă standardele PCI DSS și implementează:
@@ -169,7 +190,10 @@ class NetopiaPayments {
    */
   async initiatePayment(paymentData: NetopiaPaymentData): Promise<string> {
     try {
+      const browser = this.detectBrowser();
+      
       console.log("🚀 INITIATING PAYMENT - Debug Info:");
+      console.log("🌐 Browser detected:", browser.name, "- Strict CORS:", browser.strict);
       console.log("📍 Current URL:", window.location.href);
       console.log("🏷️ LocalStorage sandbox flag:", localStorage.getItem("netopia_force_sandbox"));
       
@@ -182,7 +206,9 @@ class NetopiaPayments {
         hasLiveCredentials: this.hasLiveCredentials(),
         isProduction: this.isProduction(),
         signature: this.config.posSignature?.substring(0, 10) + "...",
-        hostname: window.location.hostname
+        hostname: window.location.hostname,
+        browser: browser.name,
+        browserStrict: browser.strict
       });
 
       const requestPayload = {
@@ -201,16 +227,22 @@ class NetopiaPayments {
         live: useLiveMode,
       });
 
-      // Use dynamic endpoint via getNetlifyEndpoint
-      const netopiaUrl = this.getNetlifyEndpoint("netopia-initiate-fixed");
+      // Use new browser-compatible endpoint
+      const netopiaUrl = this.getNetlifyEndpoint("netopia-browser-fix");
 
       console.log("🌐 Netopia endpoint:", netopiaUrl);
-      console.log("🔍 DEBUG: Using netopia-initiate-FIXED endpoint");
+      console.log("🔍 DEBUG: Using BROWSER-COMPATIBLE endpoint with CORS fix");
 
       const response = await fetch(netopiaUrl, {
         method: "POST",
-        headers: { "Content-Type": "application/json; charset=utf-8" },
+        headers: { 
+          "Content-Type": "application/json; charset=utf-8",
+          "Accept": "text/html,application/json,*/*",
+          "Cache-Control": "no-cache"
+        },
         body: requestBody,
+        // Add credentials for CORS compatibility
+        credentials: "same-origin"
       });
       if (!response.ok) {
         const errorText = await response.text();
@@ -283,10 +315,26 @@ class NetopiaPayments {
       return data.paymentUrl;
     } catch (error) {
       console.error("Eroare NETOPIA:", error);
+      
+      const browser = this.detectBrowser();
+      const errorMessage = error instanceof Error ? error.message : "Eroare necunoscută";
 
-      // Mesaj mai specific pentru utilizator
-      const errorMessage =
-        error instanceof Error ? error.message : "Eroare necunoscută";
+      // Mesaje specifice pentru browsere diferite
+      if (errorMessage.includes("Failed to fetch")) {
+        if (browser.name === "brave") {
+          throw new Error(
+            "Brave browser blochează request-ul. Vă rugăm să dezactivați temporar Shield-urile Brave sau să folosiți alt browser pentru plată."
+          );
+        } else if (browser.name === "firefox") {
+          throw new Error(
+            "Firefox blochează request-ul. Vă rugăm să verificați setările de privacy sau să folosiți alt browser pentru plată."
+          );
+        } else {
+          throw new Error(
+            "Conexiunea la sistemul de plăți a fost blocată de browser. Vă rugăm să încercați cu alt browser."
+          );
+        }
+      }
 
       if (errorMessage.includes("NETOPIA live configuration not found")) {
         throw new Error(
@@ -294,8 +342,9 @@ class NetopiaPayments {
         );
       }
 
+      // Mesaj general cu context browser
       throw new Error(
-        "Nu am putut inițializa plata cu cardul. Vă rugăm să încercați din nou sau să alegeți plata ramburs."
+        `Nu am putut inițializa plata cu cardul (${browser.name}). Vă rugăm să încercați din nou sau să alegeți plata ramburs.`
       );
     }
   }

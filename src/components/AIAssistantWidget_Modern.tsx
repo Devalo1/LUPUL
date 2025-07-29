@@ -93,6 +93,21 @@ const AIAssistantWidget: React.FC = () => {
   // State pentru loading conversation
   const [loadingConversation, setLoadingConversation] = useState(false);
 
+  // Helper function for safe event listener management
+  const addEventListenerSafe = <T extends Event>(
+    element: HTMLElement | Window | Document,
+    event: string,
+    handler: (e: T) => void,
+    options: AddEventListenerOptions = {}
+  ) => {
+    const safeHandler = (e: Event) => handler(e as T);
+    element.addEventListener(event, safeHandler, {
+      passive: false,
+      ...options,
+    });
+    return () => element.removeEventListener(event, safeHandler);
+  };
+
   // Refs
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
@@ -152,9 +167,16 @@ const AIAssistantWidget: React.FC = () => {
     // Disable drag on mobile
     if (window.innerWidth <= 768) return;
 
-    // Prevent the button click when dragging starts
-    e.preventDefault();
-    e.stopPropagation();
+    // Safely prevent the button click when dragging starts
+    try {
+      if (e.cancelable) {
+        e.preventDefault();
+      }
+      e.stopPropagation();
+    } catch (error) {
+      // Ignore preventDefault errors on passive listeners
+      console.debug("Could not preventDefault on passive listener");
+    }
 
     setDragging(true);
     let clientX = 0,
@@ -192,7 +214,15 @@ const AIAssistantWidget: React.FC = () => {
     (e: MouseEvent | TouchEvent) => {
       if (!dragging) return;
 
-      e.preventDefault(); // Prevent default behavior
+      // Safely prevent default behavior
+      try {
+        if (e.cancelable) {
+          e.preventDefault();
+        }
+      } catch (error) {
+        // Ignore preventDefault errors on passive listeners
+        console.debug("Could not preventDefault on passive listener");
+      }
 
       // Mark that we actually dragged (moved)
       setHasDragged(true);
@@ -266,23 +296,36 @@ const AIAssistantWidget: React.FC = () => {
   // Handle drag events
   useEffect(() => {
     if (dragging) {
-      window.addEventListener("mousemove", handleDrag);
-      window.addEventListener("mouseup", handleDragEnd);
-      window.addEventListener("touchmove", handleDrag);
-      window.addEventListener("touchend", handleDragEnd);
-    } else {
-      window.removeEventListener("mousemove", handleDrag);
-      window.removeEventListener("mouseup", handleDragEnd);
-      window.removeEventListener("touchmove", handleDrag);
-      window.removeEventListener("touchend", handleDragEnd);
+      // Use safe event listener management
+      const cleanupMouseMove = addEventListenerSafe<MouseEvent | TouchEvent>(
+        window,
+        "mousemove",
+        handleDrag
+      );
+      const cleanupMouseUp = addEventListenerSafe<MouseEvent | TouchEvent>(
+        window,
+        "mouseup",
+        handleDragEnd
+      );
+      const cleanupTouchMove = addEventListenerSafe<MouseEvent | TouchEvent>(
+        window,
+        "touchmove",
+        handleDrag
+      );
+      const cleanupTouchEnd = addEventListenerSafe<MouseEvent | TouchEvent>(
+        window,
+        "touchend",
+        handleDragEnd
+      );
+
+      return () => {
+        cleanupMouseMove();
+        cleanupMouseUp();
+        cleanupTouchMove();
+        cleanupTouchEnd();
+      };
     }
-    return () => {
-      window.removeEventListener("mousemove", handleDrag);
-      window.removeEventListener("mouseup", handleDragEnd);
-      window.removeEventListener("touchmove", handleDrag);
-      window.removeEventListener("touchend", handleDragEnd);
-    };
-  }, [dragging, dragOffset, modalDimensions]); // Remove handleDrag and handleDragEnd from dependencies
+  }, [dragging, addEventListenerSafe]);
 
   // Update modal position in CSS
   useEffect(() => {
@@ -664,13 +707,14 @@ const AIAssistantWidget: React.FC = () => {
     };
 
     if (open) {
-      document.addEventListener("mousedown", handleClickOutside);
+      const cleanup = addEventListenerSafe<MouseEvent>(
+        document,
+        "mousedown",
+        handleClickOutside
+      );
+      return cleanup;
     }
-
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-    };
-  }, [open]);
+  }, [open, addEventListenerSafe]);
 
   // Auto-hide conversations dropdown when clicking outside widget
   useEffect(() => {
@@ -697,16 +741,14 @@ const AIAssistantWidget: React.FC = () => {
     };
 
     if (open && showConversations) {
-      document.addEventListener("mousedown", handleConversationsClickOutside);
-    }
-
-    return () => {
-      document.removeEventListener(
+      const cleanup = addEventListenerSafe<MouseEvent>(
+        document,
         "mousedown",
         handleConversationsClickOutside
       );
-    };
-  }, [open, showConversations]);
+      return cleanup;
+    }
+  }, [open, showConversations, addEventListenerSafe]);
 
   // Simulate notification for demo
   useEffect(() => {

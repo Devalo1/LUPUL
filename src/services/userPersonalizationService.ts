@@ -32,7 +32,7 @@ export interface UserPersonalityProfile {
     needsEncouragement: boolean;
     likesExamples: boolean;
     userName?: string;
-    userAge?: number;
+    userAge?: number | null;
   };
   emotionalProfile: {
     generalMood: "positive" | "neutral" | "analytical";
@@ -498,7 +498,8 @@ export const userPersonalizationService = {
   // Salvează profilul utilizatorului
   async saveUserProfile(profile: UserPersonalityProfile): Promise<void> {
     const ref = doc(firestore, USER_PROFILES_COLLECTION, profile.userId);
-    await setDoc(ref, profile, { merge: true });
+    const cleanedProfile = this.cleanUndefinedValues(profile);
+    await setDoc(ref, cleanedProfile, { merge: true });
   },
 
   // Obține profilul utilizatorului
@@ -766,12 +767,13 @@ PROFILUL UTILIZATORULUI (bazat pe ${profile.totalConversations} conversații ant
           break;
         case "varsta":
         case "age":
+          const parsedAge = parseInt(infoValue) || null;
           profile.personalPreferences = {
             ...profile.personalPreferences,
-            userAge: parseInt(infoValue) || undefined,
+            userAge: parsedAge,
           };
           console.log(
-            `[PersonalizationService] Set userAge to: ${infoValue} for user ${userId}`
+            `[PersonalizationService] Set userAge to: ${parsedAge} for user ${userId}`
           );
           break;
         case "ocupatie":
@@ -803,7 +805,10 @@ PROFILUL UTILIZATORULUI (bazat pe ${profile.totalConversations} conversații ant
       }
       profile.updatedAt = Timestamp.now();
 
-      await setDoc(ref, profile, { merge: true });
+      // Curățăm valorile undefined înainte de salvare pentru a evita erori Firebase
+      const cleanedProfile = this.cleanUndefinedValues(profile);
+
+      await setDoc(ref, cleanedProfile, { merge: true });
       console.log(
         `[PersonalizationService] === SUCCESSFULLY SAVED ${infoType.toUpperCase()}: "${infoValue}" FOR USER: ${userId} ===`
       );
@@ -859,7 +864,7 @@ PROFILUL UTILIZATORULUI (bazat pe ${profile.totalConversations} conversații ant
         needsEncouragement: false,
         likesExamples: true,
         userName: undefined,
-        userAge: undefined,
+        userAge: null,
       },
       emotionalProfile: {
         generalMood: "neutral",
@@ -954,5 +959,21 @@ PROFILUL UTILIZATORULUI (bazat pe ${profile.totalConversations} conversații ant
         break;
       }
     }
+  },
+
+  // Curăță valorile undefined din obiect pentru a evita erori Firebase
+  cleanUndefinedValues(obj: any): any {
+    if (obj === null || obj === undefined) return null;
+    if (typeof obj !== "object") return obj;
+    if (Array.isArray(obj))
+      return obj.map((item) => this.cleanUndefinedValues(item));
+
+    const cleaned: any = {};
+    for (const key in obj) {
+      if (obj[key] !== undefined) {
+        cleaned[key] = this.cleanUndefinedValues(obj[key]);
+      }
+    }
+    return cleaned;
   },
 };

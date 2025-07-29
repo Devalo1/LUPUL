@@ -37,6 +37,17 @@
       http-equiv="Cross-Origin-Opener-Policy"
       content="same-origin-allow-popups"
     />
+
+    <!-- Force React development mode to fix production warnings -->
+    <script>
+      // Fix React production mode warnings
+      if (typeof window !== "undefined") {
+        window.process = window.process || {};
+        window.process.env = window.process.env || {};
+        window.process.env.NODE_ENV = "development";
+        window.__DEV__ = true;
+      }
+    </script>
   </head>
   <body>
     <div id="root"></div>

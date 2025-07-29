@@ -1,6 +1,8 @@
 // Advanced AI Features pentru Widget Modern
 // Funcționalități extra pentru tineri: emoji reactions, quick responses, mood tracking
 
+import OpenAI from "openai";
+
 export interface MoodEntry {
   timestamp: Date;
   mood: "😊" | "😐" | "😔" | "😤" | "😴" | "🔥" | "🤔" | "💪";
@@ -326,8 +328,23 @@ export const generateConversationTitle = async (
       ? `User: ${firstUserMessage}\nAI: ${aiResponse}`
       : `User: ${firstUserMessage}`;
 
-    // Prompt optimizat pentru generarea de titluri scurte și relevante
-    const titlePrompt = `Analizează următoarea conversație și generează un titlu scurt și descriptiv (maxim 4-5 cuvinte) în română:
+    // Folosim OpenAI direct pentru generarea titlului
+    const openai = new OpenAI({
+      apiKey: import.meta.env.VITE_OPENAI_API_KEY,
+      dangerouslyAllowBrowser: true,
+    });
+
+    const response = await openai.chat.completions.create({
+      model: "gpt-3.5-turbo",
+      messages: [
+        {
+          role: "system",
+          content:
+            "Ești un asistent care generează titluri scurte și descriptive pentru conversații în română. Răspunde doar cu titlul, fără explicații suplimentare.",
+        },
+        {
+          role: "user",
+          content: `Analizează următoarea conversație și generează un titlu scurt și descriptiv (maxim 4-5 cuvinte) în română:
 
 ${context}
 
@@ -337,28 +354,14 @@ Instrucțiuni:
 - Folosește un limbaj natural și accesibil
 - Exemplu de format: "Ajutor cu matematica", "Sfaturi pentru somn", "Planuri de weekend"
 
-Titlu:`;
-
-    const response = await fetch("/api/ai-chat", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        prompt: titlePrompt,
-        assistantName: "AI Assistant",
-        addressMode: "formal",
-        personalizedContext:
-          "Generează doar titlul conversației, scurt și relevant.",
-      }),
+Titlu:`,
+        },
+      ],
+      max_tokens: 20,
+      temperature: 0.7,
     });
 
-    if (!response.ok) {
-      throw new Error(`API Error: ${response.status}`);
-    }
-
-    const data = await response.json();
-    const generatedTitle = data.reply?.trim();
+    const generatedTitle = response.choices[0]?.message?.content?.trim();
 
     if (generatedTitle && generatedTitle.length > 3) {
       // Curățare și validare titlu

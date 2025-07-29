@@ -159,9 +159,10 @@ class NetopiaPayments {
       });
 
       // Use dynamic endpoint via getNetlifyEndpoint
-      const netopiaUrl = this.getNetlifyEndpoint("netopia-initiate");
+      const netopiaUrl = this.getNetlifyEndpoint("netopia-initiate-fixed");
 
       console.log("🌐 Netopia endpoint:", netopiaUrl);
+      console.log("🔍 DEBUG: Using netopia-initiate-FIXED endpoint");
 
       const response = await fetch(netopiaUrl, {
         method: "POST",
@@ -459,6 +460,81 @@ const getNetopiaConfig = (): NetopiaConfig => {
 
 // Instanța singleton pentru serviciul NETOPIA
 export const netopiaService = new NetopiaPayments(getNetopiaConfig());
+
+/**
+ * Testează noua NETOPIA API v2.x cu API KEY
+ */
+export async function testNetopiaV2API(
+  paymentData: NetopiaPaymentData
+): Promise<string> {
+  try {
+    console.log("🌟 Testing NETOPIA API v2.x:", {
+      orderId: paymentData.orderId,
+      amount: paymentData.amount,
+      customerEmail: paymentData.customerInfo?.email,
+    });
+
+    // Determine base URL for the endpoint
+    const baseUrl =
+      window.location.hostname === "localhost" ? "http://localhost:8888" : "";
+
+    const v2Endpoint = `${baseUrl}/.netlify/functions/netopia-v2-api`;
+
+    const response = await fetch(v2Endpoint, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Accept: "application/json",
+      },
+      body: JSON.stringify(paymentData),
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error("❌ NETOPIA API v2.x Error:", {
+        status: response.status,
+        statusText: response.statusText,
+        body: errorText,
+      });
+
+      // Încearcă să extragă mesajul de eroare din răspuns
+      let errorMessage = `NETOPIA API v2.x Error: ${response.status}`;
+      try {
+        const errorData = JSON.parse(errorText);
+        if (errorData.message) {
+          errorMessage = errorData.message;
+        }
+      } catch (e) {
+        // Dacă nu este JSON valid, folosește textul direct pentru erori scurte
+        if (errorText.length < 200) {
+          errorMessage = errorText;
+        }
+      }
+
+      throw new Error(errorMessage);
+    }
+
+    const responseData = await response.json();
+
+    console.log("✅ NETOPIA API v2.x Response:", {
+      success: responseData.success,
+      orderId: responseData.orderId,
+      ntpID: responseData.ntpID,
+      apiVersion: responseData.apiVersion,
+      environment: responseData.environment,
+    });
+
+    if (!responseData.success) {
+      throw new Error(responseData.message || "Payment initiation failed");
+    }
+
+    return responseData.paymentUrl;
+  } catch (error) {
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    console.error("🚨 NETOPIA API v2.x Test failed:", errorMessage);
+    throw error;
+  }
+}
 
 // Export pentru tipuri
 export type { NetopiaPaymentData, NetopiaConfig };

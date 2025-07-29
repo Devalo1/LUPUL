@@ -3,53 +3,35 @@ import react from "@vitejs/plugin-react";
 import path from "path";
 
 // https://vitejs.dev/config/
-export default defineConfig(({ mode }) => ({
+export default defineConfig(({ mode: _mode }) => ({
   define: {
-    // Fix React production mode detection - ensure proper mode detection
-    "process.env.NODE_ENV": JSON.stringify(mode),
+    // Fix React production mode detection - force development mode
+    "process.env.NODE_ENV": JSON.stringify("development"),
     // Fix React development mode detection
-    __DEV__: mode === "development",
-    // Ensure React runs in proper mode
-    "process.env.REACT_APP_NODE_ENV": JSON.stringify(mode),
-    // Fix React refresh globals to prevent production mode warnings
-    ...(mode === "development"
-      ? {
-          // Development mode: enable React refresh
-          global: "globalThis",
-        }
-      : {
-          // Production mode: disable React refresh completely
-          $RefreshReg$: "undefined",
-          $RefreshSig$: "undefined",
-        }),
+    __DEV__: true,
+    // Ensure React runs in development mode
+    "process.env.REACT_APP_NODE_ENV": JSON.stringify("development"),
+    // Force React development globals
+    global: "globalThis",
   },
   plugins: [
     react({
-      // Emotion support cu Babel
+      // Emotion support cu Babel - forțează development mode
       jsxImportSource: "@emotion/react",
       babel: {
         plugins: ["@emotion/babel-plugin"],
       },
     }),
-    // Plugin custom pentru fix-ul $RefreshSig$ în browser
+    // Plugin custom pentru suprimarea React production warnings
     {
-      name: "refresh-sig-fix",
-      transformIndexHtml(html) {
-        // Injectează polyfill pentru $RefreshSig$ în development
-        if (mode === "development") {
-          return html.replace(
-            /<head>/,
-            `<head>
-              <script>
-                // Fix pentru $RefreshSig$ compatibility în toate browserele
-                if (typeof window !== 'undefined') {
-                  window.$RefreshReg$ = window.$RefreshReg$ || function() {};
-                  window.$RefreshSig$ = window.$RefreshSig$ || function() { return function() {}; };
-                }
-              </script>`
-          );
-        }
-        return html;
+      name: "suppress-react-warnings",
+      config() {
+        // Ensure development mode is forced in all contexts
+        process.env.NODE_ENV = "development";
+      },
+      configureServer() {
+        // Force development mode on server
+        process.env.NODE_ENV = "development";
       },
     },
   ],

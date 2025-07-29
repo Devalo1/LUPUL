@@ -9,6 +9,8 @@ import { Timestamp } from "firebase/firestore";
 import { fetchAIResponseSafe } from "../utils/aiApiUtils";
 import { getTherapyResponse } from "../services/openaiService";
 import { validateAvatarData } from "../utils/avatarUtils";
+import { enhancedAIService } from "../services/enhancedAIService";
+import { PlatformMentorAI } from "../utils/platformMentorSystem";
 
 // Folosește funcția sigură pentru AI Response (adaptată pentru producție)
 const fetchAIResponse = fetchAIResponseSafe;
@@ -402,7 +404,7 @@ const AIAssistantWidget: React.FC = () => {
   // Nu afișa widget-ul pe pagina dedicată AI Messenger
   if (location.pathname === "/ai-messenger") return null;
 
-  // Trimitere mesaj user + răspuns AI dummy cu indicator typing
+  // Trimitere mesaj user + răspuns AI cu sistem mentor enhanced
   const handleSendMessage = async () => {
     if (!input.trim()) return;
 
@@ -435,30 +437,122 @@ const AIAssistantWidget: React.FC = () => {
         timestamp: Timestamp.now(),
       });
 
-      // Răspuns real AI via openaiService (ca la terapie)
+      // Folosește Enhanced AI Service pentru răspuns complet cu cunoștințe despre platformă
       setTimeout(async () => {
         console.log(
-          `[AIWidget] Calling fetchAIResponse with userId: ${user?.uid} and message: ${userMessage}`
-        );
-        const aiReply = await fetchAIResponse(
-          userMessage, // Folosește mesajul salvat, nu input-ul resetat
-          user?.uid,
-          assistantProfile
+          `[AIWidget Enhanced] Calling enhancedAIService with userId: ${user?.uid} and message: ${userMessage}`
         );
 
-        console.log(
-          "[AIWidget] AI response received:",
-          aiReply?.substring(0, 100)
-        );
-        console.log(
-          "[AIWidget] AI response received:",
-          aiReply?.substring(0, 100)
-        );
+        // Debugging info
+        console.log("[AIWidget Enhanced] User authenticated:", !!user);
+        console.log("[AIWidget Enhanced] User ID:", user?.uid);
+        console.log("[AIWidget Enhanced] Current location:", location.pathname);
+
+        let fullResponse = "";
+
+        try {
+          // Verifică dacă utilizatorul este autentificat
+          if (!user || !user.uid) {
+            console.warn(
+              "[AIWidget Enhanced] User not authenticated, using guest mode"
+            );
+            // Pentru utilizatori neautentificați, folosim un ID temporar
+            const guestUserId = `guest_${Date.now()}`;
+            console.log("[AIWidget Enhanced] Using guest ID:", guestUserId);
+          }
+
+          // Contextualizează răspunsul cu informații despre pagina curentă
+          const contextInfo = {
+            currentPage: location.pathname,
+            userActions: [], // Se poate extinde cu acțiuni specifice
+            sessionData: { assistantProfile },
+          };
+
+          console.log("[AIWidget Enhanced] Context info:", contextInfo);
+
+          // Folosește Enhanced AI Service
+          const enhancedResponse = await enhancedAIService.chatWithEnhancedAI(
+            user?.uid || `guest_${Date.now()}`,
+            userMessage,
+            contextInfo
+          );
+
+          console.log(
+            "[AIWidget Enhanced] Enhanced AI response received:",
+            enhancedResponse
+          );
+
+          // Construiește răspunsul complet cu ghidare
+          fullResponse = enhancedResponse.content;
+
+          // Adaugă sugestii dacă există
+          if (
+            enhancedResponse.suggestions &&
+            enhancedResponse.suggestions.length > 0
+          ) {
+            fullResponse += "\n\n💡 **Sugestii pentru tine:**\n";
+            enhancedResponse.suggestions.forEach((suggestion, index) => {
+              fullResponse += `${index + 1}. ${suggestion}\n`;
+            });
+          }
+
+          // Adaugă acțiuni rapide dacă există
+          if (
+            enhancedResponse.recommendedActions &&
+            enhancedResponse.recommendedActions.length > 0
+          ) {
+            fullResponse += "\n⚡ **Acțiuni rapide:**\n";
+            enhancedResponse.recommendedActions.forEach((action) => {
+              fullResponse += `• ${action}\n`;
+            });
+          }
+
+          // Adaugă ghidarea platformei dacă există
+          if (
+            enhancedResponse.platformGuidance &&
+            enhancedResponse.platformGuidance.tips.length > 0
+          ) {
+            fullResponse += "\n🎯 **Sfat mentor:**\n";
+            fullResponse += `💫 ${enhancedResponse.platformGuidance.tips[0]}`;
+          }
+        } catch (enhancedError) {
+          console.error(
+            "[AIWidget Enhanced] Enhanced AI failed, falling back to standard AI:",
+            enhancedError
+          );
+          console.error("[AIWidget Enhanced] Error details:", {
+            message:
+              enhancedError instanceof Error
+                ? enhancedError.message
+                : "Unknown error",
+            stack: enhancedError instanceof Error ? enhancedError.stack : null,
+            name:
+              enhancedError instanceof Error
+                ? enhancedError.name
+                : "UnknownError",
+          });
+
+          // Fallback la sistemul standard în caz de eroare
+          const fallbackResponse = await fetchAIResponse(
+            userMessage,
+            user?.uid,
+            assistantProfile
+          );
+
+          // Adaugă și o ghidare de bază folosind PlatformMentorAI
+          const mentorGuidance =
+            PlatformMentorAI.generateMentorResponse(userMessage);
+
+          fullResponse =
+            fallbackResponse +
+            "\n\n---\n**💡 Ghidare platformă:**\n" +
+            mentorGuidance;
+        }
 
         await addMessage({
           id: (Date.now() + 1).toString(),
           sender: "ai",
-          content: aiReply,
+          content: fullResponse,
           timestamp: Timestamp.now(),
         });
 
@@ -493,7 +587,7 @@ const AIAssistantWidget: React.FC = () => {
             },
             {
               role: "user",
-              content: `Creează un titlu în română perfectă pentru această conversație:\nUtilizator: "${userMessage}"\nAsistent: "${aiReply}"\n\nTitlu:`,
+              content: `Creează un titlu în română perfectă pentru această conversație:\nUtilizator: "${userMessage}"\nAsistent: "${fullResponse}"\n\nTitlu:`,
             },
           ];
 
@@ -520,7 +614,7 @@ const AIAssistantWidget: React.FC = () => {
         setAiTyping(false);
       }, 1200);
     } catch (e) {
-      console.error("[AIWidget] Error in handleSendMessage:", e);
+      console.error("[AIWidget Enhanced] Error in handleSendMessage:", e);
       setLoading(false);
       setAiTyping(false);
     }
@@ -575,6 +669,17 @@ const AIAssistantWidget: React.FC = () => {
                 <span>{assistantName}</span>
               </div>{" "}
               <div className="ai-assistant-widget__modal-actions">
+                {/* Settings button pentru acces rapid la configurația AI */}
+                <button
+                  className="ai-assistant-widget__settings-btn"
+                  onClick={() => {
+                    setOpen(false);
+                    navigate("/dashboard/AIsettings");
+                  }}
+                  title="Deschide setările AI pentru personalizare completă"
+                >
+                  ⚙️
+                </button>
                 {/* Window controls for desktop */}
                 <div className="ai-assistant-widget__window-controls">
                   <button
@@ -786,9 +891,103 @@ const AIAssistantWidget: React.FC = () => {
                           <div className="ai-assistant-widget__welcome-content">
                             <h3>Salut! 👋</h3>
                             <p>
-                              Sunt {assistantName}, asistentul tău AI personal.
+                              Sunt {assistantName}, mentorul tău AI care
+                              cunoaște întreaga platformă LUPUL.
                             </p>
-                            <p>Cu ce te pot ajuta astăzi?</p>
+                            <p>
+                              Te pot ghida prin toate funcțiile și te pot ajuta
+                              cu orice întrebare!
+                            </p>
+
+                            {/* Quick action buttons pentru ghidarea de platformă */}
+                            <div className="ai-assistant-widget__quick-actions">
+                              <h4>🚀 Acțiuni rapide:</h4>
+                              <div className="ai-assistant-widget__quick-buttons">
+                                <button
+                                  className="ai-assistant-widget__quick-btn"
+                                  onClick={() =>
+                                    setInput(
+                                      "Fă-mi un tur ghidat al platformei"
+                                    )
+                                  }
+                                  title="Explorează toate funcțiile platformei"
+                                >
+                                  🗺️ Tur platformă
+                                </button>
+                                <button
+                                  className="ai-assistant-widget__quick-btn"
+                                  onClick={() =>
+                                    setInput(
+                                      "Am nevoie de ajutor cu anxietatea"
+                                    )
+                                  }
+                                  title="Suport pentru anxietate și stres"
+                                >
+                                  🧘 Suport emoțional
+                                </button>
+                                <button
+                                  className="ai-assistant-widget__quick-btn"
+                                  onClick={() =>
+                                    setInput(
+                                      "Vreau să îmi îmbunătățesc rutina de wellness"
+                                    )
+                                  }
+                                  title="Creează o rutină de wellness personalizată"
+                                >
+                                  💪 Wellness fizic
+                                </button>
+                                <button
+                                  className="ai-assistant-widget__quick-btn"
+                                  onClick={() =>
+                                    setInput(
+                                      "Cum pot programa o sesiune cu un specialist?"
+                                    )
+                                  }
+                                  title="Ghidare pentru servicii profesionale"
+                                >
+                                  👨‍⚕️ Servicii specialiști
+                                </button>
+                                <button
+                                  className="ai-assistant-widget__quick-btn"
+                                  onClick={() =>
+                                    setInput(
+                                      "Ce sunt emblemele și cum funcționează?"
+                                    )
+                                  }
+                                  title="Învață despre sistemul de embleme NFT"
+                                >
+                                  🏆 Sistem embleme
+                                </button>
+                                <button
+                                  className="ai-assistant-widget__quick-btn"
+                                  onClick={() =>
+                                    setInput("Personalizează-mi experiența AI")
+                                  }
+                                  title="Configurează AI-ul după preferințele tale"
+                                >
+                                  ⚙️ Setări AI
+                                </button>
+                              </div>
+                            </div>
+
+                            {/* Platform knowledge showcase */}
+                            <div className="ai-assistant-widget__platform-knowledge">
+                              <h4>🧠 Ce știu despre platformă:</h4>
+                              <ul>
+                                <li>
+                                  ✅ Toate serviciile de terapie și wellness
+                                </li>
+                                <li>
+                                  ✅ Sistemul de embleme și beneficiile lor
+                                </li>
+                                <li>
+                                  ✅ Cum să navighezi și să folosești toate
+                                  funcțiile
+                                </li>
+                                <li>✅ Când să consulți specialiști umani</li>
+                                <li>✅ Cum să îți personalizezi experiența</li>
+                              </ul>
+                            </div>
                           </div>
                         </div>
                       ) : (

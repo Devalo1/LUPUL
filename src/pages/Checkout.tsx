@@ -53,9 +53,9 @@ const Checkout: React.FC = () => {
     setFormData({ ...formData, [name]: value });
   };
 
-  // Test function for Netopia
+  // Test function for Netopia v1.x
   const testNetopiaConnection = async () => {
-    setTestResult("Testing...");
+    setTestResult("Testing v1.x...");
     try {
       const testData = {
         orderId: "TEST-" + Date.now(),
@@ -76,7 +76,7 @@ const Checkout: React.FC = () => {
         live: false,
       };
 
-      console.log("🧪 Testing Netopia with data:", testData);
+      console.log("🧪 Testing Netopia v1.x with data:", testData);
 
       // Verifică că JSON-ul poate fi serializat corect
       const jsonString = JSON.stringify(testData);
@@ -84,8 +84,8 @@ const Checkout: React.FC = () => {
       console.log("📝 JSON string preview:", jsonString.substring(0, 50));
 
       const netopiaEndpoint = isDevelopment
-        ? "/api/netopia-initiate"
-        : "/.netlify/functions/netopia-initiate";
+        ? "http://localhost:8888/.netlify/functions/netopia-initiate-fixed"
+        : "/.netlify/functions/netopia-initiate-fixed";
       const response = await fetch(netopiaEndpoint, {
         method: "POST",
         headers: {
@@ -110,15 +110,52 @@ const Checkout: React.FC = () => {
       console.log("Response result:", result);
 
       if (result.success) {
-        setTestResult(`✅ Success: ${result.paymentUrl}`);
+        setTestResult(`✅ v1.x Success: ${result.paymentUrl}`);
       } else {
-        setTestResult(`❌ Failed: ${result.message || result.error}`);
+        setTestResult(`❌ v1.x Failed: ${result.message || result.error}`);
       }
     } catch (error) {
       console.error("Test error:", error);
       setTestResult(
-        `❌ Error: ${error instanceof Error ? error.message : "Unknown error"}`
+        `❌ v1.x Error: ${error instanceof Error ? error.message : "Unknown error"}`
       );
+    }
+  };
+
+  // Test function for Netopia API v2.x
+  const testNetopiaV2API = async () => {
+    setTestResult("Testing API v2.x...");
+    try {
+      const { testNetopiaV2API } = await import("../services/netopiaPayments");
+
+      const testData = {
+        orderId: "TEST-V2-" + Date.now(),
+        amount: 15.5,
+        currency: "RON",
+        description: "Test NETOPIA API v2.x payment",
+        customerInfo: {
+          firstName: "Ion",
+          lastName: "Popescu",
+          email: "test@lupulsicorbul.com",
+          phone: "+40712345678",
+          address: "Strada Test 123",
+          city: "Bucuresti",
+          county: "Bucuresti",
+          postalCode: "010000",
+        },
+        live: false, // Force sandbox
+      };
+
+      console.log("🌟 Testing NETOPIA API v2.x with data:", testData);
+
+      const paymentUrl = await testNetopiaV2API(testData);
+
+      setTestResult(`✅ API v2.x Success: ${paymentUrl.substring(0, 100)}...`);
+    } catch (error) {
+      console.error("API v2.x Test error:", error);
+      const errorMessage =
+        error instanceof Error ? error.message : String(error);
+      setTestResult(`❌ API v2.x Error: ${errorMessage}`);
     }
   };
 
@@ -353,8 +390,9 @@ const Checkout: React.FC = () => {
             console.log("🚀 Inițiez plata Netopia cu payload:", paymentData);
 
             // Apelare directă la funcția Netlify pentru debugging complet
-            const netopiaUrl =
-              netopiaService.getNetlifyEndpoint("netopia-initiate");
+            const netopiaUrl = netopiaService.getNetlifyEndpoint(
+              "netopia-initiate-fixed"
+            );
             console.log("🌐 Endpoint Netopia:", netopiaUrl);
 
             const response = await fetch(netopiaUrl, {
@@ -874,15 +912,22 @@ const Checkout: React.FC = () => {
               </div>
             </div>
 
-            {/* Test button for development */}
+            {/* Test buttons for development */}
             {isDevelopment && (
-              <div className="mb-4">
+              <div className="mb-4 space-y-2">
                 <button
                   type="button"
                   onClick={testNetopiaConnection}
                   className="w-full bg-green-600 hover:bg-green-700 text-white py-2 px-4 rounded-md transition-colors font-medium mb-2"
                 >
-                  🧪 Test Netopia Connection
+                  🧪 Test Netopia v1.x Connection
+                </button>
+                <button
+                  type="button"
+                  onClick={testNetopiaV2API}
+                  className="w-full bg-purple-600 hover:bg-purple-700 text-white py-2 px-4 rounded-md transition-colors font-medium mb-2"
+                >
+                  🌟 Test Netopia API v2.x (NEW)
                 </button>
                 <button
                   type="button"

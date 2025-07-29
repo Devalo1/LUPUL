@@ -21,13 +21,16 @@ const testNetopiaPayment = async () => {
   };
 
   try {
-    const response = await fetch("/api/netopia-initiate", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(testPaymentData),
-    });
+    const response = await fetch(
+      "http://localhost:8888/.netlify/functions/netopia-initiate-fixed",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(testPaymentData),
+      }
+    );
 
     console.log("Response status:", response.status);
     console.log("Response headers:", Object.fromEntries(response.headers));

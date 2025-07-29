@@ -52,74 +52,84 @@
   to = "/.netlify/functions/:splat"
   status = 200
 
-# CRITICAL: Nu redirecționa fișierele statice
+# CRITICAL: Protejăm rutele specifice de aplicație înainte de fișierele statice
+[[redirects]]
+  from = "/payment-simulation"
+  to = "/index.html"
+  status = 200
+
+[[redirects]]
+  from = "/payment-simulation/*"
+  to = "/index.html"
+  status = 200
+
+# Protecția pentru fișierele statice din directorul assets
 [[redirects]]
   from = "/assets/*"
   to = "/assets/:splat"
   status = 200
 
+# Servim fișierele statice doar cu extensiile corecte
 [[redirects]]
-  from = "/*.js"
-  to = "/:splat"
+  from = "/assets/*.js"
+  to = "/assets/:splat"
   status = 200
-  force = true
   headers = {Content-Type = "application/javascript"}
 
 [[redirects]]
-  from = "/*.mjs"
-  to = "/:splat"
+  from = "/assets/*.mjs"
+  to = "/assets/:splat"
   status = 200
-  force = true
   headers = {Content-Type = "application/javascript"}
 
 [[redirects]]
-  from = "/*.css"
-  to = "/:splat"
+  from = "/assets/*.css"
+  to = "/assets/:splat"
   status = 200
-  force = true
   headers = {Content-Type = "text/css"}
 
 [[redirects]]
-  from = "/*.woff"
-  to = "/:splat"
+  from = "/assets/*.svg"
+  to = "/assets/:splat"
+  status = 200
+  headers = {Content-Type = "image/svg+xml"}
+
+[[redirects]]
+  from = "/assets/*.png"
+  to = "/assets/:splat"
   status = 200
 
 [[redirects]]
-  from = "/*.woff2"
-  to = "/:splat"
+  from = "/assets/*.jpg"
+  to = "/assets/:splat"
   status = 200
 
 [[redirects]]
-  from = "/*.svg"
-  to = "/:splat"
+  from = "/assets/*.jpeg"
+  to = "/assets/:splat"
   status = 200
 
 [[redirects]]
-  from = "/*.png"
-  to = "/:splat"
+  from = "/assets/*.gif"
+  to = "/assets/:splat"
   status = 200
 
 [[redirects]]
-  from = "/*.jpg"
-  to = "/:splat"
+  from = "/assets/*.ico"
+  to = "/assets/:splat"
   status = 200
 
 [[redirects]]
-  from = "/*.jpeg"
-  to = "/:splat"
+  from = "/assets/*.woff"
+  to = "/assets/:splat"
   status = 200
 
 [[redirects]]
-  from = "/*.gif"
-  to = "/:splat"
+  from = "/assets/*.woff2"
+  to = "/assets/:splat"
   status = 200
 
-[[redirects]]
-  from = "/*.ico"
-  to = "/:splat"
-  status = 200
-
-# Doar DUPĂ toate fișierele statice, redirecționează totul către SPA
+# Doar DUPĂ toate fișierele statice și rutele protejate, redirecționează totul către SPA
 [[redirects]]
   from = "/*"
   to = "/index.html"

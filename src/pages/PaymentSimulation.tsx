@@ -108,34 +108,34 @@ const PaymentSimulation: React.FC = () => {
             </div>
 
             <h1 className="text-2xl font-bold text-gray-900 mb-2">
-              {paymentStatus === "processing" && "Procesăm plata..."}
-              {paymentStatus === "success" && "Plată reușită!"}
-              {paymentStatus === "failed" && "Plată eșuată"}
+              {paymentStatus === "processing" && "🔄 Procesăm plata..."}
+              {paymentStatus === "success" && "✅ Plată reușită!"}
+              {paymentStatus === "failed" && "❌ Plată eșuată"}
             </h1>
 
             {isTest && (
-              <span className="inline-block bg-orange-100 text-orange-800 text-sm font-medium px-3 py-1 rounded-full">
+              <span className="inline-block bg-orange-200 text-orange-900 text-sm font-bold px-4 py-2 rounded-full border-2 border-orange-300">
                 🧪 SIMULARE TEST
               </span>
             )}
           </div>
 
           {/* Payment Details */}
-          <div className="bg-gray-50 rounded-lg p-4 mb-6">
-            <div className="space-y-2 text-sm">
+          <div className="bg-gray-100 border border-gray-300 rounded-lg p-4 mb-6">
+            <div className="space-y-3 text-sm">
               <div className="flex justify-between">
-                <span className="text-gray-600">Comandă:</span>
-                <span className="font-medium">{orderId}</span>
+                <span className="text-gray-700 font-medium">Comandă:</span>
+                <span className="font-bold text-gray-900">{orderId}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-gray-600">Sumă:</span>
-                <span className="font-medium">
+                <span className="text-gray-700 font-medium">Sumă:</span>
+                <span className="font-bold text-green-600 text-lg">
                   {formatAmount(amount || "0")} {currency}
                 </span>
               </div>
               <div className="flex justify-between">
-                <span className="text-gray-600">Metoda:</span>
-                <span className="font-medium">Card bancar</span>
+                <span className="text-gray-700 font-medium">Metoda:</span>
+                <span className="font-bold text-blue-600">Card bancar</span>
               </div>
             </div>
           </div>
@@ -143,13 +143,13 @@ const PaymentSimulation: React.FC = () => {
           {/* Status Content */}
           {paymentStatus === "processing" && (
             <div className="mb-6">
-              <p className="text-gray-600 mb-4">
+              <p className="text-gray-800 font-medium mb-4">
                 Vă rugăm să așteptați procesarea plății...
               </p>
-              <div className="text-2xl font-bold text-blue-600 mb-2">
+              <div className="text-4xl font-bold text-blue-600 mb-2 bg-blue-50 py-3 px-4 rounded-lg">
                 {countdown}
               </div>
-              <p className="text-sm text-gray-500">
+              <p className="text-base text-gray-700 font-medium">
                 Redirecționare automată în {countdown} secunde
               </p>
             </div>
@@ -157,10 +157,10 @@ const PaymentSimulation: React.FC = () => {
 
           {paymentStatus === "success" && (
             <div className="mb-6">
-              <p className="text-green-600 mb-4">
+              <p className="text-green-700 font-bold text-lg mb-4">
                 Plata a fost procesată cu succes!
               </p>
-              <p className="text-sm text-gray-500">
+              <p className="text-base text-gray-700 font-medium">
                 Veți fi redirecționat automat...
               </p>
             </div>
@@ -168,10 +168,10 @@ const PaymentSimulation: React.FC = () => {
 
           {paymentStatus === "failed" && (
             <div className="mb-6">
-              <p className="text-red-600 mb-4">
+              <p className="text-red-700 font-bold text-lg mb-4">
                 Plata nu a putut fi procesată.
               </p>
-              <p className="text-sm text-gray-500 mb-4">
+              <p className="text-base text-gray-700 font-medium mb-4">
                 Vă rugăm să încercați din nou sau să contactați suportul.
               </p>
               <div className="space-y-2">

@@ -376,10 +376,17 @@ const Checkout: React.FC = () => {
             postalCode: "010000", // Poți adăuga un câmp pentru cod poștal
           };
 
+          // Crează descrierea detaliată cu numele produselor
+          const productNames = items.map((item) => item.name).join(", ");
+          const description =
+            items.length === 1
+              ? productNames
+              : `${items.length} produse: ${productNames.length > 100 ? productNames.substring(0, 100) + "..." : productNames}`;
+
           const paymentData = netopiaService.createPaymentData(
             paymentFormData,
             finalTotal,
-            `Comandă ${orderData.orderNumber} - ${items.length} produse`
+            description
           );
 
           // FIXUL PENTRU BLANK PAGE: Nu deschid popup-ul imediat!

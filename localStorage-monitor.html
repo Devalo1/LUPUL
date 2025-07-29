@@ -1,0 +1,337 @@
+<!doctype html>
+<html lang="ro">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>🔍 Real-time localStorage Monitor</title>
+    <style>
+      body {
+        font-family: "Courier New", monospace;
+        background: #1a1a1a;
+        color: #00ff00;
+        padding: 20px;
+        margin: 0;
+      }
+      .monitor {
+        background: #000;
+        border: 2px solid #00ff00;
+        padding: 20px;
+        border-radius: 8px;
+        height: 80vh;
+        overflow-y: auto;
+      }
+      .log-entry {
+        margin: 5px 0;
+        padding: 5px;
+        border-left: 3px solid #333;
+      }
+      .log-entry.new {
+        background: #001100;
+        border-left-color: #00ff00;
+        animation: highlight 2s ease-out;
+      }
+      .log-entry.removed {
+        background: #110000;
+        border-left-color: #ff0000;
+        color: #ff6666;
+      }
+      @keyframes highlight {
+        from {
+          background: #003300;
+        }
+        to {
+          background: #001100;
+        }
+      }
+      .controls {
+        margin-bottom: 20px;
+        padding: 15px;
+        background: #333;
+        border-radius: 8px;
+      }
+      button {
+        background: #00aa00;
+        color: white;
+        border: none;
+        padding: 10px 15px;
+        margin: 5px;
+        border-radius: 4px;
+        cursor: pointer;
+        font-family: inherit;
+      }
+      button:hover {
+        background: #00cc00;
+      }
+      .status {
+        display: inline-block;
+        padding: 5px 10px;
+        margin: 5px;
+        border-radius: 15px;
+        font-size: 12px;
+      }
+      .status.monitoring {
+        background: #004400;
+        color: #00ff00;
+      }
+      .status.stopped {
+        background: #440000;
+        color: #ff6666;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="controls">
+      <h1>🔍 Real-time localStorage Monitor</h1>
+      <div>
+        <span id="status" class="status monitoring">● MONITORING</span>
+        <span>Checks: <span id="checkCount">0</span></span>
+        <span>Items: <span id="itemCount">0</span></span>
+      </div>
+      <div>
+        <button onclick="toggleMonitoring()">Toggle Monitoring</button>
+        <button onclick="clearLog()">Clear Log</button>
+        <button onclick="exportLog()">Export Log</button>
+        <button onclick="simulateOrder()">Simulate Order Save</button>
+      </div>
+      <div>
+        <strong>Target Orders:</strong> Looking for keys containing
+        "pendingOrder" or orderIds like "LC-"
+      </div>
+    </div>
+
+    <div class="monitor" id="logContainer">
+      <div class="log-entry">
+        🚀 localStorage Monitor started - Watching for NETOPIA order data...
+      </div>
+    </div>
+
+    <script>
+      let isMonitoring = true;
+      let checkCount = 0;
+      let lastSnapshot = {};
+      let logContainer = document.getElementById("logContainer");
+
+      function log(message, className = "") {
+        const entry = document.createElement("div");
+        entry.className = `log-entry ${className}`;
+        entry.innerHTML = `[${new Date().toLocaleTimeString()}] ${message}`;
+        logContainer.appendChild(entry);
+        logContainer.scrollTop = logContainer.scrollHeight;
+
+        // Keep only last 100 entries
+        while (logContainer.children.length > 100) {
+          logContainer.removeChild(logContainer.firstChild);
+        }
+      }
+
+      function getCurrentSnapshot() {
+        const snapshot = {};
+        for (let i = 0; i < localStorage.length; i++) {
+          const key = localStorage.key(i);
+          if (key) {
+            snapshot[key] = localStorage.getItem(key);
+          }
+        }
+        return snapshot;
+      }
+
+      function compareSnapshots(oldSnapshot, newSnapshot) {
+        const changes = [];
+
+        // Check for new or modified items
+        for (const key in newSnapshot) {
+          if (!(key in oldSnapshot)) {
+            changes.push({
+              type: "added",
+              key: key,
+              value: newSnapshot[key],
+            });
+          } else if (oldSnapshot[key] !== newSnapshot[key]) {
+            changes.push({
+              type: "modified",
+              key: key,
+              oldValue: oldSnapshot[key],
+              newValue: newSnapshot[key],
+            });
+          }
+        }
+
+        // Check for removed items
+        for (const key in oldSnapshot) {
+          if (!(key in newSnapshot)) {
+            changes.push({
+              type: "removed",
+              key: key,
+              value: oldSnapshot[key],
+            });
+          }
+        }
+
+        return changes;
+      }
+
+      function formatValue(value) {
+        if (!value) return "null";
+        if (value.length > 200) {
+          return value.substring(0, 200) + "... (" + value.length + " chars)";
+        }
+        return value;
+      }
+
+      function isOrderRelated(key, value) {
+        return (
+          key.includes("pending") ||
+          key.includes("Order") ||
+          key.includes("order") ||
+          (value && value.includes("LC-")) ||
+          key.includes("netopia")
+        );
+      }
+
+      function monitorLocalStorage() {
+        if (!isMonitoring) return;
+
+        checkCount++;
+        const currentSnapshot = getCurrentSnapshot();
+        const changes = compareSnapshots(lastSnapshot, currentSnapshot);
+
+        // Update counters
+        document.getElementById("checkCount").textContent = checkCount;
+        document.getElementById("itemCount").textContent =
+          Object.keys(currentSnapshot).length;
+
+        if (changes.length > 0) {
+          log(`🔄 Detected ${changes.length} change(s):`, "new");
+
+          changes.forEach((change) => {
+            const isOrderData = isOrderRelated(
+              change.key,
+              change.value || change.newValue
+            );
+            const icon = isOrderData ? "🎯" : "📝";
+            const className = change.type === "removed" ? "removed" : "new";
+
+            switch (change.type) {
+              case "added":
+                log(
+                  `${icon} ADDED "${change.key}": ${formatValue(change.value)}`,
+                  className
+                );
+                if (isOrderData) {
+                  log(`🚨 ORDER DATA DETECTED! Key: "${change.key}"`, "new");
+                  try {
+                    const parsed = JSON.parse(change.value);
+                    if (parsed.orderNumber) {
+                      log(`📋 Order Number: ${parsed.orderNumber}`, "new");
+                      log(
+                        `📧 Customer Email: ${parsed.customerEmail || "N/A"}`,
+                        "new"
+                      );
+                      log(
+                        `💰 Total: ${parsed.totalAmount || parsed.total || "N/A"}`,
+                        "new"
+                      );
+                    }
+                  } catch (e) {
+                    log(`⚠️ Could not parse as JSON: ${e.message}`, "new");
+                  }
+                }
+                break;
+              case "modified":
+                log(
+                  `${icon} MODIFIED "${change.key}": ${formatValue(change.newValue)}`,
+                  className
+                );
+                break;
+              case "removed":
+                log(
+                  `${icon} REMOVED "${change.key}": ${formatValue(change.value)}`,
+                  className
+                );
+                if (isOrderData) {
+                  log(
+                    `⚠️ ORDER DATA REMOVED! This might cause OrderConfirmation to fail!`,
+                    "removed"
+                  );
+                }
+                break;
+            }
+          });
+        }
+
+        lastSnapshot = currentSnapshot;
+      }
+
+      function toggleMonitoring() {
+        isMonitoring = !isMonitoring;
+        const statusElement = document.getElementById("status");
+        if (isMonitoring) {
+          statusElement.textContent = "● MONITORING";
+          statusElement.className = "status monitoring";
+          log("🟢 Monitoring resumed");
+        } else {
+          statusElement.textContent = "● STOPPED";
+          statusElement.className = "status stopped";
+          log("🔴 Monitoring stopped");
+        }
+      }
+
+      function clearLog() {
+        logContainer.innerHTML = '<div class="log-entry">📋 Log cleared</div>';
+      }
+
+      function exportLog() {
+        const entries = Array.from(logContainer.children).map(
+          (entry) => entry.textContent
+        );
+        const blob = new Blob([entries.join("\\n")], { type: "text/plain" });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = `localStorage-monitor-${new Date().toISOString().slice(0, 19)}.txt`;
+        a.click();
+      }
+
+      function simulateOrder() {
+        const testOrder = {
+          orderNumber: `LC-${Date.now()}`,
+          customerEmail: "test@test.com",
+          totalAmount: 99.99,
+          items: [{ name: "Test Product", price: 99.99, quantity: 1 }],
+          paymentMethod: "card",
+          date: new Date().toISOString(),
+        };
+
+        localStorage.setItem("pendingOrder", JSON.stringify(testOrder));
+        log("🧪 Simulated order data saved to localStorage", "new");
+      }
+
+      // Initialize
+      lastSnapshot = getCurrentSnapshot();
+      log(
+        `📊 Initial localStorage scan: ${Object.keys(lastSnapshot).length} items found`
+      );
+
+      // Check for existing order data
+      for (const key in lastSnapshot) {
+        if (isOrderRelated(key, lastSnapshot[key])) {
+          log(`🎯 Found existing order-related data: "${key}"`, "new");
+        }
+      }
+
+      // Start monitoring
+      setInterval(monitorLocalStorage, 500); // Check every 500ms
+
+      // Monitor page navigation
+      window.addEventListener("beforeunload", () => {
+        log("🔄 Page is being unloaded - final localStorage check:", "new");
+        const finalSnapshot = getCurrentSnapshot();
+        for (const key in finalSnapshot) {
+          if (isOrderRelated(key, finalSnapshot[key])) {
+            log(`📦 Final state: "${key}" still exists`, "new");
+          }
+        }
+      });
+    </script>
+  </body>
+</html>

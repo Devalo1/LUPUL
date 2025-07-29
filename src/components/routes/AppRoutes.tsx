@@ -55,7 +55,7 @@ import Cart from "../../pages/Cart";
 import Checkout from "../../pages/Checkout";
 import OrderSuccess from "../../pages/OrderSuccess";
 import CheckoutSuccess from "../../pages/CheckoutSuccess";
-import OrderConfirmationPage from "../../pages/OrderConfirmationPage";
+import OrderConfirmation from "../../pages/OrderConfirmation";
 import Orders from "../../pages/Orders";
 import Account from "../../pages/Account";
 import Appointments from "../../pages/Appointments";
@@ -193,7 +193,7 @@ const AppRoutes = () => {
             </ProtectedRoute>
           }
         />
-        <Route path="/order-confirmation" element={<OrderConfirmationPage />} />
+        <Route path="/order-confirmation" element={<OrderConfirmation />} />
         <Route
           path="/order-success"
           element={

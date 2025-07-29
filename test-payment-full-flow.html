@@ -1,0 +1,512 @@
+<!doctype html>
+<html lang="ro">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Test Complet Flux Plată NETOPIA</title>
+    <style>
+      body {
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 20px;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: #333;
+        min-height: 100vh;
+      }
+      .container {
+        background: white;
+        border-radius: 10px;
+        padding: 30px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+      }
+      h1 {
+        color: #2c5282;
+        text-align: center;
+        margin-bottom: 30px;
+      }
+      .test-section {
+        background: #f7fafc;
+        border: 1px solid #e2e8f0;
+        border-radius: 8px;
+        padding: 20px;
+        margin: 20px 0;
+      }
+      .test-button {
+        background: linear-gradient(135deg, #4299e1, #3182ce);
+        color: white;
+        border: none;
+        padding: 12px 24px;
+        border-radius: 6px;
+        cursor: pointer;
+        font-size: 16px;
+        font-weight: 600;
+        transition: all 0.3s ease;
+        margin: 10px 5px;
+      }
+      .test-button:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(66, 153, 225, 0.4);
+      }
+      .status {
+        padding: 10px;
+        border-radius: 4px;
+        margin: 10px 0;
+        font-weight: 500;
+      }
+      .success {
+        background: #c6f6d5;
+        color: #22543d;
+        border: 1px solid #68d391;
+      }
+      .error {
+        background: #fed7d7;
+        color: #742a2a;
+        border: 1px solid #fc8181;
+      }
+      .info {
+        background: #bee3f8;
+        color: #2a4365;
+        border: 1px solid #63b3ed;
+      }
+      .warning {
+        background: #faf089;
+        color: #744210;
+        border: 1px solid #f6e05e;
+      }
+      pre {
+        background: #1a202c;
+        color: #e2e8f0;
+        padding: 15px;
+        border-radius: 6px;
+        overflow-x: auto;
+        font-size: 14px;
+        white-space: pre-wrap;
+      }
+      .step {
+        background: #edf2f7;
+        border-left: 4px solid #4299e1;
+        padding: 15px;
+        margin: 15px 0;
+      }
+      .step h3 {
+        margin-top: 0;
+        color: #2d3748;
+      }
+      .current-data {
+        background: #f0fff4;
+        border: 1px solid #9ae6b4;
+        padding: 15px;
+        border-radius: 6px;
+        margin: 10px 0;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h1>🔧 Test Complet Flux Plată NETOPIA</h1>
+
+      <div class="test-section">
+        <h2>📋 Pasul 1: Inițierea Plății</h2>
+        <p>Testează inițierea unei plăți NETOPIA cu date de test complete.</p>
+
+        <button class="test-button" onclick="initializePayment()">
+          🚀 Inițiază Plată de Test (55 RON)
+        </button>
+
+        <div id="paymentStatus"></div>
+        <div id="paymentDetails"></div>
+      </div>
+
+      <div class="test-section">
+        <h2>📥 Pasul 2: Testare Returnare NETOPIA</h2>
+        <p>
+          Testează funcția de returnare după plată (simulează redirect-ul de la
+          NETOPIA).
+        </p>
+
+        <button class="test-button" onclick="testReturn()">
+          ↩️ Testează Returnare După Plată
+        </button>
+
+        <div id="returnStatus"></div>
+      </div>
+
+      <div class="test-section">
+        <h2>✅ Pasul 3: Verificare OrderConfirmation</h2>
+        <p>
+          Verifică că pagina OrderConfirmation se încarcă corect cu datele
+          comenzii.
+        </p>
+
+        <input
+          type="text"
+          id="orderIdInput"
+          placeholder="ID Comandă (ex: LC-1753819549454)"
+          style="
+            padding: 8px;
+            border: 1px solid #cbd5e0;
+            border-radius: 4px;
+            width: 300px;
+            margin: 0 10px;
+          "
+        />
+
+        <button class="test-button" onclick="testOrderConfirmation()">
+          📄 Testează OrderConfirmation
+        </button>
+
+        <button class="test-button" onclick="openOrderConfirmation()">
+          🔗 Deschide OrderConfirmation
+        </button>
+
+        <div id="orderStatus"></div>
+      </div>
+
+      <div class="test-section">
+        <h2>📧 Pasul 4: Testare Email</h2>
+        <p>Testează trimiterea email-ului de confirmare.</p>
+
+        <button class="test-button" onclick="testEmailSending()">
+          ✉️ Testează Trimitere Email
+        </button>
+
+        <div id="emailStatus"></div>
+      </div>
+
+      <div class="test-section">
+        <h2>🔄 Pasul 5: Test Flux Complet</h2>
+        <p>Rulează un test complet al întregului flux de plată.</p>
+
+        <button class="test-button" onclick="runFullFlowTest()">
+          🎯 Test Flux Complet
+        </button>
+
+        <div id="fullFlowStatus"></div>
+      </div>
+
+      <div class="current-data">
+        <h3>📊 Date Curente Session</h3>
+        <div id="currentData"></div>
+      </div>
+    </div>
+
+    <script>
+      // Date de test pentru simulare
+      const testData = {
+        orderId: `LC-${Date.now()}`,
+        amount: 55,
+        currency: "RON",
+        customerData: {
+          email: "dani_popa21@yahoo.ro",
+          firstName: "Dani_popa21",
+          lastName: "Lupul",
+          phone: "0775346243",
+          address: "9 MAI BLOC 2 A",
+          city: "PETROSANI",
+          county: "HUNEDOARA",
+          postalCode: "800258",
+        },
+      };
+
+      let currentOrderId = "";
+
+      // Afișează datele curente din session
+      function updateCurrentData() {
+        const pendingOrder = localStorage.getItem("pendingOrder");
+        const pendingOrders = localStorage.getItem("pendingOrders");
+
+        const data = {
+          pendingOrder: pendingOrder ? JSON.parse(pendingOrder) : null,
+          pendingOrders: pendingOrders ? JSON.parse(pendingOrders) : null,
+          currentOrderId: currentOrderId,
+          testData: testData,
+        };
+
+        document.getElementById("currentData").innerHTML =
+          `<pre>${JSON.stringify(data, null, 2)}</pre>`;
+      }
+
+      // 1. Testează inițierea plății
+      async function initializePayment() {
+        const statusDiv = document.getElementById("paymentStatus");
+        const detailsDiv = document.getElementById("paymentDetails");
+
+        statusDiv.innerHTML =
+          '<div class="info">🔄 Inițiez plata de test...</div>';
+
+        try {
+          // Creează date comandă pentru localStorage
+          const orderData = {
+            orderId: testData.orderId,
+            orderNumber: testData.orderId,
+            amount: testData.amount,
+            products: [
+              {
+                name: "Produs Test",
+                price: testData.amount,
+                quantity: 1,
+              },
+            ],
+            customerEmail: testData.customerData.email,
+            customerName: `${testData.customerData.firstName} ${testData.customerData.lastName}`,
+            customerPhone: testData.customerData.phone,
+            customerAddress: testData.customerData.address,
+            customerCity: testData.customerData.city,
+            customerCounty: testData.customerData.county,
+            postalCode: testData.customerData.postalCode,
+            paymentMethod: "card",
+            totalAmount: testData.amount,
+            createdAt: new Date().toISOString(),
+          };
+
+          // Salvează în localStorage (ambele formate)
+          localStorage.setItem("pendingOrder", JSON.stringify(orderData));
+          localStorage.setItem("pendingOrders", JSON.stringify(orderData));
+          currentOrderId = testData.orderId;
+
+          // Inițiază plata prin API
+          const response = await fetch("/.netlify/functions/netopia-v2-api", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              orderId: testData.orderId,
+              amount: testData.amount,
+              currency: testData.currency,
+              live: false,
+              customerData: testData.customerData,
+            }),
+          });
+
+          const result = await response.json();
+
+          if (response.ok && result.payment) {
+            statusDiv.innerHTML =
+              '<div class="success">✅ Plata inițiată cu succes! Poți continua la următorul pas.</div>';
+            detailsDiv.innerHTML = `
+                        <div class="step">
+                            <h3>📋 Detalii Plată</h3>
+                            <pre>${JSON.stringify(result, null, 2)}</pre>
+                        </div>
+                    `;
+
+            // Setează order ID pentru următoarele teste
+            document.getElementById("orderIdInput").value = testData.orderId;
+          } else {
+            statusDiv.innerHTML = `<div class="error">❌ Eroare la inițierea plății: ${result.error || "Eroare necunoscută"}</div>`;
+          }
+        } catch (error) {
+          statusDiv.innerHTML = `<div class="error">❌ Eroare de conexiune: ${error.message}</div>`;
+          console.error("Payment initialization error:", error);
+        }
+
+        updateCurrentData();
+      }
+
+      // 2. Testează returnarea după plată
+      async function testReturn() {
+        const statusDiv = document.getElementById("returnStatus");
+        const orderId = currentOrderId || testData.orderId;
+
+        statusDiv.innerHTML =
+          '<div class="info">🔄 Testez returnarea după plată...</div>';
+
+        try {
+          const response = await fetch(
+            `/.netlify/functions/netopia-return?orderId=${orderId}`,
+            {
+              method: "GET",
+            }
+          );
+
+          if (response.ok) {
+            statusDiv.innerHTML =
+              '<div class="success">✅ Returnare testată cu succes! Verifică redirectarea.</div>';
+          } else {
+            statusDiv.innerHTML = `<div class="error">❌ Eroare la testarea returnării: ${response.status}</div>`;
+          }
+        } catch (error) {
+          statusDiv.innerHTML = `<div class="error">❌ Eroare la testarea returnării: ${error.message}</div>`;
+        }
+      }
+
+      // 3. Testează OrderConfirmation
+      function testOrderConfirmation() {
+        const orderId =
+          document.getElementById("orderIdInput").value ||
+          currentOrderId ||
+          testData.orderId;
+        const statusDiv = document.getElementById("orderStatus");
+
+        statusDiv.innerHTML =
+          '<div class="info">🔄 Testez încărcarea OrderConfirmation...</div>';
+
+        // Verifică localStorage
+        const pendingOrder = localStorage.getItem("pendingOrder");
+        const pendingOrders = localStorage.getItem("pendingOrders");
+
+        if (pendingOrder || pendingOrders) {
+          statusDiv.innerHTML = `
+                    <div class="success">✅ Date găsite în localStorage pentru OrderConfirmation</div>
+                    <div class="step">
+                        <h3>📊 Date LocalStorage</h3>
+                        <p><strong>pendingOrder:</strong> ${pendingOrder ? "✅ Prezent" : "❌ Lipsă"}</p>
+                        <p><strong>pendingOrders:</strong> ${pendingOrders ? "✅ Prezent" : "❌ Lipsă"}</p>
+                        <pre>${JSON.stringify(
+                          {
+                            pendingOrder: pendingOrder
+                              ? JSON.parse(pendingOrder)
+                              : null,
+                            pendingOrders: pendingOrders
+                              ? JSON.parse(pendingOrders)
+                              : null,
+                          },
+                          null,
+                          2
+                        )}</pre>
+                    </div>
+                `;
+        } else {
+          statusDiv.innerHTML =
+            '<div class="warning">⚠️ Nu sunt date în localStorage. Rulează mai întâi testul de inițiere plată.</div>';
+        }
+      }
+
+      // Deschide OrderConfirmation într-o fereastră nouă
+      function openOrderConfirmation() {
+        const orderId =
+          document.getElementById("orderIdInput").value ||
+          currentOrderId ||
+          testData.orderId;
+        const url = `http://localhost:8888/order-confirmation?orderId=${orderId}`;
+        window.open(url, "_blank");
+      }
+
+      // 4. Testează trimiterea email-ului
+      async function testEmailSending() {
+        const statusDiv = document.getElementById("emailStatus");
+        const orderId = currentOrderId || testData.orderId;
+
+        statusDiv.innerHTML =
+          '<div class="info">🔄 Testez trimiterea email-ului...</div>';
+
+        // Obține datele din localStorage
+        const orderDataString =
+          localStorage.getItem("pendingOrder") ||
+          localStorage.getItem("pendingOrders");
+
+        if (!orderDataString) {
+          statusDiv.innerHTML =
+            '<div class="error">❌ Nu sunt date comandă în localStorage. Rulează mai întâi testul de inițiere.</div>';
+          return;
+        }
+
+        const orderData = JSON.parse(orderDataString);
+
+        try {
+          const emailPayload = {
+            orderData: {
+              email: orderData.customerEmail,
+              customerName: orderData.customerName,
+              firstName: orderData.customerName?.split(" ")[0] || "Client",
+              lastName:
+                orderData.customerName?.split(" ").slice(1).join(" ") || "",
+              phone: orderData.customerPhone,
+              address: orderData.customerAddress,
+              city: orderData.customerCity,
+              county: orderData.customerCounty,
+              postalCode: orderData.postalCode,
+              products: orderData.products,
+              paymentMethod: "card",
+            },
+            orderNumber: orderData.orderNumber,
+            totalAmount: orderData.totalAmount,
+          };
+
+          const response = await fetch("/.netlify/functions/send-order-email", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify(emailPayload),
+          });
+
+          const result = await response.text();
+
+          if (response.ok) {
+            statusDiv.innerHTML = `
+                        <div class="success">✅ Email trimis cu succes!</div>
+                        <div class="step">
+                            <h3>📧 Răspuns Server</h3>
+                            <pre>${result}</pre>
+                        </div>
+                    `;
+          } else {
+            statusDiv.innerHTML = `
+                        <div class="error">❌ Eroare la trimiterea email-ului (${response.status})</div>
+                        <div class="step">
+                            <h3>📧 Răspuns Server</h3>
+                            <pre>${result}</pre>
+                        </div>
+                    `;
+          }
+        } catch (error) {
+          statusDiv.innerHTML = `<div class="error">❌ Eroare de conexiune: ${error.message}</div>`;
+        }
+      }
+
+      // 5. Test flux complet
+      async function runFullFlowTest() {
+        const statusDiv = document.getElementById("fullFlowStatus");
+
+        statusDiv.innerHTML =
+          '<div class="info">🔄 Rulează testul de flux complet...</div>';
+
+        try {
+          // Pas 1: Inițiază plata
+          statusDiv.innerHTML +=
+            '<div class="step"><h3>Pas 1: Inițiere plată</h3><div class="info">🔄 În progres...</div></div>';
+          await initializePayment();
+
+          // Pas 2: Testează returnarea
+          statusDiv.innerHTML +=
+            '<div class="step"><h3>Pas 2: Test returnare</h3><div class="info">🔄 În progres...</div></div>';
+          await testReturn();
+
+          // Pas 3: Verifică OrderConfirmation
+          statusDiv.innerHTML +=
+            '<div class="step"><h3>Pas 3: Verificare OrderConfirmation</h3><div class="info">🔄 În progres...</div></div>';
+          testOrderConfirmation();
+
+          // Pas 4: Testează email
+          statusDiv.innerHTML +=
+            '<div class="step"><h3>Pas 4: Test email</h3><div class="info">🔄 În progres...</div></div>';
+          await testEmailSending();
+
+          statusDiv.innerHTML +=
+            '<div class="success">✅ Testul de flux complet finalizat! Verifică rezultatele de mai sus.</div>';
+        } catch (error) {
+          statusDiv.innerHTML += `<div class="error">❌ Eroare în testul de flux complet: ${error.message}</div>`;
+        }
+      }
+
+      // Inițializare
+      document.addEventListener("DOMContentLoaded", function () {
+        // Setează order ID din URL dacă există
+        const urlParams = new URLSearchParams(window.location.search);
+        const orderIdFromUrl = urlParams.get("orderId");
+        if (orderIdFromUrl) {
+          document.getElementById("orderIdInput").value = orderIdFromUrl;
+          currentOrderId = orderIdFromUrl;
+        }
+
+        updateCurrentData();
+
+        // Actualizează datele la fiecare 5 secunde
+        setInterval(updateCurrentData, 5000);
+      });
+    </script>
+  </body>
+</html>

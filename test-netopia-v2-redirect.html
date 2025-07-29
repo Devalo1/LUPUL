@@ -1,0 +1,195 @@
+<!doctype html>
+<html lang="ro">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Test NETOPIA v2.x Payment Redirect</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        max-width: 800px;
+        margin: 50px auto;
+        padding: 20px;
+        background-color: #f5f5f5;
+      }
+      .test-container {
+        background: white;
+        padding: 30px;
+        border-radius: 10px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+      }
+      .button {
+        background: #2ecc71;
+        color: white;
+        padding: 15px 30px;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        font-size: 16px;
+        margin: 10px 5px;
+      }
+      .button:hover {
+        background: #27ae60;
+      }
+      .log {
+        background: #2c3e50;
+        color: #ecf0f1;
+        padding: 15px;
+        border-radius: 5px;
+        font-family: monospace;
+        white-space: pre-wrap;
+        max-height: 400px;
+        overflow-y: auto;
+        margin-top: 20px;
+      }
+      .success {
+        color: #2ecc71;
+      }
+      .error {
+        color: #e74c3c;
+      }
+      .info {
+        color: #3498db;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="test-container">
+      <h1>🚀 Test NETOPIA v2.x Payment Redirect</h1>
+      <p>
+        Acest test demonstrează cum funcționează redirecționarea utilizatorului
+        către pagina de plată NETOPIA după ce API v2.x returnează
+        <code>paymentUrl</code>.
+      </p>
+
+      <button class="button" onclick="testPaymentFlow()">
+        Test Payment Flow - NETOPIA v2.x
+      </button>
+      <button class="button" onclick="clearLog()">Clear Log</button>
+
+      <div id="log" class="log">Gata pentru test...\n</div>
+    </div>
+
+    <script>
+      function log(message, type = "info") {
+        const logElement = document.getElementById("log");
+        const timestamp = new Date().toLocaleTimeString();
+        const className =
+          type === "success" ? "success" : type === "error" ? "error" : "info";
+        logElement.innerHTML += `<span class="${className}">[${timestamp}] ${message}</span>\n`;
+        logElement.scrollTop = logElement.scrollHeight;
+      }
+
+      function clearLog() {
+        document.getElementById("log").innerHTML = "Log cleared...\n";
+      }
+
+      async function testPaymentFlow() {
+        log("🚀 Starting NETOPIA v2.x payment flow test...", "info");
+
+        // Payload de test pentru NETOPIA v2.x
+        const testPaymentData = {
+          orderId: "TEST_V2_" + Date.now(),
+          amount: 10.0,
+          currency: "RON",
+          description: "Test payment v2.x redirect - lupulsicorbul.com",
+          customerInfo: {
+            firstName: "Test",
+            lastName: "User",
+            email: "test@lupulsicorbul.com",
+            phone: "+40700000000",
+            address: "Test Address",
+            city: "Bucuresti",
+            county: "Bucuresti",
+            postalCode: "010000",
+          },
+        };
+
+        log(
+          `📋 Payment data: ${testPaymentData.orderId} - ${testPaymentData.amount} ${testPaymentData.currency}`,
+          "info"
+        );
+
+        try {
+          // Step 1: Call NETOPIA v2.x API
+          log("📡 Calling NETOPIA v2.x API...", "info");
+
+          const response = await fetch("/.netlify/functions/netopia-v2-api", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify(testPaymentData),
+          });
+
+          log(
+            `📨 Response status: ${response.status} ${response.statusText}`,
+            "info"
+          );
+
+          if (!response.ok) {
+            const errorText = await response.text();
+            log(`❌ API Error: ${errorText}`, "error");
+            return;
+          }
+
+          // Step 2: Parse JSON response
+          const responseData = await response.json();
+          log("✅ JSON Response received:", "success");
+          log(JSON.stringify(responseData, null, 2), "info");
+
+          // Step 3: Extract paymentUrl
+          const paymentUrl = responseData.paymentUrl;
+
+          if (!paymentUrl) {
+            log("❌ No paymentUrl found in response!", "error");
+            return;
+          }
+
+          log(
+            `🔗 PaymentURL extracted: ${paymentUrl.substring(0, 100)}...`,
+            "success"
+          );
+
+          // Step 4: Open popup and redirect to NETOPIA
+          log("🪟 Opening payment popup...", "info");
+
+          const popup = window.open(
+            paymentUrl,
+            "netopia_payment",
+            "width=600,height=700,scrollbars=yes,resizable=yes,menubar=no,toolbar=no"
+          );
+
+          if (!popup) {
+            log(
+              "❌ Failed to open popup! Please allow popups for this site.",
+              "error"
+            );
+            return;
+          }
+
+          log("✅ Payment popup opened successfully!", "success");
+          log("🎯 User is now redirected to NETOPIA payment page", "success");
+          log("📝 In a real scenario, user would:", "info");
+          log("   1. Complete payment on NETOPIA page", "info");
+          log("   2. Get redirected back to your return URL", "info");
+          log("   3. Land on CheckoutSuccess page with payment status", "info");
+
+          // Focus on popup
+          popup.focus();
+
+          // Optional: Monitor popup close
+          const checkClosed = setInterval(() => {
+            if (popup.closed) {
+              clearInterval(checkClosed);
+              log("🔙 User closed payment popup", "info");
+            }
+          }, 1000);
+        } catch (error) {
+          log(`❌ Error during payment flow: ${error.message}`, "error");
+          console.error("Payment flow error:", error);
+        }
+      }
+    </script>
+  </body>
+</html>

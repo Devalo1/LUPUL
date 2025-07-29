@@ -4,7 +4,7 @@ import { useCart } from "../contexts/CartContext";
 import { useAuth } from "../contexts";
 
 // Import test function for debugging
-import "../utils/testNetopia.js";
+// import "../utils/testNetopia.js"; // removed dev-only import
 // import "../utils/netopiaDebug.js"; // removed to avoid process.env reference errors
 
 // Detect development mode (Vite DEV or Netlify Dev port)
@@ -12,6 +12,8 @@ const isDevelopment =
   import.meta.env.DEV ||
   window.location.port === "8888" ||
   window.location.hostname === "localhost";
+
+// const isProduction = window.location.hostname === "lupulsicorbul.com" || (window.location.hostname !== "localhost" && !window.location.hostname.includes("preview") && !window.location.hostname.includes("deploy-preview") && !window.location.port); // removed dev-only flag
 
 // Netlify function URL for order submission - use correct port in development
 const FUNCTION_URL = isDevelopment
@@ -33,7 +35,8 @@ const Checkout: React.FC = () => {
   });
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [testResult, setTestResult] = useState<string>("");
+  // const [_testResult, _setTestResult] = useState<string>(""); // dev-only state removed
+  // const [_v2PaymentUrl, _setV2PaymentUrl] = useState<string>(""); // dev-only state removed
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -51,126 +54,6 @@ const Checkout: React.FC = () => {
   ) => {
     const { name, value } = e.target;
     setFormData({ ...formData, [name]: value });
-  };
-
-  // Test function for Netopia v1.x
-  const testNetopiaConnection = async () => {
-    setTestResult("Testing v1.x...");
-
-    // Setează flag-ul pentru sandbox mode chiar și în producție
-    localStorage.setItem("netopia_force_sandbox", "true");
-    console.log("🧪 Forcing sandbox mode for testing");
-
-    try {
-      const testData = {
-        orderId: "TEST-" + Date.now(),
-        amount: 500,
-        currency: "RON",
-        description: "Test payment",
-        customerInfo: {
-          firstName: "Test",
-          lastName: "User",
-          email: "test@test.com",
-          phone: "0712345678",
-          address: "Test Address",
-          city: "Bucuresti",
-          county: "Bucuresti",
-          postalCode: "010000",
-        },
-        posSignature: "NETOPIA_SANDBOX_TEST_SIGNATURE",
-        live: false,
-      };
-
-      console.log("🧪 Testing Netopia v1.x with data:", testData);
-
-      // Verifică că JSON-ul poate fi serializat corect
-      const jsonString = JSON.stringify(testData);
-      console.log("📝 JSON string length:", jsonString.length);
-      console.log("📝 JSON string preview:", jsonString.substring(0, 50));
-
-      // Use browser-compatible endpoint for tests and proxy through Vite dev server
-      const netopiaEndpoint = isDevelopment
-        ? "/api/netopia-browser-fix"
-        : "/.netlify/functions/netopia-browser-fix";
-      const response = await fetch(netopiaEndpoint, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json; charset=utf-8",
-          Accept: "text/html,application/json,*/*",
-          "Cache-Control": "no-cache",
-        },
-        credentials: "same-origin",
-        body: jsonString,
-      });
-
-      console.log("Response status:", response.status);
-      console.log("Response headers:", Object.fromEntries(response.headers));
-
-      const responseText = await response.text();
-      console.log("Response text:", responseText);
-
-      let result;
-      try {
-        result = JSON.parse(responseText);
-      } catch (parseError) {
-        result = { error: "Failed to parse JSON", rawResponse: responseText };
-      }
-
-      console.log("Response result:", result);
-
-      if (result.success) {
-        setTestResult(`✅ v1.x Success: ${result.paymentUrl}`);
-      } else {
-        setTestResult(`❌ v1.x Failed: ${result.message || result.error}`);
-      }
-    } catch (error) {
-      console.error("Test error:", error);
-      setTestResult(
-        `❌ v1.x Error: ${error instanceof Error ? error.message : "Unknown error"}`
-      );
-    }
-  };
-
-  // Test function for Netopia API v2.x
-  const testNetopiaV2API = async () => {
-    setTestResult("Testing API v2.x...");
-
-    // Setează flag-ul pentru sandbox mode chiar și în producție
-    localStorage.setItem("netopia_force_sandbox", "true");
-    console.log("🧪 Forcing sandbox mode for v2.x testing");
-
-    try {
-      const { testNetopiaV2API } = await import("../services/netopiaPayments");
-
-      const testData = {
-        orderId: "TEST-V2-" + Date.now(),
-        amount: 15.5,
-        currency: "RON",
-        description: "Test NETOPIA API v2.x payment",
-        customerInfo: {
-          firstName: "Ion",
-          lastName: "Popescu",
-          email: "test@lupulsicorbul.com",
-          phone: "+40712345678",
-          address: "Strada Test 123",
-          city: "Bucuresti",
-          county: "Bucuresti",
-          postalCode: "010000",
-        },
-        live: false, // Force sandbox
-      };
-
-      console.log("🌟 Testing NETOPIA API v2.x with data:", testData);
-
-      const paymentUrl = await testNetopiaV2API(testData);
-
-      setTestResult(`✅ API v2.x Success: ${paymentUrl.substring(0, 100)}...`);
-    } catch (error) {
-      console.error("API v2.x Test error:", error);
-      const errorMessage =
-        error instanceof Error ? error.message : String(error);
-      setTestResult(`❌ API v2.x Error: ${errorMessage}`);
-    }
   };
 
   const formatCurrency = (price: number | undefined) => {
@@ -328,259 +211,312 @@ const Checkout: React.FC = () => {
   };
 
   const submitOrderWithFirebase = async () => {
-    // Always simulate email sending (bypass server function)
-    return simulateEmailSending();
+    console.log("💾 Salvarea comenzii în Firebase...");
+
+    try {
+      // Importăm serviciul de comenzi
+      const { saveOrderToFirebase } = await import("../services/orderService");
+
+      // Generăm un ID unic pentru comandă
+      const realOrderId = `LC-${Date.now()}`;
+
+      // Pregătim datele comenzii pentru Firebase
+      const orderData = {
+        orderNumber: realOrderId,
+        customerName: formData.name,
+        customerEmail: formData.email,
+        customerPhone: formData.phone,
+        customerAddress: formData.address,
+        customerCity: formData.city,
+        customerCounty: formData.county,
+        customerPostalCode: formData.postalCode || "",
+        totalAmount: finalTotal || 0,
+        subtotal: total || 0,
+        shippingCost: shippingCost || 0,
+        items: items.map((item) => ({
+          id: item.id,
+          name: item.name,
+          price: item.price || 0,
+          quantity: item.quantity,
+          image: item.image || "",
+        })),
+        paymentMethod: formData.paymentMethod as "card" | "cash",
+        paymentStatus: "pending" as "pending" | "paid" | "failed" | "cancelled",
+        orderDate: new Date().toISOString(),
+        userId: currentUser?.uid,
+      };
+
+      // Salvăm comanda în Firebase
+      const savedOrderId = await saveOrderToFirebase(
+        orderData,
+        currentUser?.uid
+      );
+      console.log("✅ Comandă salvată în Firebase cu ID:", savedOrderId);
+
+      // Salvăm datele pentru recovery în caz de nevoie
+      localStorage.setItem(
+        "lastOrderDetails",
+        JSON.stringify({
+          ...orderData,
+          firebaseOrderId: savedOrderId,
+        })
+      );
+
+      // Simulăm și trimiterea emailului pentru development
+      return simulateEmailSending();
+    } catch (error) {
+      console.error("❌ Eroare la salvarea comenzii în Firebase:", error);
+      // Continuăm cu simularea emailului chiar dacă salvarea în Firebase eșuează
+      return simulateEmailSending();
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    // 🛡️ PROTECȚIE DOUBLE-SUBMIT - Previne trimiterea multiplă
+    if (isSubmitting) {
+      console.log("🚫 CHECKOUT DEBUG - Submit deja în progres, ignorez apelul duplicat");
+      return;
+    }
+    
     setError(null);
     setIsSubmitting(true);
 
-    // Pentru plățile reale, eliminăm flag-ul de test
-    localStorage.removeItem("netopia_force_sandbox");
-    console.log("💳 Real payment mode - sandbox flag removed");
+    // Pentru testarea plăților, păstrăm sandbox mode
+    // Pentru plățile reale în producție, această linie va fi comentată
+    localStorage.setItem("netopia_force_sandbox", "true");
+    console.log(
+      "🧪 Keeping sandbox mode for testing - real payments will use live mode"
+    );
 
     try {
-      console.log("Inițierea trimiterii comenzii:", { ...formData, items });
+      console.log("🚀 CHECKOUT DEBUG - Inițierea trimiterii comenzii:", {
+        paymentMethod: formData.paymentMethod,
+        name: formData.name,
+        email: formData.email,
+        totalItems: items.length,
+      });
 
-      // Dacă utilizatorul a ales plata cu cardul, redirecționăm către Netopia
+      // Dacă utilizatorul a ales plata cu cardul, folosim NETOPIA v2.x
       if (formData.paymentMethod === "card") {
         console.log(
-          "Plată cu cardul selectată, redirecționăm către Netopia..."
+          "💳 CHECKOUT DEBUG - Card payment selected, using NETOPIA v2.x integration"
         );
+        console.log(
+          "🚫 CHECKOUT DEBUG - NU se va trimite email prin send-order-email pentru plata cu cardul"
+        );
+
+        // Validez că avem toate datele necesare
+        if (
+          !formData.name ||
+          !formData.email ||
+          !formData.address ||
+          !finalTotal
+        ) {
+          throw new Error(
+            "Vă rugăm să completați toate câmpurile obligatorii pentru plata cu cardul."
+          );
+        }
+
+        // Generăm un ID unic pentru comanda reală
+        const realOrderId = `LC-${Date.now()}`;
 
         // Salvăm datele comenzii în localStorage pentru după plată
         const orderData = {
-          orderNumber: `LC-${Date.now()}`,
+          orderNumber: realOrderId,
           customerName: formData.name,
           customerEmail: formData.email,
           customerPhone: formData.phone,
           customerAddress: formData.address,
+          customerCity: formData.city,
+          customerCounty: formData.county,
+          customerPostalCode: formData.postalCode,
           totalAmount: finalTotal,
-          items: items,
+          subtotal: total,
+          shippingCost: shippingCost,
+          items: items.map((item) => ({
+            id: item.id,
+            name: item.name,
+            price: item.price,
+            quantity: item.quantity,
+            image: item.image,
+          })),
           paymentMethod: "card",
+          paymentStatus: "pending",
           date: new Date().toISOString(),
         };
 
         localStorage.setItem("pendingOrder", JSON.stringify(orderData));
+        console.log("💾 Order data saved for NETOPIA payment:", orderData);
 
+        // 🆕 SALVARE ÎN SESSIONSTORAGE - Pentru ca OrderConfirmation să găsească datele reale
+        const sessionStorageBackup = {
+          orderId: realOrderId,
+          customerInfo: {
+            firstName: formData.name.split(" ")[0] || "Client",
+            lastName: formData.name.split(" ").slice(1).join(" ") || "",
+            email: formData.email,
+            phone: formData.phone,
+            address: formData.address,
+            city: formData.city,
+            county: formData.county,
+            postalCode: formData.postalCode,
+          },
+          amount: finalTotal,
+          description: `Comandă Lupul și Corbul - ${items.length} produse (${formatCurrency(finalTotal)})`,
+          timestamp: new Date().toISOString(),
+          source: "Checkout",
+        };
+
+        sessionStorage.setItem(
+          "currentOrderBackup",
+          JSON.stringify(sessionStorageBackup)
+        );
+        console.log(
+          "💾 BACKUP: Date reale salvate în sessionStorage pentru recovery:",
+          sessionStorageBackup
+        );
+
+        // 🆕 SALVARE ÎN COOKIE - Pentru recovery în cazul pierderii sessionStorage
+        const cookieRecoveryData = {
+          orderId: realOrderId,
+          email: formData.email,
+          customerName: formData.name,
+          phone: formData.phone,
+          address: formData.address,
+          city: formData.city,
+          county: formData.county,
+          amount: finalTotal,
+          timestamp: new Date().toISOString(),
+        };
+
+        const cookieValue = btoa(JSON.stringify(cookieRecoveryData));
+        document.cookie = `orderRecovery_${realOrderId}=${cookieValue}; max-age=86400; path=/; SameSite=Lax`;
+        console.log("🍪 Date recovery salvate în cookie pentru:", realOrderId);
+
+        // 🆕 SALVARE ÎN FIREBASE - Pentru dashboard user și admin panel
         try {
-          // Importăm serviciul Netopia configurat
-          const { netopiaService } = await import(
-            "../services/netopiaPayments"
+          const { saveOrderToFirebase } = await import(
+            "../services/orderService"
           );
 
-          // Verificăm că finalTotal este definit
-          console.log("🛒 Cart debug:", {
-            total,
-            shippingCost,
-            finalTotal,
-            itemsCount: items.length,
-          });
-
-          if (!finalTotal || finalTotal <= 0) {
-            const errorMsg = `Suma totală nu este validă. Debug: total=${total}, shippingCost=${shippingCost}, finalTotal=${finalTotal}, items=${items.length}`;
-            console.error("❌ Cart validation error:", errorMsg);
-            throw new Error(errorMsg);
-          }
-
-          // Creăm obiectul de plată folosind serviciul
-          const paymentFormData = {
-            ...formData,
-            firstName: formData.name.split(" ")[0],
-            lastName:
-              formData.name.split(" ").slice(1).join(" ") ||
-              formData.name.split(" ")[0],
-            address: formData.address,
-            city: "Bucuresti", // Oraș fără caractere speciale
-            county: "Bucuresti", // Județ fără caractere speciale
-            postalCode: "010000", // Poți adăuga un câmp pentru cod poștal
+          const firebaseOrderData = {
+            orderNumber: realOrderId,
+            customerName: formData.name,
+            customerEmail: formData.email,
+            customerPhone: formData.phone,
+            customerAddress: formData.address,
+            customerCity: formData.city,
+            customerCounty: formData.county,
+            customerPostalCode: formData.postalCode || "",
+            totalAmount: finalTotal || 0,
+            subtotal: total || 0,
+            shippingCost: shippingCost || 0,
+            items: items.map((item) => ({
+              id: item.id,
+              name: item.name,
+              price: item.price || 0,
+              quantity: item.quantity,
+              image: item.image || "",
+            })),
+            paymentMethod: "card" as "card" | "cash",
+            paymentStatus: "pending" as
+              | "pending"
+              | "paid"
+              | "failed"
+              | "cancelled",
+            orderDate: new Date().toISOString(),
+            userId: currentUser?.uid,
           };
 
-          // Crează descrierea detaliată cu numele produselor
-          const productNames = items.map((item) => item.name).join(", ");
-          const description =
-            items.length === 1
-              ? productNames
-              : `${items.length} produse: ${productNames.length > 100 ? productNames.substring(0, 100) + "..." : productNames}`;
-
-          const paymentData = netopiaService.createPaymentData(
-            paymentFormData,
-            finalTotal,
-            description
+          const savedOrderId = await saveOrderToFirebase(
+            firebaseOrderData,
+            currentUser?.uid
+          );
+          console.log(
+            "✅ Comandă cu card salvată în Firebase cu ID:",
+            savedOrderId
           );
 
-          // FIXUL PENTRU BLANK PAGE: Nu deschid popup-ul imediat!
-          // Mai întâi obțin răspunsul de la Netopia, apoi decid ce să fac
-          let popup: Window | null = null;
-
-          try {
-            console.log("🚀 Inițiez plata Netopia cu payload:", paymentData);
-
-            // Use browser-compatible endpoint for real payments too
-            const netopiaUrl = netopiaService.getNetlifyEndpoint(
-              "netopia-browser-fix"
-            );
-            console.log("🌐 Endpoint Netopia:", netopiaUrl);
-
-            const response = await fetch(netopiaUrl, {
-              method: "POST",
-              headers: {
-                "Content-Type": "application/json; charset=utf-8",
-                Accept: "text/html,application/json,*/*",
-                "Cache-Control": "no-cache",
-              },
-              credentials: "same-origin",
-              body: JSON.stringify(paymentData),
-            });
-
-            // LOGGING COMPLET pentru debugging
-            console.log("📡 Netopia response status:", response.status);
-            console.log(
-              "📋 Netopia response headers:",
-              Object.fromEntries(response.headers.entries())
-            );
-
-            if (!response.ok) {
-              const errorText = await response.text();
-              console.error("❌ Netopia HTTP Error:", {
-                status: response.status,
-                statusText: response.statusText,
-                body: errorText.substring(0, 500),
-              });
-              throw new Error(
-                `Eroare HTTP ${response.status}: ${response.statusText}`
-              );
-            }
-
-            // Citesc răspunsul ca text pentru debugging complet
-            const responseText = await response.text();
-            console.log("🔍 Netopia RAW response:", {
-              length: responseText.length,
-              contentType: response.headers.get("content-type"),
-              firstChars: responseText.substring(0, 200),
-              containsHtml: responseText.includes("<html"),
-              containsForm: responseText.includes("<form"),
-              containsSvg: responseText.includes("card.svg"),
-              containsPaymentURL: responseText.includes("paymentURL"),
-            });
-
-            // Încerc să parsez JSON dacă e posibil
-            let parsedData: any = null;
-            let paymentURL: string | null = null;
-
-            if (
-              response.headers.get("content-type")?.includes("application/json")
-            ) {
-              try {
-                parsedData = JSON.parse(responseText);
-                console.log("✅ Parsed JSON from Netopia:", parsedData);
-
-                // Verific unde e URL-ul de plată
-                paymentURL =
-                  parsedData.paymentUrl ||
-                  parsedData.paymentURL ||
-                  parsedData.customerAction?.url;
-                console.log("� Extracted paymentURL:", paymentURL);
-              } catch (parseError) {
-                console.error("❌ Failed to parse JSON:", parseError);
-                console.log("Raw response that failed to parse:", responseText);
-              }
-            }
-
-            // Acum decid ce să fac în funcție de ce am primit
-            if (
-              responseText.includes("<html") ||
-              responseText.includes("<!doctype")
-            ) {
-              // E HTML form - deschid popup și îl încarcă
-              console.log("📄 Detected HTML response - opening popup for form");
-
-              popup = window.open(
-                "about:blank",
-                "netopia3ds",
-                "width=600,height=700,scrollbars=yes,resizable=yes"
-              );
-
-              if (!popup) {
-                throw new Error(
-                  "Nu s-a putut deschide fereastra de plată securizată. Te rugăm să permiți pop-up-uri și să încerci din nou."
-                );
-              }
-
-              // Scriu conținutul HTML în popup
-              popup.document.open();
-              popup.document.write(responseText);
-              popup.document.close();
-              popup.focus();
-
-              console.log("✅ HTML form loaded in popup");
-            } else if (
-              paymentURL &&
-              typeof paymentURL === "string" &&
-              paymentURL.length > 0
-            ) {
-              // Am primit un URL valid - deschid popup și redirecționez
-              console.log("🔗 Detected valid paymentURL - redirecting");
-
-              popup = window.open(
-                paymentURL,
-                "netopia3ds",
-                "width=600,height=700,scrollbars=yes,resizable=yes"
-              );
-
-              if (!popup) {
-                throw new Error(
-                  "Nu s-a putut deschide fereastra de plată securizată. Te rugăm să permiți pop-up-uri și să încerci din nou."
-                );
-              }
-
-              console.log("✅ Redirected to paymentURL:", paymentURL);
-            } else if (responseText.includes("card.svg")) {
-              // E acel SVG care cauzează blank page
-              console.error(
-                "❌ Detected SVG response - this causes blank page!"
-              );
-              throw new Error(
-                "Netopia a returnat un SVG în loc de formular de plată. Acest lucru indică o problemă de configurare."
-              );
-            } else {
-              // Nu știu ce e - afișez eroare detaliată
-              console.error("❌ Unknown response format from Netopia");
-              throw new Error(
-                `Format necunoscut de răspuns de la Netopia. Content-Type: ${response.headers.get("content-type")}, Length: ${responseText.length}`
-              );
-            }
-          } catch (netopiaError: any) {
-            // Închid popup-ul dacă s-a deschis
-            if (popup) {
-              popup.close();
-            }
-
-            console.error("❌ Eroare completă Netopia:", {
-              message: netopiaError.message,
-              stack: netopiaError.stack,
-              name: netopiaError.name,
-            });
-
-            // Afișez eroarea detaliată utilizatorului
-            const errorMessage =
-              netopiaError.message || "Eroare necunoscută la inițierea plății";
-            throw new Error(`Eroare Netopia: ${errorMessage}`);
-          }
-          return;
-        } catch (netopiaError) {
-          console.error("Eroare la inițializarea Netopia:", netopiaError);
-          setError(
-            "Nu am putut inițializa plata cu cardul. Te rugăm să încerci din nou sau să alegi plata ramburs."
+          // Salvăm ID-ul Firebase pentru referință
+          const updatedOrderData = {
+            ...orderData,
+            firebaseOrderId: savedOrderId,
+          };
+          localStorage.setItem(
+            "pendingOrder",
+            JSON.stringify(updatedOrderData)
           );
-          setIsSubmitting(false);
-          return;
+        } catch (firebaseError) {
+          console.error(
+            "❌ Eroare la salvarea comenzii cu card în Firebase:",
+            firebaseError
+          );
+          // Continuăm cu plata chiar dacă salvarea în Firebase eșuează
         }
+
+        // Debug: Verifică dacă datele s-au salvat corect
+        const savedData = localStorage.getItem("pendingOrder");
+        console.log("🔍 Verificare salvare localStorage:", {
+          saved: !!savedData,
+          orderNumber: orderData.orderNumber,
+          dataLength: savedData ? savedData.length : 0,
+          firstChars: savedData ? savedData.substring(0, 100) : "N/A",
+        });
+
+        // Inițiem plata NETOPIA v2.x
+        const { netopiaService } = await import("../services/netopiaPayments");
+
+        // Folosește origin-ul corect pentru Netlify Functions
+        // În dezvoltare: folosește portul Netlify (8888)
+        // În producție: folosește domain-ul real
+        const isLocalDev =
+          window.location.hostname === "localhost" ||
+          window.location.hostname === "127.0.0.1";
+        const netopiaOrigin = isLocalDev
+          ? "http://localhost:8888" // Netlify Dev
+          : window.location.origin; // Production (lupulsicorbul.com)
+
+        const paymentData = {
+          orderId: realOrderId,
+          amount: finalTotal || 0,
+          currency: "RON",
+          description: `Comandă Lupul și Corbul - ${items.length} produse (${formatCurrency(finalTotal)})`,
+          customerInfo: {
+            firstName: formData.name.split(" ")[0] || "Cliente",
+            lastName: formData.name.split(" ").slice(1).join(" ") || "Lupul",
+            email: formData.email,
+            phone: formData.phone,
+            address: formData.address,
+            city: formData.city,
+            county: formData.county,
+            postalCode: formData.postalCode,
+          },
+          live: false, // Forțat sandbox pentru test
+          returnUrl: `${netopiaOrigin}/.netlify/functions/netopia-return?orderId=${realOrderId}`,
+          confirmUrl: `${netopiaOrigin}/.netlify/functions/netopia-notify?orderId=${realOrderId}`,
+        };
+
+        console.log("🚀 Initiating NETOPIA v2.x payment:", paymentData);
+        const paymentUrl = await netopiaService.initiatePayment(paymentData);
+
+        // În loc să folosim popup, să permitem NETOPIA să redirecționeze în același tab
+        console.log("🌐 Redirecting to NETOPIA payment page...");
+
+        // Redirecționează către NETOPIA în același tab
+        window.location.href = paymentUrl;
+
+        console.log(
+          "🚫 CHECKOUT DEBUG - RETURN EXECUTAT - Nu se mai execută submitOrderWithFetch pentru card!"
+        );
+        return; // Exit early for card payments
       }
 
-      // Pentru plata ramburs, continuăm cu logica existentă
+      // Pentru plățile cu ramburs, continuăm cu logica existentă
+      console.log(
+        "💰 CHECKOUT DEBUG - Plata cu ramburs selectată - se va trimite email prin send-order-email"
+      );
       let result;
 
       if (isDevelopment) {
@@ -946,60 +882,26 @@ const Checkout: React.FC = () => {
               </div>
             </div>
 
-            {/* Test buttons for development */}
-            {isDevelopment && (
-              <div className="mb-4 space-y-2">
-                <button
-                  type="button"
-                  onClick={testNetopiaConnection}
-                  className="w-full bg-green-600 hover:bg-green-700 text-white py-2 px-4 rounded-md transition-colors font-medium mb-2"
-                >
-                  🧪 Test Netopia v1.x Connection
-                </button>
-                <button
-                  type="button"
-                  onClick={testNetopiaV2API}
-                  className="w-full bg-purple-600 hover:bg-purple-700 text-white py-2 px-4 rounded-md transition-colors font-medium mb-2"
-                >
-                  🌟 Test Netopia API v2.x (NEW)
-                </button>
-                <button
-                  type="button"
-                  onClick={() => {
-                    console.log("🧪 Testing popup mechanism...");
-                    const testPopup = window.open(
-                      "about:blank",
-                      "test",
-                      "width=600,height=700,scrollbars=yes,resizable=yes"
-                    );
-                    if (testPopup) {
-                      testPopup.document.write(`
-                        <html>
-                          <head><title>Test Popup</title></head>
-                          <body style="font-family: Arial; text-align: center; padding: 50px;">
-                            <h2>✅ Popup Test Successful!</h2>
-                            <p>This popup opened correctly.</p>
-                            <button onclick="window.close()">Close</button>
-                          </body>
-                        </html>
-                      `);
-                      testPopup.document.close();
-                      testPopup.focus();
-                    } else {
-                      alert(
-                        "❌ Popup blocked! Please allow popups for this site."
-                      );
-                    }
-                  }}
-                  className="w-full bg-purple-600 hover:bg-purple-700 text-white py-2 px-4 rounded-md transition-colors font-medium mb-2"
-                >
-                  🧪 Test Popup Mechanism
-                </button>
-                {testResult && (
-                  <div className="p-2 bg-gray-100 rounded border text-sm font-mono">
-                    {testResult}
+            {/* Informație despre procesul de plată */}
+            {formData.paymentMethod === "card" && (
+              <div className="bg-gradient-to-r from-blue-50 to-green-50 border border-blue-200 rounded-lg p-4 mb-4">
+                <div className="text-center">
+                  <p className="text-sm font-semibold text-blue-800 mb-2">
+                    🔐 Plata integrată NETOPIA v2.x
+                  </p>
+                  <p className="text-xs text-gray-700 mb-2">
+                    Când apăsați "Finalizează comanda", veți fi redirecționat
+                    către pagina securizată NETOPIA pentru plata cu cardul.
+                  </p>
+                  <div className="bg-white rounded p-2 text-xs">
+                    <span className="font-semibold text-blue-700">
+                      Total de plată:
+                    </span>{" "}
+                    <span className="text-lg font-bold text-blue-800">
+                      {formatCurrency(finalTotal || 0)}
+                    </span>
                   </div>
-                )}
+                </div>
               </div>
             )}
 
@@ -1011,15 +913,13 @@ const Checkout: React.FC = () => {
               {isSubmitting
                 ? "Se procesează..."
                 : formData.paymentMethod === "card"
-                  ? "Continuă la plată securizată"
+                  ? "Finalizează comanda și plătește cu cardul"
                   : "Trimite comanda"}
             </button>
 
             {isSubmitting && (
               <p className="text-center text-sm mt-2 text-blue-500">
-                {formData.paymentMethod === "card"
-                  ? "Validăm datele cardului și inițializăm plata securizată..."
-                  : "Procesăm comanda ta, te rugăm să aștepți..."}
+                Procesăm comanda ta, te rugăm să aștepți...
               </p>
             )}
           </form>

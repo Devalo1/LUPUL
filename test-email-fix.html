@@ -1,0 +1,296 @@
+<!doctype html>
+<html lang="ro">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Test Email Fix - NETOPIA</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        margin: 20px;
+        background: #f5f5f5;
+      }
+      .container {
+        background: white;
+        padding: 20px;
+        border-radius: 8px;
+        max-width: 800px;
+        margin: 0 auto;
+      }
+      .success {
+        background: #d4edda;
+        color: #155724;
+        padding: 15px;
+        border-radius: 5px;
+        margin: 10px 0;
+      }
+      .error {
+        background: #f8d7da;
+        color: #721c24;
+        padding: 15px;
+        border-radius: 5px;
+        margin: 10px 0;
+      }
+      .info {
+        background: #d1ecf1;
+        color: #0c5460;
+        padding: 15px;
+        border-radius: 5px;
+        margin: 10px 0;
+      }
+      .warning {
+        background: #fff3cd;
+        color: #856404;
+        padding: 15px;
+        border-radius: 5px;
+        margin: 10px 0;
+      }
+      button {
+        padding: 12px 24px;
+        margin: 5px;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        font-size: 16px;
+      }
+      .btn-primary {
+        background: #007bff;
+        color: white;
+      }
+      .btn-success {
+        background: #28a745;
+        color: white;
+      }
+      .btn-danger {
+        background: #dc3545;
+        color: white;
+      }
+      pre {
+        background: #f8f9fa;
+        padding: 10px;
+        border-radius: 3px;
+        overflow-x: auto;
+        max-height: 300px;
+        overflow-y: auto;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h1>🧪 Test Email Fix pentru NETOPIA Flow</h1>
+
+      <div class="info">
+        <strong>Obiectiv:</strong> Testez dacă fix-ul pentru email funcționează
+        cu noua structură de date
+      </div>
+
+      <div class="success">
+        <h3>📋 Pas 1: Simulează Date de Comandă</h3>
+        <button class="btn-primary" onclick="setupOrderData()">
+          🛒 Creează Date Comandă
+        </button>
+        <div id="orderSetupResults"></div>
+      </div>
+
+      <div class="info">
+        <h3>📧 Pas 2: Testează Trimiterea Email</h3>
+        <button class="btn-success" onclick="testEmailSending()">
+          📧 Test Email cu Structura Corectă
+        </button>
+        <div id="emailResults"></div>
+      </div>
+
+      <div class="warning">
+        <h3>🔄 Pas 3: Test Complete Flow</h3>
+        <button class="btn-danger" onclick="testCompleteFlow()">
+          🚀 Test Flow Complet cu Email
+        </button>
+        <div id="completeFlowResults"></div>
+      </div>
+
+      <div
+        style="
+          margin-top: 30px;
+          padding: 20px;
+          border: 2px solid #007bff;
+          border-radius: 8px;
+        "
+      >
+        <h3>📊 Console Logs</h3>
+        <div
+          id="consoleLogs"
+          style="
+            height: 200px;
+            overflow-y: auto;
+            background: #000;
+            color: #0f0;
+            padding: 10px;
+            font-family: monospace;
+          "
+        ></div>
+      </div>
+    </div>
+
+    <script>
+      let currentOrderData = null;
+
+      // Console logging
+      const consoleDiv = document.getElementById("consoleLogs");
+      const originalLog = console.log;
+
+      console.log = function (...args) {
+        originalLog.apply(console, args);
+        const timestamp = new Date().toLocaleTimeString();
+        consoleDiv.innerHTML += `<div style="color: #0f0;">[${timestamp}] ${args.join(" ")}</div>`;
+        consoleDiv.scrollTop = consoleDiv.scrollHeight;
+      };
+
+      function setupOrderData() {
+        const orderId = `LC-${Date.now()}`;
+
+        // Creez date exact cum le salvează Checkout.tsx
+        const orderData = {
+          orderNumber: orderId,
+          customerName: "Dani_popa21 Lupul",
+          customerEmail: "dani_popa21@yahoo.ro",
+          customerPhone: "0775346243",
+          customerAddress: "9 MAI BLOC 2 A",
+          customerCity: "PETROSANI",
+          customerCounty: "HUNEDOARA",
+          totalAmount: 35,
+          items: [
+            {
+              id: "dulceata-afine",
+              name: "🫐 Dulceață de afine",
+              price: 35,
+              quantity: 1,
+              image: "/images/dulceata-afine.jpg",
+            },
+          ],
+          paymentMethod: "card",
+          paymentStatus: "pending",
+          date: new Date().toISOString(),
+        };
+
+        currentOrderData = orderData;
+
+        // Salvez în localStorage
+        localStorage.setItem("pendingOrder", JSON.stringify(orderData));
+
+        console.log("🛒 Date comandă create:", orderData);
+
+        const results = `
+                <div class="success">✅ Date comandă create cu succes!</div>
+                <div class="info">📋 Order ID: ${orderId}</div>
+                <div class="info">👤 Customer: ${orderData.customerName} (${orderData.customerEmail})</div>
+                <div class="info">💰 Total: ${orderData.totalAmount} RON</div>
+                <div class="info">📦 Items: ${orderData.items.length} produs(e)</div>
+                <pre>${JSON.stringify(orderData, null, 2)}</pre>
+            `;
+
+        document.getElementById("orderSetupResults").innerHTML = results;
+      }
+
+      async function testEmailSending() {
+        if (!currentOrderData) {
+          document.getElementById("emailResults").innerHTML =
+            '<div class="error">❌ Rulează mai întâi "Creează Date Comandă"!</div>';
+          return;
+        }
+
+        console.log("📧 Testing email cu structura corectă...");
+
+        // Structura corectă conform fix-ului
+        const emailPayload = {
+          orderData: {
+            email: currentOrderData.customerEmail,
+            customerName: currentOrderData.customerName,
+            firstName: currentOrderData.customerName?.split(" ")[0] || "Client",
+            lastName:
+              currentOrderData.customerName?.split(" ").slice(1).join(" ") ||
+              "",
+            phone: currentOrderData.customerPhone,
+            address: currentOrderData.customerAddress,
+            city: currentOrderData.customerCity,
+            county: currentOrderData.customerCounty,
+            totalAmount: currentOrderData.totalAmount,
+            items: currentOrderData.items || [],
+            paymentMethod: "Card bancar (NETOPIA Payments)",
+            date: currentOrderData.date,
+          },
+          orderNumber: currentOrderData.orderNumber,
+          totalAmount: currentOrderData.totalAmount,
+        };
+
+        console.log("📤 Trimite email cu payload:", emailPayload);
+
+        try {
+          const response = await fetch("/.netlify/functions/send-order-email", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify(emailPayload),
+          });
+
+          const result = await response.text();
+          console.log("📨 Response status:", response.status);
+          console.log("📨 Response body:", result);
+
+          if (response.ok) {
+            const results = `
+                        <div class="success">✅ Email trimis cu succes!</div>
+                        <div class="info">📧 Către: ${currentOrderData.customerEmail}</div>
+                        <div class="info">📋 Order: ${currentOrderData.orderNumber}</div>
+                        <div class="info">💰 Amount: ${currentOrderData.totalAmount} RON</div>
+                        <div class="success">🎉 Fix-ul funcționează perfect!</div>
+                        <pre>${result}</pre>
+                    `;
+            document.getElementById("emailResults").innerHTML = results;
+          } else {
+            const results = `
+                        <div class="error">❌ Eroare la trimiterea email-ului</div>
+                        <div class="warning">Status: ${response.status}</div>
+                        <div class="info">Response: ${result}</div>
+                        <pre>Payload trimis:\n${JSON.stringify(emailPayload, null, 2)}</pre>
+                    `;
+            document.getElementById("emailResults").innerHTML = results;
+          }
+        } catch (error) {
+          console.error("❌ Eroare API:", error);
+          const results = `
+                    <div class="error">❌ Eroare la apelul API</div>
+                    <pre>${error.message}</pre>
+                `;
+          document.getElementById("emailResults").innerHTML = results;
+        }
+      }
+
+      function testCompleteFlow() {
+        if (!currentOrderData) {
+          document.getElementById("completeFlowResults").innerHTML =
+            '<div class="error">❌ Rulează mai întâi "Creează Date Comandă"!</div>';
+          return;
+        }
+
+        console.log("🚀 Starting complete flow test...");
+
+        const results = `
+                <div class="info">🔄 Redirecting către OrderConfirmation cu date în localStorage...</div>
+                <div class="info">📋 URL: /order-confirmation?orderId=${currentOrderData.orderNumber}</div>
+                <div class="warning">⚠️ Pagina se va deschide în 3 secunde...</div>
+                <div class="success">✅ Datele sunt salvate în localStorage și gata pentru procesare</div>
+            `;
+
+        document.getElementById("completeFlowResults").innerHTML = results;
+
+        setTimeout(() => {
+          window.location.href = `/order-confirmation?orderId=${currentOrderData.orderNumber}`;
+        }, 3000);
+      }
+
+      // Auto-start
+      console.log("🧪 Test Email Fix loaded și gata pentru testare");
+    </script>
+  </body>
+</html>

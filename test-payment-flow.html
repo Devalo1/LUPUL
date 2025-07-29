@@ -1,0 +1,167 @@
+<!doctype html>
+<html lang="ro">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Test Payment Flow</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        max-width: 800px;
+        margin: 0 auto;
+        padding: 20px;
+      }
+      .button {
+        background: #007cba;
+        color: white;
+        padding: 10px 20px;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        margin: 10px 0;
+      }
+      .button:hover {
+        background: #005a8b;
+      }
+      .step {
+        background: #f0f8ff;
+        padding: 15px;
+        margin: 10px 0;
+        border-radius: 5px;
+        border-left: 4px solid #007cba;
+      }
+      .success {
+        background: #d4edda;
+        border-left-color: #28a745;
+      }
+      .error {
+        background: #f8d7da;
+        border-left-color: #dc3545;
+      }
+      pre {
+        background: #f8f9fa;
+        padding: 10px;
+        border-radius: 5px;
+        overflow-x: auto;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>🧪 Test Flux Plată NETOPIA</h1>
+
+    <div class="step">
+      <h3>Pasul 1: Simulare comandă în curs</h3>
+      <p>Primul pas - salvăm o comandă de test în localStorage</p>
+      <button class="button" onclick="createTestOrder()">
+        Creează Comandă Test
+      </button>
+      <div id="step1-result"></div>
+    </div>
+
+    <div class="step">
+      <h3>Pasul 2: Simulare plată NETOPIA</h3>
+      <p>
+        Simulăm că userul a completat plata în NETOPIA și se întoarce pe site
+      </p>
+      <button
+        class="button"
+        onclick="simulateNetopiaReturn()"
+        disabled
+        id="step2-btn"
+      >
+        Simulează Return NETOPIA
+      </button>
+      <div id="step2-result"></div>
+    </div>
+
+    <div class="step">
+      <h3>Pasul 3: Verificare rezultat</h3>
+      <p>Verifică dacă userul ajunge corect pe pagina de confirmare</p>
+      <button class="button" onclick="checkLocalStorage()">
+        Verifică localStorage
+      </button>
+      <div id="step3-result"></div>
+    </div>
+
+    <script>
+      let testOrderId = "";
+
+      function createTestOrder() {
+        testOrderId = `LC-${Date.now()}`;
+        const testOrder = {
+          orderNumber: testOrderId,
+          customerName: "Test User România",
+          customerEmail: "test@lupulsicorbul.com",
+          customerAddress: "Strada Test 123",
+          customerCity: "București",
+          customerCounty: "Bucuresti",
+          customerPhone: "0723456789",
+          totalAmount: 149.99,
+          items: [
+            { name: "Produs Test 1", price: 99.99, quantity: 1 },
+            { name: "Produs Test 2", price: 50.0, quantity: 1 },
+          ],
+          createdAt: new Date().toISOString(),
+        };
+
+        localStorage.setItem("pendingOrder", JSON.stringify(testOrder));
+
+        document.getElementById("step1-result").innerHTML = `
+                <div class="success">
+                    ✅ Comandă creată cu succes!<br>
+                    <strong>Order ID:</strong> ${testOrderId}<br>
+                    <strong>Total:</strong> 149.99 RON
+                </div>
+            `;
+
+        document.getElementById("step2-btn").disabled = false;
+      }
+
+      function simulateNetopiaReturn() {
+        if (!testOrderId) {
+          alert("Mai întâi creează o comandă de test!");
+          return;
+        }
+
+        const returnUrl = `http://localhost:8888/.netlify/functions/netopia-return?orderId=${testOrderId}&status=success&paymentId=TEST123`;
+
+        document.getElementById("step2-result").innerHTML = `
+                <div class="step">
+                    🔄 Redirecționez către funcția NETOPIA return...<br>
+                    <strong>URL:</strong> ${returnUrl}<br><br>
+                    <a href="${returnUrl}" target="_blank" class="button">
+                        🚀 Deschide NETOPIA Return
+                    </a>
+                </div>
+            `;
+      }
+
+      function checkLocalStorage() {
+        const pendingOrder = localStorage.getItem("pendingOrder");
+        const completedOrder = localStorage.getItem("lastCompletedOrder");
+
+        let result = "<h4>Status localStorage:</h4>";
+
+        if (pendingOrder) {
+          result += `<div class="error">❌ Comandă încă pending: ${JSON.parse(pendingOrder).orderNumber}</div>`;
+        } else {
+          result += `<div class="success">✅ Nu există comenzi pending</div>`;
+        }
+
+        if (completedOrder) {
+          const order = JSON.parse(completedOrder);
+          result += `<div class="success">✅ Comandă completată: ${order.orderNumber} (${order.paymentStatus})</div>`;
+        } else {
+          result += `<div class="error">❌ Nu există comenzi completate</div>`;
+        }
+
+        document.getElementById("step3-result").innerHTML = result;
+      }
+
+      // Auto-check la încărcarea paginii
+      window.onload = function () {
+        checkLocalStorage();
+      };
+    </script>
+  </body>
+</html>

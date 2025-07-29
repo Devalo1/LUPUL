@@ -1,0 +1,76 @@
+<!doctype html>
+<html>
+  <head>
+    <title>Test NETOPIA in Browser</title>
+  </head>
+  <body>
+    <h1>Test NETOPIA Payment in Browser</h1>
+    <button id="testBtn">Test NETOPIA Payment</button>
+    <div id="result"></div>
+
+    <script>
+      document.getElementById("testBtn").addEventListener("click", async () => {
+        const resultDiv = document.getElementById("result");
+        resultDiv.innerHTML = "Testing...";
+
+        try {
+          const testPayload = {
+            orderId: "TEST-BROWSER-" + Date.now(),
+            amount: 15.5,
+            currency: "RON",
+            description: "Test payment from browser",
+            customerInfo: {
+              firstName: "Test",
+              lastName: "User",
+              email: "test@test.com",
+              phone: "+40712345678",
+              address: "Test Address",
+              city: "Bucuresti",
+              county: "Bucuresti",
+              postalCode: "010000",
+            },
+            live: false,
+          };
+
+          console.log("🚀 Making request to NETOPIA...");
+          console.log("Payload:", testPayload);
+
+          const response = await fetch("/api/netopia-v2-api", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify(testPayload),
+          });
+
+          console.log("Response status:", response.status);
+          console.log(
+            "Response headers:",
+            Object.fromEntries(response.headers.entries())
+          );
+
+          const responseText = await response.text();
+          console.log("Response text:", responseText);
+
+          if (!response.ok) {
+            throw new Error(`HTTP ${response.status}: ${responseText}`);
+          }
+
+          let data;
+          try {
+            data = JSON.parse(responseText);
+          } catch (e) {
+            console.error("JSON parse error:", e);
+            throw new Error("Invalid JSON response");
+          }
+
+          console.log("Parsed data:", data);
+          resultDiv.innerHTML = `<pre>Success: ${JSON.stringify(data, null, 2)}</pre>`;
+        } catch (error) {
+          console.error("Request failed:", error);
+          resultDiv.innerHTML = `<div style="color: red;">Error: ${error.message}</div>`;
+        }
+      });
+    </script>
+  </body>
+</html>

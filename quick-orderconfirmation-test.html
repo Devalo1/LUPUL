@@ -1,0 +1,150 @@
+<!doctype html>
+<html lang="ro">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Test Rapid OrderConfirmation</title>
+    <style>
+      body {
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+        max-width: 600px;
+        margin: 50px auto;
+        padding: 20px;
+        background: #f0f2f5;
+      }
+      .container {
+        background: white;
+        padding: 30px;
+        border-radius: 8px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+      }
+      h1 {
+        color: #2c5282;
+        text-align: center;
+        margin-bottom: 30px;
+      }
+      .button {
+        background: #4299e1;
+        color: white;
+        border: none;
+        padding: 12px 24px;
+        border-radius: 6px;
+        cursor: pointer;
+        font-size: 16px;
+        margin: 10px 5px;
+        width: 100%;
+        display: block;
+      }
+      .button:hover {
+        background: #3182ce;
+      }
+      .status {
+        padding: 10px;
+        border-radius: 4px;
+        margin: 10px 0;
+        font-weight: 500;
+      }
+      .success {
+        background: #c6f6d5;
+        color: #22543d;
+      }
+      .error {
+        background: #fed7d7;
+        color: #742a2a;
+      }
+      .info {
+        background: #bee3f8;
+        color: #2a4365;
+      }
+      input {
+        width: 100%;
+        padding: 10px;
+        border: 1px solid #cbd5e0;
+        border-radius: 4px;
+        margin: 10px 0;
+        box-sizing: border-box;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h1>🚀 Test Rapid OrderConfirmation</h1>
+
+      <input
+        type="text"
+        id="orderIdInput"
+        placeholder="Order ID"
+        value="LC-1753819549454"
+      />
+
+      <button class="button" onclick="prepareAndTest()">
+        🔧 Pregătește Date + Testează OrderConfirmation
+      </button>
+
+      <button class="button" onclick="testDirectVite()">
+        🎯 Test Direct pe Vite (port 5173)
+      </button>
+
+      <button class="button" onclick="testDirectNetlify()">
+        🌐 Test Direct pe Netlify (port 8888)
+      </button>
+
+      <div id="status"></div>
+    </div>
+
+    <script>
+      function prepareAndTest() {
+          const statusDiv = document.getElementById('status');
+          const orderId = document.getElementById('orderIdInput').value;
+
+          // Creează date de test în localStorage
+          const testOrderData = {
+              orderId: orderId,
+              orderNumber: orderId,
+              amount: 55,
+              products: [{
+                  name: 'Produs Test NETOPIA',
+                  price: 55,
+                  quantity: 1
+              }],
+              customerEmail: 'dani_popa21@yahoo.ro',
+              customerName: 'Dani_popa21 Lupul',
+              customerPhone: '0775346243',
+              customerAddress: '9 MAI BLOC 2 A',
+              customerCity: 'PETROSANI',
+              customerCounty: 'HUNEDOARA',
+              postalCode: '800258',
+              paymentMethod: 'card',
+              totalAmount: 55,
+              createdAt: new Date().toISOString()
+          };
+
+          // Salvează în ambele formate
+          localStorage.setItem('pendingOrder', JSON.stringify(testOrderData));
+          localStorage.setItem('pendingOrders', JSON.stringify(testOrderData));
+
+          statusDiv.innerHTML = `
+              <div class="success">✅ Date pregătite în localStorage pentru Order ID: ${orderId}</div>
+              <div class="info">📋 Acum poți testa OrderConfirmation - click pe unul din butoanele de test</div>
+          `;
+      }
+
+      function testDirectVite() {
+          const orderId = document.getElementById('orderIdInput').value;
+          const url = \`http://localhost:5173/order-confirmation?orderId=\${orderId}\`;
+          window.open(url, '_blank');
+      }
+
+      function testDirectNetlify() {
+          const orderId = document.getElementById('orderIdInput').value;
+          const url = \`http://localhost:8888/order-confirmation?orderId=\${orderId}\`;
+          window.open(url, '_blank');
+      }
+
+      // Auto-pregătește datele la încărcare
+      document.addEventListener('DOMContentLoaded', function() {
+          prepareAndTest();
+      });
+    </script>
+  </body>
+</html>

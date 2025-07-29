@@ -88,6 +88,44 @@ const PaymentPage: React.FC = () => {
         })
       );
 
+      // 🔧 BACKUP MECHANISM - Salvează și în sessionStorage pentru siguranță
+      sessionStorage.setItem(
+        "currentOrderBackup",
+        JSON.stringify({
+          orderId: paymentData.orderId,
+          amount: formData.amount,
+          description: formData.description,
+          customerInfo: paymentData.customerInfo,
+          timestamp: new Date().toISOString(),
+          source: "PaymentPage",
+        })
+      );
+
+      // 🆕 RECOVERY MECHANISM - Salvează în cookie pentru recovery ulterior
+      const recoveryData = {
+        orderId: paymentData.orderId,
+        email: paymentData.customerInfo.email,
+        customerName:
+          paymentData.customerInfo.firstName +
+          " " +
+          paymentData.customerInfo.lastName,
+        phone: paymentData.customerInfo.phone,
+        address: paymentData.customerInfo.address,
+        city: paymentData.customerInfo.city,
+        county: paymentData.customerInfo.county,
+        amount: formData.amount,
+        timestamp: new Date().toISOString(),
+      };
+
+      // Salvează în cookie cu expirare de 24h
+      const cookieValue = btoa(JSON.stringify(recoveryData)); // Encodare base64
+      document.cookie = `orderRecovery_${paymentData.orderId}=${cookieValue}; max-age=86400; path=/; SameSite=Lax`;
+
+      console.log(
+        "💾 Date comandă salvate în localStorage, sessionStorage și cookie:",
+        paymentData.orderId
+      );
+
       // Dacă răspunsul este un HTML (3DS form), afișează direct conținutul
       if (paymentUrl.trim().startsWith("<")) {
         document.open();

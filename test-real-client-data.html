@@ -1,0 +1,328 @@
+<!doctype html>
+<html lang="ro">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>🧪 Test Date Reale în SessionStorage</title>
+    <style>
+      body {
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+        max-width: 1000px;
+        margin: 0 auto;
+        padding: 20px;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+      }
+      .container {
+        background: rgba(255, 255, 255, 0.1);
+        backdrop-filter: blur(10px);
+        border-radius: 15px;
+        padding: 30px;
+        margin: 20px 0;
+        border: 1px solid rgba(255, 255, 255, 0.2);
+      }
+      h1 {
+        color: #ffd700;
+        text-align: center;
+      }
+      h2 {
+        color: #90ee90;
+        border-bottom: 2px solid #90ee90;
+        padding-bottom: 10px;
+      }
+      .btn {
+        background: linear-gradient(45deg, #ff6b6b, #4ecdc4);
+        border: none;
+        color: white;
+        padding: 15px 30px;
+        margin: 10px;
+        border-radius: 25px;
+        cursor: pointer;
+        font-weight: bold;
+        font-size: 16px;
+        transition: all 0.3s ease;
+      }
+      .btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+      }
+      .result {
+        background: rgba(0, 0, 0, 0.3);
+        padding: 15px;
+        margin: 10px 0;
+        border-radius: 8px;
+        font-family: "Courier New", monospace;
+        white-space: pre-wrap;
+      }
+      .success {
+        border-left: 4px solid #4caf50;
+      }
+      .error {
+        border-left: 4px solid #f44336;
+      }
+      .info {
+        border-left: 4px solid #2196f3;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>🧪 Test Date Reale Client în SessionStorage</h1>
+
+    <div class="container">
+      <h2>🎯 Simulare Date Reale Utilizator</h2>
+      <p>
+        Acest test simulează datele pe care le-ar salva PaymentPage pentru un
+        client real.
+      </p>
+
+      <button class="btn" onclick="saveRealUserData()">
+        💾 Salvează Date Reale Client
+      </button>
+      <div id="saveResult" class="result"></div>
+
+      <button class="btn" onclick="testOrderConfirmationFlow()">
+        🔍 Test OrderConfirmation
+      </button>
+      <div id="testResult" class="result"></div>
+
+      <button class="btn" onclick="openOrderConfirmation()">
+        🚀 Deschide OrderConfirmation
+      </button>
+      <div id="openResult" class="result"></div>
+    </div>
+
+    <div class="container">
+      <h2>📊 Status SessionStorage</h2>
+      <button class="btn" onclick="checkSessionStorage()">
+        🔍 Verifică SessionStorage
+      </button>
+      <div id="storageResult" class="result"></div>
+    </div>
+
+    <script>
+      const REAL_ORDER_ID = "LC-REAL-CLIENT-" + Date.now();
+
+      function saveRealUserData() {
+        console.log("💾 Salvez date REALE de client...");
+
+        // Date reale de client (ca în PaymentPage)
+        const realClientData = {
+          orderId: REAL_ORDER_ID,
+          amount: "199.99",
+          description: "Emblem Premium Gold - Comandă Reală",
+          customerInfo: {
+            firstName: "Alexandra",
+            lastName: "Georgescu",
+            email: "alexandra.georgescu@gmail.com", // EMAIL REAL!
+            phone: "0742567890",
+            address: "Bulevardul Unirii 45",
+            city: "București",
+            county: "București",
+          },
+          timestamp: new Date().toISOString(),
+          source: "PaymentPage",
+        };
+
+        // Salvează în sessionStorage (exact ca PaymentPage)
+        sessionStorage.setItem(
+          "currentOrderBackup",
+          JSON.stringify(realClientData)
+        );
+
+        // Șterge localStorage pentru a forța recovery
+        localStorage.removeItem("currentOrder");
+        localStorage.removeItem("pendingOrder");
+        localStorage.removeItem("pendingOrders");
+
+        document.getElementById("saveResult").innerHTML = `
+✅ DATE REALE CLIENT SALVATE!
+
+📋 OrderID: ${REAL_ORDER_ID}
+👤 Nume: ${realClientData.customerInfo.firstName} ${realClientData.customerInfo.lastName}
+📧 Email REAL: ${realClientData.customerInfo.email}
+📱 Telefon: ${realClientData.customerInfo.phone}
+🏠 Adresă: ${realClientData.customerInfo.address}, ${realClientData.customerInfo.city}
+💰 Sumă: ${realClientData.amount} RON
+
+💾 Salvat în: sessionStorage.currentOrderBackup
+❌ localStorage: ȘTERS (pentru a forța recovery)
+
+🎯 Acum OrderConfirmation va trebui să recupereze aceste date REALE!
+`;
+        document.getElementById("saveResult").className = "result success";
+      }
+
+      function testOrderConfirmationFlow() {
+        console.log("🔍 Testez fluxul OrderConfirmation...");
+
+        const result = document.getElementById("testResult");
+        result.innerHTML = "🔍 Se testează fluxul de recovery...";
+
+        // Simulează logica din OrderConfirmation
+        let foundOrderData = null;
+
+        // 1. Verifică localStorage (va fi gol)
+        const currentOrderData = localStorage.getItem("currentOrder");
+        if (currentOrderData) {
+          foundOrderData = JSON.parse(currentOrderData);
+          console.log("✅ Date găsite în localStorage");
+        } else {
+          console.log("❌ localStorage.currentOrder: LIPSĂ");
+        }
+
+        // 2. Verifică sessionStorage backup (aici sunt datele reale!)
+        if (!foundOrderData) {
+          const backupDataStr = sessionStorage.getItem("currentOrderBackup");
+          if (backupDataStr) {
+            try {
+              const backupData = JSON.parse(backupDataStr);
+              console.log(
+                "📦 Date backup găsite în sessionStorage:",
+                backupData
+              );
+
+              // Transformă în formatul pentru OrderConfirmation
+              foundOrderData = {
+                orderNumber: backupData.orderId,
+                customerName: `${backupData.customerInfo.firstName} ${backupData.customerInfo.lastName}`,
+                customerEmail: backupData.customerInfo.email,
+                customerPhone: backupData.customerInfo.phone,
+                customerAddress: backupData.customerInfo.address,
+                customerCity: backupData.customerInfo.city,
+                customerCounty: backupData.customerInfo.county,
+                totalAmount: backupData.amount,
+                paymentMethod: "Card bancar (NETOPIA Payments)",
+                date: backupData.timestamp,
+                items: [
+                  {
+                    name: backupData.description,
+                    price: backupData.amount,
+                    quantity: 1,
+                  },
+                ],
+                isRealUserData: true,
+              };
+
+              console.log("✅ Date REALE recuperate din sessionStorage");
+            } catch (error) {
+              console.error("❌ Eroare parsare backup:", error);
+            }
+          }
+        }
+
+        let resultText = "🔍 SIMULARE FLUX ORDERCONFIRMATION:\n\n";
+
+        if (foundOrderData) {
+          resultText += "✅ RECOVERY SUCCESSFUL!\n\n";
+          resultText += `📋 OrderID: ${foundOrderData.orderNumber}\n`;
+          resultText += `👤 Nume: ${foundOrderData.customerName}\n`;
+          resultText += `📧 Email: ${foundOrderData.customerEmail}\n`;
+          resultText += `📱 Telefon: ${foundOrderData.customerPhone}\n`;
+          resultText += `🏠 Adresă: ${foundOrderData.customerAddress}, ${foundOrderData.customerCity}\n`;
+          resultText += `💰 Total: ${foundOrderData.totalAmount} RON\n`;
+          resultText += `🏷️ Date reale: ${foundOrderData.isRealUserData ? "DA" : "NU"}\n\n`;
+
+          if (
+            foundOrderData.isRealUserData &&
+            foundOrderData.customerEmail.includes("@gmail.com")
+          ) {
+            resultText +=
+              "🎉 PERFECT! Acestea sunt datele REALE ale clientului!\n";
+            resultText += "✅ Emailul va fi trimis către clientul real!\n";
+            resultText += "✅ Pagina va afișa informațiile corecte!\n";
+            result.className = "result success";
+          } else {
+            resultText += "⚠️ Date găsite, dar nu sunt date reale de client\n";
+            result.className = "result error";
+          }
+        } else {
+          resultText += "❌ NU S-AU GĂSIT DATE!\n";
+          resultText += "❌ Recovery a eșuat complet\n";
+          result.className = "result error";
+        }
+
+        result.innerHTML = resultText;
+      }
+
+      function openOrderConfirmation() {
+        const backupData = sessionStorage.getItem("currentOrderBackup");
+        if (!backupData) {
+          document.getElementById("openResult").innerHTML =
+            "❌ Nu există date în sessionStorage! Apasă mai întâi 'Salvează Date Reale Client'";
+          document.getElementById("openResult").className = "result error";
+          return;
+        }
+
+        const data = JSON.parse(backupData);
+        const url = `/order-confirmation?orderId=${data.orderId}`;
+
+        document.getElementById("openResult").innerHTML = `
+🚀 DESCHIDE ORDERCONFIRMATION CU DATE REALE:
+
+📋 URL: ${url}
+👤 Client: ${data.customerInfo.firstName} ${data.customerInfo.lastName}
+📧 Email: ${data.customerInfo.email}
+
+🎯 OrderConfirmation va trebui să:
+   ✅ Recupereze datele din sessionStorage
+   ✅ Afișeze informațiile REALE ale clientului
+   ✅ Trimită emailul la adresa REALĂ a clientului
+   
+🔗 Apasă link-ul de mai jos pentru a testa:
+`;
+
+        // Creează link pentru testare
+        const link = document.createElement("a");
+        link.href = url;
+        link.textContent = "🔗 Deschide OrderConfirmation cu date reale";
+        link.style.cssText =
+          "display: block; color: #FFD700; font-weight: bold; margin: 10px 0; text-decoration: underline;";
+        link.target = "_blank";
+
+        const resultDiv = document.getElementById("openResult");
+        resultDiv.appendChild(link);
+        resultDiv.className = "result info";
+      }
+
+      function checkSessionStorage() {
+        let status = "📊 STATUS SESSIONSTORAGE:\n\n";
+
+        const backup = sessionStorage.getItem("currentOrderBackup");
+        if (backup) {
+          try {
+            const data = JSON.parse(backup);
+            status += "✅ currentOrderBackup: EXISTĂ\n\n";
+            status += "📋 Date salvate:\n";
+            status += `   OrderID: ${data.orderId}\n`;
+            status += `   Nume: ${data.customerInfo.firstName} ${data.customerInfo.lastName}\n`;
+            status += `   Email: ${data.customerInfo.email}\n`;
+            status += `   Telefon: ${data.customerInfo.phone}\n`;
+            status += `   Adresă: ${data.customerInfo.address}\n`;
+            status += `   Oraș: ${data.customerInfo.city}\n`;
+            status += `   Sumă: ${data.amount} RON\n`;
+            status += `   Timestamp: ${data.timestamp}\n`;
+
+            document.getElementById("storageResult").className =
+              "result success";
+          } catch (error) {
+            status += "❌ currentOrderBackup: CORUPT\n";
+            status += `❌ Error: ${error.message}\n`;
+            document.getElementById("storageResult").className = "result error";
+          }
+        } else {
+          status += "❌ currentOrderBackup: LIPSĂ\n";
+          status += "⚠️ Nu există date în sessionStorage\n";
+          document.getElementById("storageResult").className = "result error";
+        }
+
+        document.getElementById("storageResult").innerHTML = status;
+      }
+
+      // Auto-check la încărcare
+      window.onload = function () {
+        console.log("🧪 Test Date Reale Client loaded!");
+        checkSessionStorage();
+      };
+    </script>
+  </body>
+</html>

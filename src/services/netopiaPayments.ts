@@ -34,6 +34,7 @@ interface NetopiaPaymentData {
   language?: string; // ro pentru platformă românească
   returnUrl?: string; // URL pentru redirecționare după plată
   confirmUrl?: string; // URL pentru notificări IPN
+  live?: boolean; // false pentru sandbox, true pentru producție
 }
 
 /**
@@ -180,18 +181,71 @@ class NetopiaPayments {
   }
 
   /**
-   * Inițiază o plată prin platforma NETOPIA Payments
+   * Inițiază o plată prin platforma NETOPIA Payments cu retry pentru erori temporare
+   */
+  async initiatePayment(paymentData: NetopiaPaymentData): Promise<string> {
+    return this.initiatePaymentWithRetry(paymentData, 1);
+  }
+
+  /**
+   * Inițiază o plată prin platforma NETOPIA Payments cu mecanism de retry
    *
    * Procesul respectă standardele PCI DSS și implementează:
    * - Verificări antifraudă conform contractului
    * - Autorizare bancară 3D Secure
    * - Monitorizare tranzacții în timp real
+   * - Retry automat pentru erori temporare NETOPIA
    *
    * @param paymentData Datele de plată validate
+   * @param maxRetries Numărul maxim de încercări (default: 1)
    * @returns URL pentru redirecționarea securizată la NETOPIA
    * @throws Error În cazul eșecului inițializării
    */
-  async initiatePayment(paymentData: NetopiaPaymentData): Promise<string> {
+  private async initiatePaymentWithRetry(
+    paymentData: NetopiaPaymentData,
+    maxRetries: number = 1
+  ): Promise<string> {
+    let lastError: Error | null = null;
+
+    for (let attempt = 1; attempt <= maxRetries + 1; attempt++) {
+      try {
+        console.log(`🔄 Payment attempt ${attempt}/${maxRetries + 1}`);
+        return await this.doInitiatePayment(paymentData);
+      } catch (error) {
+        lastError = error instanceof Error ? error : new Error(String(error));
+
+        // Check if it's a temporary NETOPIA error that's worth retrying
+        const errorMessage = lastError.message;
+        const isTemporaryError =
+          errorMessage.includes("general error. Please try again latter") ||
+          errorMessage.includes("NETOPIA API Error 400") ||
+          errorMessage.includes("NETOPIA API Error 500");
+
+        console.log(`❌ Attempt ${attempt} failed:`, errorMessage);
+
+        if (attempt <= maxRetries && isTemporaryError) {
+          console.log(
+            `⏳ Retrying in 2 seconds... (${maxRetries + 1 - attempt} attempts left)`
+          );
+          await new Promise((resolve) => setTimeout(resolve, 2000));
+          continue;
+        }
+
+        // No more retries or non-temporary error
+        break;
+      }
+    }
+
+    // All retries exhausted, throw the last error
+    throw lastError;
+  }
+
+  /**
+   * Implementarea reală a inițierii plății (fără retry)
+   */
+  private async doInitiatePayment(
+    paymentData: NetopiaPaymentData
+  ): Promise<string> {
     try {
       const browser = this.detectBrowser();
 
@@ -222,31 +276,39 @@ class NetopiaPayments {
         browserStrict: browser.strict,
       });
 
-      const requestPayload = {
-        ...paymentData,
-        posSignature: this.config.posSignature,
-        live: useLiveMode,
-      };
+      const requestPayload = paymentData; // Send clean payload like the working tests
 
       const requestBody = JSON.stringify(requestPayload);
 
-      console.log("🚀 Sending to Netopia backend:", {
-        payloadKeys: Object.keys(requestPayload),
-        bodyLength: requestBody.length,
-        bodyPreview: requestBody.substring(0, 100),
-        posSignature: this.config.posSignature?.substring(0, 10) + "...",
-        live: useLiveMode,
-      });
+      console.log(
+        "🚀 Sending clean payload to Netopia backend (like working tests):",
+        {
+          payloadKeys: Object.keys(requestPayload),
+          bodyLength: requestBody.length,
+          bodyPreview: requestBody.substring(0, 100),
+          orderId: requestPayload.orderId,
+          amount: requestPayload.amount,
+          live: requestPayload.live,
+        }
+      );
 
-      // Use special endpoint for TEST orders in production to avoid SVG redirect
+      // Use NETOPIA v2.x API endpoint for all payments
       let netopiaUrl;
       if (this.isProduction() && paymentData.orderId.includes("TEST-")) {
-        netopiaUrl = this.getNetlifyEndpoint("netopia-production-test");
-        console.log("🧪 Using PRODUCTION TEST endpoint for TEST order");
+        netopiaUrl = this.getNetlifyEndpoint("netopia-v2-api");
+        console.log(
+          "🧪 Using NETOPIA v2.x API endpoint for TEST order in production"
+        );
       } else {
-        netopiaUrl = this.getNetlifyEndpoint("netopia-browser-fix");
-        console.log("🔍 Using standard BROWSER-COMPATIBLE endpoint");
+        netopiaUrl = this.getNetlifyEndpoint("netopia-v2-api");
+        console.log("🌟 Using NETOPIA v2.x API endpoint for payment");
       }
+
+      console.log("🌐 Making fetch request to:", netopiaUrl);
+      console.log(
+        "📦 Request body preview:",
+        requestBody.substring(0, 100) + "..."
+      );
 
       const response = await fetch(netopiaUrl, {
         method: "POST",
@@ -259,6 +321,8 @@ class NetopiaPayments {
         // Add credentials for CORS compatibility
         credentials: "same-origin",
       });
+
+      console.log("📡 Fetch completed, response status:", response.status);
       if (!response.ok) {
         const errorText = await response.text();
         console.error("Netopia API Error:", errorText);
@@ -329,11 +393,26 @@ class NetopiaPayments {
       );
       return data.paymentUrl;
     } catch (error) {
-      console.error("Eroare NETOPIA:", error);
+      console.error("🚨 NETOPIA Error caught:", error);
+      console.error("🚨 Error type:", typeof error);
+      console.error("🚨 Error constructor:", error?.constructor?.name);
+      console.error(
+        "🚨 Error message:",
+        error instanceof Error ? error.message : String(error)
+      );
 
       const browser = this.detectBrowser();
       const errorMessage =
         error instanceof Error ? error.message : "Eroare necunoscută";
+
+      console.log("🔍 Error analysis:", {
+        browserName: browser.name,
+        browserStrict: browser.strict,
+        errorMessage,
+        containsFailedToFetch: errorMessage.includes("Failed to fetch"),
+        containsNetworkError: errorMessage.includes("NetworkError"),
+        containsTimeout: errorMessage.includes("timeout"),
+      });
 
       // Mesaje specifice pentru browsere diferite
       if (errorMessage.includes("Failed to fetch")) {
@@ -358,9 +437,18 @@ class NetopiaPayments {
         );
       }
 
+      if (
+        errorMessage.includes("general error. Please try again latter") ||
+        errorMessage.includes("NETOPIA API Error 400")
+      ) {
+        throw new Error(
+          "Serviciul de plăți NETOPIA este temporar suprasolicitat. Vă rugăm să încercați din nou peste câteva secunde sau să alegeți plata ramburs."
+        );
+      }
+
       // Mesaj general cu context browser
       throw new Error(
-        `Nu am putut inițializa plata cu cardul (${browser.name}). Vă rugăm să încercați din nou sau să alegeți plata ramburs.`
+        `Nu am putut inițializa plata cu cardul. Dacă problema persistă, vă rugăm să alegeți plata ramburs sau să încercați cu alt browser.`
       );
     }
   }
@@ -407,12 +495,12 @@ class NetopiaPayments {
 
   /**
    * Generează un ID unic pentru comandă
+   * Folosește formatul LC-timestamp care funcționează în testele NETOPIA
    * @returns ID unic
    */
   generateOrderId(): string {
     const timestamp = Date.now().toString();
-    const random = Math.random().toString(36).substr(2, 5);
-    return `LP${timestamp.slice(-6)}${random.toUpperCase()}`;
+    return `LC-${timestamp}`;
   }
 
   /**
@@ -482,9 +570,14 @@ class NetopiaPayments {
     amount: number,
     description: string
   ): NetopiaPaymentData {
+    // Verifică dacă suntem în modul sandbox forțat pentru teste
+    const forceSandbox =
+      localStorage.getItem("netopia_force_sandbox") === "true";
+    const isProduction = this.config.live && !forceSandbox;
+
     return {
       orderId: this.generateOrderId(),
-      amount: this.formatAmount(amount),
+      amount: amount, // Backend now handles conversion to bani, send amount in RON
       currency: "RON",
       description: description,
       customerInfo: {
@@ -497,9 +590,10 @@ class NetopiaPayments {
         county: formData.county,
         postalCode: formData.postalCode,
       },
+      live: isProduction,
       language: "ro",
       returnUrl: `${window.location.origin}/order-confirmation`,
-      confirmUrl: `${window.location.origin}${this.getNetlifyEndpoint("netopia-notify")}`,
+      confirmUrl: `${window.location.origin}/.netlify/functions/netopia-notify`,
     };
   }
 }

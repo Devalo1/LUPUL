@@ -1,0 +1,225 @@
+<!doctype html>
+<html lang="ro">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>🔧 Debug OrderConfirmation Real Data</title>
+    <style>
+      body {
+        font-family: monospace;
+        padding: 20px;
+      }
+      .test-section {
+        background: #f0f0f0;
+        padding: 15px;
+        margin: 10px 0;
+        border-radius: 5px;
+      }
+      .success {
+        background: #d4edda;
+        color: #155724;
+      }
+      .error {
+        background: #f8d7da;
+        color: #721c24;
+      }
+      .warning {
+        background: #fff3cd;
+        color: #856404;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>🔧 Debug OrderConfirmation Real Data Recovery</h1>
+
+    <div id="testResults"></div>
+
+    <script>
+      // Test direct pentru a vedea de ce datele reale nu sunt recuperate
+
+      function debugRealDataRecovery() {
+        const results = document.getElementById("testResults");
+        let html = "";
+
+        // 1. Verifică URL OrderID
+        const urlParams = new URLSearchParams(window.location.search);
+        const urlOrderId =
+          urlParams.get("orderId") || "LC-REAL-CLIENT-1753824541036";
+
+        html += `<div class="test-section">
+        <h3>1️⃣ URL OrderID</h3>
+        <p>OrderID din URL: <strong>${urlOrderId}</strong></p>
+    </div>`;
+
+        // 2. Verifică sessionStorage
+        const sessionBackup = sessionStorage.getItem("currentOrderBackup");
+        html += `<div class="test-section">
+        <h3>2️⃣ SessionStorage Check</h3>`;
+
+        if (sessionBackup) {
+          try {
+            const backupData = JSON.parse(sessionBackup);
+            const orderIdMatch = backupData.orderId === urlOrderId;
+
+            html += `<p class="${orderIdMatch ? "success" : "error"}">✅ SessionStorage backup găsit!</p>
+                     <p>OrderID în backup: <strong>${backupData.orderId}</strong></p>
+                     <p>OrderID match: <strong>${orderIdMatch ? "DA" : "NU"}</strong></p>
+                     <p>Nume: ${backupData.customerInfo.firstName} ${backupData.customerInfo.lastName}</p>
+                     <p>Email: ${backupData.customerInfo.email}</p>
+                     <p>Telefon: ${backupData.customerInfo.phone}</p>
+                     <p>Sumă: ${backupData.amount} RON</p>`;
+
+            // Verifică dacă emailul este real
+            const isRealEmail =
+              !backupData.customerInfo.email.includes("example.com") &&
+              !backupData.customerInfo.email.includes("@test.com") &&
+              backupData.customerInfo.email !== "client.recuperat@example.com";
+
+            html += `<p class="${isRealEmail ? "success" : "error"}">
+                     Email real: <strong>${isRealEmail ? "DA" : "NU"}</strong>
+                     </p>`;
+          } catch (error) {
+            html += `<p class="error">❌ Eroare parsare: ${error.message}</p>`;
+          }
+        } else {
+          html += `<p class="error">❌ Nu există sessionStorage backup</p>`;
+        }
+
+        html += `</div>`;
+
+        // 3. Verifică localStorage
+        html += `<div class="test-section">
+        <h3>3️⃣ LocalStorage Check</h3>
+        <p>currentOrder: ${localStorage.getItem("currentOrder") ? "EXISTĂ" : "LIPSĂ"}</p>
+        <p>pendingOrder: ${localStorage.getItem("pendingOrder") ? "EXISTĂ" : "LIPSĂ"}</p>
+        <p>pendingOrders: ${localStorage.getItem("pendingOrders") ? "EXISTĂ" : "LIPSĂ"}</p>
+    </div>`;
+
+        // 4. Simulează recuperarea datelor exact ca în OrderConfirmation
+        html += `<div class="test-section">
+        <h3>4️⃣ Recovery Simulation</h3>`;
+
+        let foundOrderData = null;
+
+        // Pas 1: SessionStorage (prioritate maximă)
+        if (sessionBackup) {
+          try {
+            const backupData = JSON.parse(sessionBackup);
+            if (backupData.orderId === urlOrderId) {
+              foundOrderData = {
+                orderNumber: backupData.orderId,
+                customerName: `${backupData.customerInfo.firstName} ${backupData.customerInfo.lastName}`,
+                customerEmail: backupData.customerInfo.email,
+                customerPhone: backupData.customerInfo.phone,
+                customerAddress: backupData.customerInfo.address,
+                customerCity: backupData.customerInfo.city,
+                customerCounty: backupData.customerInfo.county,
+                totalAmount: backupData.amount,
+                paymentMethod: "Card bancar (NETOPIA Payments)",
+                date: backupData.timestamp || new Date().toISOString(),
+                items: [
+                  {
+                    name: backupData.description,
+                    price: backupData.amount,
+                    quantity: 1,
+                  },
+                ],
+                isRealUserData: true,
+              };
+              html += `<p class="success">✅ Date recuperate din sessionStorage!</p>`;
+            }
+          } catch (error) {
+            html += `<p class="error">❌ Eroare recuperare sessionStorage: ${error.message}</p>`;
+          }
+        }
+
+        if (foundOrderData) {
+          html += `<div class="success">
+            <h4>🎉 DATE RECUPERATE CU SUCCES!</h4>
+            <p>📋 OrderNumber: ${foundOrderData.orderNumber}</p>
+            <p>👤 Nume: ${foundOrderData.customerName}</p>
+            <p>📧 Email: ${foundOrderData.customerEmail}</p>
+            <p>📱 Telefon: ${foundOrderData.customerPhone}</p>
+            <p>🏠 Adresă: ${foundOrderData.customerAddress}, ${foundOrderData.customerCity}</p>
+            <p>💰 Total: ${foundOrderData.totalAmount} RON</p>
+            <p>🏷️ Date reale: ${foundOrderData.isRealUserData ? "DA" : "NU"}</p>
+        </div>`;
+
+          // Test email
+          html += `<div class="test-section">
+            <h3>5️⃣ Email Test</h3>
+            <button onclick="testEmailSend('${foundOrderData.customerEmail}', '${foundOrderData.orderNumber}')">
+                📧 Test Email către ${foundOrderData.customerEmail}
+            </button>
+            <div id="emailResult"></div>
+        </div>`;
+        } else {
+          html += `<div class="error">
+            <h4>❌ NU S-AU GĂSIT DATE!</h4>
+            <p>Motivele posibile:</p>
+            <ul>
+                <li>OrderID nu se potrivește</li>
+                <li>SessionStorage backup lipsă</li>
+                <li>Eroare de parsare</li>
+            </ul>
+        </div>`;
+        }
+
+        html += `</div>`;
+
+        results.innerHTML = html;
+      }
+
+      async function testEmailSend(email, orderNumber) {
+        const resultDiv = document.getElementById("emailResult");
+        resultDiv.innerHTML = "📧 Se trimite email...";
+
+        // Simulează trimiterea emailului
+        const emailData = {
+          orderData: {
+            email: email,
+            customerName: "Alexandra Georgescu", // Din datele de test
+            firstName: "Alexandra",
+            lastName: "Georgescu",
+            phone: "0742567890",
+            address: "Bulevardul Unirii 45",
+            city: "București",
+            county: "București",
+            totalAmount: "199.99",
+            items: [{ name: "Test Emblem", price: "199.99", quantity: 1 }],
+            paymentMethod: "Card bancar (NETOPIA Payments)",
+            date: new Date().toISOString(),
+            isBackupNotification: false,
+          },
+          orderNumber: orderNumber,
+          totalAmount: "199.99",
+        };
+
+        try {
+          const response = await fetch("/.netlify/functions/send-order-email", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(emailData),
+          });
+
+          const result = await response.json();
+
+          if (result.success) {
+            resultDiv.innerHTML = `<div class="success">
+                ✅ Email trimis cu succes!<br>
+                📧 Către: ${email}<br>
+                📋 OrderID: ${result.customerEmailId}
+            </div>`;
+          } else {
+            resultDiv.innerHTML = `<div class="error">❌ Eroare: ${result.error}</div>`;
+          }
+        } catch (error) {
+          resultDiv.innerHTML = `<div class="error">❌ Network error: ${error.message}</div>`;
+        }
+      }
+
+      // Auto-run debug
+      window.onload = debugRealDataRecovery;
+    </script>
+  </body>
+</html>

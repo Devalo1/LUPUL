@@ -1,0 +1,447 @@
+<!doctype html>
+<html lang="ro">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Debug localStorage NETOPIA</title>
+    <style>
+      body {
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+        max-width: 800px;
+        margin: 20px auto;
+        padding: 20px;
+        background: #f5f5f5;
+      }
+      .container {
+        background: white;
+        padding: 30px;
+        border-radius: 8px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+      }
+      h1 {
+        color: #2c5282;
+        text-align: center;
+        margin-bottom: 30px;
+      }
+      .button {
+        background: #4299e1;
+        color: white;
+        border: none;
+        padding: 12px 24px;
+        border-radius: 6px;
+        cursor: pointer;
+        font-size: 16px;
+        margin: 10px 5px;
+        width: 100%;
+        display: block;
+      }
+      .button:hover {
+        background: #3182ce;
+      }
+      .status {
+        padding: 15px;
+        border-radius: 6px;
+        margin: 15px 0;
+        font-family: monospace;
+      }
+      .success {
+        background: #c6f6d5;
+        color: #22543d;
+      }
+      .error {
+        background: #fed7d7;
+        color: #742a2a;
+      }
+      .info {
+        background: #bee3f8;
+        color: #2a4365;
+      }
+      .warning {
+        background: #faf089;
+        color: #744210;
+      }
+      pre {
+        background: #1a202c;
+        color: #e2e8f0;
+        padding: 15px;
+        border-radius: 6px;
+        overflow-x: auto;
+        font-size: 12px;
+        white-space: pre-wrap;
+      }
+      input {
+        width: 100%;
+        padding: 10px;
+        border: 1px solid #cbd5e0;
+        border-radius: 4px;
+        margin: 10px 0;
+        box-sizing: border-box;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h1>🔍 Debug localStorage pentru NETOPIA</h1>
+
+      <input
+        type="text"
+        id="orderIdInput"
+        placeholder="Order ID (ex: LC-1753820488074)"
+        value="LC-1753820488074"
+      />
+
+      <button class="button" onclick="showCurrentLocalStorage()">
+        📋 Arată localStorage Curent
+      </button>
+
+      <button class="button" onclick="createTestOrderData()">
+        💾 Creează Date de Test în localStorage
+      </button>
+
+      <button class="button" onclick="simulateNetopiaFlow()">
+        🔄 Simulează Flux NETOPIA Complet
+      </button>
+
+      <button class="button" onclick="testEmailPayload()">
+        📧 Testează Payload Email
+      </button>
+
+      <button class="button" onclick="clearAllStorage()">
+        🗑️ Curăță localStorage
+      </button>
+
+      <div id="status"></div>
+    </div>
+
+    <script>
+      function showCurrentLocalStorage() {
+        const statusDiv = document.getElementById("status");
+        const orderId = document.getElementById("orderIdInput").value;
+
+        const allData = {};
+        for (let i = 0; i < localStorage.length; i++) {
+          const key = localStorage.key(i);
+          const value = localStorage.getItem(key);
+          try {
+            allData[key] = JSON.parse(value);
+          } catch (e) {
+            allData[key] = value;
+          }
+        }
+
+        // Caută specific order ID-ul în localStorage
+        const pendingOrders = localStorage.getItem("pendingOrders");
+        const pendingOrder = localStorage.getItem("pendingOrder");
+
+        let orderFound = false;
+        let orderData = null;
+
+        // Verifică formatul nou (pendingOrders - plural)
+        if (pendingOrders) {
+          try {
+            const parsedOrders = JSON.parse(pendingOrders);
+            if (parsedOrders[orderId]) {
+              orderFound = true;
+              orderData = parsedOrders[orderId];
+              console.log(
+                "📦 Order found in pendingOrders (plural):",
+                orderData
+              );
+            }
+          } catch (e) {
+            console.error("Error parsing pendingOrders:", e);
+          }
+        }
+
+        // Verifică formatul vechi (pendingOrder - singular)
+        if (!orderFound && pendingOrder) {
+          try {
+            const parsedOrder = JSON.parse(pendingOrder);
+            if (parsedOrder.orderNumber === orderId) {
+              orderFound = true;
+              orderData = parsedOrder;
+              console.log(
+                "📦 Order found in pendingOrder (singular):",
+                orderData
+              );
+            }
+          } catch (e) {
+            console.error("Error parsing pendingOrder:", e);
+          }
+        }
+
+        statusDiv.innerHTML = `
+                <div class="info">
+                    <h3>📊 localStorage Content (${localStorage.length} items):</h3>
+                    <pre>${JSON.stringify(allData, null, 2)}</pre>
+                </div>
+                
+                <div class="${orderFound ? "success" : "error"}">
+                    <h3>🔍 Search for Order ID: ${orderId}</h3>
+                    <p><strong>Order Found:</strong> ${orderFound ? "✅ YES" : "❌ NO"}</p>
+                    ${orderFound ? `<pre>${JSON.stringify(orderData, null, 2)}</pre>` : "<p>❌ Order data not found in localStorage</p>"}
+                </div>
+            `;
+      }
+
+      function createTestOrderData() {
+        const statusDiv = document.getElementById("status");
+        const orderId = document.getElementById("orderIdInput").value;
+
+        const testOrderData = {
+          orderId: orderId,
+          orderNumber: orderId,
+          amount: 55,
+          products: [
+            {
+              name: "Produs Test NETOPIA",
+              price: 55,
+              quantity: 1,
+            },
+          ],
+          customerEmail: "dani_popa21@yahoo.ro",
+          customerName: "Dani_popa21 Lupul",
+          customerPhone: "0775346243",
+          customerAddress: "9 MAI BLOC 2 A",
+          customerCity: "PETROSANI",
+          customerCounty: "HUNEDOARA",
+          postalCode: "800258",
+          paymentMethod: "card",
+          totalAmount: 55,
+          createdAt: new Date().toISOString(),
+        };
+
+        // Salvează în ambele formate pentru compatibilitate
+        localStorage.setItem("pendingOrder", JSON.stringify(testOrderData));
+
+        // Pentru formatul nou (plural), salvează cu orderId ca cheie
+        const pendingOrders = {};
+        pendingOrders[orderId] = testOrderData;
+        localStorage.setItem("pendingOrders", JSON.stringify(pendingOrders));
+
+        statusDiv.innerHTML = `
+                <div class="success">
+                    ✅ Date de test create cu succes!
+                    <h4>📋 Data Structure:</h4>
+                    <pre>${JSON.stringify(testOrderData, null, 2)}</pre>
+                </div>
+            `;
+
+        // Auto-refresh display
+        setTimeout(showCurrentLocalStorage, 500);
+      }
+
+      function simulateNetopiaFlow() {
+        const statusDiv = document.getElementById("status");
+        const orderId = document.getElementById("orderIdInput").value;
+
+        statusDiv.innerHTML =
+          '<div class="info">🔄 Simulez fluxul NETOPIA...</div>';
+
+        // Pasul 1: Creează comanda și salvează în localStorage
+        createTestOrderData();
+
+        // Pasul 2: Simulează returnarea de la NETOPIA
+        setTimeout(() => {
+          statusDiv.innerHTML += `
+                    <div class="info">
+                        ✅ Pasul 1: Date create în localStorage<br>
+                        🔄 Pasul 2: Simulez return de la NETOPIA...<br>
+                        📄 Pasul 3: OrderConfirmation ar trebui să găsească datele și să trimită email-ul
+                    </div>
+                `;
+
+          // Pasul 3: Testează dacă OrderConfirmation poate găsi datele
+          setTimeout(() => {
+            showCurrentLocalStorage();
+
+            // Simulează logica din OrderConfirmation
+            const pendingOrderStr = localStorage.getItem("pendingOrder");
+            const pendingOrdersStr = localStorage.getItem("pendingOrders");
+
+            let orderData = null;
+            let source = "";
+
+            // Caută în formatul nou (plural)
+            if (pendingOrdersStr) {
+              try {
+                const pendingOrders = JSON.parse(pendingOrdersStr);
+                if (pendingOrders[orderId]) {
+                  orderData = pendingOrders[orderId];
+                  source = "pendingOrders (plural)";
+                }
+              } catch (e) {
+                console.error("Error parsing pendingOrders:", e);
+              }
+            }
+
+            // Caută în formatul vechi (singular)
+            if (!orderData && pendingOrderStr) {
+              try {
+                const pendingOrder = JSON.parse(pendingOrderStr);
+                if (pendingOrder.orderNumber === orderId) {
+                  orderData = pendingOrder;
+                  source = "pendingOrder (singular)";
+                }
+              } catch (e) {
+                console.error("Error parsing pendingOrder:", e);
+              }
+            }
+
+            statusDiv.innerHTML += `
+                        <div class="${orderData ? "success" : "error"}">
+                            <h4>🔍 OrderConfirmation Logic Test:</h4>
+                            <p><strong>Order Data Found:</strong> ${orderData ? "✅ YES" : "❌ NO"}</p>
+                            <p><strong>Source:</strong> ${source || "None"}</p>
+                            <p><strong>Email Can Be Sent:</strong> ${orderData && orderData.customerEmail ? "✅ YES" : "❌ NO"}</p>
+                            ${orderData ? `<p><strong>Email:</strong> ${orderData.customerEmail}</p>` : ""}
+                        </div>
+                    `;
+          }, 1000);
+        }, 500);
+      }
+
+      function testEmailPayload() {
+        const statusDiv = document.getElementById("status");
+        const orderId = document.getElementById("orderIdInput").value;
+
+        // Încearcă să găsească datele în localStorage
+        let orderData = null;
+
+        const pendingOrdersStr = localStorage.getItem("pendingOrders");
+        if (pendingOrdersStr) {
+          try {
+            const pendingOrders = JSON.parse(pendingOrdersStr);
+            orderData = pendingOrders[orderId];
+          } catch (e) {
+            console.error("Error parsing pendingOrders:", e);
+          }
+        }
+
+        if (!orderData) {
+          const pendingOrderStr = localStorage.getItem("pendingOrder");
+          if (pendingOrderStr) {
+            try {
+              const pendingOrder = JSON.parse(pendingOrderStr);
+              if (pendingOrder.orderNumber === orderId) {
+                orderData = pendingOrder;
+              }
+            } catch (e) {
+              console.error("Error parsing pendingOrder:", e);
+            }
+          }
+        }
+
+        if (!orderData) {
+          statusDiv.innerHTML = `
+                    <div class="error">
+                        ❌ Nu s-au găsit date pentru Order ID: ${orderId}
+                        <p>Rulează mai întâi "Creează Date de Test"</p>
+                    </div>
+                `;
+          return;
+        }
+
+        // Construiește payload-ul pentru email (exact ca în OrderConfirmation)
+        const emailPayload = {
+          orderData: {
+            email: orderData.customerEmail,
+            customerName: orderData.customerName,
+            firstName:
+              orderData.customerName?.split(" ")[0] ||
+              orderData.firstName ||
+              "Client",
+            lastName:
+              orderData.customerName?.split(" ").slice(1).join(" ") ||
+              orderData.lastName ||
+              "",
+            phone: orderData.customerPhone,
+            address: orderData.customerAddress,
+            city: orderData.customerCity,
+            county: orderData.customerCounty,
+            postalCode: orderData.postalCode,
+            products: orderData.products,
+            paymentMethod: "card",
+          },
+          orderNumber: orderData.orderNumber,
+          totalAmount: orderData.totalAmount,
+        };
+
+        statusDiv.innerHTML = `
+                <div class="success">
+                    ✅ Email Payload construuit cu succes!
+                    <h4>📧 Email Payload Structure:</h4>
+                    <pre>${JSON.stringify(emailPayload, null, 2)}</pre>
+                    
+                    <button onclick="sendTestEmail()" style="background: #38a169; color: white; border: none; padding: 10px 20px; border-radius: 4px; cursor: pointer; margin-top: 10px;">
+                        📤 Trimite Email de Test
+                    </button>
+                </div>
+            `;
+
+        // Salvează payload-ul pentru testare
+        window.testEmailPayload = emailPayload;
+      }
+
+      async function sendTestEmail() {
+        const statusDiv = document.getElementById("status");
+
+        if (!window.testEmailPayload) {
+          statusDiv.innerHTML +=
+            '<div class="error">❌ Nu există payload pentru email. Rulează mai întâi "Testează Payload Email"</div>';
+          return;
+        }
+
+        statusDiv.innerHTML +=
+          '<div class="info">📤 Trimit email de test...</div>';
+
+        try {
+          const response = await fetch("/.netlify/functions/send-order-email", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify(window.testEmailPayload),
+          });
+
+          const result = await response.text();
+
+          if (response.ok) {
+            statusDiv.innerHTML += `
+                        <div class="success">
+                            ✅ Email trimis cu succes!
+                            <h4>📧 Server Response:</h4>
+                            <pre>${result}</pre>
+                        </div>
+                    `;
+          } else {
+            statusDiv.innerHTML += `
+                        <div class="error">
+                            ❌ Eroare la trimiterea emailului (${response.status})
+                            <h4>📧 Server Response:</h4>
+                            <pre>${result}</pre>
+                        </div>
+                    `;
+          }
+        } catch (error) {
+          statusDiv.innerHTML += `
+                    <div class="error">
+                        ❌ Eroare de conexiune: ${error.message}
+                    </div>
+                `;
+        }
+      }
+
+      function clearAllStorage() {
+        localStorage.clear();
+        document.getElementById("status").innerHTML =
+          '<div class="success">✅ localStorage curățat complet!</div>';
+      }
+
+      // Auto-load current state
+      document.addEventListener("DOMContentLoaded", function () {
+        showCurrentLocalStorage();
+      });
+    </script>
+  </body>
+</html>

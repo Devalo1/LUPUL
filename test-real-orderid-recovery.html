@@ -1,0 +1,267 @@
+<!doctype html>
+<html lang="ro">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Test Real OrderID Data Recovery</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        max-width: 800px;
+        margin: 0 auto;
+        padding: 20px;
+        background: #f5f5f5;
+      }
+      .test-container {
+        background: white;
+        padding: 20px;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        margin-bottom: 20px;
+      }
+      button {
+        background: #007bff;
+        color: white;
+        border: none;
+        padding: 10px 20px;
+        border-radius: 5px;
+        cursor: pointer;
+        margin: 5px;
+      }
+      button:hover {
+        background: #0056b3;
+      }
+      .results {
+        background: #f8f9fa;
+        padding: 15px;
+        border-radius: 5px;
+        margin-top: 10px;
+        white-space: pre-wrap;
+        font-family: monospace;
+        font-size: 12px;
+        max-height: 400px;
+        overflow-y: auto;
+      }
+      .success {
+        color: #28a745;
+      }
+      .warning {
+        color: #ffc107;
+      }
+      .error {
+        color: #dc3545;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="test-container">
+      <h1>🔍 Test Real OrderID Data Recovery</h1>
+      <p>
+        Testez recuperarea datelor reale pentru OrderID:
+        <strong>LC-1753825745688</strong>
+      </p>
+
+      <button onclick="injectRealOrderData()">
+        1. 💉 Inject Date Reale pentru LC-1753825745688
+      </button>
+      <button onclick="testOrderRecovery()">
+        2. 🔄 Test OrderConfirmation cu Date Reale
+      </button>
+      <button onclick="checkStorageData()">
+        3. 📋 Verifică Date în Storage
+      </button>
+      <button onclick="clearAll()">4. 🧹 Curăță Tot</button>
+
+      <div id="results" class="results"></div>
+    </div>
+
+    <script>
+      const realOrderId = "LC-1753825745688"; // OrderID real din log-uri
+
+      function log(message, type = "info") {
+        const results = document.getElementById("results");
+        const timestamp = new Date().toLocaleTimeString();
+        const colors = {
+          info: "#000",
+          success: "#28a745",
+          warning: "#ffc107",
+          error: "#dc3545",
+        };
+
+        results.innerHTML += `<span style="color: ${colors[type]}">[${timestamp}] ${message}</span>\n`;
+        results.scrollTop = results.scrollHeight;
+      }
+
+      function injectRealOrderData() {
+        log("💉 Inject-ând date REALE pentru OrderID: " + realOrderId, "info");
+
+        // DATELE REALE ALE UTILIZATORULUI pentru comanda actuală
+        const realOrderData = {
+          orderId: realOrderId, // IMPORTANT: OrderID-ul real din plată
+          customerInfo: {
+            firstName: "Dani_popa21",
+            lastName: "Lupul",
+            email: "dani_popa21@yahoo.ro", // EMAIL REAL
+            phone: "0775346243",
+            address: "9 MAI BLOC 2 A",
+            city: "PETROSANI",
+            county: "HUNEDOARA",
+          },
+          amount: 35, // SUMA REALĂ din plată
+          description: "Comandă Lupul și Corbul - 1 produse (35.00 RON)",
+          timestamp: new Date().toISOString(),
+        };
+
+        // Salvează în sessionStorage (prioritate MAXIMĂ)
+        sessionStorage.setItem(
+          "currentOrderBackup",
+          JSON.stringify(realOrderData)
+        );
+        log(
+          "✅ Date reale salvate în sessionStorage pentru: " + realOrderId,
+          "success"
+        );
+
+        // Salvează și în localStorage ca backup
+        const pendingOrders = {};
+        pendingOrders[realOrderId] = {
+          orderNumber: realOrderId,
+          customerName: "Dani_popa21 Lupul",
+          customerEmail: "dani_popa21@yahoo.ro", // EMAIL REAL
+          customerPhone: "0775346243",
+          customerAddress: "9 MAI BLOC 2 A",
+          customerCity: "PETROSANI",
+          customerCounty: "HUNEDOARA",
+          totalAmount: 35,
+          paymentMethod: "Card bancar (NETOPIA Payments)",
+          date: new Date().toISOString(),
+          items: [
+            {
+              name: "Comandă Lupul și Corbul - 1 produse",
+              price: 35,
+              quantity: 1,
+            },
+          ],
+          isRealUserData: true, // IMPORTANT: Marchează ca date reale
+        };
+
+        localStorage.setItem("pendingOrders", JSON.stringify(pendingOrders));
+        log("✅ Date backup salvate în localStorage", "success");
+        log("📧 Email REAL utilizator: dani_popa21@yahoo.ro", "success");
+      }
+
+      function testOrderRecovery() {
+        log("🔄 Testez OrderConfirmation cu date reale...", "info");
+
+        const orderConfirmationUrl = `http://localhost:8888/order-confirmation?orderId=${realOrderId}&status=paid`;
+
+        log(
+          "🌍 Deschid OrderConfirmation cu date reale: " + orderConfirmationUrl,
+          "info"
+        );
+
+        const newWindow = window.open(
+          orderConfirmationUrl,
+          "_blank",
+          "width=800,height=600"
+        );
+
+        if (newWindow) {
+          log("✅ OrderConfirmation deschis cu date REALE", "success");
+          log("👀 ACUM ar trebui să vezi:", "warning");
+          log("- Nume: Dani_popa21 Lupul", "warning");
+          log("- Email: dani_popa21@yahoo.ro", "warning");
+          log("- Telefon: 0775346243", "warning");
+          log("- Adresa: 9 MAI BLOC 2 A, PETROSANI, HUNEDOARA", "warning");
+          log("- Total: 35.00 RON", "warning");
+          log("📧 Emailul ar trebui trimis către CLIENT REAL!", "success");
+        } else {
+          log("❌ Nu s-a putut deschide fereastra nouă", "error");
+        }
+      }
+
+      function checkStorageData() {
+        log("📋 Verificând datele din storage...", "info");
+
+        // Verifică sessionStorage
+        const sessionData = sessionStorage.getItem("currentOrderBackup");
+        if (sessionData) {
+          try {
+            const parsed = JSON.parse(sessionData);
+            log(
+              "✅ SessionStorage găsit pentru OrderID: " + parsed.orderId,
+              "success"
+            );
+            log(
+              "📧 Email în sessionStorage: " + parsed.customerInfo.email,
+              "success"
+            );
+            log(
+              "👤 Nume în sessionStorage: " +
+                parsed.customerInfo.firstName +
+                " " +
+                parsed.customerInfo.lastName,
+              "success"
+            );
+          } catch (e) {
+            log("❌ Eroare la parsarea sessionStorage: " + e.message, "error");
+          }
+        } else {
+          log("❌ Nu există date în sessionStorage", "error");
+        }
+
+        // Verifică localStorage
+        const localData = localStorage.getItem("pendingOrders");
+        if (localData) {
+          try {
+            const parsed = JSON.parse(localData);
+            if (parsed[realOrderId]) {
+              log(
+                "✅ LocalStorage găsit pentru OrderID: " + realOrderId,
+                "success"
+              );
+              log(
+                "📧 Email în localStorage: " +
+                  parsed[realOrderId].customerEmail,
+                "success"
+              );
+              log(
+                "🏷️ isRealUserData: " + parsed[realOrderId].isRealUserData,
+                "success"
+              );
+            } else {
+              log(
+                "❌ Nu există OrderID în localStorage: " + realOrderId,
+                "error"
+              );
+            }
+          } catch (e) {
+            log("❌ Eroare la parsarea localStorage: " + e.message, "error");
+          }
+        } else {
+          log("❌ Nu există pendingOrders în localStorage", "error");
+        }
+      }
+
+      function clearAll() {
+        sessionStorage.clear();
+        localStorage.clear();
+        document.getElementById("results").innerHTML = "";
+        log("🧹 Tot storage-ul a fost curățat", "success");
+      }
+
+      // Auto-setup la încărcare
+      window.onload = function () {
+        log("🔍 Test Real OrderID Data Recovery inițializat", "success");
+        log("🎯 Target OrderID: " + realOrderId, "info");
+        log("📝 Pași:", "info");
+        log("1. Inject date reale pentru OrderID-ul actual", "info");
+        log("2. Testează OrderConfirmation cu datele reale", "info");
+        log(
+          "3. Verifică că se afișează datele corecte ale utilizatorului",
+          "info"
+        );
+      };
+    </script>
+  </body>
+</html>

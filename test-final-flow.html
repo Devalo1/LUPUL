@@ -1,0 +1,307 @@
+<!doctype html>
+<html lang="ro">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Test Final - Fluxul Complet NETOPIA</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        max-width: 1000px;
+        margin: 0 auto;
+        padding: 20px;
+      }
+      .step {
+        background: #f0f8ff;
+        padding: 15px;
+        margin: 10px 0;
+        border-radius: 5px;
+        border-left: 4px solid #007cba;
+      }
+      .success {
+        background: #d4edda;
+        border-left-color: #28a745;
+      }
+      .error {
+        background: #f8d7da;
+        border-left-color: #dc3545;
+      }
+      .button {
+        background: #007cba;
+        color: white;
+        padding: 10px 20px;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        margin: 10px 5px;
+      }
+      .button:hover {
+        background: #005a8b;
+      }
+      .url-box {
+        background: #f8f9fa;
+        padding: 10px;
+        border-radius: 5px;
+        font-family: monospace;
+        word-break: break-all;
+      }
+      .log-area {
+        background: #000;
+        color: #00ff00;
+        padding: 15px;
+        border-radius: 5px;
+        font-family: monospace;
+        height: 200px;
+        overflow-y: auto;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>🧪 Test Final - Flux Complet Plată NETOPIA</h1>
+
+    <div class="step">
+      <h3>✅ Problemă identificată și rezolvată</h3>
+      <p>
+        <strong>Problema:</strong> URL-urile de return erau setate la
+        <code>localhost:5173</code> (Vite) în loc de
+        <code>localhost:8888</code> (Netlify)
+      </p>
+      <p>
+        <strong>Soluția:</strong> Modificat Checkout.tsx să folosească origin-ul
+        corect pentru Netlify Functions
+      </p>
+    </div>
+
+    <div class="step">
+      <h3>🔧 URL-uri corecte acum:</h3>
+      <div class="url-box">
+        <strong>Return URL:</strong>
+        http://localhost:8888/.netlify/functions/netopia-return?orderId=ID<br />
+        <strong>Notify URL:</strong>
+        http://localhost:8888/.netlify/functions/netopia-notify?orderId=ID
+      </div>
+    </div>
+
+    <div class="step">
+      <h3>🎯 Testare completă</h3>
+      <button class="button" onclick="testCompleteFlow()">
+        Testează Fluxul Complet
+      </button>
+      <button class="button" onclick="testReturnFunction()">
+        Testează Funcția Return
+      </button>
+      <button class="button" onclick="clearTests()">Curăță Testele</button>
+
+      <div id="test-results"></div>
+      <div
+        id="logs"
+        class="log-area"
+        style="margin-top: 15px; display: none"
+      ></div>
+    </div>
+
+    <div class="step">
+      <h3>📋 Fluxul corect de plată:</h3>
+      <ol>
+        <li>
+          <strong>Utilizatorul completează checkout</strong> → returnUrl și
+          confirmUrl sunt setate la funcțiile Netlify
+        </li>
+        <li>
+          <strong>NETOPIA procesează plata</strong> → redirectURL este setat
+          corect la funcția netopia-return
+        </li>
+        <li>
+          <strong>Funcția netopia-return</strong> → face redirect 302 către
+          /order-confirmation
+        </li>
+        <li>
+          <strong>Componenta OrderConfirmation</strong> → procesează
+          localStorage și redirectează către success
+        </li>
+      </ol>
+    </div>
+
+    <script>
+      let testOrderId = "";
+
+      function log(message) {
+        const logsDiv = document.getElementById("logs");
+        logsDiv.style.display = "block";
+        logsDiv.innerHTML +=
+          new Date().toLocaleTimeString() + " - " + message + "\n";
+        logsDiv.scrollTop = logsDiv.scrollHeight;
+      }
+
+      async function testCompleteFlow() {
+        document.getElementById("test-results").innerHTML =
+          '<div class="step">🔄 Testare în curs...</div>';
+        log("🚀 Starting complete flow test...");
+
+        try {
+          // Pas 1: Creează o comandă de test
+          testOrderId = `LC-FINAL-TEST-${Date.now()}`;
+          const testOrder = {
+            orderNumber: testOrderId,
+            customerName: "Test Final User",
+            customerEmail: "test@lupulsicorbul.com",
+            customerAddress: "Strada Finală 123",
+            customerCity: "București",
+            customerCounty: "Bucuresti",
+            customerPhone: "0723456789",
+            totalAmount: 199.99,
+            items: [{ name: "Produs Final Test", price: 199.99, quantity: 1 }],
+            createdAt: new Date().toISOString(),
+          };
+
+          localStorage.setItem("pendingOrder", JSON.stringify(testOrder));
+          log("✅ Test order created: " + testOrderId);
+
+          // Pas 2: Testează API-ul NETOPIA cu URL-urile corecte
+          const paymentData = {
+            orderId: testOrderId,
+            amount: 199,
+            currency: "RON",
+            description: "Test Final Payment",
+            customerInfo: {
+              firstName: "Test",
+              lastName: "Final",
+              email: "test@lupulsicorbul.com",
+              phone: "+40723456789",
+              address: "Strada Finală 123",
+              city: "București",
+              county: "Bucuresti",
+              postalCode: "010101",
+            },
+            returnUrl: `http://localhost:8888/.netlify/functions/netopia-return?orderId=${testOrderId}`,
+            confirmUrl: `http://localhost:8888/.netlify/functions/netopia-notify?orderId=${testOrderId}`,
+            live: false,
+          };
+
+          log("📡 Sending payment request to NETOPIA API...");
+          const response = await fetch(
+            "http://localhost:8888/.netlify/functions/netopia-v2-api",
+            {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify(paymentData),
+            }
+          );
+
+          if (!response.ok) {
+            throw new Error(`HTTP ${response.status}`);
+          }
+
+          const result = await response.json();
+          log("✅ NETOPIA API response: " + result.ntpID);
+
+          // Pas 3: Simulează redirectul de la NETOPIA
+          const returnUrl = `http://localhost:8888/.netlify/functions/netopia-return?orderId=${testOrderId}&status=success&paymentId=${result.ntpID}`;
+
+          document.getElementById("test-results").innerHTML = `
+                    <div class="success">
+                        <h4>✅ Test Complet Reușit!</h4>
+                        <p><strong>Order ID:</strong> ${testOrderId}</p>
+                        <p><strong>NETOPIA ID:</strong> ${result.ntpID}</p>
+                        <p><strong>Payment URL:</strong> <a href="${result.paymentUrl}" target="_blank">Deschide NETOPIA</a></p>
+                        <p><strong>Return URL (pentru test):</strong></p>
+                        <div class="url-box">${returnUrl}</div>
+                        <br>
+                        <a href="${returnUrl}" target="_blank" class="button">🧪 Testează Return URL</a>
+                        <button class="button" onclick="checkFinalStatus()">📊 Verifică Status</button>
+                    </div>
+                `;
+
+          log("🎉 Complete flow test successful!");
+        } catch (error) {
+          log("❌ Error: " + error.message);
+          document.getElementById("test-results").innerHTML = `
+                    <div class="error">
+                        <h4>❌ Test Eșuat</h4>
+                        <p><strong>Eroare:</strong> ${error.message}</p>
+                    </div>
+                `;
+        }
+      }
+
+      async function testReturnFunction() {
+        const testId = `LC-RETURN-TEST-${Date.now()}`;
+        const returnUrl = `http://localhost:8888/.netlify/functions/netopia-return?orderId=${testId}&status=success`;
+
+        log("🔄 Testing return function: " + testId);
+
+        try {
+          const response = await fetch(returnUrl, {
+            method: "GET",
+            redirect: "manual",
+          });
+
+          if (response.status === 302) {
+            const location = response.headers.get("Location");
+            log("✅ Return function works! Redirects to: " + location);
+
+            document.getElementById("test-results").innerHTML = `
+                        <div class="success">
+                            <h4>✅ Funcția Return Funcționează!</h4>
+                            <p><strong>Status:</strong> ${response.status} (Redirect)</p>
+                            <p><strong>Location:</strong> ${location}</p>
+                            <a href="http://localhost:8888${location}" target="_blank" class="button">
+                                Deschide Order Confirmation
+                            </a>
+                        </div>
+                    `;
+          } else {
+            throw new Error(`Expected 302, got ${response.status}`);
+          }
+        } catch (error) {
+          log("❌ Return function error: " + error.message);
+          document.getElementById("test-results").innerHTML = `
+                    <div class="error">
+                        <h4>❌ Funcția Return Nu Funcționează</h4>
+                        <p><strong>Eroare:</strong> ${error.message}</p>
+                    </div>
+                `;
+        }
+      }
+
+      function checkFinalStatus() {
+        const pending = localStorage.getItem("pendingOrder");
+        const completed = localStorage.getItem("lastCompletedOrder");
+
+        let status = "<h4>📊 Status Final:</h4>";
+
+        if (pending) {
+          const order = JSON.parse(pending);
+          status += `<div class="error">⏳ Comandă pending: ${order.orderNumber}</div>`;
+        } else {
+          status += `<div class="success">✅ Nu există comenzi pending</div>`;
+        }
+
+        if (completed) {
+          const order = JSON.parse(completed);
+          status += `<div class="success">✅ Comandă completată: ${order.orderNumber} (${order.paymentStatus})</div>`;
+        } else {
+          status += `<div class="error">❌ Nu există comenzi completate</div>`;
+        }
+
+        document.getElementById("test-results").innerHTML = status;
+        log("📊 Status checked");
+      }
+
+      function clearTests() {
+        localStorage.removeItem("pendingOrder");
+        localStorage.removeItem("lastCompletedOrder");
+        document.getElementById("test-results").innerHTML = "";
+        document.getElementById("logs").innerHTML = "";
+        document.getElementById("logs").style.display = "none";
+        log("🧹 Tests cleared");
+      }
+
+      // Auto-check la încărcarea paginii
+      window.onload = function () {
+        log("🔧 Test page loaded");
+        checkFinalStatus();
+      };
+    </script>
+  </body>
+</html>

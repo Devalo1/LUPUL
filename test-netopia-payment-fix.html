@@ -1,0 +1,408 @@
+<!doctype html>
+<html lang="ro">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Test NETOPIA Payment Fix</title>
+    <style>
+      body {
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+        max-width: 800px;
+        margin: 20px auto;
+        padding: 20px;
+        background: #f5f5f5;
+      }
+      .container {
+        background: white;
+        padding: 30px;
+        border-radius: 8px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+      }
+      h1 {
+        color: #2c5282;
+        text-align: center;
+        margin-bottom: 30px;
+      }
+      .button {
+        background: #4299e1;
+        color: white;
+        border: none;
+        padding: 12px 24px;
+        border-radius: 6px;
+        cursor: pointer;
+        font-size: 16px;
+        margin: 10px 5px;
+        width: 100%;
+        display: block;
+      }
+      .button:hover {
+        background: #3182ce;
+      }
+      .success {
+        background: #38a169;
+      }
+      .success:hover {
+        background: #2f855a;
+      }
+      .status {
+        padding: 15px;
+        border-radius: 6px;
+        margin: 15px 0;
+        font-family: monospace;
+      }
+      .success-status {
+        background: #c6f6d5;
+        color: #22543d;
+      }
+      .error {
+        background: #fed7d7;
+        color: #742a2a;
+      }
+      .info {
+        background: #bee3f8;
+        color: #2a4365;
+      }
+      .warning {
+        background: #faf089;
+        color: #744210;
+      }
+      pre {
+        background: #1a202c;
+        color: #e2e8f0;
+        padding: 15px;
+        border-radius: 6px;
+        overflow-x: auto;
+        font-size: 12px;
+        white-space: pre-wrap;
+      }
+      input {
+        width: 100%;
+        padding: 10px;
+        border: 1px solid #cbd5e0;
+        border-radius: 4px;
+        margin: 10px 0;
+        box-sizing: border-box;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h1>🧪 Test NETOPIA Payment Fix</h1>
+
+      <input
+        type="text"
+        id="orderIdInput"
+        placeholder="Order ID (ex: LC-1753820488074)"
+        value="LC-1753820488074"
+      />
+
+      <button class="button" onclick="simulatePaymentPageFlow()">
+        💳 1. Simulează PaymentPage (currentOrder)
+      </button>
+
+      <button class="button" onclick="simulateCheckoutFlow()">
+        💰 2. Simulează Checkout (pendingOrder)
+      </button>
+
+      <button class="button success" onclick="testOrderConfirmation()">
+        ✅ 3. Testează OrderConfirmation
+      </button>
+
+      <button class="button" onclick="showAllLocalStorage()">
+        📋 4. Arată Tot localStorage
+      </button>
+
+      <button class="button" onclick="clearAllStorage()">🗑️ Curăță Tot</button>
+
+      <div id="status"></div>
+    </div>
+
+    <script>
+      function simulatePaymentPageFlow() {
+        const statusDiv = document.getElementById("status");
+        const orderId = document.getElementById("orderIdInput").value;
+
+        // Simulează salvarea din PaymentPage.tsx (linia 82)
+        const currentOrderData = {
+          orderId: orderId,
+          amount: 55,
+          description: "Produs Test NETOPIA",
+          customerInfo: {
+            email: "dani_popa21@yahoo.ro",
+            firstName: "Dani_popa21",
+            lastName: "Lupul",
+            phone: "0775346243",
+            address: "9 MAI BLOC 2 A",
+            city: "PETROSANI",
+            state: "HUNEDOARA",
+          },
+        };
+
+        localStorage.setItem("currentOrder", JSON.stringify(currentOrderData));
+        console.log("💾 PaymentPage data saved:", currentOrderData);
+
+        statusDiv.innerHTML = `
+                <div class="success-status">
+                    ✅ Simulare PaymentPage completă!
+                    <h4>📋 Date salvate în localStorage cu cheia "currentOrder":</h4>
+                    <pre>${JSON.stringify(currentOrderData, null, 2)}</pre>
+                    <p><strong>Următorul pas:</strong> NETOPIA va redirecționa către /order-confirmation?orderId=${orderId}</p>
+                </div>
+            `;
+      }
+
+      function simulateCheckoutFlow() {
+        const statusDiv = document.getElementById("status");
+        const orderId = document.getElementById("orderIdInput").value;
+
+        // Simulează salvarea din Checkout.tsx (pentru ramburs)
+        const pendingOrderData = {
+          orderNumber: orderId,
+          customerEmail: "dani_popa21@yahoo.ro",
+          customerName: "Dani_popa21 Lupul",
+          customerPhone: "0775346243",
+          customerAddress: "9 MAI BLOC 2 A",
+          customerCity: "PETROSANI",
+          customerCounty: "HUNEDOARA",
+          totalAmount: 55,
+          items: [
+            {
+              name: "Produs Test Ramburs",
+              price: 55,
+              quantity: 1,
+            },
+          ],
+          paymentMethod: "cash",
+          date: new Date().toISOString(),
+        };
+
+        localStorage.setItem("pendingOrder", JSON.stringify(pendingOrderData));
+        console.log("💾 Checkout data saved:", pendingOrderData);
+
+        statusDiv.innerHTML = `
+                <div class="success-status">
+                    ✅ Simulare Checkout (ramburs) completă!
+                    <h4>📋 Date salvate în localStorage cu cheia "pendingOrder":</h4>
+                    <pre>${JSON.stringify(pendingOrderData, null, 2)}</pre>
+                    <p><strong>Următorul pas:</strong> Pentru ramburs se merge la CheckoutSuccess, pentru card la OrderConfirmation</p>
+                </div>
+            `;
+      }
+
+      function testOrderConfirmation() {
+        const statusDiv = document.getElementById("status");
+        const orderId = document.getElementById("orderIdInput").value;
+
+        statusDiv.innerHTML =
+          '<div class="info">🔄 Testez logica OrderConfirmation...</div>';
+
+        // Simulează logica din OrderConfirmation.tsx
+        let orderData = null;
+        let source = "";
+
+        // Pasul 1: Caută în pendingOrders (plural)
+        const pendingOrdersStr = localStorage.getItem("pendingOrders");
+        if (pendingOrdersStr) {
+          try {
+            const pendingOrders = JSON.parse(pendingOrdersStr);
+            if (pendingOrders[orderId]) {
+              orderData = pendingOrders[orderId];
+              source = "pendingOrders (plural)";
+            }
+          } catch (e) {
+            console.error("Error parsing pendingOrders:", e);
+          }
+        }
+
+        // Pasul 2: Caută în pendingOrder (singular)
+        if (!orderData) {
+          const pendingOrderStr = localStorage.getItem("pendingOrder");
+          if (pendingOrderStr) {
+            try {
+              const pendingOrder = JSON.parse(pendingOrderStr);
+              if (pendingOrder.orderNumber === orderId) {
+                orderData = pendingOrder;
+                source = "pendingOrder (singular)";
+              }
+            } catch (e) {
+              console.error("Error parsing pendingOrder:", e);
+            }
+          }
+        }
+
+        // Pasul 3: Caută în currentOrder (NETOPIA)
+        if (!orderData) {
+          const currentOrderStr = localStorage.getItem("currentOrder");
+          if (currentOrderStr) {
+            try {
+              const currentOrder = JSON.parse(currentOrderStr);
+              if (currentOrder.orderId === orderId) {
+                // Adaptează structura
+                orderData = {
+                  orderNumber: currentOrder.orderId,
+                  customerEmail: currentOrder.customerInfo?.email,
+                  customerName:
+                    currentOrder.customerInfo?.firstName +
+                    " " +
+                    currentOrder.customerInfo?.lastName,
+                  customerPhone: currentOrder.customerInfo?.phone,
+                  customerAddress: currentOrder.customerInfo?.address,
+                  customerCity: currentOrder.customerInfo?.city,
+                  customerCounty: currentOrder.customerInfo?.state,
+                  totalAmount: currentOrder.amount,
+                  items: [],
+                  paymentMethod: "card",
+                  date: new Date().toISOString(),
+                };
+                source = "currentOrder (NETOPIA)";
+              }
+            } catch (e) {
+              console.error("Error parsing currentOrder:", e);
+            }
+          }
+        }
+
+        // Afișează rezultatul
+        setTimeout(() => {
+          if (orderData) {
+            statusDiv.innerHTML = `
+                        <div class="success-status">
+                            ✅ SUCCESS! OrderConfirmation va găsi comanda!
+                            <h4>📦 Sursă date: ${source}</h4>
+                            <h4>👤 Date client adaptate:</h4>
+                            <pre>${JSON.stringify(orderData, null, 2)}</pre>
+                            <h4>📧 Email va fi trimis către: ${orderData.customerEmail}</h4>
+                            
+                            <button onclick="simulateEmailSending()" style="background: #38a169; color: white; border: none; padding: 10px 20px; border-radius: 4px; cursor: pointer; margin-top: 10px; width: 100%;">
+                                📤 Simulează Trimiterea Email-ului
+                            </button>
+                        </div>
+                    `;
+
+            // Salvează pentru simularea email-ului
+            window.testOrderData = orderData;
+          } else {
+            statusDiv.innerHTML = `
+                        <div class="error">
+                            ❌ EROARE! OrderConfirmation NU va găsi comanda!
+                            <h4>🔍 Verificare localStorage:</h4>
+                            <ul>
+                                <li>pendingOrders: ${localStorage.getItem("pendingOrders") ? "✅ Există" : "❌ Nu există"}</li>
+                                <li>pendingOrder: ${localStorage.getItem("pendingOrder") ? "✅ Există" : "❌ Nu există"}</li>
+                                <li>currentOrder: ${localStorage.getItem("currentOrder") ? "✅ Există" : "❌ Nu există"}</li>
+                            </ul>
+                            <p><strong>Soluție:</strong> Rulează mai întâi simularea PaymentPage sau Checkout</p>
+                        </div>
+                    `;
+          }
+        }, 500);
+      }
+
+      async function simulateEmailSending() {
+        const statusDiv = document.getElementById("status");
+
+        if (!window.testOrderData) {
+          statusDiv.innerHTML +=
+            '<div class="error">❌ Nu există date pentru email. Rulează mai întâi testul OrderConfirmation.</div>';
+          return;
+        }
+
+        const orderData = window.testOrderData;
+
+        // Construiește payload-ul exact ca în OrderConfirmation.tsx
+        const emailPayload = {
+          orderData: {
+            email: orderData.customerEmail,
+            customerName: orderData.customerName,
+            firstName: orderData.customerName?.split(" ")[0] || "Client",
+            lastName:
+              orderData.customerName?.split(" ").slice(1).join(" ") || "",
+            phone: orderData.customerPhone,
+            address: orderData.customerAddress,
+            city: orderData.customerCity,
+            county: orderData.customerCounty,
+            totalAmount: orderData.totalAmount,
+            items: orderData.items || [],
+            paymentMethod: "Card bancar (NETOPIA Payments)",
+            date: orderData.date,
+          },
+          orderNumber: orderData.orderNumber,
+          totalAmount: orderData.totalAmount,
+        };
+
+        statusDiv.innerHTML +=
+          '<div class="info">📤 Trimit email de test...</div>';
+
+        try {
+          const response = await fetch("/.netlify/functions/send-order-email", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify(emailPayload),
+          });
+
+          const result = await response.text();
+
+          if (response.ok) {
+            statusDiv.innerHTML += `
+                        <div class="success-status">
+                            ✅ EMAIL TRIMIS CU SUCCES! 🎉
+                            <h4>📧 Server Response:</h4>
+                            <pre>${result}</pre>
+                            <p><strong>Verifică emailul la:</strong> ${orderData.customerEmail}</p>
+                        </div>
+                    `;
+          } else {
+            statusDiv.innerHTML += `
+                        <div class="error">
+                            ❌ Eroare la trimiterea emailului (${response.status})
+                            <h4>📧 Server Response:</h4>
+                            <pre>${result}</pre>
+                        </div>
+                    `;
+          }
+        } catch (error) {
+          statusDiv.innerHTML += `
+                    <div class="error">
+                        ❌ Eroare de conexiune: ${error.message}
+                    </div>
+                `;
+        }
+      }
+
+      function showAllLocalStorage() {
+        const statusDiv = document.getElementById("status");
+
+        const allData = {};
+        for (let i = 0; i < localStorage.length; i++) {
+          const key = localStorage.key(i);
+          const value = localStorage.getItem(key);
+          try {
+            allData[key] = JSON.parse(value);
+          } catch (e) {
+            allData[key] = value;
+          }
+        }
+
+        statusDiv.innerHTML = `
+                <div class="info">
+                    <h3>📊 Tot localStorage (${localStorage.length} items):</h3>
+                    <pre>${JSON.stringify(allData, null, 2)}</pre>
+                </div>
+            `;
+      }
+
+      function clearAllStorage() {
+        localStorage.clear();
+        document.getElementById("status").innerHTML =
+          '<div class="success-status">✅ localStorage curățat complet!</div>';
+      }
+
+      // Auto-load current state
+      document.addEventListener("DOMContentLoaded", function () {
+        showAllLocalStorage();
+      });
+    </script>
+  </body>
+</html>

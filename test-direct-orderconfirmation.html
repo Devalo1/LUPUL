@@ -1,0 +1,203 @@
+<!doctype html>
+<html lang="ro">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Direct OrderConfirmation Test</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        margin: 20px;
+        background: #f5f5f5;
+      }
+      .container {
+        background: white;
+        padding: 20px;
+        border-radius: 8px;
+        max-width: 800px;
+        margin: 0 auto;
+      }
+      .test {
+        background: #007bff;
+        color: white;
+        padding: 15px;
+        border-radius: 5px;
+        margin: 10px 0;
+        text-align: center;
+      }
+      .result {
+        background: #f8f9fa;
+        padding: 15px;
+        border-radius: 5px;
+        margin: 10px 0;
+        border: 1px solid #ddd;
+      }
+      button {
+        padding: 12px 24px;
+        margin: 5px;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        font-size: 16px;
+      }
+      .btn-primary {
+        background: #007bff;
+        color: white;
+      }
+      .btn-success {
+        background: #28a745;
+        color: white;
+      }
+      .btn-danger {
+        background: #dc3545;
+        color: white;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <div class="test">
+        🧪 <strong>Direct OrderConfirmation Test</strong><br />
+        Testează dacă componenta React OrderConfirmation se încarcă
+      </div>
+
+      <div class="result">
+        <h3>📍 Test URLs</h3>
+        <button class="btn-primary" onclick="testDirect()">
+          🎯 Test Direct OrderConfirmation
+        </button>
+        <button class="btn-success" onclick="testWithLocalStorage()">
+          💾 Test cu localStorage Pre-populat
+        </button>
+        <button class="btn-danger" onclick="testRouting()">
+          🛣️ Test Routing
+        </button>
+      </div>
+
+      <div class="result">
+        <h3>📋 Test Results</h3>
+        <div id="testResults">Apasă un buton pentru a începe testul...</div>
+      </div>
+
+      <div class="result">
+        <h3>🔍 Current Page Info</h3>
+        <div id="pageInfo"></div>
+      </div>
+    </div>
+
+    <script>
+      function updatePageInfo() {
+        const info = document.getElementById("pageInfo");
+        info.innerHTML = `
+                <strong>URL:</strong> ${window.location.href}<br>
+                <strong>Hostname:</strong> ${window.location.hostname}<br>
+                <strong>Pathname:</strong> ${window.location.pathname}<br>
+                <strong>Search:</strong> ${window.location.search}<br>
+                <strong>LocalStorage Keys:</strong> ${Object.keys(localStorage).join(", ") || "None"}<br>
+                <strong>Timestamp:</strong> ${new Date().toLocaleString()}
+            `;
+      }
+
+      function testDirect() {
+        const results = document.getElementById("testResults");
+        const testOrderId = "LC-1753819102638";
+
+        results.innerHTML = `
+                <div style="background: #d1ecf1; padding: 10px; border-radius: 5px; margin: 5px 0;">
+                    🎯 <strong>Test Direct</strong><br>
+                    Redirecting către: /order-confirmation?orderId=${testOrderId}<br>
+                    ⏱️ Redirect în 2 secunde...
+                </div>
+            `;
+
+        setTimeout(() => {
+          window.location.href = `/order-confirmation?orderId=${testOrderId}`;
+        }, 2000);
+      }
+
+      function testWithLocalStorage() {
+        const results = document.getElementById("testResults");
+        const testOrderId = "LC-1753819102638";
+
+        // Creez date de test
+        const orderData = {
+          orderNumber: testOrderId,
+          customerName: "Test User",
+          customerEmail: "test@example.com",
+          customerPhone: "0700000000",
+          customerAddress: "Test Address",
+          customerCity: "Test City",
+          customerCounty: "Test County",
+          totalAmount: 35,
+          items: [
+            {
+              id: "test-product",
+              name: "Produs Test",
+              price: 35,
+              quantity: 1,
+              image: "/test-image.jpg",
+            },
+          ],
+          paymentMethod: "card",
+          paymentStatus: "pending",
+          date: new Date().toISOString(),
+        };
+
+        // Salvez în localStorage
+        localStorage.setItem("pendingOrder", JSON.stringify(orderData));
+
+        results.innerHTML = `
+                <div style="background: #d4edda; padding: 10px; border-radius: 5px; margin: 5px 0;">
+                    💾 <strong>Test cu localStorage</strong><br>
+                    ✅ Date salvate în localStorage<br>
+                    📋 Order ID: ${testOrderId}<br>
+                    🔄 Redirecting în 2 secunde...
+                </div>
+            `;
+
+        setTimeout(() => {
+          window.location.href = `/order-confirmation?orderId=${testOrderId}`;
+        }, 2000);
+      }
+
+      function testRouting() {
+        const results = document.getElementById("testResults");
+
+        results.innerHTML = `
+                <div style="background: #fff3cd; padding: 10px; border-radius: 5px; margin: 5px 0;">
+                    🛣️ <strong>Test Routing</strong><br>
+                    Testez diferite variante de rute...<br>
+                </div>
+            `;
+
+        // Testez diferite variante
+        const routes = [
+          "/order-confirmation",
+          "/order-confirmation?orderId=test",
+          "/order-confirmation?orderId=LC-1753819102638",
+          "/#/order-confirmation?orderId=LC-1753819102638",
+        ];
+
+        routes.forEach((route, index) => {
+          setTimeout(() => {
+            results.innerHTML += `
+                        <div style="background: #f8f9fa; padding: 5px; margin: 2px 0; border-left: 3px solid #007bff;">
+                            ${index + 1}. Testing route: <strong>${route}</strong>
+                        </div>
+                    `;
+
+            if (index === routes.length - 1) {
+              setTimeout(() => {
+                window.location.href = routes[2]; // Cel mai probabil să funcționeze
+              }, 2000);
+            }
+          }, index * 500);
+        });
+      }
+
+      // Initialize
+      updatePageInfo();
+      setInterval(updatePageInfo, 5000); // Update every 5 seconds
+    </script>
+  </body>
+</html>

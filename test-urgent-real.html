@@ -1,0 +1,400 @@
+<!doctype html>
+<html lang="ro">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>🚀 Test REAL - OrderConfirmation Email</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 20px;
+        background: #f5f5f5;
+      }
+      .container {
+        background: white;
+        padding: 20px;
+        border-radius: 8px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        margin-bottom: 20px;
+      }
+      .success {
+        color: #22c55e;
+        font-weight: bold;
+      }
+      .error {
+        color: #ef4444;
+        font-weight: bold;
+      }
+      .warning {
+        color: #f59e0b;
+        font-weight: bold;
+      }
+      .info {
+        color: #3b82f6;
+        font-weight: bold;
+      }
+      pre {
+        background: #f8f9fa;
+        padding: 15px;
+        border-radius: 5px;
+        overflow-x: auto;
+        border-left: 4px solid #3b82f6;
+        font-size: 12px;
+      }
+      button {
+        background: #3b82f6;
+        color: white;
+        padding: 12px 24px;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        margin: 5px;
+        font-size: 16px;
+      }
+      button:hover {
+        background: #2563eb;
+      }
+      .step {
+        border-left: 4px solid #10b981;
+        padding-left: 15px;
+        margin: 15px 0;
+      }
+      .big-button {
+        background: #dc2626;
+        font-size: 18px;
+        padding: 15px 30px;
+        margin: 10px;
+      }
+      .big-button:hover {
+        background: #b91c1c;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>🚀 Test REAL - OrderConfirmation Email</h1>
+    <p class="warning">
+      Test pentru EXACT același URL din eroarea ta:
+      <code
+        >http://localhost:8888/order-confirmation?orderId=LC-1753821925911</code
+      >
+    </p>
+
+    <div class="container">
+      <h2>🎯 TEST URGENT - Un Click</h2>
+      <p>Click pe acest buton pentru a rula testul complet automat:</p>
+      <button class="big-button" onclick="runUrgentTest()">
+        🚨 TESTEAZĂ URGENT - Un Click
+      </button>
+      <div id="urgentResults"></div>
+    </div>
+
+    <div class="container">
+      <h2>📋 Status localStorage Actual</h2>
+      <button onclick="checkCurrentStatus()">👀 Verifică Status</button>
+      <div id="storageStatus"></div>
+    </div>
+
+    <div class="container">
+      <h2>📊 Log Results</h2>
+      <div id="results">
+        <p class="info">Rezultatele testelor vor apărea aici...</p>
+      </div>
+    </div>
+
+    <script>
+      const orderId = "LC-1753821925911";
+      const results = document.getElementById("results");
+      const urgentResults = document.getElementById("urgentResults");
+      const storageStatus = document.getElementById("storageStatus");
+
+      function log(message, type = "info", container = results) {
+        const className = type;
+        const timestamp = new Date().toLocaleTimeString();
+        container.innerHTML += `<div class="${className}">[${timestamp}] ${message}</div>`;
+        console.log(`[${timestamp}] ${message}`);
+      }
+
+      function checkCurrentStatus() {
+        storageStatus.innerHTML = "";
+        log("📋 Status localStorage curent:", "info", storageStatus);
+
+        if (localStorage.length === 0) {
+          log("   ❌ LocalStorage este GOL", "error", storageStatus);
+          return;
+        }
+
+        for (let i = 0; i < localStorage.length; i++) {
+          const key = localStorage.key(i);
+          const value = localStorage.getItem(key);
+          log(
+            `   📋 "${key}": ${value ? value.substring(0, 150) + "..." : "null"}`,
+            "info",
+            storageStatus
+          );
+        }
+      }
+
+      async function runUrgentTest() {
+        urgentResults.innerHTML = "";
+        log("🚨 ÎNCEPE TESTUL URGENT COMPLET", "error", urgentResults);
+        log("=" + "=".repeat(50), "info", urgentResults);
+
+        // 1. Curăță localStorage
+        localStorage.clear();
+        log("🧹 LocalStorage curățat", "success", urgentResults);
+
+        // 2. Simulează datele EXACTE de la PaymentPage
+        const testCurrentOrder = {
+          orderId: orderId, // EXACT același ID din URL
+          amount: "50.00",
+          description: "Emblemă Digitală Lupul și Corbul",
+          customerInfo: {
+            firstName: "Test",
+            lastName: "Client",
+            email: "test@example.com", // 🎯 EMAILUL CRUCIAL
+            phone: "0700123456",
+            address: "Strada Test 123",
+            city: "București",
+            county: "București",
+            postalCode: "123456",
+          },
+        };
+
+        localStorage.setItem("currentOrder", JSON.stringify(testCurrentOrder));
+        log(
+          '💾 Date test salvate în localStorage["currentOrder"]',
+          "success",
+          urgentResults
+        );
+        log(
+          `   📧 Email salvat: ${testCurrentOrder.customerInfo.email}`,
+          "info",
+          urgentResults
+        );
+
+        await new Promise((r) => setTimeout(r, 500));
+
+        // 3. Simulează EXACT logica din OrderConfirmation.tsx
+        log(
+          "🔍 Simulez logica OrderConfirmation.tsx...",
+          "info",
+          urgentResults
+        );
+
+        const currentOrderStr = localStorage.getItem("currentOrder");
+        if (!currentOrderStr) {
+          log(
+            "❌ EROARE: Nu găsesc currentOrder în localStorage",
+            "error",
+            urgentResults
+          );
+          return;
+        }
+
+        try {
+          const currentOrder = JSON.parse(currentOrderStr);
+          log(
+            `✅ Găsit currentOrder.orderId: ${currentOrder.orderId}`,
+            "success",
+            urgentResults
+          );
+          log(`🔍 URL orderId: ${orderId}`, "info", urgentResults);
+          log(
+            `🔍 Match: ${currentOrder.orderId === orderId}`,
+            "info",
+            urgentResults
+          );
+
+          if (currentOrder.orderId === orderId) {
+            // EXACT ca în OrderConfirmation.tsx
+            const orderData = {
+              orderNumber: currentOrder.orderId,
+              customerEmail: currentOrder.customerInfo?.email,
+              customerName:
+                currentOrder.customerInfo?.firstName +
+                " " +
+                currentOrder.customerInfo?.lastName,
+              customerPhone: currentOrder.customerInfo?.phone,
+              customerAddress: currentOrder.customerInfo?.address,
+              customerCity: currentOrder.customerInfo?.city,
+              customerCounty: currentOrder.customerInfo?.county,
+              totalAmount: currentOrder.amount,
+              items: [],
+              paymentMethod: "card",
+              date: new Date().toISOString(),
+            };
+
+            log("✅ Date adaptate cu succes", "success", urgentResults);
+            log(
+              `   📧 customerEmail: ${orderData.customerEmail}`,
+              "info",
+              urgentResults
+            );
+
+            if (!orderData.customerEmail) {
+              log(
+                "❌ PROBLEMA GĂSITĂ: customerEmail este undefined!",
+                "error",
+                urgentResults
+              );
+              return;
+            }
+
+            // Simulează ștergerea din localStorage (ca în cod real)
+            localStorage.removeItem("currentOrder");
+            log(
+              "🗑️ currentOrder șters din localStorage (ca în codul real)",
+              "info",
+              urgentResults
+            );
+
+            // EXACT payload-ul din OrderConfirmation.tsx
+            const emailPayload = {
+              orderData: {
+                email: orderData.customerEmail, // 🎯 CHEIA!
+                customerName: orderData.customerName,
+                firstName:
+                  orderData.customerName?.split(" ")[0] ||
+                  orderData.firstName ||
+                  "Client",
+                lastName:
+                  orderData.customerName?.split(" ").slice(1).join(" ") ||
+                  orderData.lastName ||
+                  "",
+                phone: orderData.customerPhone,
+                address: orderData.customerAddress,
+                city: orderData.customerCity,
+                county: orderData.customerCounty,
+                totalAmount: orderData.totalAmount,
+                items: orderData.items || [],
+                paymentMethod: "Card bancar (NETOPIA Payments)",
+                date: orderData.date,
+              },
+              orderNumber: orderData.orderNumber,
+              totalAmount: orderData.totalAmount,
+            };
+
+            log(
+              "📤 Payload pregătit pentru send-order-email",
+              "info",
+              urgentResults
+            );
+            log(
+              `   📧 emailPayload.orderData.email: ${emailPayload.orderData.email}`,
+              "info",
+              urgentResults
+            );
+
+            // Test REAL către send-order-email
+            log(
+              "🚀 Trimit către funcția send-order-email...",
+              "info",
+              urgentResults
+            );
+
+            const emailEndpoint =
+              "http://localhost:8888/.netlify/functions/send-order-email";
+
+            try {
+              const response = await fetch(emailEndpoint, {
+                method: "POST",
+                headers: {
+                  "Content-Type": "application/json",
+                },
+                body: JSON.stringify(emailPayload),
+              });
+
+              const data = await response.json();
+
+              if (data.success) {
+                log(
+                  "🎉 SUCCESS! Email trimis cu succes!",
+                  "success",
+                  urgentResults
+                );
+                if (data.simulated) {
+                  log(
+                    "⚠️ Email SIMULAT (dezvoltare)",
+                    "warning",
+                    urgentResults
+                  );
+                } else {
+                  log(
+                    `📧 Email REAL trimis către: ${emailPayload.orderData.email}`,
+                    "success",
+                    urgentResults
+                  );
+                  log(
+                    `📧 Customer Email ID: ${data.customerEmailId}`,
+                    "info",
+                    urgentResults
+                  );
+                  log(
+                    `📧 Admin Email ID: ${data.adminEmailId}`,
+                    "info",
+                    urgentResults
+                  );
+                }
+              } else {
+                log(`❌ EROARE: ${data.error}`, "error", urgentResults);
+                if (data.details) {
+                  log(`   Detalii: ${data.details}`, "error", urgentResults);
+                }
+              }
+            } catch (error) {
+              log(`💥 Eroare fetch: ${error.message}`, "error", urgentResults);
+              log(
+                "🔧 Verifică că serverul rulează (netlify dev)",
+                "warning",
+                urgentResults
+              );
+            }
+          } else {
+            log(
+              "❌ Order ID nu se potrivește - emailul NU va fi trimis",
+              "error",
+              urgentResults
+            );
+          }
+        } catch (error) {
+          log(`❌ Eroare parsare: ${error.message}`, "error", urgentResults);
+        }
+
+        log("=" + "=".repeat(50), "info", urgentResults);
+        log("🏁 TEST URGENT COMPLET!", "success", urgentResults);
+
+        // 4. BONUS: Acum testează și accesul direct la URL
+        log("\n🔗 BONUS: Testez accesul direct la URL", "info", urgentResults);
+        log(
+          "   Pregătesc din nou datele în localStorage...",
+          "info",
+          urgentResults
+        );
+
+        // Repune datele pentru test real
+        localStorage.setItem("currentOrder", JSON.stringify(testCurrentOrder));
+
+        const testUrl = `http://localhost:8888/order-confirmation?orderId=${orderId}`;
+        log(`🌐 URL test: ${testUrl}`, "info", urgentResults);
+        log(
+          "💡 Poți deschide acest URL într-un tab nou pentru test visual",
+          "info",
+          urgentResults
+        );
+
+        // Creează un link clickable
+        const linkDiv = document.createElement("div");
+        linkDiv.innerHTML = `<a href="${testUrl}" target="_blank" style="background: #22c55e; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px; display: inline-block; margin: 10px 0;">🔗 Deschide OrderConfirmation în tab nou</a>`;
+        urgentResults.appendChild(linkDiv);
+      }
+
+      // Inițializează pagina
+      window.onload = function () {
+        log("🔍 Pagină de test încărcată", "success");
+        checkCurrentStatus();
+      };
+    </script>
+  </body>
+</html>

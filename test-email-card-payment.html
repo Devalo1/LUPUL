@@ -1,0 +1,380 @@
+<!doctype html>
+<html lang="ro">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>🔍 Test OrderConfirmation Email - Plată Card</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 20px;
+        background: #f5f5f5;
+      }
+      .container {
+        background: white;
+        padding: 20px;
+        border-radius: 8px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        margin-bottom: 20px;
+      }
+      .success {
+        color: #22c55e;
+        font-weight: bold;
+      }
+      .error {
+        color: #ef4444;
+        font-weight: bold;
+      }
+      .warning {
+        color: #f59e0b;
+        font-weight: bold;
+      }
+      .info {
+        color: #3b82f6;
+        font-weight: bold;
+      }
+      pre {
+        background: #f8f9fa;
+        padding: 15px;
+        border-radius: 5px;
+        overflow-x: auto;
+        border-left: 4px solid #3b82f6;
+      }
+      button {
+        background: #3b82f6;
+        color: white;
+        padding: 10px 20px;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        margin: 5px;
+      }
+      button:hover {
+        background: #2563eb;
+      }
+      .step {
+        border-left: 4px solid #10b981;
+        padding-left: 15px;
+        margin: 15px 0;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>🔍 Test OrderConfirmation Email - Plată Card</h1>
+    <p class="info">
+      Test pentru URL:
+      <code
+        >http://localhost:8888/order-confirmation?orderId=LC-1753821925911</code
+      >
+    </p>
+
+    <div class="container">
+      <h2>🏃‍♂️ Testare Automată</h2>
+      <button onclick="runFullTest()">🚀 Rulează Test Complet</button>
+      <button onclick="clearAllStorage()">🧹 Șterge Tot localStorage</button>
+      <button onclick="checkCurrentStorage()">👀 Vezi localStorage</button>
+      <div id="testResults"></div>
+    </div>
+
+    <div class="container">
+      <h2>📋 Pași de Test Manual</h2>
+
+      <div class="step">
+        <h3>1. Pregătire Date în localStorage</h3>
+        <p>Simulează datele salvate de PaymentPage după plata cu cardul:</p>
+        <button onclick="setupTestData()">📦 Pregătește Date Test</button>
+      </div>
+
+      <div class="step">
+        <h3>2. Simulare Acces OrderConfirmation</h3>
+        <p>Testează logica din OrderConfirmation component:</p>
+        <button onclick="simulateOrderConfirmation()">
+          🔍 Simulează OrderConfirmation
+        </button>
+      </div>
+
+      <div class="step">
+        <h3>3. Test Email Direct</h3>
+        <p>Testează direct funcția send-order-email:</p>
+        <button onclick="testEmailDirect()">📧 Test Email Direct</button>
+      </div>
+
+      <div class="step">
+        <h3>4. Acces Real la URL</h3>
+        <p>Deschide OrderConfirmation în tab nou:</p>
+        <button onclick="openOrderConfirmation()">
+          🔗 Deschide OrderConfirmation
+        </button>
+      </div>
+    </div>
+
+    <div class="container">
+      <h2>📊 Rezultate Test</h2>
+      <div id="results">
+        <p class="info">
+          Apasă pe butoanele de test pentru a vedea rezultatele...
+        </p>
+      </div>
+    </div>
+
+    <script>
+      const orderId = "LC-1753821925911";
+      const results = document.getElementById("results");
+
+      function log(message, type = "info") {
+        const className = type;
+        const timestamp = new Date().toLocaleTimeString();
+        results.innerHTML += `<div class="${className}">[${timestamp}] ${message}</div>`;
+        console.log(`[${timestamp}] ${message}`);
+      }
+
+      function clearAllStorage() {
+        localStorage.clear();
+        log("🧹 LocalStorage șters complet", "success");
+        checkCurrentStorage();
+      }
+
+      function checkCurrentStorage() {
+        log("👀 Verificare localStorage curent:", "info");
+        if (localStorage.length === 0) {
+          log("   ❌ LocalStorage este gol", "warning");
+          return;
+        }
+
+        for (let i = 0; i < localStorage.length; i++) {
+          const key = localStorage.key(i);
+          const value = localStorage.getItem(key);
+          log(
+            `   📋 "${key}": ${value ? value.substring(0, 100) + "..." : "null"}`,
+            "info"
+          );
+        }
+      }
+
+      function setupTestData() {
+        // Simulează datele salvate de PaymentPage
+        const testCurrentOrder = {
+          orderId: orderId,
+          amount: "50.00",
+          description: "Emblemă Digitală Lupul și Corbul",
+          customerInfo: {
+            firstName: "Test",
+            lastName: "Client",
+            email: "test@example.com",
+            phone: "0700123456",
+            address: "Strada Test 123",
+            city: "București",
+            county: "București",
+            postalCode: "123456",
+          },
+        };
+
+        localStorage.setItem("currentOrder", JSON.stringify(testCurrentOrder));
+
+        log(
+          '📦 Date test salvate în localStorage cu cheia "currentOrder"',
+          "success"
+        );
+        log(`   Order ID: ${testCurrentOrder.orderId}`, "info");
+        log(`   Email: ${testCurrentOrder.customerInfo.email}`, "info");
+        log(`   Sumă: ${testCurrentOrder.amount} RON`, "info");
+      }
+
+      function simulateOrderConfirmation() {
+        log(
+          "🔍 Simulare logică OrderConfirmation pentru orderId: " + orderId,
+          "info"
+        );
+
+        // Verifică dacă există currentOrder în localStorage
+        const currentOrderStr = localStorage.getItem("currentOrder");
+        if (!currentOrderStr) {
+          log('❌ Nu există "currentOrder" în localStorage', "error");
+          log('💡 Rulează primul "Pregătește Date Test"', "warning");
+          return;
+        }
+
+        try {
+          const currentOrder = JSON.parse(currentOrderStr);
+          log("✅ Am găsit currentOrder în localStorage", "success");
+          log(`   Stored orderId: ${currentOrder.orderId}`, "info");
+          log(`   Expected orderId: ${orderId}`, "info");
+          log(`   Match: ${currentOrder.orderId === orderId}`, "info");
+
+          if (currentOrder.orderId === orderId) {
+            // Adaptez datele ca în OrderConfirmation.tsx
+            const orderData = {
+              orderNumber: currentOrder.orderId,
+              customerEmail: currentOrder.customerInfo?.email,
+              customerName:
+                currentOrder.customerInfo?.firstName +
+                " " +
+                currentOrder.customerInfo?.lastName,
+              customerPhone: currentOrder.customerInfo?.phone,
+              customerAddress: currentOrder.customerInfo?.address,
+              customerCity: currentOrder.customerInfo?.city,
+              customerCounty: currentOrder.customerInfo?.county,
+              totalAmount: currentOrder.amount,
+              items: [],
+              paymentMethod: "card",
+              date: new Date().toISOString(),
+            };
+
+            log("✅ Date adaptate pentru email:", "success");
+            log(`   Email destinatar: ${orderData.customerEmail}`, "info");
+            log(`   Nume: ${orderData.customerName}`, "info");
+            log(`   Sumă: ${orderData.totalAmount} RON`, "info");
+
+            // Simulez ștergerea din localStorage
+            localStorage.removeItem("currentOrder");
+            log("🗑️ currentOrder șters din localStorage", "info");
+
+            // Returnez datele pentru testul de email
+            return orderData;
+          } else {
+            log(
+              "❌ Order ID nu se potrivește - emailul NU va fi trimis",
+              "error"
+            );
+            return null;
+          }
+        } catch (error) {
+          log("❌ Eroare la parsarea currentOrder: " + error.message, "error");
+          return null;
+        }
+      }
+
+      async function testEmailDirect() {
+        log("📧 Testare directă send-order-email function", "info");
+
+        // Pregătește datele mai întâi
+        setupTestData();
+        const orderData = simulateOrderConfirmation();
+
+        if (!orderData) {
+          log("❌ Nu am date pentru testul de email", "error");
+          return;
+        }
+
+        // Pregătește payload-ul pentru send-order-email
+        const emailPayload = {
+          orderData: {
+            email: orderData.customerEmail,
+            customerName: orderData.customerName,
+            firstName: orderData.customerName?.split(" ")[0] || "Client",
+            lastName:
+              orderData.customerName?.split(" ").slice(1).join(" ") || "",
+            phone: orderData.customerPhone,
+            address: orderData.customerAddress,
+            city: orderData.customerCity,
+            county: orderData.customerCounty,
+            totalAmount: orderData.totalAmount,
+            items: orderData.items || [],
+            paymentMethod: "Card bancar (NETOPIA Payments)",
+            date: orderData.date,
+          },
+          orderNumber: orderData.orderNumber,
+          totalAmount: orderData.totalAmount,
+        };
+
+        log("📤 Payload pentru send-order-email pregătit", "info");
+        log(`   Destinatar: ${emailPayload.orderData.email}`, "info");
+        log(`   Order Number: ${emailPayload.orderNumber}`, "info");
+
+        // Testează funcția send-order-email
+        const emailEndpoint =
+          "http://localhost:8888/.netlify/functions/send-order-email";
+        log(`📡 Trimit cerere către: ${emailEndpoint}`, "info");
+
+        try {
+          const response = await fetch(emailEndpoint, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify(emailPayload),
+          });
+
+          log(
+            `📬 Response status: ${response.status}`,
+            response.ok ? "success" : "error"
+          );
+
+          const data = await response.json();
+          log("📋 Response data:", "info");
+          log(
+            `   Success: ${data.success}`,
+            data.success ? "success" : "error"
+          );
+          log(`   Message: ${data.message}`, "info");
+
+          if (data.simulated) {
+            log("⚠️ Email a fost SIMULAT (nu trimis real)", "warning");
+            log(
+              "💡 Pentru emailuri reale: configurează SMTP_PASS în .env",
+              "warning"
+            );
+          } else if (data.success) {
+            log("🎉 Email REAL trimis cu succes!", "success");
+            log(`   Customer Email ID: ${data.customerEmailId}`, "info");
+            log(`   Admin Email ID: ${data.adminEmailId}`, "info");
+          }
+
+          if (!data.success) {
+            log(`❌ Eroare: ${data.error}`, "error");
+            if (data.details) {
+              log(`   Detalii: ${data.details}`, "error");
+            }
+          }
+        } catch (error) {
+          log(`💥 Eroare fetch: ${error.message}`, "error");
+          log("🔧 Verifică dacă rulează: netlify dev", "warning");
+        }
+      }
+
+      function openOrderConfirmation() {
+        const url = `http://localhost:8888/order-confirmation?orderId=${orderId}`;
+        log(`🔗 Deschid OrderConfirmation: ${url}`, "info");
+        window.open(url, "_blank");
+        log("👀 Verifică consola din noul tab pentru debugging", "info");
+      }
+
+      async function runFullTest() {
+        log("🚀 Începe testul complet...", "info");
+        log("═".repeat(50), "info");
+
+        // Curăță totul
+        clearAllStorage();
+        await new Promise((r) => setTimeout(r, 500));
+
+        // Pregătește datele
+        log("📦 Pasul 1: Pregătire date test", "info");
+        setupTestData();
+        await new Promise((r) => setTimeout(r, 500));
+
+        // Simulează OrderConfirmation
+        log("🔍 Pasul 2: Simulare OrderConfirmation", "info");
+        const orderData = simulateOrderConfirmation();
+        await new Promise((r) => setTimeout(r, 500));
+
+        // Testează emailul
+        if (orderData) {
+          log("📧 Pasul 3: Test email direct", "info");
+          await testEmailDirect();
+        }
+
+        log("═".repeat(50), "info");
+        log("🏁 Test complet finalizat", "success");
+      }
+
+      // Inițializează pagina
+      window.onload = function () {
+        log("🔍 Pagină de test încărcată", "success");
+        log(`📋 Test pentru Order ID: ${orderId}`, "info");
+        checkCurrentStorage();
+      };
+    </script>
+  </body>
+</html>

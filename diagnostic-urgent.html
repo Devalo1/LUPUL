@@ -1,0 +1,406 @@
+<!doctype html>
+<html lang="ro">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Diagnostic URGENT - OrderConfirmation Debug</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        margin: 20px;
+        background: #f5f5f5;
+      }
+      .container {
+        background: white;
+        padding: 20px;
+        border-radius: 8px;
+        max-width: 1000px;
+        margin: 0 auto;
+      }
+      .urgent {
+        background: #dc3545;
+        color: white;
+        padding: 15px;
+        border-radius: 5px;
+        margin-bottom: 20px;
+      }
+      .info {
+        background: #d1ecf1;
+        border-color: #bee5eb;
+        color: #0c5460;
+        padding: 15px;
+        border-radius: 5px;
+        margin: 10px 0;
+      }
+      .success {
+        background: #d4edda;
+        border-color: #c3e6cb;
+        color: #155724;
+        padding: 15px;
+        border-radius: 5px;
+        margin: 10px 0;
+      }
+      .error {
+        background: #f8d7da;
+        border-color: #f5c6cb;
+        color: #721c24;
+        padding: 15px;
+        border-radius: 5px;
+        margin: 10px 0;
+      }
+      pre {
+        background: #f8f9fa;
+        padding: 10px;
+        border-radius: 3px;
+        overflow-x: auto;
+        max-height: 300px;
+        overflow-y: auto;
+      }
+      button {
+        padding: 12px 24px;
+        margin: 5px;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        font-size: 16px;
+      }
+      .btn-danger {
+        background: #dc3545;
+        color: white;
+      }
+      .btn-primary {
+        background: #007bff;
+        color: white;
+      }
+      .btn-success {
+        background: #28a745;
+        color: white;
+      }
+      .test-section {
+        border: 2px solid #007bff;
+        padding: 20px;
+        margin: 20px 0;
+        border-radius: 8px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <div class="urgent">
+        🚨 <strong>DIAGNOSTIC URGENT - OrderConfirmation Debug</strong><br />
+        Order ID testat: <strong>LC-1753819102638</strong><br />
+        Problema: Nu se execută console.log-urile din OrderConfirmation.tsx
+      </div>
+
+      <div class="test-section">
+        <h3>🔍 Test 1: Verifică OrderConfirmation în IFRAME</h3>
+        <p>
+          Încarcă pagina OrderConfirmation într-un iframe pentru a vedea console
+          logs
+        </p>
+        <button class="btn-primary" onclick="loadOrderConfirmationInIframe()">
+          📱 Încarcă în IFRAME
+        </button>
+        <div id="iframeResults"></div>
+        <iframe
+          id="orderIframe"
+          style="
+            width: 100%;
+            height: 400px;
+            border: 1px solid #ddd;
+            margin-top: 10px;
+            display: none;
+          "
+        ></iframe>
+      </div>
+
+      <div class="test-section">
+        <h3>🔍 Test 2: Simulează localStorage și Testează Direct</h3>
+        <button class="btn-success" onclick="simulateAndTest()">
+          🧪 Simulează + Test Direct
+        </button>
+        <div id="simulationResults"></div>
+      </div>
+
+      <div class="test-section">
+        <h3>🔍 Test 3: Verifică Routing Problem</h3>
+        <button class="btn-danger" onclick="testRouting()">
+          🛣️ Test Routing
+        </button>
+        <div id="routingResults"></div>
+      </div>
+
+      <div class="test-section">
+        <h3>📋 Console Logs în Timp Real</h3>
+        <div
+          id="consoleLogs"
+          style="
+            height: 200px;
+            overflow-y: auto;
+            background: #000;
+            color: #0f0;
+            padding: 10px;
+            font-family: monospace;
+          "
+        ></div>
+      </div>
+    </div>
+
+    <script>
+      // Capturează console logs
+      const originalLog = console.log;
+      const originalError = console.error;
+      const consoleDiv = document.getElementById("consoleLogs");
+
+      function addToConsole(message, type = "log") {
+        const timestamp = new Date().toLocaleTimeString();
+        const color = type === "error" ? "#f00" : "#0f0";
+        consoleDiv.innerHTML += `<div style="color: ${color};">[${timestamp}] ${message}</div>`;
+        consoleDiv.scrollTop = consoleDiv.scrollHeight;
+      }
+
+      console.log = function (...args) {
+        originalLog.apply(console, args);
+        addToConsole(args.join(" "), "log");
+      };
+
+      console.error = function (...args) {
+        originalError.apply(console, args);
+        addToConsole(args.join(" "), "error");
+      };
+
+      function loadOrderConfirmationInIframe() {
+        const iframe = document.getElementById("orderIframe");
+        const results = document.getElementById("iframeResults");
+
+        iframe.style.display = "block";
+        iframe.src = "/order-confirmation?orderId=LC-1753819102638";
+
+        results.innerHTML = `
+                <div class="info">
+                    📱 IFRAME încărcat cu URL: /order-confirmation?orderId=LC-1753819102638<br>
+                    🔍 Verifică console pentru log-uri din componenta React
+                </div>
+            `;
+
+        // Monitorizează încărcarea iframe-ului
+        iframe.onload = function () {
+          results.innerHTML += `
+                    <div class="success">✅ IFRAME încărcat complet</div>
+                `;
+
+          // Încearcă să acceseze console logs din iframe (dacă este posibil)
+          try {
+            const iframeWindow = iframe.contentWindow;
+            if (iframeWindow) {
+              results.innerHTML += `
+                            <div class="info">🔍 IFRAME window accessible</div>
+                        `;
+            }
+          } catch (e) {
+            results.innerHTML += `
+                        <div class="error">❌ Nu pot accesa IFRAME window: ${e.message}</div>
+                    `;
+          }
+        };
+      }
+
+      function simulateAndTest() {
+        const results = document.getElementById("simulationResults");
+        const orderId = "LC-1753819102638";
+
+        // Simulez datele exact cum le salvează Checkout.tsx
+        const orderData = {
+          orderNumber: orderId,
+          customerName: "Dani_popa21 Lupul",
+          customerEmail: "dani_popa21@yahoo.ro",
+          customerPhone: "0775346243",
+          customerAddress: "9 MAI BLOC 2 A",
+          customerCity: "PETROSANI",
+          customerCounty: "HUNEDOARA",
+          totalAmount: 35,
+          items: [
+            {
+              id: "test-product",
+              name: "Produs Test",
+              price: 35,
+              quantity: 1,
+              image: "/test-image.jpg",
+            },
+          ],
+          paymentMethod: "card",
+          paymentStatus: "pending",
+          date: new Date().toISOString(),
+        };
+
+        // Salvez în localStorage
+        localStorage.setItem("pendingOrder", JSON.stringify(orderData));
+        console.log("🛒 Date salvate în localStorage:", orderData);
+
+        results.innerHTML = `
+                <div class="success">✅ Date simulate și salvate în localStorage</div>
+                <div class="info">📋 Order ID: ${orderId}</div>
+                <div class="info">👤 Customer: ${orderData.customerName} (${orderData.customerEmail})</div>
+                <div class="info">💰 Amount: ${orderData.totalAmount} RON</div>
+                <pre>${JSON.stringify(orderData, null, 2)}</pre>
+            `;
+
+        // Acum testez logica OrderConfirmation
+        setTimeout(() => {
+          testOrderConfirmationLogic(orderId, results);
+        }, 1000);
+      }
+
+      function testOrderConfirmationLogic(orderId, resultsDiv) {
+        console.log("🔍 Testing OrderConfirmation logic pentru:", orderId);
+
+        // Simulez exact logica din OrderConfirmation.tsx
+        let orderData = null;
+
+        // Pas 1: pendingOrders (plural)
+        const pendingOrdersStr = localStorage.getItem("pendingOrders");
+        if (pendingOrdersStr) {
+          try {
+            const pendingOrders = JSON.parse(pendingOrdersStr);
+            orderData = pendingOrders[orderId];
+            if (orderData) {
+              console.log("📦 Găsit în pendingOrders (plural):", orderData);
+            }
+          } catch (error) {
+            console.error("❌ Eroare pendingOrders:", error);
+          }
+        }
+
+        // Pas 2: pendingOrder (singular)
+        if (!orderData) {
+          const pendingOrderStr = localStorage.getItem("pendingOrder");
+          console.log(
+            "🔍 Checking pendingOrder localStorage:",
+            pendingOrderStr
+          );
+
+          if (pendingOrderStr) {
+            try {
+              const pendingOrder = JSON.parse(pendingOrderStr);
+              console.log("🔍 Parsed pendingOrder:", pendingOrder);
+              console.log(
+                "🔍 Comparing orderNumber:",
+                pendingOrder.orderNumber,
+                "vs orderId:",
+                orderId
+              );
+
+              if (pendingOrder.orderNumber === orderId) {
+                orderData = pendingOrder;
+                console.log("✅ MATCH! Comanda găsită în pendingOrder");
+
+                // Simulez ștergerea
+                localStorage.removeItem("pendingOrder");
+                console.log("🗑️ PendingOrder șters din localStorage");
+              } else {
+                console.log("❌ NO MATCH! OrderNumbers diferite:", {
+                  stored: pendingOrder.orderNumber,
+                  requested: orderId,
+                  matches: pendingOrder.orderNumber === orderId,
+                });
+              }
+            } catch (error) {
+              console.error("❌ Eroare parsare pendingOrder:", error);
+            }
+          } else {
+            console.log("⚠️ Nu există pendingOrder în localStorage");
+          }
+        }
+
+        if (orderData) {
+          console.log(
+            "🎉 SUCCESS! OrderConfirmation logic ar trebui să funcționeze!"
+          );
+          console.log(
+            "📧 Ar trebui să trimită email către:",
+            orderData.customerEmail
+          );
+
+          resultsDiv.innerHTML += `
+                    <div class="success">🎉 SUCCESS! Logic funcționează perfect!</div>
+                    <div class="info">📧 Email ar fi trimis către: ${orderData.customerEmail}</div>
+                `;
+
+          // Testez trimiterea email-ului
+          testEmailSending(orderData, resultsDiv);
+        } else {
+          console.log("💥 FAILED! Nu s-au găsit date pentru ordinul", orderId);
+          resultsDiv.innerHTML += `
+                    <div class="error">💥 FAILED! Logic nu funcționează - nu s-au găsit date</div>
+                `;
+        }
+      }
+
+      async function testEmailSending(orderData, resultsDiv) {
+        console.log("📧 Testing email sending...");
+
+        try {
+          const response = await fetch("/.netlify/functions/send-order-email", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              orderNumber: orderData.orderNumber,
+              customerEmail: orderData.customerEmail,
+              customerName: orderData.customerName,
+              totalAmount: orderData.totalAmount,
+              items: orderData.items,
+              shippingAddress: `${orderData.customerAddress}, ${orderData.customerCity}`,
+              paymentMethod: "Card bancar (NETOPIA Payments)",
+            }),
+          });
+
+          const result = await response.text();
+
+          if (response.ok) {
+            console.log("✅ Email trimis cu succes!");
+            resultsDiv.innerHTML += `
+                        <div class="success">✅ Email trimis cu succes!</div>
+                        <pre>${result}</pre>
+                    `;
+          } else {
+            console.error("❌ Eroare email:", response.status, result);
+            resultsDiv.innerHTML += `
+                        <div class="error">❌ Eroare email: ${response.status}</div>
+                        <pre>${result}</pre>
+                    `;
+          }
+        } catch (error) {
+          console.error("❌ Eroare API email:", error);
+          resultsDiv.innerHTML += `
+                    <div class="error">❌ Eroare API: ${error.message}</div>
+                `;
+        }
+      }
+
+      function testRouting() {
+        const results = document.getElementById("routingResults");
+
+        results.innerHTML = `
+                <div class="info">🛣️ Testing routing...</div>
+                <div class="info">📍 Current URL: ${window.location.href}</div>
+                <div class="info">🔄 Redirecting în 3 secunde...</div>
+            `;
+
+        setTimeout(() => {
+          window.location.href = "/order-confirmation?orderId=LC-1753819102638";
+        }, 3000);
+      }
+
+      // Auto-start logging
+      console.log(
+        "🚨 DIAGNOSTIC URGENT started pentru Order ID: LC-1753819102638"
+      );
+      addToConsole(
+        "🚨 DIAGNOSTIC URGENT started pentru Order ID: LC-1753819102638",
+        "log"
+      );
+    </script>
+  </body>
+</html>

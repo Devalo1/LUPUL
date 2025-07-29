@@ -1,0 +1,305 @@
+<!doctype html>
+<html lang="ro">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>🚨 Debug URGENT - Comanda LC-1753817638181</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        padding: 20px;
+        background: #f5f5f5;
+      }
+      .debug-panel {
+        background: white;
+        padding: 20px;
+        margin: 15px 0;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      }
+      .error {
+        background: #ffe6e6;
+        border-left: 4px solid #ff4444;
+      }
+      .success {
+        background: #e6ffe6;
+        border-left: 4px solid #44ff44;
+      }
+      .warning {
+        background: #fff3e6;
+        border-left: 4px solid #ff8844;
+      }
+      .info {
+        background: #e6f3ff;
+        border-left: 4px solid #4488ff;
+      }
+      pre {
+        background: #2d3748;
+        color: #e2e8f0;
+        padding: 15px;
+        border-radius: 4px;
+        overflow-x: auto;
+      }
+      button {
+        background: #007bff;
+        color: white;
+        border: none;
+        padding: 10px 20px;
+        margin: 8px;
+        border-radius: 4px;
+        cursor: pointer;
+      }
+      button:hover {
+        background: #0056b3;
+      }
+      .urgent {
+        border: 3px solid #ff4444;
+        background: #fff5f5;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="debug-panel urgent">
+      <h1>🚨 DEBUG URGENT - Comanda LC-1753817638181</h1>
+      <p>
+        <strong>PROBLEMA:</strong> Plata completă în NETOPIA, dar nu se afișează
+        success page și nu se trimite email!
+      </p>
+    </div>
+
+    <div class="debug-panel info">
+      <h2>📊 Status Terminal din Log</h2>
+      <pre>
+Request from ::1: GET /.netlify/functions/netopia-return?orderId=LC-1753817638181&orderId=LC-1753817638181
+🔙 NETOPIA Return Handler called
+Query params: { orderId: 'LC-1753817638181, LC-1753817638181' } Method: GET
+🔧 Fixed duplicate orderId, using: LC-1753817638181
+Redirecting to: /order-confirmation?orderId=LC-1753817638181
+Response with status 302 in 10 ms. Location: /order-confirmation?orderId=LC-1753817638181        
+⬥ Rewrote URL to /index.html?orderId=LC-1753817638181</pre
+      >
+      <p>
+        <strong>✅ NETOPIA Return funcționează corect</strong> - redirect către
+        OrderConfirmation cu orderId corect.
+      </p>
+    </div>
+
+    <div class="debug-panel">
+      <h2>🔍 Verificare localStorage pentru LC-1753817638181</h2>
+      <button onclick="checkLocalStorageForOrder()">
+        Verifică localStorage
+      </button>
+      <div id="localStorage-check"></div>
+    </div>
+
+    <div class="debug-panel">
+      <h2>🧪 Simulare Fix OrderConfirmation</h2>
+      <button onclick="simulateOrderConfirmationFix()">
+        Simulează Fix Logic
+      </button>
+      <div id="fix-simulation"></div>
+    </div>
+
+    <div class="debug-panel">
+      <h2>📧 Test Trimitere Email</h2>
+      <button onclick="testEmailSending()">Test Email cu Date Găsite</button>
+      <div id="email-test"></div>
+    </div>
+
+    <div class="debug-panel">
+      <h2>🔧 Debug Live OrderConfirmation</h2>
+      <button onclick="testLiveOrderConfirmation()">
+        Test Live pe /order-confirmation
+      </button>
+      <div id="live-test"></div>
+    </div>
+
+    <script>
+      const targetOrderId = "LC-1753817638181";
+
+      function checkLocalStorageForOrder() {
+        const result = document.getElementById("localStorage-check");
+
+        // Verifică toate formele de localStorage
+        const pendingOrder = localStorage.getItem("pendingOrder");
+        const pendingOrders = localStorage.getItem("pendingOrders");
+
+        let analysis = "🔍 ANALIZĂ LOCALSTORAGE:\n\n";
+
+        // Check pendingOrder (singular)
+        if (pendingOrder) {
+          try {
+            const orderData = JSON.parse(pendingOrder);
+            analysis += `✅ GĂSIT "pendingOrder" (singular):\n`;
+            analysis += `   Order Number: ${orderData.orderNumber || "N/A"}\n`;
+            analysis += `   Total: ${orderData.total || orderData.totalAmount || "N/A"}\n`;
+            analysis += `   Email: ${orderData.customerEmail || orderData.customerInfo?.email || "N/A"}\n`;
+            analysis += `   MATCH cu target orderId? ${orderData.orderNumber === targetOrderId ? "✅ DA" : "❌ NU"}\n\n`;
+          } catch (e) {
+            analysis += `❌ ERROR parsând pendingOrder: ${e.message}\n\n`;
+          }
+        } else {
+          analysis += `❌ NU EXISTĂ "pendingOrder" (singular)\n\n`;
+        }
+
+        // Check pendingOrders (plural)
+        if (pendingOrders) {
+          try {
+            const ordersData = JSON.parse(pendingOrders);
+            analysis += `✅ GĂSIT "pendingOrders" (plural):\n`;
+            if (Array.isArray(ordersData)) {
+              analysis += `   Format: Array cu ${ordersData.length} comenzi\n`;
+              ordersData.forEach((order, index) => {
+                analysis += `   [${index}] Order: ${order.orderNumber || "N/A"} (${order.total || "N/A"} RON)\n`;
+              });
+            } else if (typeof ordersData === "object") {
+              analysis += `   Format: Object cu chei: ${Object.keys(ordersData).join(", ")}\n`;
+              if (ordersData[targetOrderId]) {
+                analysis += `   ✅ GĂSIT target orderId în object!\n`;
+              } else {
+                analysis += `   ❌ Target orderId NU GĂSIT în object!\n`;
+              }
+            }
+            analysis += "\n";
+          } catch (e) {
+            analysis += `❌ ERROR parsând pendingOrders: ${e.message}\n\n`;
+          }
+        } else {
+          analysis += `❌ NU EXISTĂ "pendingOrders" (plural)\n\n`;
+        }
+
+        // Check toate cheile localStorage
+        analysis += `📋 TOATE CHEILE localStorage (${localStorage.length} total):\n`;
+        for (let i = 0; i < localStorage.length; i++) {
+          const key = localStorage.key(i);
+          const value = localStorage.getItem(key);
+          analysis += `   "${key}": ${value ? value.substring(0, 100) + "..." : "null"}\n`;
+        }
+
+        result.className =
+          "debug-panel " +
+          (pendingOrder || pendingOrders ? "warning" : "error");
+        result.innerHTML = `<pre>${analysis}</pre>`;
+      }
+
+      function simulateOrderConfirmationFix() {
+        const result = document.getElementById("fix-simulation");
+
+        // Simulez exact fix-ul din OrderConfirmation.tsx
+        let orderData = null;
+        let source = "";
+
+        // 1. Încearcă formatul nou (pendingOrders - plural)
+        const pendingOrdersStr = localStorage.getItem("pendingOrders");
+        if (pendingOrdersStr) {
+          try {
+            const pendingOrders = JSON.parse(pendingOrdersStr);
+            orderData = pendingOrders[targetOrderId];
+            if (orderData) {
+              source = "pendingOrders[orderId] (format nou)";
+            }
+          } catch (error) {
+            console.error("Error parsing pendingOrders:", error);
+          }
+        }
+
+        // 2. Dacă nu găsește, încearcă formatul vechi (pendingOrder - singular)
+        if (!orderData) {
+          const pendingOrderStr = localStorage.getItem("pendingOrder");
+          if (pendingOrderStr) {
+            try {
+              const pendingOrder = JSON.parse(pendingOrderStr);
+              if (pendingOrder.orderNumber === targetOrderId) {
+                orderData = pendingOrder;
+                source = "pendingOrder (format vechi)";
+              }
+            } catch (error) {
+              console.error("Error parsing pendingOrder:", error);
+            }
+          }
+        }
+
+        let analysis = `🧪 SIMULARE FIX LOGIC:\n\n`;
+        analysis += `Target OrderId: ${targetOrderId}\n\n`;
+
+        if (orderData) {
+          analysis += `✅ SUCCESS! Comanda GĂSITĂ!\n`;
+          analysis += `📍 Sursă: ${source}\n`;
+          analysis += `📋 Order Number: ${orderData.orderNumber}\n`;
+          analysis += `💰 Total: ${orderData.total || orderData.totalAmount} RON\n`;
+          analysis += `📧 Email: ${orderData.customerEmail || orderData.customerInfo?.email}\n`;
+          analysis += `👤 Client: ${orderData.firstName || orderData.customerInfo?.firstName} ${orderData.lastName || orderData.customerInfo?.lastName}\n`;
+          analysis += `🛍️ Items: ${orderData.items?.length || 0} produse\n\n`;
+          analysis += `🎯 REZULTAT: Fix-ul ar trebui să funcționeze!\n`;
+          analysis += `📧 Email-ul ar trebui să fie trimis!\n`;
+          analysis += `✅ Pagina de success ar trebui să se afișeze!\n`;
+
+          result.className = "debug-panel success";
+        } else {
+          analysis += `❌ FAIL! Comanda NU a fost găsită!\n\n`;
+          analysis += `🔍 Fix-ul a căutat în:\n`;
+          analysis += `   1. localStorage["pendingOrders"]["${targetOrderId}"] - ${pendingOrdersStr ? "EXISTS dar nu găsește orderId" : "NU EXISTĂ"}\n`;
+          analysis += `   2. localStorage["pendingOrder"] cu orderNumber === "${targetOrderId}" - ${localStorage.getItem("pendingOrder") ? "EXISTS dar nu match" : "NU EXISTĂ"}\n\n`;
+          analysis += `🚨 CAUZA: Datele comenzii nu sunt salvate în localStorage!\n`;
+          analysis += `💡 SOLUȚIE: Verifică cum salvează Checkout.tsx datele!\n`;
+
+          result.className = "debug-panel error";
+        }
+
+        result.innerHTML = `<pre>${analysis}</pre>`;
+
+        return orderData;
+      }
+
+      function testEmailSending() {
+        const orderData = simulateOrderConfirmationFix();
+        const result = document.getElementById("email-test");
+
+        if (orderData) {
+          // Simulez call-ul către send-order-email
+          const emailData = {
+            orderNumber: orderData.orderNumber,
+            customerEmail:
+              orderData.customerEmail || orderData.customerInfo?.email,
+            customerName: `${orderData.firstName || orderData.customerInfo?.firstName} ${orderData.lastName || orderData.customerInfo?.lastName}`,
+            totalAmount: orderData.total || orderData.totalAmount,
+            items: orderData.items,
+            shippingAddress:
+              orderData.shippingAddress ||
+              `${orderData.customerInfo?.address}, ${orderData.customerInfo?.city}`,
+            paymentMethod: "Card bancar (NETOPIA Payments)",
+          };
+
+          result.className = "debug-panel success";
+          result.innerHTML = `
+                    <h3>✅ Email ar putea fi trimis cu datele:</h3>
+                    <pre>${JSON.stringify(emailData, null, 2)}</pre>
+                    <p><strong>Endpoint:</strong> /.netlify/functions/send-order-email</p>
+                `;
+        } else {
+          result.className = "debug-panel error";
+          result.innerHTML = `
+                    <h3>❌ Email NU poate fi trimis!</h3>
+                    <p>Nu există date de comandă în localStorage pentru orderId: ${targetOrderId}</p>
+                `;
+        }
+      }
+
+      function testLiveOrderConfirmation() {
+        const result = document.getElementById("live-test");
+        result.innerHTML = `
+                <p>🔄 Deschid pagina live de OrderConfirmation...</p>
+                <p>✅ Verifică consola browser pentru log-uri din fix!</p>
+                <p><a href="/order-confirmation?orderId=${targetOrderId}" target="_blank">
+                    📱 Deschide OrderConfirmation Live
+                </a></p>
+            `;
+      }
+
+      // Auto-run pe load
+      window.onload = function () {
+        checkLocalStorageForOrder();
+      };
+    </script>
+  </body>
+</html>

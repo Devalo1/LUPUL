@@ -1,0 +1,249 @@
+<!doctype html>
+<html lang="ro">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Test Direct OrderConfirmation</title>
+    <style>
+      body {
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+        max-width: 800px;
+        margin: 0 auto;
+        padding: 20px;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: #333;
+        min-height: 100vh;
+      }
+      .container {
+        background: white;
+        border-radius: 10px;
+        padding: 30px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+      }
+      h1 {
+        color: #2c5282;
+        text-align: center;
+        margin-bottom: 30px;
+      }
+      .test-button {
+        background: linear-gradient(135deg, #4299e1, #3182ce);
+        color: white;
+        border: none;
+        padding: 12px 24px;
+        border-radius: 6px;
+        cursor: pointer;
+        font-size: 16px;
+        font-weight: 600;
+        transition: all 0.3s ease;
+        margin: 10px 5px;
+        width: 100%;
+        display: block;
+      }
+      .test-button:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(66, 153, 225, 0.4);
+      }
+      .status {
+        padding: 10px;
+        border-radius: 4px;
+        margin: 10px 0;
+        font-weight: 500;
+      }
+      .success {
+        background: #c6f6d5;
+        color: #22543d;
+        border: 1px solid #68d391;
+      }
+      .error {
+        background: #fed7d7;
+        color: #742a2a;
+        border: 1px solid #fc8181;
+      }
+      .info {
+        background: #bee3f8;
+        color: #2a4365;
+        border: 1px solid #63b3ed;
+      }
+      .step {
+        background: #edf2f7;
+        border-left: 4px solid #4299e1;
+        padding: 15px;
+        margin: 15px 0;
+      }
+      input {
+        width: 100%;
+        padding: 10px;
+        border: 1px solid #cbd5e0;
+        border-radius: 4px;
+        margin: 10px 0;
+        box-sizing: border-box;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h1>🔧 Test Direct OrderConfirmation</h1>
+
+      <div class="step">
+        <h3>📋 Adaugă Date de Test în localStorage</h3>
+        <p>
+          Pentru ca OrderConfirmation să funcționeze, trebuie să avem date în
+          localStorage.
+        </p>
+
+        <button class="test-button" onclick="addTestDataToLocalStorage()">
+          💾 Adaugă Date Test în localStorage
+        </button>
+
+        <div id="localStorageStatus"></div>
+      </div>
+
+      <div class="step">
+        <h3>🔗 Testează OrderConfirmation</h3>
+        <p>Deschide direct pagina OrderConfirmation cu un Order ID specific.</p>
+
+        <input
+          type="text"
+          id="orderIdInput"
+          placeholder="Order ID (ex: LC-1753819549454)"
+          value="LC-1753819549454"
+        />
+
+        <button class="test-button" onclick="openOrderConfirmation()">
+          📄 Deschide OrderConfirmation în Tab Nou
+        </button>
+
+        <button class="test-button" onclick="openOrderConfirmationSameTab()">
+          📄 Deschide OrderConfirmation în Același Tab
+        </button>
+      </div>
+
+      <div class="step">
+        <h3>🔍 Verifică localStorage</h3>
+        <p>Vezi ce date sunt stocate în localStorage.</p>
+
+        <button class="test-button" onclick="checkLocalStorage()">
+          🔍 Verifică localStorage
+        </button>
+
+        <div id="localStorageContent"></div>
+      </div>
+
+      <div class="step">
+        <h3>🌐 Test Direct pe Server Vite</h3>
+        <p>
+          Testează direct pe server-ul Vite (port 5173) pentru a evita proxy-ul
+          Netlify.
+        </p>
+
+        <button class="test-button" onclick="openViteServer()">
+          🚀 Deschide pe Server Vite (5173)
+        </button>
+      </div>
+
+      <div class="step">
+        <h3>🏠 Test Homepage</h3>
+        <p>Testează dacă homepage-ul se încarcă corect.</p>
+
+        <button class="test-button" onclick="openHomepage()">
+          🏠 Deschide Homepage
+        </button>
+      </div>
+    </div>
+
+    <script>
+      function addTestDataToLocalStorage() {
+          const statusDiv = document.getElementById('localStorageStatus');
+          const orderId = document.getElementById('orderIdInput').value || 'LC-1753819549454';
+
+          const testOrderData = {
+              orderId: orderId,
+              orderNumber: orderId,
+              amount: 55,
+              products: [{
+                  name: 'Produs Test',
+                  price: 55,
+                  quantity: 1
+              }],
+              customerEmail: 'dani_popa21@yahoo.ro',
+              customerName: 'Dani_popa21 Lupul',
+              customerPhone: '0775346243',
+              customerAddress: '9 MAI BLOC 2 A',
+              customerCity: 'PETROSANI',
+              customerCounty: 'HUNEDOARA',
+              postalCode: '800258',
+              paymentMethod: 'card',
+              totalAmount: 55,
+              createdAt: new Date().toISOString()
+          };
+
+          // Salvează în ambele formate pentru compatibilitate
+          localStorage.setItem('pendingOrder', JSON.stringify(testOrderData));
+          localStorage.setItem('pendingOrders', JSON.stringify(testOrderData));
+
+          statusDiv.innerHTML = `
+              <div class="success">✅ Date de test adăugate cu succes în localStorage!</div>
+              <div class="info">📋 Order ID: ${orderId}</div>
+              <div class="info">💰 Sumă: ${testOrderData.amount} RON</div>
+              <div class="info">📧 Email: ${testOrderData.customerEmail}</div>
+          `;
+      }
+
+      function openOrderConfirmation() {
+          const orderId = document.getElementById('orderIdInput').value || 'LC-1753819549454';
+          const url = \`http://localhost:8888/order-confirmation?orderId=\${orderId}\`;
+          window.open(url, '_blank');
+      }
+
+      function openOrderConfirmationSameTab() {
+          const orderId = document.getElementById('orderIdInput').value || 'LC-1753819549454';
+          const url = \`http://localhost:8888/order-confirmation?orderId=\${orderId}\`;
+          window.location.href = url;
+      }
+
+      function openViteServer() {
+          const orderId = document.getElementById('orderIdInput').value || 'LC-1753819549454';
+          const url = \`http://localhost:5173/order-confirmation?orderId=\${orderId}\`;
+          window.open(url, '_blank');
+      }
+
+      function openHomepage() {
+          const url = 'http://localhost:8888/';
+          window.open(url, '_blank');
+      }
+
+      function checkLocalStorage() {
+          const contentDiv = document.getElementById('localStorageContent');
+
+          const pendingOrder = localStorage.getItem('pendingOrder');
+          const pendingOrders = localStorage.getItem('pendingOrders');
+
+          const data = {
+              pendingOrder: pendingOrder ? JSON.parse(pendingOrder) : null,
+              pendingOrders: pendingOrders ? JSON.parse(pendingOrders) : null,
+              totalItems: localStorage.length,
+              allKeys: Object.keys(localStorage)
+          };
+
+          contentDiv.innerHTML = \`
+              <div class="info">
+                  <h4>📊 Conținut localStorage:</h4>
+                  <pre style="background: #f7fafc; padding: 10px; border-radius: 4px; overflow-x: auto; white-space: pre-wrap;">\${JSON.stringify(data, null, 2)}</pre>
+              </div>
+          \`;
+      }
+
+      // Auto-verifică localStorage la încărcare
+      document.addEventListener('DOMContentLoaded', function() {
+          checkLocalStorage();
+
+          // Setează Order ID din URL dacă există
+          const urlParams = new URLSearchParams(window.location.search);
+          const orderIdFromUrl = urlParams.get('orderId');
+          if (orderIdFromUrl) {
+              document.getElementById('orderIdInput').value = orderIdFromUrl;
+          }
+      });
+    </script>
+  </body>
+</html>

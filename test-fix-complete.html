@@ -1,0 +1,531 @@
+<!doctype html>
+<html lang="ro">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>🔧 Test COMPLET - Fix Email OrderConfirmation</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        max-width: 1400px;
+        margin: 0 auto;
+        padding: 20px;
+        background: #f5f5f5;
+      }
+      .container {
+        background: white;
+        padding: 20px;
+        border-radius: 8px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        margin-bottom: 20px;
+      }
+      .success {
+        color: #22c55e;
+        font-weight: bold;
+      }
+      .error {
+        color: #ef4444;
+        font-weight: bold;
+      }
+      .warning {
+        color: #f59e0b;
+        font-weight: bold;
+      }
+      .info {
+        color: #3b82f6;
+        font-weight: bold;
+      }
+      pre {
+        background: #f8f9fa;
+        padding: 15px;
+        border-radius: 5px;
+        overflow-x: auto;
+        border-left: 4px solid #3b82f6;
+        font-size: 12px;
+      }
+      button {
+        background: #3b82f6;
+        color: white;
+        padding: 12px 24px;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        margin: 5px;
+        font-size: 16px;
+      }
+      button:hover {
+        background: #2563eb;
+      }
+      .test-button {
+        background: #dc2626;
+        font-size: 18px;
+        padding: 15px 30px;
+        margin: 10px;
+      }
+      .test-button:hover {
+        background: #b91c1c;
+      }
+      .backup-button {
+        background: #f59e0b;
+      }
+      .backup-button:hover {
+        background: #d97706;
+      }
+      .grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 20px;
+      }
+      .full-width {
+        grid-column: 1 / -1;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>🔧 Test COMPLET - Fix Email OrderConfirmation</h1>
+    <p class="info">
+      Testează toate scenario-urile pentru problema cu emailurile de confirmare
+      după plata cu cardul
+    </p>
+
+    <div class="container full-width">
+      <h2>🚀 TESTE RAPIDE</h2>
+      <div style="display: flex; flex-wrap: wrap; gap: 10px">
+        <button class="test-button" onclick="testScenario1()">
+          ✅ Scenario 1: Date Normale
+        </button>
+        <button class="test-button backup-button" onclick="testScenario2()">
+          ⚠️ Scenario 2: LocalStorage Gol
+        </button>
+        <button class="test-button backup-button" onclick="testScenario3()">
+          🔄 Scenario 3: Doar SessionStorage
+        </button>
+        <button class="test-button" onclick="openRealOrderConfirmation()">
+          🌐 Test Real OrderConfirmation
+        </button>
+      </div>
+    </div>
+
+    <div class="grid">
+      <div class="container">
+        <h2>📊 Status Storage</h2>
+        <button onclick="checkAllStorage()">👀 Verifică Storage</button>
+        <button onclick="clearAllStorage()">🧹 Curăță Tot</button>
+        <div id="storageStatus"></div>
+      </div>
+
+      <div class="container">
+        <h2>🔧 Acțiuni Manuale</h2>
+        <button onclick="setupNormalData()">📦 Pregătește Date Normale</button>
+        <button onclick="setupBackupData()">💾 Pregătește Doar Backup</button>
+        <button onclick="setupNoData()">❌ Șterge Toate Datele</button>
+      </div>
+    </div>
+
+    <div class="container full-width">
+      <h2>📋 Rezultate Teste</h2>
+      <div id="results">
+        <p class="info">Rezultatele testelor vor apărea aici...</p>
+      </div>
+    </div>
+
+    <script>
+      const orderId = "LC-1753821925911";
+      const results = document.getElementById("results");
+      const storageStatus = document.getElementById("storageStatus");
+
+      function log(message, type = "info") {
+        const className = type;
+        const timestamp = new Date().toLocaleTimeString();
+        results.innerHTML += `<div class="${className}">[${timestamp}] ${message}</div>`;
+        console.log(`[${timestamp}] ${message}`);
+      }
+
+      function logStorage(message, type = "info") {
+        const className = type;
+        const timestamp = new Date().toLocaleTimeString();
+        storageStatus.innerHTML += `<div class="${className}">[${timestamp}] ${message}</div>`;
+      }
+
+      function clearAllStorage() {
+        localStorage.clear();
+        sessionStorage.clear();
+        storageStatus.innerHTML = "";
+        logStorage("🧹 Toate storage-urile au fost curățate", "success");
+        checkAllStorage();
+      }
+
+      function checkAllStorage() {
+        storageStatus.innerHTML = "";
+        logStorage("📋 Status storage complet:", "info");
+
+        // localStorage
+        logStorage(`📦 localStorage (${localStorage.length} items):`, "info");
+        if (localStorage.length === 0) {
+          logStorage("   ❌ Gol", "warning");
+        } else {
+          for (let i = 0; i < localStorage.length; i++) {
+            const key = localStorage.key(i);
+            const value = localStorage.getItem(key);
+            logStorage(
+              `   📋 "${key}": ${value ? value.substring(0, 100) + "..." : "null"}`,
+              "info"
+            );
+          }
+        }
+
+        // sessionStorage
+        logStorage(
+          `💾 sessionStorage (${sessionStorage.length} items):`,
+          "info"
+        );
+        if (sessionStorage.length === 0) {
+          logStorage("   ❌ Gol", "warning");
+        } else {
+          for (let i = 0; i < sessionStorage.length; i++) {
+            const key = sessionStorage.key(i);
+            const value = sessionStorage.getItem(key);
+            logStorage(
+              `   📋 "${key}": ${value ? value.substring(0, 100) + "..." : "null"}`,
+              "info"
+            );
+          }
+        }
+      }
+
+      function setupNormalData() {
+        const testCurrentOrder = {
+          orderId: orderId,
+          amount: "50.00",
+          description: "Emblemă Digitală Lupul și Corbul",
+          customerInfo: {
+            firstName: "Test",
+            lastName: "Client",
+            email: "test@example.com",
+            phone: "0700123456",
+            address: "Strada Test 123",
+            city: "București",
+            county: "București",
+            postalCode: "123456",
+          },
+        };
+
+        localStorage.setItem("currentOrder", JSON.stringify(testCurrentOrder));
+        sessionStorage.setItem(
+          "currentOrderBackup",
+          JSON.stringify({
+            ...testCurrentOrder,
+            timestamp: new Date().toISOString(),
+            source: "Manual setup",
+          })
+        );
+
+        logStorage(
+          "📦 Date normale salvate în localStorage și sessionStorage",
+          "success"
+        );
+        checkAllStorage();
+      }
+
+      function setupBackupData() {
+        // Șterge localStorage dar păstrează sessionStorage
+        localStorage.removeItem("currentOrder");
+
+        const backupData = {
+          orderId: orderId,
+          amount: "50.00",
+          description: "Emblemă Digitală Lupul și Corbul",
+          customerInfo: {
+            firstName: "Test",
+            lastName: "Backup",
+            email: "backup@example.com",
+            phone: "0700999888",
+            address: "Strada Backup 456",
+            city: "Cluj",
+            county: "Cluj",
+            postalCode: "654321",
+          },
+          timestamp: new Date().toISOString(),
+          source: "Backup manual",
+        };
+
+        sessionStorage.setItem(
+          "currentOrderBackup",
+          JSON.stringify(backupData)
+        );
+
+        logStorage("💾 Date backup salvate doar în sessionStorage", "warning");
+        checkAllStorage();
+      }
+
+      function setupNoData() {
+        localStorage.removeItem("currentOrder");
+        sessionStorage.removeItem("currentOrderBackup");
+
+        logStorage("❌ Toate datele comandă au fost șterse", "error");
+        checkAllStorage();
+      }
+
+      async function testScenario1() {
+        log(
+          "✅ TESTEZ SCENARIO 1: Date Normale (localStorage + sessionStorage)",
+          "success"
+        );
+        log("=" + "=".repeat(60), "info");
+
+        // Pregătește datele
+        setupNormalData();
+        await new Promise((r) => setTimeout(r, 500));
+
+        // Testează email
+        await testEmailWithCurrentData("Scenario 1 - Date Normale");
+
+        log("✅ Scenario 1 finalizat", "success");
+      }
+
+      async function testScenario2() {
+        log(
+          "⚠️ TESTEZ SCENARIO 2: LocalStorage Gol (doar sessionStorage)",
+          "warning"
+        );
+        log("=" + "=".repeat(60), "info");
+
+        // Pregătește backup
+        setupBackupData();
+        await new Promise((r) => setTimeout(r, 500));
+
+        // Testează email cu backup
+        await testEmailWithCurrentData(
+          "Scenario 2 - Backup din sessionStorage"
+        );
+
+        log("⚠️ Scenario 2 finalizat", "warning");
+      }
+
+      async function testScenario3() {
+        log(
+          "🔄 TESTEZ SCENARIO 3: Fără Date (test backup notification)",
+          "error"
+        );
+        log("=" + "=".repeat(60), "info");
+
+        // Șterge toate datele
+        setupNoData();
+        await new Promise((r) => setTimeout(r, 500));
+
+        // Testează emailul de backup
+        await testBackupNotification();
+
+        log("🔄 Scenario 3 finalizat", "error");
+      }
+
+      async function testEmailWithCurrentData(scenarioName) {
+        try {
+          // Simulează logica OrderConfirmation
+          let orderData = null;
+
+          // Încearcă localStorage mai întâi
+          const currentOrderStr = localStorage.getItem("currentOrder");
+          if (currentOrderStr) {
+            const currentOrder = JSON.parse(currentOrderStr);
+            if (currentOrder.orderId === orderId) {
+              orderData = {
+                orderNumber: currentOrder.orderId,
+                customerEmail: currentOrder.customerInfo?.email,
+                customerName:
+                  currentOrder.customerInfo?.firstName +
+                  " " +
+                  currentOrder.customerInfo?.lastName,
+                customerPhone: currentOrder.customerInfo?.phone,
+                customerAddress: currentOrder.customerInfo?.address,
+                customerCity: currentOrder.customerInfo?.city,
+                customerCounty: currentOrder.customerInfo?.county,
+                totalAmount: currentOrder.amount,
+                items: [],
+                paymentMethod: "card",
+                date: new Date().toISOString(),
+              };
+              log(`✅ ${scenarioName}: Date găsite în localStorage`, "success");
+            }
+          }
+
+          // Dacă nu, încearcă sessionStorage
+          if (!orderData) {
+            const sessionBackupStr =
+              sessionStorage.getItem("currentOrderBackup");
+            if (sessionBackupStr) {
+              const sessionBackup = JSON.parse(sessionBackupStr);
+              if (sessionBackup.orderId === orderId) {
+                orderData = {
+                  orderNumber: sessionBackup.orderId,
+                  customerEmail: sessionBackup.customerInfo?.email,
+                  customerName:
+                    sessionBackup.customerInfo?.firstName +
+                    " " +
+                    sessionBackup.customerInfo?.lastName,
+                  customerPhone: sessionBackup.customerInfo?.phone,
+                  customerAddress: sessionBackup.customerInfo?.address,
+                  customerCity: sessionBackup.customerInfo?.city,
+                  customerCounty: sessionBackup.customerInfo?.county,
+                  totalAmount: sessionBackup.amount,
+                  items: [],
+                  paymentMethod: "card",
+                  date: new Date().toISOString(),
+                };
+                log(
+                  `✅ ${scenarioName}: Date găsite în sessionStorage backup`,
+                  "success"
+                );
+              }
+            }
+          }
+
+          if (orderData && orderData.customerEmail) {
+            // Pregătește payload pentru email
+            const emailPayload = {
+              orderData: {
+                email: orderData.customerEmail,
+                customerName: orderData.customerName,
+                firstName: orderData.customerName?.split(" ")[0] || "Client",
+                lastName:
+                  orderData.customerName?.split(" ").slice(1).join(" ") || "",
+                phone: orderData.customerPhone,
+                address: orderData.customerAddress,
+                city: orderData.customerCity,
+                county: orderData.customerCounty,
+                totalAmount: orderData.totalAmount,
+                items: orderData.items || [],
+                paymentMethod: "Card bancar (NETOPIA Payments)",
+                date: orderData.date,
+              },
+              orderNumber: orderData.orderNumber,
+              totalAmount: orderData.totalAmount,
+            };
+
+            log(
+              `📧 ${scenarioName}: Trimit email către ${emailPayload.orderData.email}`,
+              "info"
+            );
+
+            // Test real către send-order-email
+            const response = await fetch(
+              "http://localhost:8888/.netlify/functions/send-order-email",
+              {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(emailPayload),
+              }
+            );
+
+            const data = await response.json();
+
+            if (data.success) {
+              log(`🎉 ${scenarioName}: Email trimis cu succes!`, "success");
+              if (data.simulated) {
+                log(`⚠️ Email simulat (dezvoltare)`, "warning");
+              } else {
+                log(
+                  `📧 Email real trimis - Customer: ${data.customerEmailId}`,
+                  "info"
+                );
+                log(
+                  `📧 Email real trimis - Admin: ${data.adminEmailId}`,
+                  "info"
+                );
+              }
+            } else {
+              log(`❌ ${scenarioName}: Eroare email - ${data.error}`, "error");
+            }
+          } else {
+            log(
+              `❌ ${scenarioName}: Nu am găsit date sau email lipsă`,
+              "error"
+            );
+          }
+        } catch (error) {
+          log(`💥 ${scenarioName}: Eroare - ${error.message}`, "error");
+        }
+      }
+
+      async function testBackupNotification() {
+        try {
+          log("📧 Testez notificarea de backup către admin...", "info");
+
+          const adminNotificationPayload = {
+            orderData: {
+              email: "lupulsicorbul@gmail.com",
+              customerName: "ADMIN NOTIFICATION - Date pierdute",
+              firstName: "ADMIN",
+              lastName: "NOTIFICATION",
+              phone: "N/A",
+              address: "N/A",
+              city: "N/A",
+              county: "N/A",
+              totalAmount: "NECUNOSCUT",
+              items: [
+                {
+                  name: "⚠️ ATENȚIE: Comandă cu date pierdute",
+                  price: 0,
+                  quantity: 1,
+                  description: `Order ID: ${orderId} - Nu s-au găsit datele în localStorage. Verifică manual în NETOPIA!`,
+                },
+              ],
+              paymentMethod: "Card bancar (NETOPIA Payments) - DATE PIERDUTE",
+              date: new Date().toISOString(),
+              isBackupNotification: true, // Flag pentru backend
+            },
+            orderNumber: `⚠️ ${orderId} - DATE PIERDUTE`,
+            totalAmount: "NECUNOSCUT",
+          };
+
+          const response = await fetch(
+            "http://localhost:8888/.netlify/functions/send-order-email",
+            {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify(adminNotificationPayload),
+            }
+          );
+
+          const data = await response.json();
+
+          if (data.success) {
+            log(
+              "🎉 Notificare backup trimisă cu succes către admin!",
+              "success"
+            );
+            if (data.backupMode) {
+              log("✅ Modul backup activat corect", "success");
+            }
+            log(`📧 Admin email ID: ${data.adminEmailId}`, "info");
+          } else {
+            log(`❌ Eroare notificare backup: ${data.error}`, "error");
+          }
+        } catch (error) {
+          log(`💥 Eroare testare backup: ${error.message}`, "error");
+        }
+      }
+
+      function openRealOrderConfirmation() {
+        // Pregătește datele pentru test real
+        setupNormalData();
+
+        const url = `http://localhost:8888/order-confirmation?orderId=${orderId}`;
+        log(`🌐 Deschid OrderConfirmation real: ${url}`, "info");
+        log(
+          "👀 Verifică consola din noul tab pentru debugging complet",
+          "info"
+        );
+
+        window.open(url, "_blank");
+      }
+
+      // Inițializare
+      window.onload = function () {
+        log("🔧 Pagină de test fix încărcată", "success");
+        log(`📋 Testez pentru Order ID: ${orderId}`, "info");
+        checkAllStorage();
+      };
+    </script>
+  </body>
+</html>

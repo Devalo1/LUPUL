@@ -1,0 +1,217 @@
+<!doctype html>
+<html lang="ro">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Test Email Duplicate Fix</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        max-width: 800px;
+        margin: 0 auto;
+        padding: 20px;
+        background: #f5f5f5;
+      }
+      .test-container {
+        background: white;
+        padding: 20px;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        margin-bottom: 20px;
+      }
+      button {
+        background: #007bff;
+        color: white;
+        border: none;
+        padding: 10px 20px;
+        border-radius: 5px;
+        cursor: pointer;
+        margin: 5px;
+      }
+      button:hover {
+        background: #0056b3;
+      }
+      .results {
+        background: #f8f9fa;
+        padding: 15px;
+        border-radius: 5px;
+        margin-top: 10px;
+        white-space: pre-wrap;
+        font-family: monospace;
+        font-size: 12px;
+        max-height: 400px;
+        overflow-y: auto;
+      }
+      .success {
+        color: #28a745;
+      }
+      .warning {
+        color: #ffc107;
+      }
+      .error {
+        color: #dc3545;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="test-container">
+      <h1>🧪 Test Email Duplicate Fix</h1>
+      <p>
+        Acest test va simula o comandă cu plată cu cardul și va verifica dacă se
+        trimite doar un email în loc de 3.
+      </p>
+
+      <button onclick="setupTestOrder()">1. 📋 Setup Date Test Comandă</button>
+      <button onclick="simulateOrderConfirmation()">
+        2. 🔄 Simulează OrderConfirmation
+      </button>
+      <button onclick="checkServerLogs()">3. 📊 Verifică Log-uri Server</button>
+      <button onclick="clearStorage()">4. 🧹 Curăță Storage</button>
+
+      <div id="results" class="results"></div>
+    </div>
+
+    <script>
+      let testOrderId = "LC-TEST-" + Date.now();
+
+      function log(message, type = "info") {
+        const results = document.getElementById("results");
+        const timestamp = new Date().toLocaleTimeString();
+        const colors = {
+          info: "#000",
+          success: "#28a745",
+          warning: "#ffc107",
+          error: "#dc3545",
+        };
+
+        results.innerHTML += `<span style="color: ${colors[type]}">[${timestamp}] ${message}</span>\n`;
+        results.scrollTop = results.scrollHeight;
+      }
+
+      function setupTestOrder() {
+        log("🚀 Setup-ing date test pentru CommandID: " + testOrderId, "info");
+
+        // Simulează date reale în sessionStorage (cele mai importante)
+        const realOrderData = {
+          orderId: testOrderId,
+          customerInfo: {
+            firstName: "Test",
+            lastName: "User",
+            email: "test@example.com",
+            phone: "0700000000",
+            address: "Strada Test 123",
+            city: "București",
+            county: "București",
+          },
+          amount: 299.99,
+          description: "Test Emblem Digital",
+          timestamp: new Date().toISOString(),
+        };
+
+        sessionStorage.setItem(
+          "currentOrderBackup",
+          JSON.stringify(realOrderData)
+        );
+        log("✅ Date reale salvate în sessionStorage", "success");
+
+        // Adaugă și în localStorage pentru backup
+        const pendingOrders = {};
+        pendingOrders[testOrderId] = {
+          orderNumber: testOrderId,
+          customerName: "Test User",
+          customerEmail: "test@example.com",
+          customerPhone: "0700000000",
+          customerAddress: "Strada Test 123",
+          customerCity: "București",
+          customerCounty: "București",
+          totalAmount: 299.99,
+          paymentMethod: "Card bancar (NETOPIA Payments)",
+          date: new Date().toISOString(),
+          items: [{ name: "Test Emblem Digital", price: 299.99, quantity: 1 }],
+          isRealUserData: true,
+        };
+
+        localStorage.setItem("pendingOrders", JSON.stringify(pendingOrders));
+        log("✅ Date backup salvate în localStorage", "success");
+        log("📋 Test setup complet pentru: " + testOrderId, "success");
+      }
+
+      async function simulateOrderConfirmation() {
+        log(
+          "🔄 Simulez accesarea OrderConfirmation cu date duplicate...",
+          "info"
+        );
+
+        // Deschide OrderConfirmation cu parametrii testului
+        const orderConfirmationUrl = `http://localhost:8888/order-confirmation?orderId=${testOrderId}&status=paid`;
+
+        log("🌍 Deschid OrderConfirmation: " + orderConfirmationUrl, "info");
+
+        // Deschide în fereastră nouă pentru a putea urmări
+        const newWindow = window.open(
+          orderConfirmationUrl,
+          "_blank",
+          "width=800,height=600"
+        );
+
+        if (newWindow) {
+          log("✅ OrderConfirmation deschis în fereastră nouă", "success");
+          log(
+            "👀 Urmăriți consola din fereastra nouă pentru log-uri",
+            "warning"
+          );
+          log("📧 Verificați dacă se trimite doar UN email, nu 3", "warning");
+        } else {
+          log(
+            "❌ Nu s-a putut deschide fereastra nouă (popup blocker?)",
+            "error"
+          );
+        }
+      }
+
+      async function checkServerLogs() {
+        log(
+          "📊 Verific log-urile serverului pentru trimiteri duplicate...",
+          "info"
+        );
+
+        try {
+          // Simulated - în practică serverul va afișa log-urile în terminal
+          log("📋 Pentru a vedea log-urile reale:", "info");
+          log("1. Verificați terminalul unde rulează `npm run dev`", "warning");
+          log("2. Căutați log-uri pentru: " + testOrderId, "warning");
+          log("3. Verificați dacă apare doar UN email trimis", "warning");
+          log(
+            '4. Căutați mesaje: "⚠️ Email deja trimis sau în curs de trimitere"',
+            "success"
+          );
+        } catch (error) {
+          log("❌ Eroare la verificarea log-urilor: " + error.message, "error");
+        }
+      }
+
+      function clearStorage() {
+        sessionStorage.clear();
+        localStorage.clear();
+        document.getElementById("results").innerHTML = "";
+        log("🧹 Storage curățat și rezultate resetate", "success");
+      }
+
+      // Auto-setup la încărcare
+      window.onload = function () {
+        log("🧪 Test Email Duplicate Fix inițializat", "success");
+        log("📝 Instrucțiuni:", "info");
+        log(
+          '1. Apăsați "Setup Date Test Comandă" pentru a pregăti datele',
+          "info"
+        );
+        log('2. Apăsați "Simulează OrderConfirmation" pentru a testa', "info");
+        log(
+          "3. Urmăriți log-urile în terminal și consola browser-ului",
+          "info"
+        );
+        log("4. Verificați că se trimite doar UN email, nu 3", "warning");
+      };
+    </script>
+  </body>
+</html>

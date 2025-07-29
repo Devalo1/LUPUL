@@ -1,0 +1,229 @@
+<!doctype html>
+<html lang="ro">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>🧪 Test Complete OrderConfirmation cu Date Reale</title>
+    <style>
+      body {
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+        padding: 20px;
+      }
+      .container {
+        background: #f8f9fa;
+        padding: 20px;
+        margin: 10px 0;
+        border-radius: 10px;
+      }
+      .success {
+        background: #d4edda;
+        color: #155724;
+      }
+      .error {
+        background: #f8d7da;
+        color: #721c24;
+      }
+      .btn {
+        background: #007bff;
+        color: white;
+        padding: 10px 20px;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        margin: 5px;
+      }
+      .btn:hover {
+        background: #0056b3;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>🧪 Test Complete OrderConfirmation cu Date Reale</h1>
+
+    <div class="container">
+      <h3>🎯 Obiectiv</h3>
+      <p>
+        Testează dacă OrderConfirmation recuperează și afișează corect datele
+        REALE ale clientului.
+      </p>
+    </div>
+
+    <div class="container">
+      <h3>1️⃣ Pregătire Date Reale</h3>
+      <button class="btn" onclick="setupRealUserData()">
+        💾 Salvează Date Client Real
+      </button>
+      <div id="setupResult"></div>
+    </div>
+
+    <div class="container">
+      <h3>2️⃣ Test OrderConfirmation</h3>
+      <button class="btn" onclick="openOrderConfirmation()">
+        🚀 Deschide OrderConfirmation
+      </button>
+      <div id="confirmationResult"></div>
+    </div>
+
+    <div class="container">
+      <h3>3️⃣ Verificare Rezultat</h3>
+      <button class="btn" onclick="checkResult()">🔍 Verifică Rezultat</button>
+      <div id="checkResult"></div>
+    </div>
+
+    <script>
+      let testOrderId = "LC-REAL-TEST-" + Date.now();
+
+      function setupRealUserData() {
+        console.log("💾 Setup Real User Data...");
+
+        // Date REALE client - cum ar veni din formularul de plată
+        const realClientData = {
+          orderId: testOrderId,
+          amount: "299.99",
+          description: "Emblem Premium Gold Package",
+          customerInfo: {
+            firstName: "Diana",
+            lastName: "Marinescu",
+            email: "diana.marinescu@yahoo.com", // EMAIL REAL, nu test
+            phone: "0734567891",
+            address: "Strada Victoriei 123",
+            city: "Brașov",
+            county: "Brașov",
+          },
+          timestamp: new Date().toISOString(),
+          source: "PaymentPage",
+        };
+
+        // Șterge localStorage pentru a forța recovery din sessionStorage
+        localStorage.removeItem("currentOrder");
+        localStorage.removeItem("pendingOrder");
+        localStorage.removeItem("pendingOrders");
+
+        // Salvează în sessionStorage (ca PaymentPage)
+        sessionStorage.setItem(
+          "currentOrderBackup",
+          JSON.stringify(realClientData)
+        );
+
+        console.log("✅ Date client real salvate în sessionStorage");
+        console.log("📋 OrderID:", testOrderId);
+        console.log(
+          "👤 Client:",
+          realClientData.customerInfo.firstName,
+          realClientData.customerInfo.lastName
+        );
+        console.log("📧 Email REAL:", realClientData.customerInfo.email);
+
+        document.getElementById("setupResult").innerHTML = `
+        <div class="success">
+            ✅ DATE CLIENT REAL SALVATE!<br>
+            📋 OrderID: ${testOrderId}<br>
+            👤 Nume: ${realClientData.customerInfo.firstName} ${realClientData.customerInfo.lastName}<br>
+            📧 Email: ${realClientData.customerInfo.email}<br>
+            📱 Telefon: ${realClientData.customerInfo.phone}<br>
+            🏠 Adresă: ${realClientData.customerInfo.address}, ${realClientData.customerInfo.city}<br>
+            💰 Sumă: ${realClientData.amount} RON<br><br>
+            💾 Salvat în: sessionStorage.currentOrderBackup<br>
+            ❌ localStorage: ȘTERS (pentru recovery test)
+        </div>
+    `;
+      }
+
+      function openOrderConfirmation() {
+        console.log("🚀 Opening OrderConfirmation...");
+
+        const orderConfirmationUrl = `/order-confirmation?orderId=${testOrderId}`;
+
+        document.getElementById("confirmationResult").innerHTML = `
+        <div class="success">
+            🚀 DESCHIDERE ORDERCONFIRMATION:<br><br>
+            📋 URL: <strong>${orderConfirmationUrl}</strong><br>
+            🆔 OrderID: ${testOrderId}<br><br>
+            
+            🎯 OrderConfirmation va trebui să:<br>
+            ✅ Recupereze datele din sessionStorage<br>
+            ✅ Afișeze informațiile REALE ale clientului<br>
+            ✅ Trimită emailul la adresa REALĂ a clientului<br><br>
+            
+            <a href="${orderConfirmationUrl}" target="_blank" style="background: #28a745; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px;">
+                🔗 Deschide OrderConfirmation cu date reale
+            </a>
+        </div>
+    `;
+
+        // Auto-deschide după 2 secunde
+        setTimeout(() => {
+          window.open(orderConfirmationUrl, "_blank");
+        }, 2000);
+      }
+
+      function checkResult() {
+        console.log("🔍 Checking result...");
+
+        // Verifică dacă datele încă sunt în sessionStorage
+        const sessionBackup = sessionStorage.getItem("currentOrderBackup");
+
+        let resultHtml = "<h4>📊 REZULTATE VERIFICARE:</h4>";
+
+        if (sessionBackup) {
+          const data = JSON.parse(sessionBackup);
+          resultHtml += `
+            <div class="success">
+                ✅ SessionStorage încă conține datele:<br>
+                👤 Nume: ${data.customerInfo.firstName} ${data.customerInfo.lastName}<br>
+                📧 Email: ${data.customerInfo.email}<br>
+                🆔 OrderID: ${data.orderId}
+            </div>
+        `;
+
+          // Verifică dacă emailul este real
+          const isRealEmail =
+            !data.customerInfo.email.includes("example.com") &&
+            !data.customerInfo.email.includes("@test.com") &&
+            data.customerInfo.email !== "client.recuperat@example.com";
+
+          if (isRealEmail) {
+            resultHtml += `
+                <div class="success">
+                    🎉 EMAIL REAL DETECTAT!<br>
+                    📧 ${data.customerInfo.email} este un email REAL<br>
+                    ✅ Clientul va primi emailul de confirmare!
+                </div>
+            `;
+          } else {
+            resultHtml += `
+                <div class="error">
+                    ⚠️ Email pare să fie de test<br>
+                    📧 ${data.customerInfo.email}
+                </div>
+            `;
+          }
+        } else {
+          resultHtml += `
+            <div class="error">
+                ❌ SessionStorage nu mai conține datele!<br>
+                Možda OrderConfirmation le-a procesat și șters.
+            </div>
+        `;
+        }
+
+        document.getElementById("checkResult").innerHTML = resultHtml;
+      }
+
+      // Auto-setup la încărcare
+      window.onload = function () {
+        console.log("🧪 Test OrderConfirmation Real Data loaded");
+
+        setTimeout(() => {
+          document.getElementById("setupResult").innerHTML = `
+            <div style="background: #e2e3e5; padding: 15px; border-radius: 5px;">
+                🎯 PASUL 1: Apasă "Salvează Date Client Real" pentru a pregăti datele<br>
+                🎯 PASUL 2: Apasă "Deschide OrderConfirmation" pentru a testa recovery<br>
+                🎯 PASUL 3: Verifică că se afișează datele REALE ale clientului
+            </div>
+        `;
+        }, 500);
+      };
+    </script>
+  </body>
+</html>

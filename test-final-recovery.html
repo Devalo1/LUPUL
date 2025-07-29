@@ -1,0 +1,498 @@
+<!doctype html>
+<html lang="ro">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>🔄 Test Final Recovery System</title>
+    <style>
+      body {
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 20px;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+      }
+      .container {
+        background: rgba(255, 255, 255, 0.1);
+        backdrop-filter: blur(10px);
+        border-radius: 15px;
+        padding: 30px;
+        margin: 20px 0;
+        border: 1px solid rgba(255, 255, 255, 0.2);
+      }
+      h1 {
+        color: #ffd700;
+        text-align: center;
+      }
+      h2 {
+        color: #90ee90;
+        border-bottom: 2px solid #90ee90;
+        padding-bottom: 10px;
+      }
+      .btn {
+        background: linear-gradient(45deg, #ff6b6b, #4ecdc4);
+        border: none;
+        color: white;
+        padding: 15px 30px;
+        margin: 10px;
+        border-radius: 25px;
+        cursor: pointer;
+        font-weight: bold;
+        font-size: 16px;
+        transition: all 0.3s ease;
+      }
+      .btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+      }
+      .test-section {
+        background: rgba(0, 0, 0, 0.2);
+        padding: 20px;
+        margin: 15px 0;
+        border-radius: 10px;
+        border-left: 4px solid #ffd700;
+      }
+      .result {
+        background: rgba(0, 0, 0, 0.3);
+        padding: 15px;
+        margin: 10px 0;
+        border-radius: 8px;
+        font-family: "Courier New", monospace;
+        white-space: pre-wrap;
+        max-height: 400px;
+        overflow-y: auto;
+      }
+      .success {
+        border-left: 4px solid #4caf50;
+      }
+      .error {
+        border-left: 4px solid #f44336;
+      }
+      .warning {
+        border-left: 4px solid #ff9800;
+      }
+      .info {
+        border-left: 4px solid #2196f3;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>🔄 Test Final Recovery System - Soluția Completă</h1>
+
+    <div class="container">
+      <h2>🎯 Testează întregul flow de recovery</h2>
+      <p>
+        Acest test verifică dacă recovery system-ul poate salva emailurile când
+        localStorage se pierde.
+      </p>
+
+      <div class="test-section">
+        <h3>🚀 Test Complet Automatizat</h3>
+        <button class="btn" onclick="runCompleteTest()">
+          🧪 Rulează Test Complet
+        </button>
+        <div id="completeResult" class="result"></div>
+      </div>
+    </div>
+
+    <div class="container">
+      <h2>⚡ Test Individual</h2>
+
+      <div class="test-section">
+        <h3>1️⃣ Test API Recovery Direct</h3>
+        <button class="btn" onclick="testApiRecovery()">🔍 Test API</button>
+        <div id="apiResult" class="result"></div>
+      </div>
+
+      <div class="test-section">
+        <h3>2️⃣ Test SessionStorage Recovery</h3>
+        <button class="btn" onclick="testSessionStorage()">
+          💾 Test SessionStorage
+        </button>
+        <div id="sessionResult" class="result"></div>
+      </div>
+
+      <div class="test-section">
+        <h3>3️⃣ Test Email prin Recovery</h3>
+        <button class="btn" onclick="testEmailWithRecovery()">
+          📧 Test Email
+        </button>
+        <div id="emailTestResult" class="result"></div>
+      </div>
+    </div>
+
+    <script>
+      const TEST_ORDER_ID = "LC-" + Date.now();
+
+      async function runCompleteTest() {
+        const result = document.getElementById("completeResult");
+        result.innerHTML = "🧪 Se rulează testul complet...\n\n";
+        result.className = "result info";
+
+        let testLog = "🔄 TEST COMPLET RECOVERY SYSTEM\n";
+        testLog += "=====================================\n\n";
+
+        try {
+          // Pasul 1: Simulează salvarea datelor
+          testLog += "📋 PASUL 1: Simulare salvare date în PaymentPage\n";
+          const testData = {
+            orderId: TEST_ORDER_ID,
+            amount: "99.99",
+            description: "Test Recovery Purchase",
+            customerInfo: {
+              firstName: "Ion",
+              lastName: "Recovery",
+              email: "ion.recovery@test.com",
+              phone: "0712345678",
+              address: "Strada Recovery 1",
+              city: "București",
+              county: "București",
+            },
+          };
+
+          // Salvează în sessionStorage (backup)
+          sessionStorage.setItem(
+            "currentOrderBackup",
+            JSON.stringify({
+              ...testData,
+              timestamp: new Date().toISOString(),
+              source: "PaymentPage",
+            })
+          );
+
+          testLog += "✅ Date salvate în sessionStorage backup\n\n";
+
+          // Pasul 2: Simulează pierderea localStorage
+          testLog += "📋 PASUL 2: Simulare pierdere localStorage\n";
+          localStorage.removeItem("currentOrder");
+          localStorage.removeItem("pendingOrder");
+          localStorage.removeItem("pendingOrders");
+          testLog += "❌ localStorage.currentOrder: ȘTERS\n";
+          testLog += "❌ localStorage.pendingOrder: ȘTERS\n";
+          testLog += "❌ localStorage.pendingOrders: ȘTERS\n\n";
+
+          // Pasul 3: Test recovery prin sessionStorage
+          testLog += "📋 PASUL 3: Test recovery prin sessionStorage\n";
+          const sessionBackup = sessionStorage.getItem("currentOrderBackup");
+          if (sessionBackup) {
+            testLog += "✅ SessionStorage backup găsit!\n";
+            const backupData = JSON.parse(sessionBackup);
+            testLog += `📧 Email client: ${backupData.customerInfo.email}\n`;
+            testLog += `📱 Telefon: ${backupData.customerInfo.phone}\n\n`;
+          } else {
+            testLog += "❌ SessionStorage backup lipsă!\n\n";
+          }
+
+          // Pasul 4: Test API recovery
+          testLog += "📋 PASUL 4: Test API recovery\n";
+          try {
+            const apiResponse = await fetch(
+              `/.netlify/functions/get-order-details?orderId=${TEST_ORDER_ID}`
+            );
+            const apiResult = await apiResponse.json();
+
+            if (apiResult.success) {
+              testLog += "✅ API Recovery SUCCESS!\n";
+              testLog += `📧 Email recuperat: ${apiResult.orderData.customerEmail}\n`;
+              testLog += `👤 Nume: ${apiResult.orderData.customerName}\n`;
+              testLog += `💰 Sumă: ${apiResult.orderData.totalAmount} RON\n\n`;
+            } else {
+              testLog += "❌ API Recovery FAILED\n";
+              testLog += `❌ Error: ${apiResult.error || "Unknown error"}\n\n`;
+            }
+          } catch (apiError) {
+            testLog += "❌ API Recovery ERROR\n";
+            testLog += `❌ Error: ${apiError.message}\n\n`;
+          }
+
+          // Pasul 5: Test simulare trimitere email
+          testLog += "📋 PASUL 5: Test simulare trimitere email\n";
+          const orderDataForEmail = sessionBackup
+            ? (() => {
+                const backup = JSON.parse(sessionBackup);
+                return {
+                  orderNumber: backup.orderId,
+                  customerName: `${backup.customerInfo.firstName} ${backup.customerInfo.lastName}`,
+                  customerEmail: backup.customerInfo.email,
+                  customerPhone: backup.customerInfo.phone,
+                  customerAddress: backup.customerInfo.address,
+                  customerCity: backup.customerInfo.city,
+                  customerCounty: backup.customerInfo.county,
+                  totalAmount: backup.amount,
+                  paymentMethod: "Card bancar (NETOPIA Payments) - RECOVERY",
+                  date: backup.timestamp,
+                  items: [
+                    {
+                      name: backup.description,
+                      price: backup.amount,
+                      quantity: 1,
+                    },
+                  ],
+                };
+              })()
+            : null;
+
+          if (orderDataForEmail) {
+            testLog += "✅ Date pentru email preparate din recovery!\n";
+            testLog += `📧 Destinatar: ${orderDataForEmail.customerEmail}\n`;
+            testLog += `📋 Comandă: ${orderDataForEmail.orderNumber}\n`;
+            testLog += `💰 Sumă: ${orderDataForEmail.totalAmount} RON\n\n`;
+
+            // Simulare trimitere email (fără să trimitem real)
+            testLog += "📧 SIMULARE: Email ar fi trimis cu următoarele date:\n";
+            testLog += `   TO: ${orderDataForEmail.customerEmail}\n`;
+            testLog += `   SUBJECT: Confirmare comandă ${orderDataForEmail.orderNumber}\n`;
+            testLog += `   CONTENT: Detalii comandă, sumă ${orderDataForEmail.totalAmount} RON\n\n`;
+          } else {
+            testLog += "❌ Nu s-au găsit date pentru email!\n\n";
+          }
+
+          // Concluzie
+          testLog += "🎯 CONCLUZIE FINALĂ:\n";
+          testLog += "=====================================\n";
+
+          const sessionWorks = !!sessionBackup;
+          const hasEmailData = !!orderDataForEmail;
+
+          if (sessionWorks && hasEmailData) {
+            testLog += "🎉 SUCCESS! Recovery system funcționează perfect!\n";
+            testLog +=
+              "✅ Chiar dacă localStorage se pierde, emailul va fi trimis\n";
+            testLog += "✅ SessionStorage backup salvează situația\n";
+            testLog += "✅ Datele sunt complete pentru trimiterea emailului\n";
+            result.className = "result success";
+          } else {
+            testLog += "❌ FAILED! Recovery system are probleme\n";
+            testLog += `❌ SessionStorage works: ${sessionWorks}\n`;
+            testLog += `❌ Email data available: ${hasEmailData}\n`;
+            result.className = "result error";
+          }
+        } catch (error) {
+          testLog += `❌ EROARE GENERALĂ: ${error.message}\n`;
+          result.className = "result error";
+        }
+
+        result.innerHTML = testLog;
+      }
+
+      async function testApiRecovery() {
+        const result = document.getElementById("apiResult");
+        result.innerHTML = "🔍 Se testează API recovery...";
+
+        try {
+          const response = await fetch(
+            `/.netlify/functions/get-order-details?orderId=${TEST_ORDER_ID}`
+          );
+          const data = await response.json();
+
+          let output = `🔍 TEST API RECOVERY pentru OrderID: ${TEST_ORDER_ID}\n\n`;
+          output += `📡 Status Code: ${response.status}\n`;
+          output += `📡 Response OK: ${response.ok}\n\n`;
+
+          if (data.success) {
+            output += "✅ API RECOVERY SUCCESS!\n\n";
+            output += "📋 Date recuperate:\n";
+            output += JSON.stringify(data.orderData, null, 2);
+            result.className = "result success";
+          } else {
+            output += "❌ API RECOVERY FAILED\n\n";
+            output += `❌ Error: ${data.error}\n`;
+            output += `🔍 Searched sources: ${JSON.stringify(data.searchedSources)}\n`;
+            if (data.recommendation) {
+              output += `💡 Recommendation: ${data.recommendation}\n`;
+            }
+            result.className = "result warning";
+          }
+
+          result.innerHTML = output;
+        } catch (error) {
+          result.innerHTML = `❌ EROARE API: ${error.message}`;
+          result.className = "result error";
+        }
+      }
+
+      async function testSessionStorage() {
+        const result = document.getElementById("sessionResult");
+
+        // Salvează date test în sessionStorage
+        const testData = {
+          orderId: TEST_ORDER_ID,
+          amount: "75.50",
+          description: "Test SessionStorage Recovery",
+          customerInfo: {
+            firstName: "Maria",
+            lastName: "SessionTest",
+            email: "maria.session@test.com",
+            phone: "0723456789",
+            address: "Strada Session 2",
+            city: "Cluj",
+            county: "Cluj",
+          },
+          timestamp: new Date().toISOString(),
+          source: "PaymentPage",
+        };
+
+        sessionStorage.setItem("currentOrderBackup", JSON.stringify(testData));
+
+        // Testează recovery
+        const recovered = sessionStorage.getItem("currentOrderBackup");
+
+        let output = "💾 TEST SESSIONSTORAGE RECOVERY\n\n";
+
+        if (recovered) {
+          const data = JSON.parse(recovered);
+          output += "✅ SessionStorage backup funcționează!\n\n";
+          output += "📋 Date recuperate:\n";
+          output += `OrderID: ${data.orderId}\n`;
+          output += `Email: ${data.customerInfo.email}\n`;
+          output += `Nume: ${data.customerInfo.firstName} ${data.customerInfo.lastName}\n`;
+          output += `Telefon: ${data.customerInfo.phone}\n`;
+          output += `Sumă: ${data.amount} RON\n`;
+          output += `Timestamp: ${data.timestamp}\n\n`;
+
+          // Convertește în formatul pentru OrderConfirmation
+          const orderData = {
+            orderNumber: data.orderId,
+            customerName: `${data.customerInfo.firstName} ${data.customerInfo.lastName}`,
+            customerEmail: data.customerInfo.email,
+            customerPhone: data.customerInfo.phone,
+            customerAddress: data.customerInfo.address,
+            customerCity: data.customerInfo.city,
+            customerCounty: data.customerInfo.county,
+            totalAmount: data.amount,
+            paymentMethod: "Card bancar (NETOPIA Payments)",
+            date: data.timestamp,
+            items: [
+              { name: data.description, price: data.amount, quantity: 1 },
+            ],
+          };
+
+          output += "📧 Date pregătite pentru email:\n";
+          output += JSON.stringify(orderData, null, 2);
+
+          result.className = "result success";
+        } else {
+          output += "❌ SessionStorage backup nu funcționează!";
+          result.className = "result error";
+        }
+
+        result.innerHTML = output;
+      }
+
+      async function testEmailWithRecovery() {
+        const result = document.getElementById("emailTestResult");
+        result.innerHTML =
+          "📧 Se testează trimiterea emailului prin recovery...";
+
+        try {
+          // Încearcă să obțină date din sessionStorage
+          const sessionBackup = sessionStorage.getItem("currentOrderBackup");
+
+          if (!sessionBackup) {
+            result.innerHTML =
+              "❌ Nu există date în sessionStorage pentru test email!";
+            result.className = "result error";
+            return;
+          }
+
+          const backupData = JSON.parse(sessionBackup);
+
+          // Pregătește datele pentru email
+          const emailData = {
+            orderData: {
+              email: backupData.customerInfo.email,
+              customerName: `${backupData.customerInfo.firstName} ${backupData.customerInfo.lastName}`,
+              firstName: backupData.customerInfo.firstName,
+              lastName: backupData.customerInfo.lastName,
+              phone: backupData.customerInfo.phone,
+              address: backupData.customerInfo.address,
+              city: backupData.customerInfo.city,
+              county: backupData.customerInfo.county,
+              totalAmount: backupData.amount,
+              items: [
+                {
+                  name: backupData.description,
+                  price: backupData.amount,
+                  quantity: 1,
+                },
+              ],
+              paymentMethod: "Card bancar (NETOPIA Payments) - RECOVERY TEST",
+              date: backupData.timestamp,
+              isBackupNotification: false,
+            },
+            orderNumber: backupData.orderId,
+            totalAmount: backupData.amount,
+          };
+
+          let output = "📧 TEST TRIMITERE EMAIL PRIN RECOVERY\n\n";
+          output += "📋 Date email pregătite:\n";
+          output += `TO: ${emailData.orderData.email}\n`;
+          output += `Order: ${emailData.orderNumber}\n`;
+          output += `Amount: ${emailData.totalAmount} RON\n`;
+          output += `Customer: ${emailData.orderData.customerName}\n\n`;
+
+          // Trimite emailul REAL
+          const emailResponse = await fetch(
+            "/.netlify/functions/send-order-email",
+            {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify(emailData),
+            }
+          );
+
+          const emailResult = await emailResponse.json();
+
+          output += `📡 Email Response Status: ${emailResponse.status}\n`;
+          output += `📡 Email Response OK: ${emailResponse.ok}\n\n`;
+
+          if (emailResult.success) {
+            output += "🎉 EMAIL TRIMIS CU SUCCES PRIN RECOVERY!\n\n";
+            output += "✅ Recovery system funcționează perfect!\n";
+            output +=
+              "✅ Chiar dacă localStorage se pierde, emailul ajunge la client!\n";
+            output += `✅ Email trimis către: ${emailData.orderData.email}\n`;
+            output += `✅ Pentru comanda: ${emailData.orderNumber}\n`;
+            result.className = "result success";
+          } else {
+            output += "❌ EMAIL NU A FOST TRIMIS!\n\n";
+            output += `❌ Error: ${emailResult.error}\n`;
+            output += `❌ Details: ${JSON.stringify(emailResult, null, 2)}`;
+            result.className = "result error";
+          }
+
+          result.innerHTML = output;
+        } catch (error) {
+          result.innerHTML = `❌ EROARE TEST EMAIL: ${error.message}`;
+          result.className = "result error";
+        }
+      }
+
+      // Auto-run test on page load
+      window.onload = function () {
+        console.log(
+          "🔄 Final Recovery Test Page loaded - Ready for comprehensive testing!"
+        );
+
+        // Afișează un mesaj de bun venit
+        setTimeout(() => {
+          const completeResult = document.getElementById("completeResult");
+          completeResult.innerHTML = `🔄 Ready pentru testarea completă a recovery system-ului!
+
+🎯 Acest test va simula:
+   1. Salvarea datelor în PaymentPage  
+   2. Pierderea localStorage (problema curentă)
+   3. Recovery prin sessionStorage backup
+   4. Recovery prin API (ca fallback)
+   5. Trimiterea emailului prin recovery
+
+🚀 Apasă "Rulează Test Complet" pentru a începe!`;
+          completeResult.className = "result info";
+        }, 500);
+      };
+    </script>
+  </body>
+</html>

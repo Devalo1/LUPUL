@@ -1,0 +1,248 @@
+<!doctype html>
+<html>
+  <head>
+    <title>Debug NETOPIA Flow</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        margin: 20px;
+      }
+      .test {
+        margin: 10px 0;
+        padding: 10px;
+        border: 1px solid #ccc;
+      }
+      button {
+        padding: 8px 16px;
+        margin: 5px;
+      }
+      .success {
+        background: #d4edda;
+      }
+      .error {
+        background: #f8d7da;
+      }
+      pre {
+        background: #f8f9fa;
+        padding: 10px;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>🐺 Debug NETOPIA Flow</h1>
+
+    <div class="test">
+      <h3>1. Test Return Handler Direct</h3>
+      <button onclick="testReturnHandler()">Test Return Handler</button>
+      <div id="result1"></div>
+    </div>
+
+    <div class="test">
+      <h3>2. Test OrderConfirmation Page</h3>
+      <button onclick="testOrderConfirmation()">Open Order Confirmation</button>
+      <button onclick="testWithLocalStorage()">Test cu localStorage</button>
+      <div id="result2"></div>
+    </div>
+
+    <div class="test">
+      <h3>3. Test Email Direct</h3>
+      <button onclick="testEmailDirect()">Test Email Direct</button>
+      <div id="result3"></div>
+    </div>
+
+    <div class="test">
+      <h3>4. Test Complete Flow</h3>
+      <button onclick="testCompleteFlow()">Test Flow Complet</button>
+      <div id="result4"></div>
+    </div>
+
+    <div class="test">
+      <h3>📊 Debug Console</h3>
+      <button onclick="clearDebug()">Curăță</button>
+      <pre id="debug-console"></pre>
+    </div>
+
+    <script>
+      let debugOutput = [];
+
+      function log(message) {
+        debugOutput.push(new Date().toLocaleTimeString() + ": " + message);
+        document.getElementById("debug-console").textContent = debugOutput
+          .slice(-10)
+          .join("\n");
+        console.log(message);
+      }
+
+      function showResult(elementId, message, type = "success") {
+        const element = document.getElementById(elementId);
+        element.innerHTML = message;
+        element.className = type === "error" ? "error" : "success";
+      }
+
+      async function testReturnHandler() {
+        log("🔄 Testing return handler...");
+        const orderId = "LC-DEBUG-" + Date.now();
+
+        try {
+          const response = await fetch(
+            `/.netlify/functions/netopia-return?orderId=${orderId}&status=success`,
+            {
+              method: "GET",
+              redirect: "manual",
+            }
+          );
+
+          log(`✅ Return handler response: ${response.status}`);
+          const location = response.headers.get("Location");
+          log(`📍 Redirect location: ${location}`);
+
+          showResult(
+            "result1",
+            `Status: ${response.status}<br>Location: ${location}`,
+            "success"
+          );
+        } catch (error) {
+          log(`❌ Return handler error: ${error.message}`);
+          showResult("result1", `Error: ${error.message}`, "error");
+        }
+      }
+
+      function testOrderConfirmation() {
+        const orderId = "LC-DEBUG-" + Date.now();
+        const url = `/order-confirmation?orderId=${orderId}&status=success`;
+        log(`🔗 Opening: ${url}`);
+        window.open(url, "_blank");
+        showResult("result2", `Opened: ${url}`, "success");
+      }
+
+      function testWithLocalStorage() {
+        const orderId = "LC-DEBUG-" + Date.now();
+
+        // Create test data
+        const orderData = {
+          orderNumber: orderId,
+          customerEmail: "test@example.com",
+          firstName: "Test",
+          lastName: "User",
+          totalAmount: 50,
+          items: [{ name: "Test Product", price: 50, quantity: 1 }],
+          shippingAddress: "Test Address 123",
+        };
+
+        const pendingOrders = JSON.parse(
+          localStorage.getItem("pendingOrders") || "{}"
+        );
+        pendingOrders[orderId] = orderData;
+        localStorage.setItem("pendingOrders", JSON.stringify(pendingOrders));
+
+        log(`📦 Created localStorage data for: ${orderId}`);
+
+        const url = `/order-confirmation?orderId=${orderId}&status=success`;
+        window.open(url, "_blank");
+        showResult("result2", `Opened with localStorage: ${url}`, "success");
+      }
+
+      async function testEmailDirect() {
+        log("📧 Testing email direct...");
+        const orderId = "LC-EMAIL-TEST-" + Date.now();
+
+        try {
+          const response = await fetch("/.netlify/functions/send-order-email", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              orderNumber: orderId,
+              customerEmail: "dani_popa21@yahoo.ro",
+              customerName: "Dani Test",
+              totalAmount: 35,
+              items: [{ name: "Test Product", price: 35, quantity: 1 }],
+              shippingAddress: "Test Address",
+              paymentMethod: "Card bancar (NETOPIA Payments)",
+            }),
+          });
+
+          const result = await response.json();
+          log(`✅ Email response: ${JSON.stringify(result)}`);
+
+          if (response.ok) {
+            showResult("result3", `✅ Email sent successfully!`, "success");
+          } else {
+            showResult("result3", `❌ Email failed: ${result.error}`, "error");
+          }
+        } catch (error) {
+          log(`❌ Email error: ${error.message}`);
+          showResult("result3", `Error: ${error.message}`, "error");
+        }
+      }
+
+      async function testCompleteFlow() {
+        log("🚀 Starting complete flow test...");
+        const orderId = "LC-COMPLETE-" + Date.now();
+
+        try {
+          // Step 1: Create localStorage data
+          const orderData = {
+            orderNumber: orderId,
+            customerEmail: "dani_popa21@yahoo.ro",
+            firstName: "Dani",
+            lastName: "Test",
+            totalAmount: 35,
+            items: [{ name: "Dulceață de afine", price: 20, quantity: 1 }],
+            shippingAddress: "51 Strada 24 IANUARIE, Municipiul Galaţi, Argeș",
+          };
+
+          const pendingOrders = JSON.parse(
+            localStorage.getItem("pendingOrders") || "{}"
+          );
+          pendingOrders[orderId] = orderData;
+          localStorage.setItem("pendingOrders", JSON.stringify(pendingOrders));
+          log(`✅ Step 1: Created localStorage data`);
+
+          // Step 2: Test return handler
+          const returnResponse = await fetch(
+            `/.netlify/functions/netopia-return?orderId=${orderId}&status=success`,
+            {
+              method: "GET",
+              redirect: "manual",
+            }
+          );
+
+          if (returnResponse.status !== 302) {
+            throw new Error(`Return handler failed: ${returnResponse.status}`);
+          }
+          log(`✅ Step 2: Return handler working`);
+
+          // Step 3: Open confirmation page
+          const confirmationUrl = `/order-confirmation?orderId=${orderId}&status=success`;
+          window.open(confirmationUrl, "_blank");
+          log(`✅ Step 3: Opened confirmation page`);
+
+          showResult(
+            "result4",
+            "🎉 Complete flow test started! Check opened tab.",
+            "success"
+          );
+        } catch (error) {
+          log(`❌ Complete flow error: ${error.message}`);
+          showResult("result4", `Error: ${error.message}`, "error");
+        }
+      }
+
+      function clearDebug() {
+        debugOutput = [];
+        document.getElementById("debug-console").textContent = "";
+      }
+
+      // Auto-load debug info
+      window.addEventListener("load", () => {
+        log("🔍 Debug page loaded");
+        log(`📍 Current URL: ${window.location.href}`);
+        log(
+          `📦 localStorage pendingOrders: ${localStorage.getItem("pendingOrders") || "empty"}`
+        );
+      });
+    </script>
+  </body>
+</html>

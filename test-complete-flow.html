@@ -1,0 +1,490 @@
+<!doctype html>
+<html lang="ro">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Test Flux Complet NETOPIA</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        margin: 20px;
+        background: #f5f5f5;
+      }
+      .container {
+        max-width: 800px;
+        margin: 0 auto;
+        background: white;
+        padding: 20px;
+        border-radius: 8px;
+      }
+      .test-section {
+        margin: 20px 0;
+        padding: 15px;
+        border: 1px solid #ddd;
+        border-radius: 5px;
+      }
+      .success {
+        background: #d4edda;
+        border-color: #c3e6cb;
+        color: #155724;
+      }
+      .info {
+        background: #d1ecf1;
+        border-color: #bee5eb;
+        color: #0c5460;
+      }
+      .warning {
+        background: #fff3cd;
+        border-color: #ffeaa7;
+        color: #856404;
+      }
+      button {
+        padding: 10px 20px;
+        background: #007bff;
+        color: white;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        margin: 5px;
+      }
+      button:hover {
+        background: #0056b3;
+      }
+      .test-result {
+        margin: 10px 0;
+        padding: 8px;
+        border-radius: 4px;
+        font-size: 14px;
+      }
+      input,
+      select {
+        padding: 8px;
+        margin: 5px;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+      }
+      pre {
+        background: #f8f9fa;
+        padding: 10px;
+        border-radius: 4px;
+        overflow-x: auto;
+        font-size: 12px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h1>🧪 Test Flux Complet NETOPIA Payments</h1>
+
+      <div class="test-section info">
+        <h3>📋 Configurare Test</h3>
+        <div>
+          <label
+            >Order ID:
+            <input type="text" id="orderIdInput" value="LC-TEST-COMPLETE"
+          /></label>
+          <label
+            >Suma:
+            <input type="number" id="amountInput" value="25" min="1" max="1000"
+          /></label>
+          <label
+            >Email:
+            <input type="email" id="emailInput" value="test@example.com"
+          /></label>
+        </div>
+      </div>
+
+      <div class="test-section">
+        <h3>🚀 1. Testare Inițiere Plată NETOPIA</h3>
+        <button onclick="testInitiatePayment()">Inițiază Plată Test</button>
+        <div id="initiate-result" class="test-result"></div>
+      </div>
+
+      <div class="test-section">
+        <h3>🔄 2. Testare Return Handler</h3>
+        <button onclick="testReturnHandler()">Test Return cu Success</button>
+        <button onclick="testReturnHandlerDuplicate()">
+          Test Return cu Duplicate OrderId
+        </button>
+        <div id="return-result" class="test-result"></div>
+      </div>
+
+      <div class="test-section">
+        <h3>📧 3. Testare Email Confirmation</h3>
+        <button onclick="testEmailSending()">Test Trimitere Email</button>
+        <div id="email-result" class="test-result"></div>
+      </div>
+
+      <div class="test-section">
+        <h3>📱 4. Testare OrderConfirmation Page</h3>
+        <button onclick="testOrderConfirmationPage()">
+          Deschide Order Confirmation
+        </button>
+        <button onclick="testOrderConfirmationWithLocalStorage()">
+          Test cu Date în localStorage
+        </button>
+        <div id="confirmation-result" class="test-result"></div>
+      </div>
+
+      <div class="test-section warning">
+        <h3>⚡ 5. Test Flux Complet (End-to-End)</h3>
+        <p>
+          Acest test va simula întregul flux: checkout → NETOPIA → return →
+          email confirmation
+        </p>
+        <button onclick="testCompleteFlow()">Rulează Test Complet</button>
+        <div id="complete-result" class="test-result"></div>
+      </div>
+
+      <div class="test-section">
+        <h3>📊 Rezultate Console</h3>
+        <button onclick="clearConsole()">Curăță Console</button>
+        <pre id="console-output"></pre>
+      </div>
+    </div>
+
+    <script>
+      let consoleOutput = [];
+
+      // Override console.log pentru a afișa în pagină
+      const originalLog = console.log;
+      console.log = function (...args) {
+        consoleOutput.push(args.join(" "));
+        document.getElementById("console-output").textContent = consoleOutput
+          .slice(-10)
+          .join("\n");
+        originalLog.apply(console, args);
+      };
+
+      function showResult(elementId, message, type = "info") {
+        const element = document.getElementById(elementId);
+        element.textContent = message;
+        element.className = `test-result ${type}`;
+      }
+
+      async function testInitiatePayment() {
+        const orderId = document.getElementById("orderIdInput").value;
+        const amount = parseInt(document.getElementById("amountInput").value);
+        const email = document.getElementById("emailInput").value;
+
+        console.log(
+          `🚀 Testing payment initiation: ${orderId}, ${amount} RON, ${email}`
+        );
+
+        try {
+          const response = await fetch("/.netlify/functions/netopia-v2-api", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              orderId: orderId,
+              amount: amount,
+              currency: "RON",
+              live: false,
+              hasCustomerInfo: true,
+              customerEmail: email,
+              // Test data
+              firstName: "John",
+              lastName: "Doe",
+              phone: "+40123456789",
+              city: "Bucharest",
+              state: "Bucuresti",
+              postalCode: "010101",
+              address: "Test Address 123",
+            }),
+          });
+
+          const result = await response.json();
+          console.log("✅ Payment initiation response:", result);
+
+          if (result.success && result.paymentUrl) {
+            showResult(
+              "initiate-result",
+              `✅ Success! Payment URL: ${result.paymentUrl}`,
+              "success"
+            );
+          } else {
+            showResult(
+              "initiate-result",
+              `❌ Failed: ${result.error || "Unknown error"}`,
+              "warning"
+            );
+          }
+        } catch (error) {
+          console.error("❌ Payment initiation error:", error);
+          showResult(
+            "initiate-result",
+            `❌ Error: ${error.message}`,
+            "warning"
+          );
+        }
+      }
+
+      async function testReturnHandler() {
+        const orderId = document.getElementById("orderIdInput").value;
+        console.log(`🔄 Testing return handler: ${orderId}`);
+
+        try {
+          const response = await fetch(
+            `/.netlify/functions/netopia-return?orderId=${orderId}&status=success`,
+            {
+              method: "GET",
+              redirect: "manual",
+            }
+          );
+
+          console.log(
+            "✅ Return handler response:",
+            response.status,
+            response.headers.get("Location")
+          );
+          const location = response.headers.get("Location");
+
+          if (response.status === 302 && location) {
+            showResult(
+              "return-result",
+              `✅ Redirect successful: ${location}`,
+              "success"
+            );
+          } else {
+            showResult(
+              "return-result",
+              `❌ Unexpected response: ${response.status}`,
+              "warning"
+            );
+          }
+        } catch (error) {
+          console.error("❌ Return handler error:", error);
+          showResult("return-result", `❌ Error: ${error.message}`, "warning");
+        }
+      }
+
+      async function testReturnHandlerDuplicate() {
+        const orderId = document.getElementById("orderIdInput").value;
+        console.log(
+          `🔄 Testing return handler with duplicate orderIds: ${orderId}`
+        );
+
+        try {
+          // Simulate duplicate orderId parameter
+          const response = await fetch(
+            `/.netlify/functions/netopia-return?orderId=${orderId}&orderId=${orderId}&status=success`,
+            {
+              method: "GET",
+              redirect: "manual",
+            }
+          );
+
+          console.log(
+            "✅ Duplicate return handler response:",
+            response.status,
+            response.headers.get("Location")
+          );
+          const location = response.headers.get("Location");
+
+          if (
+            response.status === 302 &&
+            location &&
+            !location.includes("%2C")
+          ) {
+            showResult(
+              "return-result",
+              `✅ Duplicate handling successful: ${location}`,
+              "success"
+            );
+          } else {
+            showResult(
+              "return-result",
+              `❌ Duplicate not handled properly: ${location}`,
+              "warning"
+            );
+          }
+        } catch (error) {
+          console.error("❌ Duplicate return handler error:", error);
+          showResult("return-result", `❌ Error: ${error.message}`, "warning");
+        }
+      }
+
+      async function testEmailSending() {
+        const orderId = document.getElementById("orderIdInput").value;
+        const amount = parseInt(document.getElementById("amountInput").value);
+        const email = document.getElementById("emailInput").value;
+
+        console.log(`📧 Testing email sending: ${orderId}`);
+
+        try {
+          const response = await fetch("/.netlify/functions/send-order-email", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              orderNumber: orderId,
+              customerEmail: email,
+              customerName: "John Doe",
+              totalAmount: amount,
+              items: [{ name: "Test Product", price: amount, quantity: 1 }],
+              shippingAddress: "Test Address 123, Bucharest",
+              paymentMethod: "Card bancar (NETOPIA Payments)",
+            }),
+          });
+
+          const result = await response.json();
+          console.log("✅ Email sending response:", result);
+
+          if (response.ok && result.success) {
+            showResult(
+              "email-result",
+              `✅ Email sent successfully!`,
+              "success"
+            );
+          } else {
+            showResult(
+              "email-result",
+              `❌ Email failed: ${result.error || "Unknown error"}`,
+              "warning"
+            );
+          }
+        } catch (error) {
+          console.error("❌ Email sending error:", error);
+          showResult("email-result", `❌ Error: ${error.message}`, "warning");
+        }
+      }
+
+      function testOrderConfirmationPage() {
+        const orderId = document.getElementById("orderIdInput").value;
+        const url = `/order-confirmation?orderId=${orderId}&status=success`;
+        console.log(`📱 Opening order confirmation page: ${url}`);
+        window.open(url, "_blank");
+        showResult(
+          "confirmation-result",
+          `✅ Opened confirmation page: ${url}`,
+          "info"
+        );
+      }
+
+      function testOrderConfirmationWithLocalStorage() {
+        const orderId = document.getElementById("orderIdInput").value;
+        const amount = parseInt(document.getElementById("amountInput").value);
+        const email = document.getElementById("emailInput").value;
+
+        // Create test order data in localStorage
+        const orderData = {
+          orderNumber: orderId,
+          customerEmail: email,
+          firstName: "John",
+          lastName: "Doe",
+          totalAmount: amount,
+          items: [{ name: "Test Product", price: amount, quantity: 1 }],
+          shippingAddress: "Test Address 123, Bucharest",
+        };
+
+        const pendingOrders = JSON.parse(
+          localStorage.getItem("pendingOrders") || "{}"
+        );
+        pendingOrders[orderId] = orderData;
+        localStorage.setItem("pendingOrders", JSON.stringify(pendingOrders));
+
+        console.log(`📱 Created localStorage data for: ${orderId}`, orderData);
+
+        const url = `/order-confirmation?orderId=${orderId}&status=success`;
+        window.open(url, "_blank");
+        showResult(
+          "confirmation-result",
+          `✅ Opened confirmation with localStorage data: ${url}`,
+          "success"
+        );
+      }
+
+      async function testCompleteFlow() {
+        console.log("⚡ Starting complete end-to-end test...");
+        showResult(
+          "complete-result",
+          "🔄 Running complete flow test...",
+          "info"
+        );
+
+        const orderId = `LC-E2E-${Date.now()}`;
+        const amount = 99;
+        const email = "test-complete@example.com";
+
+        try {
+          // Step 1: Create order data in localStorage (simulate checkout)
+          const orderData = {
+            orderNumber: orderId,
+            customerEmail: email,
+            firstName: "John",
+            lastName: "Doe",
+            totalAmount: amount,
+            items: [{ name: "Test Product E2E", price: amount, quantity: 1 }],
+            shippingAddress: "Complete Test Address 123, Bucharest",
+          };
+
+          const pendingOrders = JSON.parse(
+            localStorage.getItem("pendingOrders") || "{}"
+          );
+          pendingOrders[orderId] = orderData;
+          localStorage.setItem("pendingOrders", JSON.stringify(pendingOrders));
+          console.log("✅ Step 1: Created order data in localStorage");
+
+          // Step 2: Test return handler
+          const returnResponse = await fetch(
+            `/.netlify/functions/netopia-return?orderId=${orderId}&status=success`,
+            {
+              method: "GET",
+              redirect: "manual",
+            }
+          );
+
+          if (returnResponse.status !== 302) {
+            throw new Error(`Return handler failed: ${returnResponse.status}`);
+          }
+          console.log("✅ Step 2: Return handler working");
+
+          // Step 3: Test email sending
+          const emailResponse = await fetch(
+            "/.netlify/functions/send-order-email",
+            {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                orderNumber: orderId,
+                customerEmail: email,
+                customerName: "John Doe",
+                totalAmount: amount,
+                items: orderData.items,
+                shippingAddress: orderData.shippingAddress,
+                paymentMethod: "Card bancar (NETOPIA Payments)",
+              }),
+            }
+          );
+
+          if (!emailResponse.ok) {
+            throw new Error(`Email sending failed: ${emailResponse.status}`);
+          }
+          console.log("✅ Step 3: Email sending working");
+
+          // Step 4: Open confirmation page
+          const confirmationUrl = `/order-confirmation?orderId=${orderId}&status=success`;
+          window.open(confirmationUrl, "_blank");
+          console.log("✅ Step 4: Opened confirmation page");
+
+          showResult(
+            "complete-result",
+            "🎉 Complete flow test SUCCESSFUL! Check opened tab and email logs.",
+            "success"
+          );
+        } catch (error) {
+          console.error("❌ Complete flow test failed:", error);
+          showResult(
+            "complete-result",
+            `❌ Complete flow test FAILED: ${error.message}`,
+            "warning"
+          );
+        }
+      }
+
+      function clearConsole() {
+        consoleOutput = [];
+        document.getElementById("console-output").textContent = "";
+      }
+    </script>
+  </body>
+</html>

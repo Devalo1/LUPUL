@@ -1,0 +1,459 @@
+<!doctype html>
+<html lang="ro">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Test Complete NETOPIA Flow</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        margin: 20px;
+        background: #f5f5f5;
+      }
+      .container {
+        background: white;
+        padding: 20px;
+        border-radius: 8px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+      }
+      .section {
+        margin: 20px 0;
+        padding: 15px;
+        border: 1px solid #ddd;
+        border-radius: 5px;
+      }
+      .success {
+        background: #d4edda;
+        border-color: #c3e6cb;
+        color: #155724;
+      }
+      .error {
+        background: #f8d7da;
+        border-color: #f5c6cb;
+        color: #721c24;
+      }
+      .warning {
+        background: #fff3cd;
+        border-color: #ffeaa7;
+        color: #856404;
+      }
+      .info {
+        background: #d1ecf1;
+        border-color: #bee5eb;
+        color: #0c5460;
+      }
+      pre {
+        background: #f8f9fa;
+        padding: 10px;
+        border-radius: 3px;
+        overflow-x: auto;
+        max-height: 300px;
+      }
+      button {
+        padding: 12px 24px;
+        margin: 5px;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        font-size: 16px;
+      }
+      .btn-primary {
+        background: #007bff;
+        color: white;
+      }
+      .btn-success {
+        background: #28a745;
+        color: white;
+      }
+      .btn-warning {
+        background: #ffc107;
+        color: black;
+      }
+      .btn-danger {
+        background: #dc3545;
+        color: white;
+      }
+      .step {
+        margin: 20px 0;
+        padding: 20px;
+        border-left: 4px solid #007bff;
+        background: #f8f9fa;
+      }
+      .step-header {
+        font-weight: bold;
+        font-size: 18px;
+        margin-bottom: 10px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h1>🧪 Test Complete NETOPIA Flow cu Debug Enhanced</h1>
+
+      <div class="step">
+        <div class="step-header">
+          📋 Pas 1: Simulează Checkout cu Date Reale
+        </div>
+        <p>Simulez exact cum salvează Checkout.tsx datele în localStorage</p>
+        <button class="btn-primary" onclick="simulateRealCheckout()">
+          🛒 Simulează Checkout Real
+        </button>
+        <div id="step1Results"></div>
+      </div>
+
+      <div class="step">
+        <div class="step-header">🔍 Pas 2: Verifică localStorage</div>
+        <p>Verific ce exact s-a salvat în localStorage</p>
+        <button class="btn-success" onclick="checkLocalStorage()">
+          📱 Verifică localStorage
+        </button>
+        <div id="step2Results"></div>
+      </div>
+
+      <div class="step">
+        <div class="step-header">
+          🎯 Pas 3: Testează OrderConfirmation Logic
+        </div>
+        <p>Testez exact cum ar funcționa OrderConfirmation.tsx</p>
+        <button class="btn-warning" onclick="testOrderConfirmationLogic()">
+          🔧 Test OrderConfirmation
+        </button>
+        <div id="step3Results"></div>
+      </div>
+
+      <div class="step">
+        <div class="step-header">📧 Pas 4: Testează Trimiterea Email</div>
+        <p>Testez funcția de trimitere email cu datele găsite</p>
+        <button class="btn-success" onclick="testEmailSending()">
+          📧 Test Email Sending
+        </button>
+        <div id="step4Results"></div>
+      </div>
+
+      <div class="step">
+        <div class="step-header">
+          🚀 Pas 5: Test Redirect la OrderConfirmation
+        </div>
+        <p>Redirect către pagina reală cu datele în localStorage</p>
+        <button class="btn-primary" onclick="redirectToOrderConfirmation()">
+          🔄 Redirect la OrderConfirmation
+        </button>
+        <div id="step5Results"></div>
+      </div>
+
+      <div class="section error">
+        <h3>🧹 Cleanup</h3>
+        <button class="btn-danger" onclick="clearAllData()">
+          🗑️ Șterge Toate Datele
+        </button>
+        <div id="cleanupResults"></div>
+      </div>
+    </div>
+
+    <script>
+      let currentOrderId = null;
+
+      function simulateRealCheckout() {
+        // Generez un order ID exact cum face Checkout.tsx
+        const realOrderId = `LC-${Date.now()}`;
+        currentOrderId = realOrderId;
+
+        // Creez datele exact ca în Checkout.tsx
+        const orderData = {
+          orderNumber: realOrderId, // ← AICI e key-ul important
+          customerName: "Test User",
+          customerEmail: "test@example.com",
+          customerPhone: "0700000000",
+          customerAddress: "Strada Test 123",
+          customerCity: "București",
+          customerCounty: "Bucuresti",
+          totalAmount: 35,
+          items: [
+            {
+              id: "test-product",
+              name: "Produs Test",
+              price: 35,
+              quantity: 1,
+              image: "/test-image.jpg",
+            },
+          ],
+          paymentMethod: "card",
+          paymentStatus: "pending",
+          date: new Date().toISOString(),
+        };
+
+        // Salvez exact cum face Checkout.tsx
+        localStorage.setItem("pendingOrder", JSON.stringify(orderData));
+
+        const results = `
+                <div class="success">✅ Checkout simulat cu succes!</div>
+                <div class="info">📋 Order ID generat: <strong>${realOrderId}</strong></div>
+                <div class="info">💾 Date salvate în localStorage cu cheia "pendingOrder"</div>
+                <pre>${JSON.stringify(orderData, null, 2)}</pre>
+            `;
+
+        document.getElementById("step1Results").innerHTML = results;
+        console.log("🛒 Checkout simulat:", orderData);
+      }
+
+      function checkLocalStorage() {
+        const results = [];
+
+        // Verific pendingOrder
+        const pendingOrder = localStorage.getItem("pendingOrder");
+        results.push("<strong>pendingOrder (singular):</strong>");
+
+        if (pendingOrder) {
+          try {
+            const parsed = JSON.parse(pendingOrder);
+            results.push(`<div class="success">✅ Găsit și valid</div>`);
+            results.push(
+              `<div class="info">📋 Order Number: ${parsed.orderNumber}</div>`
+            );
+            results.push(
+              `<div class="info">👤 Customer: ${parsed.customerName} (${parsed.customerEmail})</div>`
+            );
+            results.push(
+              `<div class="info">💰 Amount: ${parsed.totalAmount} RON</div>`
+            );
+            results.push(`<pre>${JSON.stringify(parsed, null, 2)}</pre>`);
+          } catch (e) {
+            results.push(
+              `<div class="error">❌ JSON invalid: ${e.message}</div>`
+            );
+          }
+        } else {
+          results.push(
+            `<div class="warning">⚠️ Nu există în localStorage</div>`
+          );
+        }
+
+        // Verific pendingOrders (plural)
+        results.push("<strong>pendingOrders (plural):</strong>");
+        const pendingOrders = localStorage.getItem("pendingOrders");
+
+        if (pendingOrders) {
+          try {
+            const parsed = JSON.parse(pendingOrders);
+            results.push(
+              `<div class="success">✅ Găsit: ${JSON.stringify(parsed, null, 2)}</div>`
+            );
+          } catch (e) {
+            results.push(
+              `<div class="error">❌ JSON invalid: ${e.message}</div>`
+            );
+          }
+        } else {
+          results.push(
+            `<div class="warning">⚠️ Nu există în localStorage</div>`
+          );
+        }
+
+        document.getElementById("step2Results").innerHTML =
+          results.join("<br>");
+      }
+
+      function testOrderConfirmationLogic() {
+        if (!currentOrderId) {
+          document.getElementById("step3Results").innerHTML =
+            '<div class="error">❌ Rulează mai întâi Simularea Checkout!</div>';
+          return;
+        }
+
+        const results = [];
+        results.push(
+          `<strong>🔍 Testez logic pentru Order ID: ${currentOrderId}</strong>`
+        );
+
+        // Simulez exact logica din OrderConfirmation.tsx
+        let orderData = null;
+
+        // Pas 1: Încearcă pendingOrders (plural)
+        const pendingOrdersStr = localStorage.getItem("pendingOrders");
+        if (pendingOrdersStr) {
+          try {
+            const pendingOrders = JSON.parse(pendingOrdersStr);
+            orderData = pendingOrders[currentOrderId];
+            if (orderData) {
+              results.push(
+                `<div class="success">✅ Găsit în pendingOrders (plural)</div>`
+              );
+            }
+          } catch (error) {
+            results.push(
+              `<div class="error">❌ Eroare pendingOrders: ${error.message}</div>`
+            );
+          }
+        } else {
+          results.push(
+            `<div class="info">ℹ️ Nu există pendingOrders (plural)</div>`
+          );
+        }
+
+        // Pas 2: Încearcă pendingOrder (singular)
+        if (!orderData) {
+          const pendingOrderStr = localStorage.getItem("pendingOrder");
+          results.push(
+            `<div class="info">🔍 Checking pendingOrder: ${pendingOrderStr ? "EXISTS" : "NOT FOUND"}</div>`
+          );
+
+          if (pendingOrderStr) {
+            try {
+              const pendingOrder = JSON.parse(pendingOrderStr);
+              results.push(
+                `<div class="info">📋 Parsed pendingOrder orderNumber: ${pendingOrder.orderNumber}</div>`
+              );
+              results.push(
+                `<div class="info">🔍 Comparing: "${pendingOrder.orderNumber}" === "${currentOrderId}"</div>`
+              );
+
+              // Verifică dacă orderNumber-ul se potrivește
+              if (pendingOrder.orderNumber === currentOrderId) {
+                orderData = pendingOrder;
+                results.push(
+                  `<div class="success">✅ MATCH! Comanda găsită în pendingOrder</div>`
+                );
+
+                // Simulez ștergerea din localStorage
+                localStorage.removeItem("pendingOrder");
+                results.push(
+                  `<div class="info">🗑️ Pendingorder șters din localStorage</div>`
+                );
+              } else {
+                results.push(
+                  `<div class="error">❌ NO MATCH! OrderNumbers diferite</div>`
+                );
+                results.push(
+                  `<div class="warning">Expected: ${currentOrderId}</div>`
+                );
+                results.push(
+                  `<div class="warning">Found: ${pendingOrder.orderNumber}</div>`
+                );
+              }
+            } catch (error) {
+              results.push(
+                `<div class="error">❌ Eroare parsare: ${error.message}</div>`
+              );
+            }
+          } else {
+            results.push(
+              `<div class="warning">⚠️ Nu există pendingOrder în localStorage</div>`
+            );
+          }
+        }
+
+        if (orderData) {
+          results.push(
+            `<div class="success">🎉 SUCCESS! OrderConfirmation logic funcționează!</div>`
+          );
+          results.push(
+            `<div class="info">📧 Urmează: trimitere email către ${orderData.customerEmail}</div>`
+          );
+          results.push(`<pre>${JSON.stringify(orderData, null, 2)}</pre>`);
+        } else {
+          results.push(
+            `<div class="error">💥 FAILED! Nu s-au găsit date pentru ordinul ${currentOrderId}</div>`
+          );
+        }
+
+        document.getElementById("step3Results").innerHTML =
+          results.join("<br>");
+        return orderData;
+      }
+
+      async function testEmailSending() {
+        const orderData = testOrderConfirmationLogic();
+
+        if (!orderData) {
+          document.getElementById("step4Results").innerHTML =
+            '<div class="error">❌ Nu pot testa email fără date de comandă valide</div>';
+          return;
+        }
+
+        try {
+          const response = await fetch("/.netlify/functions/send-order-email", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              orderNumber: orderData.orderNumber,
+              customerEmail: orderData.customerEmail,
+              customerName: orderData.customerName,
+              totalAmount: orderData.totalAmount,
+              items: orderData.items,
+              shippingAddress: `${orderData.customerAddress}, ${orderData.customerCity}`,
+              paymentMethod: "Card bancar (NETOPIA Payments)",
+            }),
+          });
+
+          const result = await response.text();
+
+          if (response.ok) {
+            const results = `
+                        <div class="success">✅ Email trimis cu succes!</div>
+                        <div class="info">📧 Către: ${orderData.customerEmail}</div>
+                        <div class="info">📋 Order: ${orderData.orderNumber}</div>
+                        <pre>${result}</pre>
+                    `;
+            document.getElementById("step4Results").innerHTML = results;
+          } else {
+            const results = `
+                        <div class="error">❌ Eroare la trimiterea email-ului</div>
+                        <div class="warning">Status: ${response.status}</div>
+                        <pre>${result}</pre>
+                    `;
+            document.getElementById("step4Results").innerHTML = results;
+          }
+        } catch (error) {
+          const results = `
+                    <div class="error">❌ Eroare la apelul API</div>
+                    <pre>${error.message}</pre>
+                `;
+          document.getElementById("step4Results").innerHTML = results;
+        }
+      }
+
+      function redirectToOrderConfirmation() {
+        if (!currentOrderId) {
+          document.getElementById("step5Results").innerHTML =
+            '<div class="error">❌ Rulează mai întâi Simularea Checkout!</div>';
+          return;
+        }
+
+        const results = `
+                <div class="success">🔄 Redirecting către OrderConfirmation...</div>
+                <div class="info">📋 URL: /order-confirmation?orderId=${currentOrderId}</div>
+                <div class="warning">⚠️ Pagina se va deschide în 3 secunde...</div>
+            `;
+
+        document.getElementById("step5Results").innerHTML = results;
+
+        setTimeout(() => {
+          window.location.href = `/order-confirmation?orderId=${currentOrderId}`;
+        }, 3000);
+      }
+
+      function clearAllData() {
+        localStorage.removeItem("pendingOrder");
+        localStorage.removeItem("pendingOrders");
+        currentOrderId = null;
+
+        // Clear all results
+        document.getElementById("step1Results").innerHTML = "";
+        document.getElementById("step2Results").innerHTML = "";
+        document.getElementById("step3Results").innerHTML = "";
+        document.getElementById("step4Results").innerHTML = "";
+        document.getElementById("step5Results").innerHTML = "";
+
+        document.getElementById("cleanupResults").innerHTML =
+          '<div class="warning">🧹 Toate datele au fost șterse</div>';
+      }
+
+      // Auto-initialize
+      document.addEventListener("DOMContentLoaded", function () {
+        console.log("🧪 Test NETOPIA Flow loaded");
+      });
+    </script>
+  </body>
+</html>

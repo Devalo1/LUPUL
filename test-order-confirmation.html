@@ -1,0 +1,226 @@
+<!doctype html>
+<html lang="ro">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Test OrderConfirmation Fix</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        padding: 20px;
+      }
+      .test-section {
+        border: 1px solid #ccc;
+        padding: 15px;
+        margin: 10px 0;
+      }
+      .success {
+        background-color: #d4edda;
+        border-color: #c3e6cb;
+      }
+      .warning {
+        background-color: #fff3cd;
+        border-color: #ffeaa7;
+      }
+      .error {
+        background-color: #f8d7da;
+        border-color: #f5c6cb;
+      }
+      button {
+        padding: 10px 15px;
+        margin: 5px;
+        cursor: pointer;
+      }
+      pre {
+        background: #f8f9fa;
+        padding: 10px;
+        border-radius: 5px;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Test OrderConfirmation localStorage Fix</h1>
+
+    <div class="test-section">
+      <h2>Pas 1: Simulare Checkout.tsx - Salvare format nou (singular)</h2>
+      <p>
+        Simulez salvarea unei comenzi în format nou (cum face Checkout.tsx):
+      </p>
+      <button onclick="saveNewFormat()">
+        Salvează Comandă Format NOU (pendingOrder)
+      </button>
+      <pre id="newFormatResult"></pre>
+    </div>
+
+    <div class="test-section">
+      <h2>Pas 2: Simulare Checkout.tsx - Salvare format vechi (plural)</h2>
+      <p>
+        Simulez salvarea unei comenzi în format vechi (pentru backward
+        compatibility):
+      </p>
+      <button onclick="saveOldFormat()">
+        Salvează Comandă Format VECHI (pendingOrders)
+      </button>
+      <pre id="oldFormatResult"></pre>
+    </div>
+
+    <div class="test-section">
+      <h2>Pas 3: Test OrderConfirmation.tsx - Citire cu fix-ul aplicat</h2>
+      <p>Testez dacă OrderConfirmation.tsx poate citi ambele formate:</p>
+      <button onclick="testOrderConfirmationFix()">
+        Testează Fix-ul OrderConfirmation
+      </button>
+      <pre id="fixTestResult"></pre>
+    </div>
+
+    <div class="test-section">
+      <h2>Pas 4: Curățare teste</h2>
+      <button onclick="clearLocalStorage()">Curăță localStorage</button>
+    </div>
+
+    <div class="test-section">
+      <h2>Starea actuală localStorage:</h2>
+      <button onclick="showCurrentLocalStorage()">Afișează localStorage</button>
+      <pre id="localStorageState"></pre>
+    </div>
+
+    <script>
+      // Simulez exact datele cum le salvează Checkout.tsx
+      const testOrderData = {
+        orderNumber: "LC-1753816908678",
+        total: 35,
+        customerInfo: {
+          firstName: "Dani",
+          lastName: "Test",
+          email: "dani_popa21@yahoo.ro",
+          phone: "0775346243",
+        },
+        items: [
+          {
+            name: "Test Product",
+            price: 35,
+            quantity: 1,
+          },
+        ],
+        paymentMethod: "card",
+        timestamp: new Date().toISOString(),
+      };
+
+      function saveNewFormat() {
+        // Exact cum salvează Checkout.tsx
+        localStorage.setItem("pendingOrder", JSON.stringify(testOrderData));
+        document.getElementById("newFormatResult").textContent =
+          "✅ Salvat în localStorage['pendingOrder'] (format nou/singular)\n" +
+          "Data: " +
+          JSON.stringify(testOrderData, null, 2);
+      }
+
+      function saveOldFormat() {
+        // Format vechi pentru backward compatibility
+        const oldFormatData = [testOrderData]; // Array cu o comandă
+        localStorage.setItem("pendingOrders", JSON.stringify(oldFormatData));
+        document.getElementById("oldFormatResult").textContent =
+          "✅ Salvat în localStorage['pendingOrders'] (format vechi/plural)\n" +
+          "Data: " +
+          JSON.stringify(oldFormatData, null, 2);
+      }
+
+      function testOrderConfirmationFix() {
+        // Simulez exact logica din OrderConfirmation.tsx după fix
+        let foundOrder = null;
+        let source = "";
+
+        try {
+          // Încerc primul format (singular) - formatul nou
+          const pendingOrderStr = localStorage.getItem("pendingOrder");
+          if (pendingOrderStr) {
+            const pendingOrder = JSON.parse(pendingOrderStr);
+            if (pendingOrder && pendingOrder.orderNumber) {
+              foundOrder = pendingOrder;
+              source = "pendingOrder (singular/nou)";
+            }
+          }
+
+          // Dacă nu am găsit în primul format, încerc cel vechi (plural)
+          if (!foundOrder) {
+            const pendingOrdersStr = localStorage.getItem("pendingOrders");
+            if (pendingOrdersStr) {
+              const pendingOrders = JSON.parse(pendingOrdersStr);
+              if (Array.isArray(pendingOrders) && pendingOrders.length > 0) {
+                foundOrder = pendingOrders[0]; // Iau prima comandă
+                source = "pendingOrders (plural/vechi)";
+              }
+            }
+          }
+
+          if (foundOrder) {
+            const result =
+              `✅ SUCCESS! Fix-ul funcționează perfect!\n\n` +
+              `📍 Comandă găsită în: localStorage["${source.split(" ")[0]}"]\n` +
+              `📝 Sursă: ${source}\n` +
+              `🔢 OrderNumber: ${foundOrder.orderNumber}\n` +
+              `💰 Total: ${foundOrder.total} RON\n` +
+              `📧 Email: ${foundOrder.customerInfo?.email}\n` +
+              `⏰ Timestamp: ${foundOrder.timestamp}\n\n` +
+              `Aceasta înseamnă că OrderConfirmation.tsx va putea:\n` +
+              `✅ Să afișeze pagina de confirmare\n` +
+              `✅ Să trimită email-ul de confirmare\n` +
+              `✅ Să proceseze comanda corect`;
+
+            document.getElementById("fixTestResult").textContent = result;
+            document.getElementById("fixTestResult").parentElement.className =
+              "test-section success";
+          } else {
+            document.getElementById("fixTestResult").textContent =
+              "❌ Nu s-a găsit nicio comandă în localStorage.\n" +
+              "Salvează mai întâi o comandă cu butoanele de mai sus.";
+            document.getElementById("fixTestResult").parentElement.className =
+              "test-section error";
+          }
+        } catch (error) {
+          document.getElementById("fixTestResult").textContent =
+            `❌ Eroare la parsarea localStorage: ${error.message}`;
+          document.getElementById("fixTestResult").parentElement.className =
+            "test-section error";
+        }
+      }
+
+      function clearLocalStorage() {
+        localStorage.removeItem("pendingOrder");
+        localStorage.removeItem("pendingOrders");
+        showCurrentLocalStorage();
+
+        // Reset test sections
+        document.getElementById("newFormatResult").textContent = "";
+        document.getElementById("oldFormatResult").textContent = "";
+        document.getElementById("fixTestResult").textContent = "";
+        document.getElementById("fixTestResult").parentElement.className =
+          "test-section";
+      }
+
+      function showCurrentLocalStorage() {
+        const pendingOrder = localStorage.getItem("pendingOrder");
+        const pendingOrders = localStorage.getItem("pendingOrders");
+
+        let result = "📋 Starea actuală localStorage:\n\n";
+
+        if (pendingOrder) {
+          result += `✅ pendingOrder (singular): ${pendingOrder.substring(0, 100)}...\n\n`;
+        } else {
+          result += `❌ pendingOrder (singular): Nu există\n\n`;
+        }
+
+        if (pendingOrders) {
+          result += `✅ pendingOrders (plural): ${pendingOrders.substring(0, 100)}...\n\n`;
+        } else {
+          result += `❌ pendingOrders (plural): Nu există\n\n`;
+        }
+
+        document.getElementById("localStorageState").textContent = result;
+      }
+
+      // Afișez starea inițială
+      showCurrentLocalStorage();
+    </script>
+  </body>
+</html>

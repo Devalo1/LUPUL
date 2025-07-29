@@ -234,9 +234,19 @@ const CheckoutSuccess: React.FC = () => {
         minute: "2-digit",
       });
 
-  // Afișăm secțiunea de dezvoltare doar în mediul de dezvoltare (nu în preview)
+  // Afișăm secțiunea de dezvoltare doar în mediul de dezvoltare (nu în preview sau producție)
   const isDevelopment =
     window.location.hostname === "localhost" && window.location.port !== "5174"; // Nu afișa în preview mode
+
+  // Hide development features in production
+  const isProduction =
+    window.location.hostname === "lupulsicorbul.com" ||
+    (window.location.hostname !== "localhost" &&
+      !window.location.hostname.includes("preview") &&
+      !window.location.hostname.includes("deploy-preview") &&
+      !window.location.port);
+
+  const showDevelopmentFeatures = isDevelopment && !isProduction;
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100 py-12 px-4">
@@ -339,7 +349,7 @@ const CheckoutSuccess: React.FC = () => {
 
           <p className="text-gray-600 mb-2">Îți mulțumim pentru cumpărături!</p>
 
-          {isDevelopment && (
+          {showDevelopmentFeatures && (
             <div className="mt-2 mb-5">
               <button
                 onClick={() => setShowEmailSimulation(!showEmailSimulation)}

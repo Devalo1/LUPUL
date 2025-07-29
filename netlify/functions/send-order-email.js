@@ -6,6 +6,11 @@
 import nodemailer from "nodemailer";
 
 export const handler = async (event, context) => {
+  // 🔍 DEBUG LOG - Pentru identificarea apelurilor multiple
+  const requestId = Date.now() + '-' + Math.random().toString(36).substr(2, 9);
+  console.log(`🚀 SEND-ORDER-EMAIL CALLED - Request ID: ${requestId}`);
+  console.log(`📋 Method: ${event.httpMethod}, Headers:`, event.headers);
+  
   // Handle CORS preflight request
   if (event.httpMethod === "OPTIONS") {
     return {
@@ -48,10 +53,21 @@ export const handler = async (event, context) => {
     const { orderData, orderNumber, totalAmount } = requestBody;
 
     // Validăm datele primite
+    console.log(
+      "🔍 DEBUGGING: requestBody complet:",
+      JSON.stringify(requestBody, null, 2)
+    );
+    console.log("🔍 DEBUGGING: orderData type:", typeof orderData);
+    console.log("🔍 DEBUGGING: orderData value:", orderData);
+    console.log("🔍 DEBUGGING: orderNumber type:", typeof orderNumber);
+    console.log("🔍 DEBUGGING: orderNumber value:", orderNumber);
+
     if (!orderData || !orderNumber) {
       console.error("Date comandă lipsă:", {
         orderData: !!orderData,
         orderNumber: !!orderNumber,
+        orderDataType: typeof orderData,
+        orderNumberType: typeof orderNumber,
       });
       return {
         statusCode: 400,
@@ -62,11 +78,21 @@ export const handler = async (event, context) => {
       };
     }
 
+    // Verificăm dacă este o notificare de backup (date lipsă)
+    const isBackupNotification = orderData.isBackupNotification || false;
+
+    if (isBackupNotification) {
+      console.log(
+        "⚠️ EMAIL DE BACKUP: Date comandă incomplete - trimit doar către admin"
+      );
+    }
+
     console.log("📦 Procesez comandă:", {
       orderNumber,
       customerEmail: orderData.email,
       totalAmount,
       itemsCount: orderData.items?.length || 0,
+      isBackupNotification,
     });
 
     // Verificăm dacă suntem în modul dezvoltare/test
@@ -210,9 +236,9 @@ export const handler = async (event, context) => {
                       (item) => `
               <div style="border-bottom: 1px solid #eee; padding: 10px 0;">
                 <p><strong>${item.name || "Produs"}</strong></p>
-                <p>Preț: ${(item.price || 0).toFixed(2)} RON</p>
+                <p>Preț: ${(parseFloat(item.price) || 0).toFixed(2)} RON</p>
                 <p>Cantitate: ${item.quantity || 1}</p>
-                <p>Subtotal: ${((item.price || 0) * (item.quantity || 1)).toFixed(2)} RON</p>
+                <p>Subtotal: ${((parseFloat(item.price) || 0) * (item.quantity || 1)).toFixed(2)} RON</p>
               </div>
             `
                     )
@@ -249,10 +275,29 @@ export const handler = async (event, context) => {
       <html>
       <head>
         <meta charset="utf-8">
-        <title>Comandă nouă: ${orderNumber}</title>
+        <title>${isBackupNotification ? "⚠️ ATENȚIE: Comandă cu date lipsă" : `Comandă nouă: ${orderNumber}`}</title>
       </head>
       <body style="font-family: Arial, sans-serif;">
-        <h2>🛒 Comandă nouă primită!</h2>
+        <h2>${isBackupNotification ? "⚠️ ATENȚIE: Comandă cu date incomplete!" : "🛒 Comandă nouă primită!"}</h2>
+        
+        ${
+          isBackupNotification
+            ? `
+        <div style="background: #fee2e2; border: 2px solid #dc2626; padding: 15px; border-radius: 8px; margin: 20px 0;">
+          <h3 style="color: #dc2626; margin-top: 0;">🚨 PROBLEMĂ DETECTATĂ:</h3>
+          <p><strong>Comanda a fost procesată prin NETOPIA, dar datele s-au pierdut din localStorage!</strong></p>
+          <p>S-a încercat să se trimită email către client, dar nu s-a găsit adresa de email.</p>
+          <p><strong>ACȚIUNI NECESARE:</strong></p>
+          <ul>
+            <li>Verifică manual în dashboard-ul NETOPIA pentru detaliile complete ale comenzii</li>
+            <li>Contactează clientul prin alte mijloace dacă îl identifici</li>
+            <li>Investighează de ce s-au pierdut datele din localStorage</li>
+          </ul>
+        </div>
+        `
+            : ""
+        }
+        
         <p><strong>Numărul comenzii:</strong> ${orderNumber}</p>
         <p><strong>Total:</strong> ${totalAmount} RON</p>
         <p><strong>Data:</strong> ${new Date().toLocaleString("ro-RO")}</p>
@@ -266,28 +311,44 @@ export const handler = async (event, context) => {
                     (item) => `
             <div style="border-bottom: 1px solid #ddd; padding: 10px 0;">
               <p><strong>${item.name || "Produs"}</strong></p>
-              <p>Preț unitar: ${(item.price || 0).toFixed(2)} RON</p>
+              <p>Preț unitar: ${(parseFloat(item.price) || 0).toFixed(2)} RON</p>
               <p>Cantitate: ${item.quantity || 1}</p>
-              <p><strong>Subtotal: ${((item.price || 0) * (item.quantity || 1)).toFixed(2)} RON</strong></p>
+              <p><strong>Subtotal: ${((parseFloat(item.price) || 0) * (item.quantity || 1)).toFixed(2)} RON</strong></p>
+              ${item.description ? `<p><em>${item.description}</em></p>` : ""}
             </div>
           `
                   )
                   .join("")
-              : "<p>Nu au fost găsite produse</p>"
+              : `<p>${isBackupNotification ? "⚠️ Date produse pierdute - verifică în NETOPIA" : "Nu au fost găsite produse"}</p>`
           }
         </div>
         
         <h3>Date client:</h3>
         <p><strong>Nume:</strong> ${orderData.firstName || orderData.name} ${orderData.lastName || ""}</p>
-        <p><strong>Email:</strong> ${orderData.email}</p>
+        <p><strong>Email:</strong> ${isBackupNotification ? "❌ EMAIL LIPSĂ - PROBLEMĂ!" : orderData.email}</p>
         <p><strong>Telefon:</strong> ${orderData.phone}</p>
         
         <h3>Adresa de livrare:</h3>
         <p>${orderData.address}<br>
         ${orderData.city}, ${orderData.county}<br>
-        Cod poștal: ${orderData.postalCode}</p>
+        ${orderData.postalCode ? `Cod poștal: ${orderData.postalCode}` : ""}</p>
         
-        <p>Contactează clientul pentru confirmarea comenzii.</p>
+        ${
+          isBackupNotification
+            ? `
+        <div style="background: #fef3c7; border: 2px solid #f59e0b; padding: 15px; border-radius: 8px; margin: 20px 0;">
+          <h3 style="color: #f59e0b; margin-top: 0;">🔧 DEBUGGING INFO:</h3>
+          <p>Această comandă a fost procesată prin mecanismul de backup.</p>
+          <p>Pentru detalii complete, verifică:</p>
+          <ul>
+            <li>NETOPIA dashboard pentru statusul și detaliile plății</li>
+            <li>Logs-urile aplicației pentru cauza pierderii datelor</li>
+            <li>sessionStorage browser pentru eventuale date backup</li>
+          </ul>
+        </div>
+        `
+            : `<p>Contactează clientul pentru confirmarea comenzii.</p>`
+        }
       </body>
       </html>
     `;
@@ -309,30 +370,58 @@ export const handler = async (event, context) => {
     };
 
     // Execută trimiterea emailurilor
-    console.log("📧 Trimit emailurile...");
-    const [customerResult, adminResult] = await Promise.all([
-      transporter.sendMail(customerEmail),
-      transporter.sendMail(adminEmail),
-    ]);
+    console.log(`📧 [${requestId}] Trimit emailurile pentru comanda: ${orderNumber}`);
+    console.log(`🎯 [${requestId}] Backup mode: ${isBackupNotification}`);
 
-    console.log("✅ Email client trimis:", customerResult.messageId);
-    console.log("✅ Email admin trimis:", adminResult.messageId);
+    if (isBackupNotification) {
+      // Pentru notificările de backup, trimite doar către admin
+      console.log("📧 BACKUP MODE: Trimit doar email către admin");
+      const adminResult = await transporter.sendMail(adminEmail);
+      console.log("✅ Email admin (backup) trimis:", adminResult.messageId);
 
-    return {
-      statusCode: 200,
-      headers: {
-        "Access-Control-Allow-Origin": "*",
-        "Access-Control-Allow-Headers": "Content-Type",
-        "Access-Control-Allow-Methods": "POST, OPTIONS",
-      },
-      body: JSON.stringify({
-        success: true,
-        message: "Emailuri trimise cu succes",
-        customerEmailId: customerResult.messageId,
-        adminEmailId: adminResult.messageId,
-        orderNumber: orderNumber,
-      }),
-    };
+      return {
+        statusCode: 200,
+        headers: {
+          "Access-Control-Allow-Origin": "*",
+          "Access-Control-Allow-Headers": "Content-Type",
+          "Access-Control-Allow-Methods": "POST, OPTIONS",
+        },
+        body: JSON.stringify({
+          success: true,
+          message:
+            "Email de backup trimis către admin (date comandă incomplete)",
+          adminEmailId: adminResult.messageId,
+          orderNumber: orderNumber,
+          backupMode: true,
+        }),
+      };
+    } else {
+      // Trimitere normală către client și admin
+      console.log(`📧 [${requestId}] Trimit emailuri NORMALE către client ȘI admin`);
+      const [customerResult, adminResult] = await Promise.all([
+        transporter.sendMail(customerEmail),
+        transporter.sendMail(adminEmail),
+      ]);
+
+      console.log("✅ Email client trimis:", customerResult.messageId);
+      console.log("✅ Email admin trimis:", adminResult.messageId);
+
+      return {
+        statusCode: 200,
+        headers: {
+          "Access-Control-Allow-Origin": "*",
+          "Access-Control-Allow-Headers": "Content-Type",
+          "Access-Control-Allow-Methods": "POST, OPTIONS",
+        },
+        body: JSON.stringify({
+          success: true,
+          message: "Emailuri trimise cu succes",
+          customerEmailId: customerResult.messageId,
+          adminEmailId: adminResult.messageId,
+          orderNumber: orderNumber,
+        }),
+      };
+    }
   } catch (error) {
     console.error("❌ Eroare trimitere email:", error);
 

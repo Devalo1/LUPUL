@@ -868,10 +868,16 @@ const Dashboard: React.FC = () => {
                 >
                   <div className="flex justify-between items-center mb-3">
                     <h3 className="font-semibold">
-                      Comanda #{order.id.substring(0, 8)}
+                      Comanda #{order.orderNumber || order.id.substring(0, 8)}
                     </h3>
                     <span className="text-sm text-gray-500">
-                      {new Date(order.createdAt).toLocaleDateString("ro-RO")}
+                      {order.createdAt?.toDate
+                        ? order.createdAt.toDate().toLocaleDateString("ro-RO")
+                        : order.orderDate
+                          ? new Date(order.orderDate).toLocaleDateString(
+                              "ro-RO"
+                            )
+                          : "Data necunoscută"}
                     </span>
                   </div>
 
@@ -940,13 +946,30 @@ const Dashboard: React.FC = () => {
                   <div className="mt-4 pt-3 border-t border-gray-100 flex justify-between">
                     <p className="font-medium">
                       Total:{" "}
-                      {typeof order.total === "number"
-                        ? order.total.toFixed(2)
-                        : "0.00"}{" "}
+                      {typeof order.totalAmount === "number"
+                        ? order.totalAmount.toFixed(2)
+                        : typeof order.total === "number"
+                          ? order.total.toFixed(2)
+                          : "0.00"}{" "}
                       RON
                     </p>
                     <p className="text-sm text-gray-500">
-                      Status: {order.status || "Finalizată"}
+                      Status:{" "}
+                      {order.status === "new"
+                        ? "Nouă"
+                        : order.status === "confirmed"
+                          ? "Confirmată"
+                          : order.status === "processing"
+                            ? "În procesare"
+                            : order.status === "shipped"
+                              ? "Expediată"
+                              : order.status === "delivered"
+                                ? "Livrată"
+                                : order.status === "cancelled"
+                                  ? "Anulată"
+                                  : order.status === "pending"
+                                    ? "În așteptare"
+                                    : order.status || "Finalizată"}
                     </p>
                   </div>
                 </div>

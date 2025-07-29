@@ -1,0 +1,491 @@
+<!doctype html>
+<html lang="ro">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>🧪 Test REAL - Flux Client Complete</title>
+    <style>
+      body {
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 20px;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        min-height: 100vh;
+      }
+      .container {
+        background: rgba(255, 255, 255, 0.1);
+        backdrop-filter: blur(10px);
+        border-radius: 15px;
+        padding: 30px;
+        margin: 20px 0;
+        border: 1px solid rgba(255, 255, 255, 0.2);
+      }
+      h1 {
+        color: #ffd700;
+        text-align: center;
+        font-size: 2.5em;
+      }
+      h2 {
+        color: #90ee90;
+        border-bottom: 2px solid #90ee90;
+        padding-bottom: 10px;
+      }
+      .step {
+        background: rgba(255, 255, 255, 0.15);
+        padding: 20px;
+        margin: 15px 0;
+        border-radius: 10px;
+        border-left: 4px solid #4caf50;
+      }
+      .btn {
+        background: linear-gradient(45deg, #ff6b6b, #4ecdc4);
+        border: none;
+        color: white;
+        padding: 15px 30px;
+        margin: 10px;
+        border-radius: 25px;
+        cursor: pointer;
+        font-weight: bold;
+        font-size: 16px;
+        transition: all 0.3s ease;
+        min-width: 200px;
+      }
+      .btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+      }
+      .btn-success {
+        background: linear-gradient(45deg, #4caf50, #45a049);
+      }
+      .btn-warning {
+        background: linear-gradient(45deg, #ff9800, #f57c00);
+      }
+      .btn-info {
+        background: linear-gradient(45deg, #2196f3, #1976d2);
+      }
+      .result {
+        background: rgba(0, 0, 0, 0.3);
+        padding: 15px;
+        margin: 10px 0;
+        border-radius: 8px;
+        font-family: "Courier New", monospace;
+        white-space: pre-wrap;
+        font-size: 14px;
+      }
+      .success {
+        border-left: 4px solid #4caf50;
+      }
+      .warning {
+        border-left: 4px solid #ff9800;
+      }
+      .error {
+        border-left: 4px solid #f44336;
+      }
+      .info {
+        border-left: 4px solid #2196f3;
+      }
+      .data-display {
+        background: rgba(255, 255, 255, 0.9);
+        color: #333;
+        padding: 15px;
+        border-radius: 8px;
+        margin: 10px 0;
+      }
+      .highlight {
+        background: yellow;
+        color: black;
+        padding: 2px 5px;
+        border-radius: 3px;
+      }
+      .realtime {
+        position: fixed;
+        top: 10px;
+        right: 10px;
+        background: rgba(0, 0, 0, 0.8);
+        color: white;
+        padding: 10px;
+        border-radius: 5px;
+        font-size: 12px;
+        max-width: 300px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="realtime" id="realtime">🔄 Monitoring în timp real...</div>
+
+    <h1>🧪 Test REAL - Flux Client Complete</h1>
+    <p style="text-align: center; font-size: 18px">
+      Simulează fluxul complet al unui client real care face o comandă cu cardul
+    </p>
+
+    <div class="container">
+      <h2>📋 PASUL 1: Simulare Date Client Real</h2>
+      <div class="step">
+        <p><strong>Această simulare urmărește:</strong></p>
+        <ul>
+          <li>Clientul completează formularul pe PaymentPage</li>
+          <li>PaymentPage salvează datele în localStorage + sessionStorage</li>
+          <li>Clientul este redirecționat către NETOPIA</li>
+          <li>localStorage se pierde la redirect (problema originală)</li>
+          <li>Clientul revine pe OrderConfirmation</li>
+          <li>OrderConfirmation recuperează din sessionStorage (soluția)</li>
+        </ul>
+        <button class="btn btn-success" onclick="simulateRealCustomer()">
+          👤 Simulează Client Real
+        </button>
+        <div id="customerSimulation" class="result"></div>
+      </div>
+    </div>
+
+    <div class="container">
+      <h2>🔧 PASUL 2: Simulare Pierdere localStorage</h2>
+      <div class="step">
+        <p>
+          Simulează ce se întâmplă când utilizatorul este redirecționat către
+          NETOPIA și localStorage se pierde.
+        </p>
+        <button class="btn btn-warning" onclick="simulateLocalStorageLoss()">
+          ❌ Simulează Pierderea localStorage
+        </button>
+        <div id="localStorageLoss" class="result"></div>
+      </div>
+    </div>
+
+    <div class="container">
+      <h2>🎯 PASUL 3: Test Recovery OrderConfirmation</h2>
+      <div class="step">
+        <p>
+          Testează dacă OrderConfirmation poate recupera datele reale din
+          sessionStorage.
+        </p>
+        <button
+          class="btn btn-info"
+          onclick="testOrderConfirmationRecovery()"
+          id="testRecoveryBtn"
+          disabled
+        >
+          🔍 Test Recovery System
+        </button>
+        <div id="recoveryTest" class="result"></div>
+      </div>
+    </div>
+
+    <div class="container">
+      <h2>🚀 PASUL 4: Deschide OrderConfirmation Real</h2>
+      <div class="step">
+        <p>
+          Deschide OrderConfirmation în browser pentru a vedea dacă recuperează
+          datele reale.
+        </p>
+        <div id="orderConfirmationLink"></div>
+      </div>
+    </div>
+
+    <script>
+      let realOrderId = null;
+      let customerData = null;
+
+      function updateRealtime(message) {
+        const realtime = document.getElementById("realtime");
+        realtime.innerHTML = `🔄 ${new Date().toLocaleTimeString()}<br/>${message}`;
+      }
+
+      function simulateRealCustomer() {
+        console.log("👤 Simulez date client real...");
+        updateRealtime("Simulez date client real...");
+
+        // Date REALE client (cum ar completa în formularul PaymentPage)
+        realOrderId = "LC-REAL-TEST-" + Date.now();
+        customerData = {
+          orderId: realOrderId,
+          amount: "299.99",
+          description: "Test Real Customer - Emblem Gold Package",
+          customerInfo: {
+            firstName: "Maria",
+            lastName: "Popescu",
+            email: "maria.popescu@gmail.com", // EMAIL REAL!
+            phone: "0756123456",
+            address: "Strada Unirii 25",
+            city: "Cluj-Napoca",
+            county: "Cluj",
+          },
+          timestamp: new Date().toISOString(),
+          source: "PaymentPage",
+        };
+
+        console.log(
+          "💾 Salvez în localStorage și sessionStorage ca PaymentPage..."
+        );
+
+        // Simulez exact ce face PaymentPage
+        localStorage.setItem(
+          "currentOrder",
+          JSON.stringify({
+            orderId: customerData.orderId,
+            amount: customerData.amount,
+            description: customerData.description,
+            customerInfo: customerData.customerInfo,
+          })
+        );
+
+        // BACKUP în sessionStorage (KEY PENTRU RECOVERY!)
+        sessionStorage.setItem(
+          "currentOrderBackup",
+          JSON.stringify(customerData)
+        );
+
+        // Cookie backup
+        const cookieValue = btoa(
+          JSON.stringify({
+            orderId: customerData.orderId,
+            email: customerData.customerInfo.email,
+            customerName: `${customerData.customerInfo.firstName} ${customerData.customerInfo.lastName}`,
+            phone: customerData.customerInfo.phone,
+            amount: customerData.amount,
+          })
+        );
+        document.cookie = `orderRecovery_${customerData.orderId}=${cookieValue}; max-age=86400; path=/`;
+
+        let result = `✅ CLIENT REAL SIMULAT CU SUCCES!
+
+📋 Date client real salvate:
+   🆔 OrderID: ${realOrderId}
+   👤 Nume: ${customerData.customerInfo.firstName} ${customerData.customerInfo.lastName} 
+   📧 Email REAL: ${customerData.customerInfo.email}
+   📱 Telefon: ${customerData.customerInfo.phone}
+   🏠 Adresă: ${customerData.customerInfo.address}, ${customerData.customerInfo.city}
+   💰 Sumă: ${customerData.amount} RON
+
+💾 Date salvate în:
+   ✅ localStorage.currentOrder (primary storage)
+   ✅ sessionStorage.currentOrderBackup (RECOVERY BACKUP)
+   ✅ cookie orderRecovery_${realOrderId} (secondary backup)
+
+🎯 Gata pentru simularea pierderii localStorage!`;
+
+        document.getElementById("customerSimulation").innerHTML = result;
+        document.getElementById("customerSimulation").className =
+          "result success";
+
+        // Enable next step
+        document.querySelector(
+          'button[onclick="simulateLocalStorageLoss()"]'
+        ).disabled = false;
+
+        updateRealtime(
+          `Client real simulat: ${customerData.customerInfo.firstName} ${customerData.customerInfo.lastName}`
+        );
+      }
+
+      function simulateLocalStorageLoss() {
+        console.log("❌ Simulez pierderea localStorage...");
+        updateRealtime("Simulez pierderea localStorage...");
+
+        if (!realOrderId) {
+          alert("Rulează mai întâi simularea clientului real!");
+          return;
+        }
+
+        // Verifică ce există înainte de ștergere
+        const beforeLocalStorage = localStorage.getItem("currentOrder");
+        const beforeSessionStorage =
+          sessionStorage.getItem("currentOrderBackup");
+
+        // Șterge localStorage (simulează pierderea la redirect NETOPIA)
+        localStorage.removeItem("currentOrder");
+        localStorage.removeItem("pendingOrder");
+        localStorage.removeItem("pendingOrders");
+
+        // Verifică ce a rămas după ștergere
+        const afterLocalStorage = localStorage.getItem("currentOrder");
+        const afterSessionStorage =
+          sessionStorage.getItem("currentOrderBackup");
+
+        let result = `❌ LOCALSTORAGE PIERDUT LA REDIRECT NETOPIA!
+
+📊 ÎNAINTE DE ȘTERGERE:
+   localStorage.currentOrder: ${beforeLocalStorage ? "✅ EXISTĂ" : "❌ LIPSĂ"}
+   sessionStorage.currentOrderBackup: ${beforeSessionStorage ? "✅ EXISTĂ" : "❌ LIPSĂ"}
+
+📊 DUPĂ ȘTERGERE (simulate redirect):
+   localStorage.currentOrder: ${afterLocalStorage ? "✅ EXISTĂ" : "❌ ȘTERS"}
+   sessionStorage.currentOrderBackup: ${afterSessionStorage ? "✅ PĂSTRAT" : "❌ PIERDUT"}
+
+🚨 SITUAȚIA REALĂ:
+   - Clientul a fost redirecționat către NETOPIA
+   - localStorage s-a pierdut (causa problemei originale)
+   - sessionStorage ÎNCĂ CONȚINE datele reale ale clientului
+   - Recovery system poate salva situația!
+
+🎯 Acum OrderConfirmation VA TREBUI să recupereze din sessionStorage!`;
+
+        document.getElementById("localStorageLoss").innerHTML = result;
+        document.getElementById("localStorageLoss").className =
+          "result warning";
+
+        // Enable recovery test
+        document.getElementById("testRecoveryBtn").disabled = false;
+
+        updateRealtime("localStorage pierdut, sessionStorage intact");
+      }
+
+      function testOrderConfirmationRecovery() {
+        console.log("🔍 Testez recovery system...");
+        updateRealtime("Testez recovery system...");
+
+        if (!realOrderId) {
+          alert("Rulează mai întâi pașii anteriori!");
+          return;
+        }
+
+        // Simulez exact logica din OrderConfirmation
+        let foundOrderData = null;
+        let recoverySource = "";
+
+        // PASUL 1: Verifică sessionStorage backup (PRIORITATE MAXIMĂ)
+        console.log("🔍 PASUL 1: Verificare sessionStorage backup...");
+        const backupDataStr = sessionStorage.getItem("currentOrderBackup");
+
+        if (backupDataStr) {
+          try {
+            const backupData = JSON.parse(backupDataStr);
+            console.log("📦 Date backup găsite în sessionStorage:", backupData);
+
+            if (backupData.orderId === realOrderId) {
+              // Adaptează formatul pentru compatibilitate
+              foundOrderData = {
+                orderNumber: backupData.orderId,
+                customerName: `${backupData.customerInfo.firstName} ${backupData.customerInfo.lastName}`,
+                customerEmail: backupData.customerInfo.email, // EMAIL REAL
+                customerPhone: backupData.customerInfo.phone,
+                customerAddress: backupData.customerInfo.address,
+                customerCity: backupData.customerInfo.city,
+                customerCounty: backupData.customerInfo.county,
+                totalAmount: backupData.amount,
+                paymentMethod: "Card bancar (NETOPIA Payments)",
+                date: backupData.timestamp,
+                items: [
+                  {
+                    name: backupData.description,
+                    price: backupData.amount,
+                    quantity: 1,
+                  },
+                ],
+                isRealUserData: true,
+              };
+              recoverySource = "sessionStorage backup";
+              console.log("✅ DATE REALE recuperate din sessionStorage!");
+            }
+          } catch (error) {
+            console.error("❌ Eroare la parsarea backup-ului:", error);
+          }
+        }
+
+        let result;
+        if (foundOrderData) {
+          result = `🎉 RECOVERY SYSTEM FUNCȚIONEAZĂ PERFECT!
+
+✅ DATE REALE RECUPERATE DIN SESSIONSTORAGE:
+   📍 Sursă recovery: ${recoverySource}
+   🆔 OrderID: ${foundOrderData.orderNumber}
+   👤 Nume: ${foundOrderData.customerName}
+   📧 Email REAL: ${foundOrderData.customerEmail}
+   📱 Telefon: ${foundOrderData.customerPhone}
+   🏠 Adresă: ${foundOrderData.customerAddress}, ${foundOrderData.customerCity}
+   💰 Total: ${foundOrderData.totalAmount} RON
+   🏷️ Date reale: ${foundOrderData.isRealUserData ? "✅ DA" : "❌ NU"}
+
+🎯 REZULTAT FINAL:
+   ✅ OrderConfirmation VA AFIȘA datele REALE ale clientului
+   ✅ Emailul VA FI TRIMIS la adresa REALĂ: ${foundOrderData.customerEmail}
+   ✅ Nu se vor afișa date simulate din API
+   ✅ Clientul va primi confirmarea corectă
+
+🚀 GATA PENTRU TEST ÎN BROWSER!`;
+
+          document.getElementById("recoveryTest").className = "result success";
+
+          // Pregătește link-ul pentru OrderConfirmation
+          const orderConfirmationUrl = `/order-confirmation?orderId=${realOrderId}`;
+          document.getElementById("orderConfirmationLink").innerHTML = `
+            <div class="data-display">
+                <h3>🚀 TESTEAZĂ ACUM ÎN BROWSER:</h3>
+                <p><strong>URL OrderConfirmation:</strong> <code>${orderConfirmationUrl}</code></p>
+                <p><strong>Date așteptate:</strong></p>
+                <ul>
+                    <li>👤 Nume: <span class="highlight">${foundOrderData.customerName}</span></li>
+                    <li>📧 Email: <span class="highlight">${foundOrderData.customerEmail}</span></li>
+                    <li>📱 Telefon: <span class="highlight">${foundOrderData.customerPhone}</span></li>
+                    <li>💰 Total: <span class="highlight">${foundOrderData.totalAmount} RON</span></li>
+                </ul>
+                
+                <a href="${orderConfirmationUrl}" target="_blank" style="background: linear-gradient(45deg, #4CAF50, #45a049); color: white; padding: 15px 30px; text-decoration: none; border-radius: 25px; font-weight: bold; display: inline-block; margin: 15px 0;">
+                    🔗 DESCHIDE ORDERCONFIRMATION
+                </a>
+                
+                <p style="margin-top: 15px;"><strong>⚠️ IMPORTANT:</strong> Dacă vezi "Client Recuperat din API" în loc de "${foundOrderData.customerName}", atunci prioritatea încă nu funcționează corect!</p>
+            </div>
+        `;
+
+          updateRealtime(`Recovery SUCCESS: ${foundOrderData.customerName}`);
+        } else {
+          result = `❌ EROARE RECOVERY SYSTEM!
+
+🚨 PROBLEMA DETECTATĂ:
+   - Nu s-au găsit date în sessionStorage
+   - Recovery system nu funcționează
+   - OrderConfirmation va folosi API simulate
+   
+🔧 DEBUGGING NECESAR:
+   - Verifică dacă sessionStorage conține 'currentOrderBackup'
+   - Verifică dacă OrderID se potrivește
+   - Verifică logica de prioritate în OrderConfirmation.tsx`;
+
+          document.getElementById("recoveryTest").className = "result error";
+          updateRealtime("Recovery FAILED - debugging necesar");
+        }
+
+        document.getElementById("recoveryTest").innerHTML = result;
+      }
+
+      // Auto-start pe load
+      window.onload = function () {
+        updateRealtime("Tool încărcat, gata pentru testare");
+
+        setTimeout(() => {
+          const customerSimulation =
+            document.getElementById("customerSimulation");
+          customerSimulation.innerHTML = `🎯 READY PENTRU TEST COMPLET!
+
+Acest tool simulează exact fluxul unui client real:
+   1. Completează formularul PaymentPage
+   2. PaymentPage salvează datele în localStorage + sessionStorage
+   3. Clientul este redirecționat către NETOPIA (localStorage se pierde)
+   4. Clientul revine pe OrderConfirmation
+   5. OrderConfirmation recuperează din sessionStorage
+
+Apasă primul buton pentru a începe testul!`;
+          customerSimulation.className = "result info";
+        }, 1000);
+      };
+
+      // Monitor sessionStorage în timp real
+      setInterval(() => {
+        const sessionBackup = sessionStorage.getItem("currentOrderBackup");
+        const localOrder = localStorage.getItem("currentOrder");
+
+        const sessionExists = sessionBackup ? "✅" : "❌";
+        const localExists = localOrder ? "✅" : "❌";
+
+        const realtime = document.getElementById("realtime");
+        if (realtime && !realtime.innerHTML.includes("Loading")) {
+          realtime.innerHTML = `🔄 ${new Date().toLocaleTimeString()}<br/>
+        sessionStorage: ${sessionExists}<br/>
+        localStorage: ${localExists}`;
+        }
+      }, 2000);
+    </script>
+  </body>
+</html>

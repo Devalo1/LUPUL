@@ -1,0 +1,306 @@
+<!doctype html>
+<html lang="ro">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Test NETOPIA Flow cu Cookie Recovery</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        max-width: 800px;
+        margin: 0 auto;
+        padding: 20px;
+        background: #f5f5f5;
+      }
+      .test-container {
+        background: white;
+        padding: 20px;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        margin-bottom: 20px;
+      }
+      button {
+        background: #007bff;
+        color: white;
+        border: none;
+        padding: 10px 20px;
+        border-radius: 5px;
+        cursor: pointer;
+        margin: 5px;
+      }
+      button:hover {
+        background: #0056b3;
+      }
+      .results {
+        background: #f8f9fa;
+        padding: 15px;
+        border-radius: 5px;
+        margin-top: 10px;
+        white-space: pre-wrap;
+        font-family: monospace;
+        font-size: 12px;
+        max-height: 400px;
+        overflow-y: auto;
+      }
+      .success {
+        color: #28a745;
+      }
+      .warning {
+        color: #ffc107;
+      }
+      .error {
+        color: #dc3545;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="test-container">
+      <h1>🔄 Test NETOPIA Flow cu Cookie Recovery</h1>
+      <p>
+        Testez întregul flow: PaymentPage → NETOPIA → Return → OrderConfirmation
+        cu date reale
+      </p>
+
+      <button onclick="simulatePaymentPage()">
+        1. 💳 Simulează PaymentPage (salvare date)
+      </button>
+      <button onclick="simulateNetopiaRedirect()">
+        2. 🌐 Simulează NETOPIA redirect (pierdere sessionStorage)
+      </button>
+      <button onclick="simulateReturnAndRecovery()">
+        3. 🔙 Simulează Return cu Recovery din Cookie
+      </button>
+      <button onclick="testOrderConfirmation()">
+        4. ✅ Test OrderConfirmation Final
+      </button>
+      <button onclick="clearAll()">5. 🧹 Reset</button>
+
+      <div id="results" class="results"></div>
+    </div>
+
+    <script>
+      const testOrderId = "LC-TEST-COOKIE-" + Date.now();
+
+      function log(message, type = "info") {
+        const results = document.getElementById("results");
+        const timestamp = new Date().toLocaleTimeString();
+        const colors = {
+          info: "#000",
+          success: "#28a745",
+          warning: "#ffc107",
+          error: "#dc3545",
+        };
+
+        results.innerHTML += `<span style="color: ${colors[type]}">[${timestamp}] ${message}</span>\n`;
+        results.scrollTop = results.scrollHeight;
+      }
+
+      function simulatePaymentPage() {
+        log("💳 PASUL 1: Simulez PaymentPage - salvare date client", "info");
+
+        // Simulează datele din formularul de plată
+        const paymentFormData = {
+          firstName: "Dani_popa21",
+          lastName: "Lupul",
+          email: "dani_popa21@yahoo.ro",
+          phone: "0775346243",
+          address: "9 MAI BLOC 2 A",
+          city: "PETROSANI",
+          county: "HUNEDOARA",
+          postalCode: "800258",
+          amount: "35.00",
+          description: "Comandă Lupul și Corbul - 1 produse (35.00 RON)",
+        };
+
+        // 1. Salvează în sessionStorage (ca PaymentPage)
+        const sessionData = {
+          orderId: testOrderId,
+          amount: paymentFormData.amount,
+          description: paymentFormData.description,
+          customerInfo: {
+            firstName: paymentFormData.firstName,
+            lastName: paymentFormData.lastName,
+            email: paymentFormData.email,
+            phone: paymentFormData.phone,
+            address: paymentFormData.address,
+            city: paymentFormData.city,
+            county: paymentFormData.county,
+            postalCode: paymentFormData.postalCode,
+          },
+          timestamp: new Date().toISOString(),
+          source: "PaymentPage",
+        };
+
+        sessionStorage.setItem(
+          "currentOrderBackup",
+          JSON.stringify(sessionData)
+        );
+        log("✅ Date salvate în sessionStorage", "success");
+
+        // 2. Salvează în cookie (ca PaymentPage)
+        const cookieData = {
+          orderId: testOrderId,
+          email: paymentFormData.email,
+          customerName:
+            paymentFormData.firstName + " " + paymentFormData.lastName,
+          phone: paymentFormData.phone,
+          address: paymentFormData.address,
+          city: paymentFormData.city,
+          county: paymentFormData.county,
+          amount: paymentFormData.amount,
+          timestamp: new Date().toISOString(),
+        };
+
+        const cookieValue = btoa(JSON.stringify(cookieData));
+        document.cookie = `orderRecovery_${testOrderId}=${cookieValue}; max-age=86400; path=/; SameSite=Lax`;
+        log("✅ Date salvate în cookie ca backup", "success");
+        log("📧 Email client: " + paymentFormData.email, "success");
+      }
+
+      function simulateNetopiaRedirect() {
+        log(
+          "🌐 PASUL 2: Simulez redirect către NETOPIA (pierdere sessionStorage)",
+          "warning"
+        );
+
+        // Simulează că browser-ul șterge sessionStorage la redirect extern
+        sessionStorage.clear();
+        log("⚠️ SessionStorage șters (ca la redirect extern)", "warning");
+        log("🍪 Cookie-ul rămâne intact pentru recovery", "info");
+      }
+
+      function simulateReturnAndRecovery() {
+        log(
+          "🔙 PASUL 3: Simulez return de la NETOPIA cu recovery din cookie",
+          "info"
+        );
+
+        // Verifică dacă sessionStorage este gol
+        const sessionCheck = sessionStorage.getItem("currentOrderBackup");
+        if (!sessionCheck) {
+          log("✅ SessionStorage confirmat gol după redirect", "success");
+
+          // Simulează logica din OrderConfirmation pentru recovery din cookie
+          const cookieName = `orderRecovery_${testOrderId}`;
+          const cookieValue = document.cookie
+            .split("; ")
+            .find((row) => row.startsWith(cookieName + "="))
+            ?.split("=")[1];
+
+          if (cookieValue) {
+            const recoveryData = JSON.parse(
+              atob(decodeURIComponent(cookieValue))
+            );
+            log("🍪 Date găsite în cookie!", "success");
+            log("📧 Email din cookie: " + recoveryData.email, "success");
+
+            // Restaurează sessionStorage
+            const restoredData = {
+              orderId: testOrderId,
+              customerInfo: {
+                firstName: recoveryData.customerName?.split(" ")[0] || "Client",
+                lastName:
+                  recoveryData.customerName?.split(" ").slice(1).join(" ") ||
+                  "Recuperat",
+                email: recoveryData.email,
+                phone: recoveryData.phone,
+                address: recoveryData.address,
+                city: recoveryData.city,
+                county: recoveryData.county,
+              },
+              amount: parseFloat(recoveryData.amount),
+              description: "Comandă Lupul și Corbul - Recuperat din cookie",
+              timestamp: recoveryData.timestamp,
+              source: "CookieRecovery",
+            };
+
+            sessionStorage.setItem(
+              "currentOrderBackup",
+              JSON.stringify(restoredData)
+            );
+            log("✅ SessionStorage restaurat cu succes!", "success");
+            log(
+              "👤 Nume: " +
+                restoredData.customerInfo.firstName +
+                " " +
+                restoredData.customerInfo.lastName,
+              "success"
+            );
+          } else {
+            log("❌ Nu există cookie pentru recovery!", "error");
+          }
+        } else {
+          log("⚠️ SessionStorage nu era gol", "warning");
+        }
+      }
+
+      function testOrderConfirmation() {
+        log("✅ PASUL 4: Test OrderConfirmation cu date recuperate", "info");
+
+        // Verifică dacă datele sunt disponibile
+        const sessionData = sessionStorage.getItem("currentOrderBackup");
+        if (sessionData) {
+          const data = JSON.parse(sessionData);
+          log("🎯 Date găsite pentru OrderConfirmation:", "success");
+          log("- OrderID: " + data.orderId, "success");
+          log("- Email REAL: " + data.customerInfo.email, "success");
+          log(
+            "- Nume: " +
+              data.customerInfo.firstName +
+              " " +
+              data.customerInfo.lastName,
+            "success"
+          );
+          log("- Telefon: " + data.customerInfo.phone, "success");
+          log("- Suma: " + data.amount + " RON", "success");
+
+          // Testează OrderConfirmation
+          const orderConfirmationUrl = `http://localhost:8888/order-confirmation?orderId=${testOrderId}&status=paid`;
+          log("🌍 Deschid OrderConfirmation:", "info");
+          log(orderConfirmationUrl, "info");
+
+          window.open(orderConfirmationUrl, "_blank", "width=800,height=600");
+          log(
+            "✅ OrderConfirmation deschis - ar trebui să afișeze date REALE!",
+            "success"
+          );
+        } else {
+          log(
+            "❌ Nu există date în sessionStorage pentru OrderConfirmation!",
+            "error"
+          );
+        }
+      }
+
+      function clearAll() {
+        sessionStorage.clear();
+        localStorage.clear();
+        // Șterge toate cookie-urile de test
+        document.cookie.split(";").forEach(function (c) {
+          document.cookie = c
+            .replace(/^ +/, "")
+            .replace(
+              /=.*/,
+              "=;expires=" + new Date().toUTCString() + ";path=/"
+            );
+        });
+        document.getElementById("results").innerHTML = "";
+        log("🧹 Toate datele au fost curățate", "success");
+      }
+
+      // Auto-setup la încărcare
+      window.onload = function () {
+        log("🔄 Test NETOPIA Flow cu Cookie Recovery inițializat", "success");
+        log("🎯 Test OrderID: " + testOrderId, "info");
+        log("📝 Pași pentru testare:", "info");
+        log("1. Simulează salvarea datelor în PaymentPage", "info");
+        log(
+          "2. Simulează pierderea sessionStorage la redirect NETOPIA",
+          "info"
+        );
+        log("3. Simulează recovery din cookie la return", "info");
+        log("4. Testează OrderConfirmation cu datele recuperate", "info");
+      };
+    </script>
+  </body>
+</html>

@@ -374,12 +374,25 @@ exports.handler = async (event, context) => {
     if (!paymentData.live && baseUrl.includes("localhost")) {
       const amount = payload.payment.data.amount;
       const currency = payload.payment.data.currency;
+      
+      // Detectează mediul corect pentru URL-ul de simulare
+      let simulationUrl;
+      if (baseUrl.includes("localhost") || baseUrl.includes("127.0.0.1")) {
+        // Development - folosește localhost cu port 5173
+        simulationUrl = `http://localhost:5173/payment-simulation?orderId=${payload.payment.data.orderId}&amount=${amount}&currency=${currency}&test=1`;
+      } else {
+        // Production - folosește domeniul real
+        simulationUrl = `${baseUrl}/payment-simulation?orderId=${payload.payment.data.orderId}&amount=${amount}&currency=${currency}&test=1`;
+      }
+      
+      console.log("🎯 Generated simulation URL:", simulationUrl);
+      
       return {
         statusCode: 200,
         headers,
         body: JSON.stringify({
           success: true,
-          paymentUrl: `${baseUrl.replace(/:\d+$/, ":5173")}/payment-simulation?orderId=${payload.payment.data.orderId}&amount=${amount}&currency=${currency}&test=1`,
+          paymentUrl: simulationUrl,
           orderId: payload.payment.data.orderId,
         }),
       };

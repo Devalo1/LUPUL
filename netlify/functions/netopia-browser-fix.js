@@ -508,11 +508,12 @@ exports.handler = async (event, context) => {
     };
   }
 
+  let paymentData = {}; // Declarație în scope mai larg pentru catch
+
   try {
     console.log("🚀 NETOPIA Browser Fix - Processing payment");
 
     // Parse request body cu handling îmbunătățit
-    let paymentData;
     try {
       let rawBody = event.body || "";
       if (event.isBase64Encoded) {

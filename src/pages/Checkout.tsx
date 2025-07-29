@@ -280,6 +280,8 @@ const Checkout: React.FC = () => {
     try {
       const orderData = {
         ...formData,
+        firstName: formData.name.split(" ")[0] || formData.name,
+        lastName: formData.name.split(" ").slice(1).join(" ") || "",
         items: items.map((item) => ({
           id: item.id,
           name: item.name,
@@ -292,17 +294,18 @@ const Checkout: React.FC = () => {
         shippingCost: shippingCost,
       };
 
-      // Eliminat check pentru isDevelopment - trimitem mereu prin Netlify Function
       // Generate a unique order number for submission
       const orderNumber = `LC-${Date.now()}`;
       const url = FUNCTION_URL;
       console.log(`Trimitere comandă către: ${url}`);
+
       // Send structured payload expected by Netlify function
       const payload = {
         orderData,
         orderNumber,
         totalAmount: orderData.totalAmount,
       };
+
       const response = await fetch(url, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -314,6 +317,7 @@ const Checkout: React.FC = () => {
         console.error("Eroare răspuns server:", errorText);
         throw new Error(`Eroare server: ${response.status} - ${errorText}`);
       }
+
       const resultJson = await response.json();
       // Include our generated orderNumber for downstream use
       return { ...resultJson, orderNumber };

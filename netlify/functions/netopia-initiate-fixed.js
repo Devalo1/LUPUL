@@ -296,11 +296,13 @@ exports.handler = async (event, context) => {
 
     // Determină configurația (sandbox vs live) cu detectare automată în producție
     let isLive = false;
-    
+
     // IMPORTANT: Respectă explicit live: false pentru teste, indiferent de domeniu
     if (paymentData.live === false) {
       isLive = false;
-      console.log("🧪 Test mode explicitly requested (live: false) - using SANDBOX");
+      console.log(
+        "🧪 Test mode explicitly requested (live: false) - using SANDBOX"
+      );
     } else if (paymentData.live === true) {
       isLive = true;
       console.log("🚀 Live mode explicitly requested");
@@ -379,15 +381,18 @@ exports.handler = async (event, context) => {
     // Simulation pentru development local ȘI pentru testing în producție
     // Folosește origin-ul cererii pentru a determina mediul corect
     const requestOrigin = event.headers.origin || "";
-    const baseUrl = requestOrigin || process.env.URL || "https://lupulsicorbul.com";
-    const isLocalDev = baseUrl.includes("localhost") || baseUrl.includes("127.0.0.1");
-    const isTestOrder = paymentData.orderId && paymentData.orderId.includes("TEST-");
-    
+    const baseUrl =
+      requestOrigin || process.env.URL || "https://lupulsicorbul.com";
+    const isLocalDev =
+      baseUrl.includes("localhost") || baseUrl.includes("127.0.0.1");
+    const isTestOrder =
+      paymentData.orderId && paymentData.orderId.includes("TEST-");
+
     // Simulare dacă suntem în local dev SAU dacă este comandă de test în producție
     if (!paymentData.live && (isLocalDev || isTestOrder)) {
       const amount = payload.payment.data.amount;
       const currency = payload.payment.data.currency;
-      
+
       console.log("🧪 Simulation mode activated:", {
         isLocalDev,
         isTestOrder,
@@ -395,9 +400,9 @@ exports.handler = async (event, context) => {
         requestOrigin,
         host: event.headers.host,
         orderId: paymentData.orderId,
-        live: paymentData.live
+        live: paymentData.live,
       });
-      
+
       // Detectează mediul corect pentru URL-ul de simulare
       let simulationUrl;
       if (isLocalDev) {
@@ -407,9 +412,9 @@ exports.handler = async (event, context) => {
         // Production - folosește domeniul real
         simulationUrl = `${baseUrl}/payment-simulation?orderId=${payload.payment.data.orderId}&amount=${amount}&currency=${currency}&test=1`;
       }
-      
+
       console.log("🎯 Generated simulation URL:", simulationUrl);
-      
+
       return {
         statusCode: 200,
         headers,

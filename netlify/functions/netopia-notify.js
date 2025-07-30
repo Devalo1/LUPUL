@@ -218,19 +218,15 @@ export const handler = async (event, context) => {
     };
   }
 
-  // Pentru orice alt method în afară de POST, tot returnăm 200 pentru NETOPIA
+  // Pentru orice alt method în afară de POST, tot returnăm formatul NETOPIA
   if (event.httpMethod !== "POST") {
     console.log(
-      `⚠️ Method ${event.httpMethod} not allowed, but returning 200 for NETOPIA`
+      `⚠️ Method ${event.httpMethod} not allowed, but returning NETOPIA format`
     );
     return {
       statusCode: 200,
       headers,
-      body: JSON.stringify({
-        received: true,
-        message: "Method not allowed, but notification received",
-        method: event.httpMethod,
-      }),
+      body: JSON.stringify({ errorCode: 0 }), // NETOPIA cere acest format exact
     };
   }
 
@@ -298,32 +294,21 @@ export const handler = async (event, context) => {
       timestamp: new Date().toISOString(),
     });
 
-    // ÎNTOTDEAUNA returnează status 200 pentru NETOPIA
+    // ÎNTOTDEAUNA returnează status 200 cu formatul exact cerut de NETOPIA
     return {
       statusCode: 200,
       headers,
-      body: JSON.stringify({
-        success: true,
-        message: "Notification received and processed successfully",
-        data: result,
-        timestamp: new Date().toISOString(),
-      }),
+      body: JSON.stringify({ errorCode: 0 }),
     };
   } catch (error) {
     console.error("❌ Error in NETOPIA notification handler:", error);
 
-    // CHIAR ȘI ÎN CAZ DE EROARE, RETURNĂM STATUS 200 PENTRU NETOPIA
-    // Pentru a evita IDS_Model_Purchase_Sms_Online_INVALID_RESPONSE_STATUS
+    // CHIAR ȘI ÎN CAZ DE EROARE, RETURNĂM STATUS 200 CU FORMATUL NETOPIA
+    // Pentru a evita IDS_Model_Purchase_Sms_Online_INVALID_RESPONSE_FORMAT
     return {
       statusCode: 200,
       headers,
-      body: JSON.stringify({
-        success: true, // Spunem că am primit notificarea
-        message: "Notification received but processing encountered issues",
-        error: error.message,
-        timestamp: new Date().toISOString(),
-        received: true, // Confirmăm primirea
-      }),
+      body: JSON.stringify({ errorCode: 0 }), // NETOPIA cere exact acest format
     };
   }
 };

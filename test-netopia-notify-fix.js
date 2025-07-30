@@ -40,15 +40,13 @@ async function testNetopiaNotify() {
     const result1 = await handler(mockEvent, mockContext);
 
     console.log("Status Code:", result1.statusCode);
-    console.log("Response:", JSON.parse(result1.body));
+    const response1 = JSON.parse(result1.body);
+    console.log("Response:", response1);
 
-    if (result1.statusCode === 200) {
-      console.log("✅ Test 1 PASSED: Returns status 200");
+    if (result1.statusCode === 200 && response1.errorCode === 0) {
+      console.log("✅ Test 1 PASSED: Returns status 200 with NETOPIA format");
     } else {
-      console.log(
-        "❌ Test 1 FAILED: Expected status 200, got",
-        result1.statusCode
-      );
+      console.log("❌ Test 1 FAILED: Expected status 200 with errorCode 0");
     }
 
     // Test 2: Request cu eroare în body
@@ -60,17 +58,15 @@ async function testNetopiaNotify() {
 
     const result2 = await handler(invalidEvent, mockContext);
     console.log("Status Code:", result2.statusCode);
-    console.log("Response:", JSON.parse(result2.body));
+    const response2 = JSON.parse(result2.body);
+    console.log("Response:", response2);
 
-    if (result2.statusCode === 200) {
+    if (result2.statusCode === 200 && response2.errorCode === 0) {
       console.log(
-        "✅ Test 2 PASSED: Returns status 200 even with invalid JSON"
+        "✅ Test 2 PASSED: Returns NETOPIA format even with invalid JSON"
       );
     } else {
-      console.log(
-        "❌ Test 2 FAILED: Expected status 200, got",
-        result2.statusCode
-      );
+      console.log("❌ Test 2 FAILED: Expected NETOPIA format");
     }
 
     // Test 3: Request OPTIONS
@@ -101,17 +97,15 @@ async function testNetopiaNotify() {
 
     const result4 = await handler(getEvent, mockContext);
     console.log("Status Code:", result4.statusCode);
-    console.log("Response:", JSON.parse(result4.body));
+    const response4 = JSON.parse(result4.body);
+    console.log("Response:", response4);
 
-    if (result4.statusCode === 200) {
+    if (result4.statusCode === 200 && response4.errorCode === 0) {
       console.log(
-        "✅ Test 4 PASSED: GET returns status 200 (safe for NETOPIA)"
+        "✅ Test 4 PASSED: GET returns NETOPIA format (safe for NETOPIA)"
       );
     } else {
-      console.log(
-        "❌ Test 4 FAILED: Expected status 200, got",
-        result4.statusCode
-      );
+      console.log("❌ Test 4 FAILED: Expected NETOPIA format");
     }
 
     // Simulează eroare în procesare
@@ -126,22 +120,20 @@ async function testNetopiaNotify() {
 
     const result5 = await handler(errorEvent, mockContext);
     console.log("Status Code:", result5.statusCode);
-    console.log("Response:", JSON.parse(result5.body));
+    const response5 = JSON.parse(result5.body);
+    console.log("Response:", response5);
 
-    if (result5.statusCode === 200) {
+    if (result5.statusCode === 200 && response5.errorCode === 0) {
       console.log(
-        "✅ Test 5 PASSED: Returns status 200 even with processing errors"
+        "✅ Test 5 PASSED: Returns NETOPIA format even with processing errors"
       );
     } else {
-      console.log(
-        "❌ Test 5 FAILED: Expected status 200, got",
-        result5.statusCode
-      );
+      console.log("❌ Test 5 FAILED: Expected NETOPIA format");
     }
 
     console.log("\n🎉 ALL TESTS COMPLETED!");
     console.log(
-      "📊 Summary: All tests should return status 200 to avoid NETOPIA errors"
+      '📊 Summary: All tests should return status 200 with NETOPIA format {"errorCode": 0}'
     );
   } catch (error) {
     console.error("❌ Test failed with error:", error);

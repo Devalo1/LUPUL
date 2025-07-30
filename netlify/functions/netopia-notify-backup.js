@@ -104,59 +104,207 @@ async function sendPaymentConfirmationEmailSafe(orderId, paymentInfo) {
 }
 
 /**
- * Procesează notificarea NETOPIA - versiune safe
+ * Trimite email pentru plată în așteptare
  */
-async function processNetopiaNotificationSafe(notification) {
+async function sendPaymentPendingEmail(orderId, paymentInfo) {
+  const transporter = getEmailTransporter();
+
+  const adminEmailHtml = `
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <meta charset="utf-8">
+      <title>⏳ PLATĂ ÎN AȘTEPTARE - ${orderId}</title>
+    </head>
+    <body style="font-family: Arial, sans-serif;">
+      <h2 style="color: #FF9800;">⏳ PLATĂ ÎN AȘTEPTARE</h2>
+      <p><strong>Numărul comenzii:</strong> ${orderId}</p>
+      <p><strong>ID Tranzacție:</strong> ${paymentInfo?.paymentId || "N/A"}</p>
+      <p><strong>Status:</strong> ⏳ În așteptare</p>
+      <p><strong>Data:</strong> ${new Date().toLocaleString("ro-RO")}</p>
+      
+      <div style="background: #fff3e0; padding: 15px; border-radius: 8px; margin: 20px 0;">
+        <p><strong>ℹ️ Informații:</strong></p>
+        <p>Plata este în proces de verificare. Monitorizează statusul în dashboard-ul NETOPIA.</p>
+      </div>
+    </body>
+    </html>
+  `;
+
+  await transporter.sendMail({
+    from: process.env.SMTP_USER,
+    to: "lupulsicorbul@gmail.com",
+    subject: `⏳ PLATĂ ÎN AȘTEPTARE - Comanda ${orderId}`,
+    html: adminEmailHtml,
+  });
+}
+
+/**
+ * Trimite email pentru plată eșuată
+ */
+async function sendPaymentFailedEmail(orderId, paymentInfo) {
+  const transporter = getEmailTransporter();
+
+  const adminEmailHtml = `
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <meta charset="utf-8">
+      <title>❌ PLATĂ EȘUATĂ - ${orderId}</title>
+    </head>
+    <body style="font-family: Arial, sans-serif;">
+      <h2 style="color: #f44336;">❌ PLATĂ EȘUATĂ SAU ANULATĂ</h2>
+      <p><strong>Numărul comenzii:</strong> ${orderId}</p>
+      <p><strong>ID Tranzacție:</strong> ${paymentInfo?.paymentId || "N/A"}</p>
+      <p><strong>Status:</strong> ❌ Eșuată/Anulată</p>
+      <p><strong>Data:</strong> ${new Date().toLocaleString("ro-RO")}</p>
+      
+      <div style="background: #ffebee; padding: 15px; border-radius: 8px; margin: 20px 0;">
+        <p><strong>🚨 ACȚIUNI NECESARE:</strong></p>
+        <ul>
+          <li>Verifică statusul în dashboard-ul NETOPIA</li>
+          <li>Contactează clientul pentru clarificări</li>
+          <li>Oferă alternative de plată dacă este necesar</li>
+        </ul>
+      </div>
+    </body>
+    </html>
+  `;
+
+  await transporter.sendMail({
+    from: process.env.SMTP_USER,
+    to: "lupulsicorbul@gmail.com",
+    subject: `❌ PLATĂ EȘUATĂ - Comanda ${orderId}`,
+    html: adminEmailHtml,
+  });
+}
+
+/**
+ * Verifică semnătura NETOPIA pentru securitate
+ */
+function verifyNetopiaSignature(data, signature, publicKey) {
   try {
-    const { order, payment } = notification;
-
-    console.log("🔔 Processing NETOPIA notification:", {
-      orderId: order?.orderId,
-      paymentId: payment?.paymentId,
-      status: payment?.status,
-      timestamp: new Date().toISOString(),
-    });
-
-    // Procesez notificarea în funcție de status
-    switch (payment?.status) {
-      case "confirmed":
-      case "paid":
-        console.log(`✅ Payment confirmed for order ${order?.orderId}`);
-        
-        // Încearcă să trimită email, dar nu se blochează dacă eșuează
-        const emailResult = await sendPaymentConfirmationEmailSafe(order?.orderId, payment);
-        console.log(`📧 Email result for order ${order?.orderId}:`, emailResult);
-        
-        break;
-
-      case "pending":
-        console.log(`⏳ Payment pending for order ${order?.orderId}`);
-        break;
-
-      case "canceled":
-      case "failed":
-        console.log(`❌ Payment failed/canceled for order ${order?.orderId}`);
-        break;
-
-      default:
-        console.log(`❓ Unknown payment status: ${payment?.status} for order ${order?.orderId}`);
+    if (!publicKey) {
+      console.log(
+        "Warning: No public key configured, skipping signature verification"
+      );
+      return true; // În sandbox, acceptăm fără verificare
     }
 
-    return { 
-      success: true, 
-      orderId: order?.orderId, 
-      status: payment?.status,
-      processed: true
-    };
+    const verify = crypto.createVerify("sha1");
+    verify.update(data);
+    return verify.verify(publicKey, signature, "base64");
   } catch (error) {
-    console.error("Error in processNetopiaNotificationSafe:", error);
-    // Chiar dacă apare o eroare în procesare, returnăm success pentru NETOPIA
-    return { 
-      success: true, 
-      error: error.message,
-      processed: false
-    };
+    console.error("Error verifying signature:", error);
+    return false;
   }
+}
+
+/**
+ * Procesează notificarea NETOPIA
+ */
+async function processNetopiaNotification(notification) {
+  const { order, payment } = notification;
+
+  console.log("Processing NETOPIA notification:", {
+    orderId: order?.orderId,
+    paymentId: payment?.paymentId,
+    status: payment?.status,
+  });
+
+  // Procesez notificarea și trimit emailuri corespunzătoare
+  switch (payment?.status) {
+    case "confirmed":
+      console.log(`✅ Payment confirmed for order ${order?.orderId}`);
+
+      try {
+        // Apelează funcția dedicată pentru procesarea finalizării comenzii
+        const baseUrl = process.env.URL || "https://lupulsicorbul.com";
+        const response = await fetch(
+          `${baseUrl}/.netlify/functions/process-payment-completion`,
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              orderId: order?.orderId,
+              paymentInfo: payment,
+              orderData: null, // Se va încerca căutarea automată
+            }),
+          }
+        );
+
+        if (response.ok) {
+          console.log(
+            `📧 Payment completion processed successfully for order ${order?.orderId}`
+          );
+        } else {
+          const errorText = await response.text();
+          console.error(
+            `❌ Failed to process payment completion for order ${order?.orderId}:`,
+            response.status,
+            errorText
+          );
+          // Fallback la emailul simplu
+          await sendPaymentConfirmationEmail(order?.orderId, payment);
+        }
+      } catch (emailError) {
+        console.error(
+          `❌ Failed to process payment completion for order ${order?.orderId}:`,
+          emailError
+        );
+        // Fallback la emailul simplu
+        try {
+          await sendPaymentConfirmationEmail(order?.orderId, payment);
+          console.log(
+            `📧 Fallback confirmation email sent for order ${order?.orderId}`
+          );
+        } catch (fallbackError) {
+          console.error(
+            `❌ Fallback email also failed for order ${order?.orderId}:`,
+            fallbackError
+          );
+        }
+      }
+      break;
+
+    case "pending":
+      console.log(`⏳ Payment pending for order ${order?.orderId}`);
+
+      try {
+        await sendPaymentPendingEmail(order?.orderId, payment);
+        console.log(
+          `📧 Pending notification email sent for order ${order?.orderId}`
+        );
+      } catch (emailError) {
+        console.error(
+          `❌ Failed to send pending email for order ${order?.orderId}:`,
+          emailError
+        );
+      }
+      break;
+
+    case "canceled":
+    case "failed":
+      console.log(`❌ Payment failed/canceled for order ${order?.orderId}`);
+
+      try {
+        await sendPaymentFailedEmail(order?.orderId, payment);
+        console.log(`📧 Failed payment email sent for order ${order?.orderId}`);
+      } catch (emailError) {
+        console.error(
+          `❌ Failed to send failure email for order ${order?.orderId}:`,
+          emailError
+        );
+      }
+      break;
+
+    default:
+      console.log(`❓ Unknown payment status: ${payment?.status}`);
+  }
+
+  return { success: true, orderId: order?.orderId, status: payment?.status };
 }
 
 /**

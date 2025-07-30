@@ -4,7 +4,7 @@
  * și trimite emailurile corespunzătoare către client și admin
  */
 
-const nodemailer = require("nodemailer");
+import nodemailer from "nodemailer";
 
 /**
  * Configurează transportul pentru emailuri
@@ -67,54 +67,59 @@ async function findOrderData(orderId, event) {
         // Decodează cookie-ul (folosind funcția Unicode-safe din Checkout.tsx)
         const encodedCookieValue = decodeURIComponent(cookieMatch[1]);
 
-        // Decodează base64 Unicode-safe
+        // Decodează base64 Unicode-safe pentru Node.js
         const unicodeBase64Decode = (str) => {
           try {
-            const decoded = atob(str);
-            return decodeURIComponent(
-              Array.prototype.map
-                .call(decoded, (c) => {
-                  return "%" + ("00" + c.charCodeAt(0).toString(16)).slice(-2);
-                })
-                .join("")
-            );
+            const decoded = Buffer.from(str, "base64").toString("utf8");
+            return JSON.parse(decoded);
           } catch (e) {
             console.warn("Fallback la decodare simplă base64:", e);
-            return JSON.parse(atob(str));
+            try {
+              const decoded = Buffer.from(str, "base64").toString("binary");
+              return JSON.parse(decoded);
+            } catch (e2) {
+              console.error("Eroare completă la decodarea base64:", e2);
+              return null;
+            }
           }
         };
 
-        const recoveryData = JSON.parse(
-          unicodeBase64Decode(encodedCookieValue)
-        );
+        const recoveryData = unicodeBase64Decode(encodedCookieValue);
 
-        console.log("🍪 Date recuperate din cookie pentru:", orderId);
-        console.log("📧 Email client recuperat:", recoveryData.email);
+        if (recoveryData) {
+          console.log("🍪 Date recuperate din cookie pentru:", orderId);
+          console.log("📧 Email client recuperat:", recoveryData.email);
 
-        // Mapează datele din cookie în formatul așteptat
-        orderData = {
-          orderNumber: orderId,
-          customerEmail: recoveryData.email,
-          customerName: recoveryData.customerName,
-          customerPhone: recoveryData.phone,
-          customerAddress: recoveryData.address,
-          customerCity: recoveryData.city,
-          customerCounty: recoveryData.county,
-          customerPostalCode: recoveryData.postalCode || "",
-          totalAmount: parseFloat(recoveryData.amount) || 0,
-          items: [
-            {
-              name: "Comandă plătită prin card",
-              price: parseFloat(recoveryData.amount) || 0,
-              quantity: 1,
-              description: "Plată procesată prin NETOPIA",
-            },
-          ],
-          date: recoveryData.timestamp || new Date().toISOString(),
-          paymentMethod: "card",
-        };
+          // Mapează datele din cookie în formatul așteptat
+          orderData = {
+            orderNumber: orderId,
+            customerEmail: recoveryData.email,
+            customerName: recoveryData.customerName,
+            customerPhone: recoveryData.phone,
+            customerAddress: recoveryData.address,
+            customerCity: recoveryData.city,
+            customerCounty: recoveryData.county,
+            customerPostalCode: recoveryData.postalCode || "",
+            totalAmount: parseFloat(recoveryData.amount) || 0,
+            items: [
+              {
+                name: "Comandă plătită prin card",
+                price: parseFloat(recoveryData.amount) || 0,
+                quantity: 1,
+                description: "Plată procesată prin NETOPIA",
+              },
+            ],
+            date: recoveryData.timestamp || new Date().toISOString(),
+            paymentMethod: "card",
+          };
 
-        console.log("✅ Date comandă recuperate cu succes din cookie");
+          console.log("✅ Date comandă recuperate cu succes din cookie");
+        } else {
+          console.log(
+            "❌ Nu s-au putut decoda datele din cookie pentru:",
+            orderId
+          );
+        }
       } else {
         console.log("⚠️ Nu s-au găsit date cookie pentru:", orderId);
       }

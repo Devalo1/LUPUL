@@ -30,6 +30,7 @@
 [dev]
   # Servește direct din dist/ fără proxy către Vite
   port = 8888
+  targetPort = 5174
   functions = "netlify/functions"
   
 [dev.environment]

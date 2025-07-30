@@ -54,7 +54,7 @@ function getEmailTransporter() {
 async function sendPaymentConfirmationEmailSafe(orderId, paymentInfo) {
   try {
     const transporter = getEmailTransporter();
-    
+
     if (!transporter) {
       console.log("📧 Email transporter not available, skipping email sending");
       return { success: false, reason: "transporter_unavailable" };
@@ -122,11 +122,17 @@ async function processNetopiaNotificationSafe(notification) {
       case "confirmed":
       case "paid":
         console.log(`✅ Payment confirmed for order ${order?.orderId}`);
-        
+
         // Încearcă să trimită email, dar nu se blochează dacă eșuează
-        const emailResult = await sendPaymentConfirmationEmailSafe(order?.orderId, payment);
-        console.log(`📧 Email result for order ${order?.orderId}:`, emailResult);
-        
+        const emailResult = await sendPaymentConfirmationEmailSafe(
+          order?.orderId,
+          payment
+        );
+        console.log(
+          `📧 Email result for order ${order?.orderId}:`,
+          emailResult
+        );
+
         break;
 
       case "pending":
@@ -139,22 +145,24 @@ async function processNetopiaNotificationSafe(notification) {
         break;
 
       default:
-        console.log(`❓ Unknown payment status: ${payment?.status} for order ${order?.orderId}`);
+        console.log(
+          `❓ Unknown payment status: ${payment?.status} for order ${order?.orderId}`
+        );
     }
 
-    return { 
-      success: true, 
-      orderId: order?.orderId, 
+    return {
+      success: true,
+      orderId: order?.orderId,
       status: payment?.status,
-      processed: true
+      processed: true,
     };
   } catch (error) {
     console.error("Error in processNetopiaNotificationSafe:", error);
     // Chiar dacă apare o eroare în procesare, returnăm success pentru NETOPIA
-    return { 
-      success: true, 
+    return {
+      success: true,
       error: error.message,
-      processed: false
+      processed: false,
     };
   }
 }
@@ -165,7 +173,9 @@ async function processNetopiaNotificationSafe(notification) {
 function verifyNetopiaSignatureSafe(data, signature, publicKey) {
   try {
     if (!publicKey) {
-      console.log("Warning: No public key configured, skipping signature verification");
+      console.log(
+        "Warning: No public key configured, skipping signature verification"
+      );
       return true; // În sandbox, acceptăm fără verificare
     }
 
@@ -210,14 +220,16 @@ export const handler = async (event, context) => {
 
   // Pentru orice alt method în afară de POST, tot returnăm 200 pentru NETOPIA
   if (event.httpMethod !== "POST") {
-    console.log(`⚠️ Method ${event.httpMethod} not allowed, but returning 200 for NETOPIA`);
+    console.log(
+      `⚠️ Method ${event.httpMethod} not allowed, but returning 200 for NETOPIA`
+    );
     return {
       statusCode: 200,
       headers,
-      body: JSON.stringify({ 
+      body: JSON.stringify({
         received: true,
         message: "Method not allowed, but notification received",
-        method: event.httpMethod
+        method: event.httpMethod,
       }),
     };
   }
@@ -225,28 +237,28 @@ export const handler = async (event, context) => {
   try {
     // Parse request body cu fallback safe
     let notification = {};
-    
+
     try {
       notification = JSON.parse(event.body || "{}");
     } catch (parseError) {
       console.error("Failed to parse notification body:", parseError);
       console.log("Raw body:", event.body);
-      
+
       // Încearcă să parseze ca form data
       try {
         const params = new URLSearchParams(event.body);
         notification = {
           order: { orderId: params.get("orderId") },
-          payment: { 
+          payment: {
             status: params.get("status"),
-            paymentId: params.get("paymentId")
-          }
+            paymentId: params.get("paymentId"),
+          },
         };
       } catch (formError) {
         console.error("Failed to parse as form data:", formError);
         notification = {
           order: { orderId: "unknown" },
-          payment: { status: "unknown" }
+          payment: { status: "unknown" },
         };
       }
     }

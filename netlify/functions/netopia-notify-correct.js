@@ -1,7 +1,7 @@
 /**
- * Funcție Netlify pentru gestionarea notificărilor NETOPIA - VERSIUNE FIXATĂ
- * Această funcție returnează ÎNTOTDEAUNA status 200 pentru NETOPIA
- * pentru a evita eroarea IDS_Model_Purchase_Sms_Online_INVALID_RESPONSE_STATUS
+ * Funcție Netlify pentru gestionarea notificărilor NETOPIA - FORMATUL CORECT
+ * Această funcție returnează EXACT formatul cerut de NETOPIA: {"errorCode": 0}
+ * pentru a evita eroarea IDS_Model_Purchase_Sms_Online_INVALID_RESPONSE_FORMAT
  */
 
 import crypto from "crypto";
@@ -189,11 +189,11 @@ function verifyNetopiaSignatureSafe(data, signature, publicKey) {
 }
 
 /**
- * Handler principal pentru endpoint-ul de notificare - VERSIUNE SAFE
- * GARANTEAZĂ STATUS 200 PENTRU NETOPIA
+ * Handler principal pentru endpoint-ul de notificare - VERSIUNE CORECTĂ NETOPIA
+ * RETURNEAZĂ EXACT FORMATUL CERUT DE NETOPIA: {"errorCode": 0}
  */
 export const handler = async (event, context) => {
-  // Headers CORS
+  // Headers CORS - cu Content-Type corect pentru NETOPIA
   const headers = {
     "Access-Control-Allow-Origin": "*",
     "Access-Control-Allow-Headers": "Content-Type",
@@ -218,19 +218,15 @@ export const handler = async (event, context) => {
     };
   }
 
-  // Pentru orice alt method în afară de POST, tot returnăm 200 pentru NETOPIA
+  // Pentru orice alt method în afară de POST, tot returnăm formatul NETOPIA
   if (event.httpMethod !== "POST") {
     console.log(
-      `⚠️ Method ${event.httpMethod} not allowed, but returning 200 for NETOPIA`
+      `⚠️ Method ${event.httpMethod} not allowed, but returning NETOPIA format`
     );
     return {
       statusCode: 200,
       headers,
-      body: JSON.stringify({
-        received: true,
-        message: "Method not allowed, but notification received",
-        method: event.httpMethod,
-      }),
+      body: JSON.stringify({ errorCode: 0 }), // NETOPIA cere acest format exact
     };
   }
 

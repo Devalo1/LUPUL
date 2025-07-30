@@ -15,18 +15,23 @@ const OrderConfirmation: React.FC = () => {
   // State pentru a preveni trimiterea multiplă - cu persistență
   const [emailSending, setEmailSending] = useState(false);
   const [emailSentForOrder, setEmailSentForOrder] = useState<string>("");
-  
+
   // Referință pentru a preveni double execution din React StrictMode
   const emailSentRef = useRef<Set<string>>(new Set());
 
   const orderId = searchParams.get("orderId");
   const status = searchParams.get("status");
+  const localFallback = searchParams.get("localFallback"); // Pentru development local
 
   // Funcție pentru trimiterea emailului de confirmare
   const sendOrderConfirmationEmail = async (orderData: any) => {
     // Protecție EXTRA împotriva double execution din React StrictMode
     if (emailSentRef.current.has(orderData.orderNumber)) {
-      console.log("🚫 BLOCAT: Email deja trimis pentru comanda:", orderData.orderNumber, "(useRef protection)");
+      console.log(
+        "🚫 BLOCAT: Email deja trimis pentru comanda:",
+        orderData.orderNumber,
+        "(useRef protection)"
+      );
       return;
     }
 
@@ -44,7 +49,7 @@ const OrderConfirmation: React.FC = () => {
     emailSentRef.current.add(orderData.orderNumber);
     setEmailSending(true);
     setEmailSentForOrder(orderData.orderNumber);
-    
+
     console.log(
       "🔄 Trimit email de confirmare pentru comanda:",
       orderData.orderNumber
@@ -144,7 +149,7 @@ const OrderConfirmation: React.FC = () => {
   useEffect(() => {
     // Protecție împotriva re-executării în React StrictMode
     let isCancelled = false;
-    
+
     const processOrder = async () => {
       // DEBUGGING URGENT - Forțăm afișarea în console
       console.log("🔍 OrderConfirmation mounted cu parametri:", {
@@ -264,9 +269,19 @@ const OrderConfirmation: React.FC = () => {
             ?.split("=")[1];
 
           if (cookieValue) {
-            const recoveryData = JSON.parse(
-              atob(decodeURIComponent(cookieValue))
-            );
+            // Funcție pentru decodare Unicode-safe (match cu encoding-ul din Checkout.tsx)
+            const unicodeBase64Decode = (str: string) => {
+              return decodeURIComponent(
+                atob(str)
+                  .split("")
+                  .map(
+                    (c) => "%" + ("00" + c.charCodeAt(0).toString(16)).slice(-2)
+                  )
+                  .join("")
+              );
+            };
+
+            const recoveryData = JSON.parse(unicodeBase64Decode(cookieValue));
             console.log("🍪 Date găsite în cookie pentru:", orderId);
             console.log("📧 Email client din cookie:", recoveryData.email);
 
@@ -307,6 +322,43 @@ const OrderConfirmation: React.FC = () => {
           }
         } catch (cookieError) {
           console.error("❌ Eroare la restaurarea din cookie:", cookieError);
+        }
+
+        // 🆕 FALLBACK pentru development local - când cookies-urile nu funcționează
+        if (
+          localFallback === "true" &&
+          !sessionStorage.getItem("currentOrderBackup")
+        ) {
+          console.log(
+            "🔧 LOCAL FALLBACK: Creez date mock pentru development local..."
+          );
+
+          const mockSessionData = {
+            orderId: orderId,
+            customerInfo: {
+              firstName: "Dani_popa21",
+              lastName: "Test Local",
+              email: "dani_popa21@yahoo.ro",
+              phone: "0775346243",
+              address: "9 MAI BLOC 2 A",
+              city: "PETROSANI",
+              county: "HUNEDOARA",
+            },
+            amount: 75,
+            description: `Comandă Lupul și Corbul - Local Development Fallback`,
+            timestamp: new Date().toISOString(),
+            source: "LocalDevelopmentFallback",
+          };
+
+          // SALVEAZĂ în sessionStorage pentru testare locală
+          sessionStorage.setItem(
+            "currentOrderBackup",
+            JSON.stringify(mockSessionData)
+          );
+          console.log(
+            "✅ Local fallback activated! Mock data created for:",
+            mockSessionData.customerInfo.email
+          );
         }
       }
 
@@ -509,11 +561,15 @@ const OrderConfirmation: React.FC = () => {
 
       // Setează datele și trimite emailul DOAR dacă nu a fost deja trimis
       if (isCancelled) return; // Prevent execution if component unmounted
-      
+
       setOrderData(foundOrderData);
 
       // Verifică dacă emailul a fost deja trimis pentru această comandă
-      if (emailSentForOrder !== foundOrderData.orderNumber && !emailSending && !emailSentRef.current.has(foundOrderData.orderNumber)) {
+      if (
+        emailSentForOrder !== foundOrderData.orderNumber &&
+        !emailSending &&
+        !emailSentRef.current.has(foundOrderData.orderNumber)
+      ) {
         await sendOrderConfirmationEmail(foundOrderData);
       } else {
         console.log(

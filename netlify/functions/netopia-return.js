@@ -35,23 +35,46 @@ export const handler = async (event, context) => {
     }
 
     // 🆕 RESTORE SESSION DATA - Recuperează datele din cookie și le salvează în sessionStorage
+    let sessionBackupData = null; // Declarăm variabila în scope-ul principal
+
     if (orderId) {
       try {
         // Caută cookie pentru această comandă
         const cookies = event.headers.cookie || "";
+        console.log("🍪 DEBUG: All cookies received:", cookies);
+        console.log(
+          "🔍 DEBUG: Looking for cookie pattern:",
+          `orderRecovery_${orderId}`
+        );
+
         const cookieMatch = cookies.match(
           new RegExp(`orderRecovery_${orderId}=([^;]+)`)
         );
 
+        console.log("🔍 DEBUG: Cookie match result:", cookieMatch);
+
         if (cookieMatch) {
           const cookieValue = decodeURIComponent(cookieMatch[1]);
-          const recoveryData = JSON.parse(atob(cookieValue)); // Decodare base64
+
+          // Funcție pentru decodare Unicode-safe (match cu encoding-ul din Checkout.tsx)
+          const unicodeBase64Decode = (str) => {
+            return decodeURIComponent(
+              atob(str)
+                .split("")
+                .map(
+                  (c) => "%" + ("00" + c.charCodeAt(0).toString(16)).slice(-2)
+                )
+                .join("")
+            );
+          };
+
+          const recoveryData = JSON.parse(unicodeBase64Decode(cookieValue));
 
           console.log("🍪 Recovery data found in cookie for:", orderId);
           console.log("📧 Customer email recovered:", recoveryData.email);
 
           // Formatează datele pentru sessionStorage (formatul așteptat de OrderConfirmation)
-          const sessionBackupData = {
+          sessionBackupData = {
             orderId: orderId,
             customerInfo: {
               firstName: recoveryData.customerName.split(" ")[0] || "Client",
@@ -87,6 +110,18 @@ export const handler = async (event, context) => {
 
     // Build query string
     const queryParams = new URLSearchParams();
+
+    // 🆕 FALLBACK LOCAL DEVELOPMENT - Adaugă parametru special pentru development local când nu avem cookies
+    const isLocalDev =
+      event.headers.host && event.headers.host.includes("localhost");
+    const hasCookieData = sessionBackupData !== null;
+
+    if (isLocalDev && !hasCookieData) {
+      console.log(
+        "🔧 LOCAL DEV: Activating fallback recovery mode - no cookies found on localhost"
+      );
+      queryParams.set("localFallback", "true");
+    }
     if (orderId) queryParams.set("orderId", orderId);
     if (status) queryParams.set("status", status);
     if (paymentId) queryParams.set("paymentId", paymentId);

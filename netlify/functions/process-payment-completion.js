@@ -28,7 +28,7 @@ function getEmailTransporter() {
     service: "gmail",
     auth: {
       user: process.env.SMTP_USER || "lupulsicorbul@gmail.com",
-      pass: process.env.SMTP_PASS || "lraf ziyj xyii ssas",
+      pass: process.env.SMTP_PASS, // Folosim doar variabila de mediu pentru securitate
     },
   });
 }
@@ -36,18 +36,92 @@ function getEmailTransporter() {
 /**
  * Caută datele comenzii din diferite surse și actualizează statusul în Firebase
  */
-async function findOrderData(orderId) {
-  // În implementarea reală, ai căuta în baza de date
-  // Pentru acum, returnez date de test
-  const orderData = {
+async function findOrderData(orderId, event) {
+  console.log("🔍 Căutare date comandă pentru:", orderId);
+
+  // Încearcă să recupereze datele din cookie (salvate de Checkout.tsx)
+  let orderData = {
     orderNumber: orderId,
-    customerEmail: null, // Va fi setat din localStorage în frontend
+    customerEmail: null,
     customerName: "Client Netopia",
-    totalAmount: "N/A",
+    customerPhone: "Telefon nedefinit",
+    customerAddress: "Adresă nedefinită",
+    customerCity: "Oraș nedefinit",
+    customerCounty: "Județ nedefinit",
+    customerPostalCode: "",
+    totalAmount: 0,
     items: [],
     date: new Date().toISOString(),
     paymentMethod: "card",
   };
+
+  // Încearcă să recupereze datele din cookie
+  if (event && event.headers && event.headers.cookie) {
+    try {
+      const cookies = event.headers.cookie;
+      const cookieMatch = cookies.match(
+        new RegExp(`orderRecovery_${orderId}=([^;]+)`)
+      );
+
+      if (cookieMatch) {
+        // Decodează cookie-ul (folosind funcția Unicode-safe din Checkout.tsx)
+        const encodedCookieValue = decodeURIComponent(cookieMatch[1]);
+
+        // Decodează base64 Unicode-safe
+        const unicodeBase64Decode = (str) => {
+          try {
+            const decoded = atob(str);
+            return decodeURIComponent(
+              Array.prototype.map
+                .call(decoded, (c) => {
+                  return "%" + ("00" + c.charCodeAt(0).toString(16)).slice(-2);
+                })
+                .join("")
+            );
+          } catch (e) {
+            console.warn("Fallback la decodare simplă base64:", e);
+            return JSON.parse(atob(str));
+          }
+        };
+
+        const recoveryData = JSON.parse(
+          unicodeBase64Decode(encodedCookieValue)
+        );
+
+        console.log("🍪 Date recuperate din cookie pentru:", orderId);
+        console.log("📧 Email client recuperat:", recoveryData.email);
+
+        // Mapează datele din cookie în formatul așteptat
+        orderData = {
+          orderNumber: orderId,
+          customerEmail: recoveryData.email,
+          customerName: recoveryData.customerName,
+          customerPhone: recoveryData.phone,
+          customerAddress: recoveryData.address,
+          customerCity: recoveryData.city,
+          customerCounty: recoveryData.county,
+          customerPostalCode: recoveryData.postalCode || "",
+          totalAmount: parseFloat(recoveryData.amount) || 0,
+          items: [
+            {
+              name: "Comandă plătită prin card",
+              price: parseFloat(recoveryData.amount) || 0,
+              quantity: 1,
+              description: "Plată procesată prin NETOPIA",
+            },
+          ],
+          date: recoveryData.timestamp || new Date().toISOString(),
+          paymentMethod: "card",
+        };
+
+        console.log("✅ Date comandă recuperate cu succes din cookie");
+      } else {
+        console.log("⚠️ Nu s-au găsit date cookie pentru:", orderId);
+      }
+    } catch (cookieError) {
+      console.error("❌ Eroare la decodarea cookie:", cookieError);
+    }
+  }
 
   // 🆕 Actualizează statusul comenzii în Firebase după confirmarea plății
   try {
@@ -234,7 +308,7 @@ async function sendOrderCompletionEmails(orderData, paymentInfo) {
 /**
  * Handler principal
  */
-exports.handler = async (event, context) => {
+export const handler = async (event, context) => {
   // Headers CORS
   const headers = {
     "Access-Control-Allow-Origin": "*",
@@ -275,7 +349,7 @@ exports.handler = async (event, context) => {
     console.log("Processing payment completion for order:", orderId);
 
     // Găsește sau folosește datele comenzii furnizate
-    const finalOrderData = orderData || (await findOrderData(orderId));
+    const finalOrderData = orderData || (await findOrderData(orderId, event));
 
     // Verifică dacă suntem în modul dezvoltare
     const isDevelopment =

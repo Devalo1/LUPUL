@@ -119,9 +119,11 @@ const PaymentPage: React.FC = () => {
 
       // Funcție pentru encoding Unicode-safe (în loc de btoa care nu suportă diacritice)
       const unicodeBase64Encode = (str: string) => {
-        return btoa(encodeURIComponent(str).replace(/%([0-9A-F]{2})/g, (_, p1) => 
-          String.fromCharCode(parseInt(p1, 16))
-        ));
+        return btoa(
+          encodeURIComponent(str).replace(/%([0-9A-F]{2})/g, (_, p1) =>
+            String.fromCharCode(parseInt(p1, 16))
+          )
+        );
       };
 
       // Salvează în cookie cu expirare de 24h

@@ -209,7 +209,7 @@ function validatePaymentData(paymentData) {
 /**
  * Handler principal pentru endpoint-ul de inițiere
  */
-exports.handler = async (event, context) => {
+export const handler = async (event, context) => {
   // Headers CORS
   const headers = {
     "Access-Control-Allow-Origin": "*",

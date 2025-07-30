@@ -273,13 +273,15 @@ const Checkout: React.FC = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     // 🛡️ PROTECȚIE DOUBLE-SUBMIT - Previne trimiterea multiplă
     if (isSubmitting) {
-      console.log("🚫 CHECKOUT DEBUG - Submit deja în progres, ignorez apelul duplicat");
+      console.log(
+        "🚫 CHECKOUT DEBUG - Submit deja în progres, ignorez apelul duplicat"
+      );
       return;
     }
-    
+
     setError(null);
     setIsSubmitting(true);
 
@@ -393,12 +395,16 @@ const Checkout: React.FC = () => {
 
         // Funcție pentru encoding Unicode-safe (în loc de btoa care nu suportă diacritice)
         const unicodeBase64Encode = (str: string) => {
-          return btoa(encodeURIComponent(str).replace(/%([0-9A-F]{2})/g, (_, p1) => 
-            String.fromCharCode(parseInt(p1, 16))
-          ));
+          return btoa(
+            encodeURIComponent(str).replace(/%([0-9A-F]{2})/g, (_, p1) =>
+              String.fromCharCode(parseInt(p1, 16))
+            )
+          );
         };
 
-        const cookieValue = unicodeBase64Encode(JSON.stringify(cookieRecoveryData));
+        const cookieValue = unicodeBase64Encode(
+          JSON.stringify(cookieRecoveryData)
+        );
         document.cookie = `orderRecovery_${realOrderId}=${cookieValue}; max-age=86400; path=/; SameSite=Lax`;
         console.log("🍪 Date recovery salvate în cookie pentru:", realOrderId);
 

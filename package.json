@@ -104,6 +104,7 @@
     "check-deps": "node scripts/check-dependencies.js",
     "clean": "rimraf node_modules dist",
     "dev": "netlify dev",
+    "dev:build": "npm run build && netlify dev --dir=dist",
     "serve": "vite preview",
     "emulators": "firebase emulators:start",
     "dev:all": "concurrently \"npm run dev\" \"npm run emulators\"",

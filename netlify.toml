@@ -28,9 +28,8 @@
   VITE_FIREBASE_MEASUREMENT_ID = "G-38YSZKVXDC"
 
 [dev]
-  command = "npm start"
+  # Servește direct din dist/ fără proxy către Vite
   port = 8888
-  targetPort = 5173
   functions = "netlify/functions"
   
 [dev.environment]

@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Test Order Completion Flow</title>
+  </head>
+  <body>
+    <h1>Test NETOPIA Order Completion</h1>
+    <button onclick="setupTestCookies()">Setup Test Cookies</button>
+    <button onclick="testNetopiaReturn()">Test NETOPIA Return</button>
+    <button onclick="testOrderConfirmation()">Test Order Confirmation</button>
+    <div id="output"></div>
+
+    <script>
+      function setupTestCookies() {
+        // Date comandă test cu caractere românești
+        const orderData = {
+          nume: "Anda Pătrașcu",
+          email: "anda.patrascu@test.ro",
+          telefon: "0721234567",
+          adresa: "Str. Mihai Viteazul, Nr. 15, București",
+          produse: [
+            {
+              nume: "Cămaşă bărbătească albă",
+              cantitate: 2,
+              pret: 120,
+            },
+          ],
+          total: 240,
+        };
+
+        // Encode similar cum face Checkout.tsx
+        function customBtoa(str) {
+          const bytes = new TextEncoder().encode(str);
+          let binary = "";
+          bytes.forEach((byte) => (binary += String.fromCharCode(byte)));
+          return btoa(binary);
+        }
+
+        const encodedData = customBtoa(JSON.stringify(orderData));
+
+        // Set cookies
+        document.cookie = `orderData_LC-TEST123=${encodedData}; path=/; max-age=3600`;
+        document.cookie = `orderTotal_LC-TEST123=240; path=/; max-age=3600`;
+
+        document.getElementById("output").innerHTML =
+          "<p>✅ Test cookies set successfully!</p>";
+      }
+
+      function testNetopiaReturn() {
+        window.open(
+          "http://localhost:8888/.netlify/functions/netopia-return?orderId=LC-TEST123&errorCode=0&errorMessage=success",
+          "_blank"
+        );
+      }
+
+      function testOrderConfirmation() {
+        window.open(
+          "http://localhost:8888/order-confirmation?orderId=LC-TEST123",
+          "_blank"
+        );
+      }
+    </script>
+  </body>
+</html>

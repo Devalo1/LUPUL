@@ -7,10 +7,10 @@ import nodemailer from "nodemailer";
 
 export const handler = async (event, context) => {
   // 🔍 DEBUG LOG - Pentru identificarea apelurilor multiple
-  const requestId = Date.now() + '-' + Math.random().toString(36).substr(2, 9);
+  const requestId = Date.now() + "-" + Math.random().toString(36).substr(2, 9);
   console.log(`🚀 SEND-ORDER-EMAIL CALLED - Request ID: ${requestId}`);
   console.log(`📋 Method: ${event.httpMethod}, Headers:`, event.headers);
-  
+
   // Handle CORS preflight request
   if (event.httpMethod === "OPTIONS") {
     return {
@@ -370,7 +370,9 @@ export const handler = async (event, context) => {
     };
 
     // Execută trimiterea emailurilor
-    console.log(`📧 [${requestId}] Trimit emailurile pentru comanda: ${orderNumber}`);
+    console.log(
+      `📧 [${requestId}] Trimit emailurile pentru comanda: ${orderNumber}`
+    );
     console.log(`🎯 [${requestId}] Backup mode: ${isBackupNotification}`);
 
     if (isBackupNotification) {
@@ -397,7 +399,9 @@ export const handler = async (event, context) => {
       };
     } else {
       // Trimitere normală către client și admin
-      console.log(`📧 [${requestId}] Trimit emailuri NORMALE către client ȘI admin`);
+      console.log(
+        `📧 [${requestId}] Trimit emailuri NORMALE către client ȘI admin`
+      );
       const [customerResult, adminResult] = await Promise.all([
         transporter.sendMail(customerEmail),
         transporter.sendMail(adminEmail),

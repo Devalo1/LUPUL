@@ -171,7 +171,7 @@ const generateUltraIntelligentPrompt = async (message, userId, context) => {
 };
 
 // Main handler function
-exports.handler = async (event, context) => {
+export const handler = async (event, context) => {
   console.log("🚀 [Ultra-AI] Request received");
 
   // CORS headers pentru toate request-urile

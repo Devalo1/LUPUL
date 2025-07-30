@@ -27,7 +27,7 @@ function getEmailTransporter() {
     service: "gmail",
     auth: {
       user: process.env.SMTP_USER || "lupulsicorbul@gmail.com",
-      pass: process.env.SMTP_PASS || "lraf ziyj xyii ssas",
+      pass: process.env.SMTP_PASS, // Folosim doar variabila de mediu pentru securitate
     },
   });
 }

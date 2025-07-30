@@ -478,7 +478,7 @@ function validatePaymentData(paymentData) {
 /**
  * Handler principal - optimizat pentru compatibilitate browser
  */
-exports.handler = async (event, context) => {
+export const handler = async (event, context) => {
   const userAgent = event.headers["user-agent"] || "";
   const browser = detectBrowser(userAgent);
   const corsHeaders = getCORSHeaders(event);

@@ -83,7 +83,7 @@ async function updateOrderInFirebase(orderNumber, status, notes = "") {
 /**
  * Handler principal
  */
-exports.handler = async (event, context) => {
+export const handler = async (event, context) => {
   // Headers CORS
   const headers = {
     "Access-Control-Allow-Origin": "*",

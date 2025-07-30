@@ -4,9 +4,9 @@
  * prin returnarea ÎNTOTDEAUNA a simulării pentru comenzile TEST-*
  */
 
-const { handler: browserFixHandler } = require("./netopia-browser-fix");
+import { handler as browserFixHandler } from "./netopia-browser-fix.js";
 
-exports.handler = async (event, context) => {
+export const handler = async (event, context) => {
   console.log("🧪 NETOPIA Production Test - Override pentru comenzile TEST");
 
   // Parse request body pentru a verifica dacă e comandă TEST

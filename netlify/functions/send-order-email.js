@@ -106,12 +106,12 @@ export const handler = async (event, context) => {
     // Dacă SMTP_PASS este "test-development-mode", simulăm
     // Dacă SMTP_PASS este o parolă reală, trimitem emailuri reale
     // FOLOSIM PAROLA REALĂ PENTRU TRIMITERE
-    const shouldSimulate = false; // Forțăm trimiterea reală
-    // const shouldSimulate =
-    //   !smtpPass ||
-    //   smtpPass === "test-development-mode" ||
-    //   smtpPass === "your-gmail-app-password" ||
-    //   smtpPass === "your-gmail-app-password-here";
+    const shouldSimulate =
+      !smtpPass ||
+      smtpPass === "test-development-mode" ||
+      smtpPass === "your-gmail-app-password" ||
+      smtpPass === "your-gmail-app-password-here";
+    // const shouldSimulate = false; // Forțăm trimiterea reală
 
     if (shouldSimulate) {
       // În modul dezvoltare, simulăm trimiterea emailurilor

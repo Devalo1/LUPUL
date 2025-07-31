@@ -3,14 +3,14 @@
  * Această funcție procesează comenzile de embleme NFT și inițiază plățile folosind API KEY
  */
 
-// Configurație NETOPIA v2.x pentru embleme - folosește API KEY
+// Configurație NETOPIA v2.x pentru embleme - folosește API KEY și endpoint-uri corecte
 const NETOPIA_CONFIG = {
   sandbox: {
     mode: "sandbox",
     baseUrl: "https://secure.sandbox.netopia-payments.com",
     endpoint: "https://secure.sandbox.netopia-payments.com/payment/card/start",
     signature: "2ZOW-PJ5X-HYYC-IENE-APZO",
-    apiKey: "z-2vhwpEKiI7WSe1OjU9BR-vaMgoEVEDDbaToPXkVmXKDojL3afQ4uxItEw=",
+    apiKey: "z-2vhwpEKiI7WSe1OjU9BR-vaMgoEVEDDbaToPXkVmXKDojL3afQ4uxItEw=", // Same as working netopia-v2-api
   },
   live: {
     mode: "live",
@@ -25,17 +25,10 @@ const NETOPIA_CONFIG = {
 
 /**
  * Creează payload-ul pentru NETOPIA API v2.x - special pentru embleme
+ * FOLOSEȘTE EXACT ACEEAȘI STRUCTURĂ CA netopia-v2-api.js QUI FUNCȚIONEAZĂ
  */
 function createEmblemPayload(paymentData, config) {
-  // Detectează environment-ul corect pentru development vs production
-  const isDevelopment =
-    process.env.NODE_ENV !== "production" &&
-    process.env.CONTEXT !== "production";
-  const baseUrl = isDevelopment
-    ? "http://localhost:8888"
-    : process.env.URL || "https://lupulsicorbul.com";
-
-  console.log("🔮 Creating emblem payload with baseUrl:", baseUrl);
+  const baseUrl = process.env.URL || "https://lupulsicorbul.com";
 
   return {
     // Payment configuration
@@ -57,29 +50,30 @@ function createEmblemPayload(paymentData, config) {
         type: "card",
       },
       data: {
-        property1: "string",
-        property2: "string",
+        emblemType: paymentData.emblemType,
+        userId: paymentData.userId,
       },
     },
 
-    // Order details
+    // Order details - EXACT SAME STRUCTURE AS WORKING netopia-v2-api.js
     order: {
       ntpID: "",
       posSignature: config.signature,
-      dateTime: new Date().toISOString().replace("Z", "+02:00"), // Romanian timezone
-      description: `🔮 ${paymentData.description || `Emblema ${paymentData.emblemType}`} - Acces exclusiv la comunitatea Lupul și Corbul`,
+      dateTime: new Date().toISOString().replace("Z", "+02:00"),
+      description:
+        paymentData.description || `Emblema ${paymentData.emblemType}`,
       orderID: paymentData.orderId,
-      amount: parseFloat(paymentData.amount), // Amount is already in bani (RON * 100)
+      amount: parseFloat(paymentData.amount),
       currency: "RON",
 
       // Billing information
       billing: {
-        email: paymentData.customerInfo?.email || "client@lupulsicorbul.com",
+        email: paymentData.customerInfo?.email || "user@example.com",
         phone: paymentData.customerInfo?.phone || "+407xxxxxxxx",
-        firstName: paymentData.customerInfo?.firstName || "Client",
-        lastName: paymentData.customerInfo?.lastName || "Premium",
+        firstName: paymentData.customerInfo?.firstName || "First",
+        lastName: paymentData.customerInfo?.lastName || "Last",
         city: paymentData.customerInfo?.city || "City",
-        country: 642, // Romania country code
+        country: 642,
         countryName: "Country",
         state: paymentData.customerInfo?.county || "State",
         postalCode: paymentData.customerInfo?.postalCode || "Zip",
@@ -88,10 +82,10 @@ function createEmblemPayload(paymentData, config) {
 
       // Shipping information (same as billing for digital products)
       shipping: {
-        email: paymentData.customerInfo?.email || "client@lupulsicorbul.com",
+        email: paymentData.customerInfo?.email || "user@example.com",
         phone: paymentData.customerInfo?.phone || "+407xxxxxxxx",
-        firstName: paymentData.customerInfo?.firstName || "Client",
-        lastName: paymentData.customerInfo?.lastName || "Premium",
+        firstName: paymentData.customerInfo?.firstName || "First",
+        lastName: paymentData.customerInfo?.lastName || "Last",
         city: paymentData.customerInfo?.city || "City",
         country: 642,
         state: paymentData.customerInfo?.county || "State",
@@ -102,11 +96,11 @@ function createEmblemPayload(paymentData, config) {
       // Products
       products: [
         {
-          name: `Emblema NFT: ${paymentData.emblemType}`,
-          code: `EMBLEM_${paymentData.emblemType?.toUpperCase()}`,
-          category: "Digital NFT",
+          name: paymentData.description || `Emblema ${paymentData.emblemType}`,
+          code: paymentData.orderId,
+          category: "category",
           price: parseFloat(paymentData.amount),
-          vat: 19, // 19% TVA România
+          vat: 19,
         },
       ],
 
@@ -116,10 +110,9 @@ function createEmblemPayload(paymentData, config) {
         available: [0],
       },
 
-      // Standard data format matching netopia-v2-api.js
       data: {
-        property1: "string",
-        property2: "string",
+        emblemType: paymentData.emblemType,
+        userId: paymentData.userId,
       },
     },
   };

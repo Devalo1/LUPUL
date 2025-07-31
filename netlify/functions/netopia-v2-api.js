@@ -345,8 +345,8 @@ export const handler = async (event, context) => {
     const hasLiveSignature = Boolean(process.env.NETOPIA_LIVE_SIGNATURE);
 
     // Folosește live mode când payload-ul specifică live=true sau când suntem în producție
-    // TEMPORAR: Forțează sandbox până când API key-urile LIVE sunt corecte  
-    const useLive = false; // paymentData.live === true || (isProduction && hasLiveSignature);
+    const useLive =
+      paymentData.live === true || (isProduction && hasLiveSignature);
     const config = useLive ? NETOPIA_V2_CONFIG.live : NETOPIA_V2_CONFIG.sandbox;
 
     console.log("🔧 Environment configuration:", {

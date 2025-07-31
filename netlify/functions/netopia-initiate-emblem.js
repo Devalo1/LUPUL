@@ -326,8 +326,8 @@ const handler = async (event, context) => {
 
     const hasLiveSignature = Boolean(process.env.NETOPIA_LIVE_SIGNATURE);
 
-    // TEMPORAR: Forțează sandbox până când API key-urile LIVE sunt corecte
-    const useLive = false; // paymentData.live === true || (isProduction && hasLiveSignature);
+    const useLive =
+      paymentData.live === true || (isProduction && hasLiveSignature);
     const config = useLive ? NETOPIA_CONFIG.live : NETOPIA_CONFIG.sandbox;
 
     console.log(

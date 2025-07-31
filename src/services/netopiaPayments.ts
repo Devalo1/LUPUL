@@ -82,6 +82,7 @@ class NetopiaPayments {
     const hostname = window.location.hostname;
     return (
       hostname === "lupulsicorbul.com" ||
+      hostname === "www.lupulsicorbul.com" ||
       (hostname !== "localhost" &&
         !hostname.includes("netlify") &&
         !hostname.includes("preview"))
@@ -629,7 +630,7 @@ class NetopiaPayments {
 // Configurația pentru producție și dezvoltare
 const getNetopiaConfig = (): NetopiaConfig => {
   const currentHostname = window.location.hostname;
-  const isLupulSiCorbul = currentHostname === "lupulsicorbul.com";
+  const isLupulSiCorbul = currentHostname === "lupulsicorbul.com" || currentHostname === "www.lupulsicorbul.com";
   const isNotLocalhost = currentHostname !== "localhost";
   const isNotNetlify = !currentHostname.includes("netlify");
   const isNotPreview = !currentHostname.includes("preview");

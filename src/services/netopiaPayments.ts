@@ -620,11 +620,23 @@ class NetopiaPayments {
 
 // Configurația pentru producție și dezvoltare
 const getNetopiaConfig = (): NetopiaConfig => {
-  const isProduction =
-    window.location.hostname === "lupulsicorbul.com" ||
-    (window.location.hostname !== "localhost" &&
-      !window.location.hostname.includes("netlify") &&
-      !window.location.hostname.includes("preview"));
+  const currentHostname = window.location.hostname;
+  const isLupulSiCorbul = currentHostname === "lupulsicorbul.com";
+  const isNotLocalhost = currentHostname !== "localhost";
+  const isNotNetlify = !currentHostname.includes("netlify");
+  const isNotPreview = !currentHostname.includes("preview");
+  
+  const isProduction = isLupulSiCorbul || (isNotLocalhost && isNotNetlify && isNotPreview);
+
+  console.log("🌐 HOSTNAME DETECTION DEBUG:", {
+    currentHostname,
+    isLupulSiCorbul,
+    isNotLocalhost,
+    isNotNetlify, 
+    isNotPreview,
+    finalIsProduction: isProduction,
+    detectedAsProduction: isProduction ? "✅ PRODUCTION" : "❌ NOT PRODUCTION"
+  });
 
   // În Vite folosim import.meta.env nu process.env pentru variabile VITE_
   // Citim semnături Netopia din variabilele corespunzătoare

@@ -1,225 +1,271 @@
 /**
- * Funcție Netlify pentru inițierea plăților EMBLEME prin NETOPIA
- * Această funcție procesează comenzile de embleme NFT și inițiază plățile
+ * Funcție Netlify pentru inițierea plăților EMBLEME prin NETOPIA API v2.x
+ * Această funcție procesează comenzile de embleme NFT și inițiază plățile folosind API KEY
  */
 
-const crypto = require("crypto");
-const {
-  NETOPIA_LIVE_PRIVATE_KEY,
-  NETOPIA_LIVE_CERTIFICATE,
-} = require("./netopia-credentials.js");
-
-// Configurație NETOPIA pentru embleme
+// Configurație NETOPIA v2.x pentru embleme - folosește API KEY
 const NETOPIA_CONFIG = {
   sandbox: {
     mode: "sandbox",
-    signature:
-      process.env.NETOPIA_SANDBOX_SIGNATURE ||
-      process.env.VITE_NETOPIA_SIGNATURE_SANDBOX ||
-      "2ZOW-PJ5X-HYYC-IENE-APZO",
-    endpoint: "https://secure.netopia-payments.com/payment/card",
-    publicKey:
-      process.env.NETOPIA_SANDBOX_PUBLIC_KEY ||
-      process.env.VITE_NETOPIA_PUBLIC_KEY ||
-      "2ZOW-PJ5X-HYYC-IENE-APZO",
+    baseUrl: "https://secure.sandbox.netopia-payments.com",
+    endpoint: "https://secure.sandbox.netopia-payments.com/payment/card/start",
+    signature: "2ZOW-PJ5X-HYYC-IENE-APZO",
+    apiKey: "z-2vhwpEKiI7WSe1OjU9BR-vaMgoEVEDDbaToPXkVmXKDojL3afQ4uxItEw=",
   },
   live: {
     mode: "live",
-    signature:
-      process.env.NETOPIA_LIVE_SIGNATURE ||
-      process.env.VITE_NETOPIA_SIGNATURE_LIVE ||
-      "2ZOW-PJ5X-HYYC-IENE-APZO",
-    endpoint: "https://secure.netopia-payments.com/payment/card",
-    publicKey:
-      process.env.NETOPIA_LIVE_PUBLIC_KEY ||
-      process.env.VITE_NETOPIA_PUBLIC_KEY ||
-      "2ZOW-PJ5X-HYYC-IENE-APZO",
-    privateKey: NETOPIA_LIVE_PRIVATE_KEY,
-    certificate: NETOPIA_LIVE_CERTIFICATE,
+    baseUrl: "https://secure.mobilpay.ro/pay",
+    endpoint: "https://secure.mobilpay.ro/pay/payment/card/start",
+    signature: process.env.NETOPIA_LIVE_SIGNATURE || "2ZOW-PJ5X-HYYC-IENE-APZO",
+    apiKey: process.env.NETOPIA_LIVE_API_KEY || "LjsMxpFULiMtFXfWZdSIpPJCeaeyl9PhOV9_omeUt_0NTBLSPJk5r19OyqUt",
   },
 };
 
 /**
- * Creează payload-ul pentru NETOPIA - special pentru embleme
+ * Creează payload-ul pentru NETOPIA API v2.x - special pentru embleme
  */
 function createEmblemPayload(paymentData, config) {
-  const baseUrl = process.env.URL || "https://lupulsicorbul.com";
+  // Detectează environment-ul corect pentru development vs production
+  const isDevelopment = process.env.NODE_ENV !== "production" && process.env.CONTEXT !== "production";
+  const baseUrl = isDevelopment 
+    ? "http://localhost:8888" 
+    : (process.env.URL || "https://lupulsicorbul.com");
+
+  console.log("🔮 Creating emblem payload with baseUrl:", baseUrl);
 
   return {
+    // Payment configuration
     config: {
-      emailTemplate: "lupul-si-corbul-embleme",
+      emailTemplate: "",
+      emailSubject: "",
       notifyUrl: `${baseUrl}/.netlify/functions/netopia-notify-emblem`,
       redirectUrl: `${baseUrl}/.netlify/functions/netopia-return-emblem`,
       language: "ro",
     },
+
+    // Payment details
     payment: {
       options: {
-        installments: 1,
+        installments: 0,
         bonus: 0,
       },
       instrument: {
         type: "card",
-        account: "",
-        expMonth: "",
-        expYear: "",
-        secretCode: "",
       },
       data: {
-        property: "mobilPay_Request_Card",
-        action: "sale",
-        confirmUrl: `${baseUrl}/.netlify/functions/netopia-notify-emblem`,
-        returnUrl: `${baseUrl}/.netlify/functions/netopia-return-emblem`,
-        orderId: paymentData.orderId,
-        amount: paymentData.amount.toString(),
-        currency: "RON",
-        details: `🔮 ${paymentData.description} - Acces exclusiv la comunitatea Lupul și Corbul`,
-        billing: {
-          type: "person",
-          firstName: paymentData.customerInfo.firstName || "Client",
-          lastName: paymentData.customerInfo.lastName || "Premium",
-          email: paymentData.customerInfo.email || "client@lupulsicorbul.com",
-          phone: paymentData.customerInfo.phone || "0700000000",
-          address: paymentData.customerInfo.address || "Strada Digitala 1",
-          city: paymentData.customerInfo.city || "Bucuresti",
-          county: paymentData.customerInfo.county || "Bucuresti",
-          postalCode: paymentData.customerInfo.postalCode || "010001",
-          country: "Romania",
+        property1: "string",
+        property2: "string",
+      },
+    },
+
+    // Order details
+    order: {
+      ntpID: "",
+      posSignature: config.signature,
+      dateTime: new Date().toISOString().replace("Z", "+02:00"), // Romanian timezone
+      description: `🔮 ${paymentData.description || `Emblema ${paymentData.emblemType}`} - Acces exclusiv la comunitatea Lupul și Corbul`,
+      orderID: paymentData.orderId,
+      amount: parseFloat(paymentData.amount), // Amount is already in bani (RON * 100)
+      currency: "RON",
+
+      // Billing information
+      billing: {
+        email: paymentData.customerInfo?.email || "client@lupulsicorbul.com",
+        phone: paymentData.customerInfo?.phone || "+407xxxxxxxx",
+        firstName: paymentData.customerInfo?.firstName || "Client",
+        lastName: paymentData.customerInfo?.lastName || "Premium",
+        city: paymentData.customerInfo?.city || "City",
+        country: 642, // Romania country code
+        countryName: "Country", 
+        state: paymentData.customerInfo?.county || "State",
+        postalCode: paymentData.customerInfo?.postalCode || "Zip",
+        details: paymentData.customerInfo?.address || "",
+      },
+
+      // Shipping information (same as billing for digital products)
+      shipping: {
+        email: paymentData.customerInfo?.email || "client@lupulsicorbul.com",
+        phone: paymentData.customerInfo?.phone || "+407xxxxxxxx",
+        firstName: paymentData.customerInfo?.firstName || "Client",
+        lastName: paymentData.customerInfo?.lastName || "Premium",
+        city: paymentData.customerInfo?.city || "City",
+        country: 642,
+        state: paymentData.customerInfo?.county || "State",
+        postalCode: paymentData.customerInfo?.postalCode || "Zip",
+        details: paymentData.customerInfo?.address || "",
+      },
+
+      // Products
+      products: [
+        {
+          name: `Emblema NFT: ${paymentData.emblemType}`,
+          code: `EMBLEM_${paymentData.emblemType?.toUpperCase()}`,
+          category: "Digital NFT",
+          price: parseFloat(paymentData.amount),
+          vat: 19, // 19% TVA România
         },
-        shipping: {
-          type: "person",
-          firstName: paymentData.customerInfo.firstName || "Client",
-          lastName: paymentData.customerInfo.lastName || "Premium",
-          email: paymentData.customerInfo.email || "client@lupulsicorbul.com",
-          phone: paymentData.customerInfo.phone || "0700000000",
-          address: "Livrare digitală instantanee",
-          city: "Online",
-          county: "Digital",
-          postalCode: "000000",
-          country: "Romania",
-        },
-        // Metadata specifică pentru embleme
-        customData: {
-          emblemType: paymentData.emblemType,
-          userId: paymentData.userId,
-          productType: "emblem_nft",
-          tier: paymentData.tier || 1,
-        },
+      ],
+
+      // Installments
+      installments: {
+        selected: 0,
+        available: [0],
+      },
+
+      // Standard data format matching netopia-v2-api.js
+      data: {
+        property1: "string",
+        property2: "string",
       },
     },
   };
 }
 
 /**
- * Trimite request la NETOPIA pentru inițierea plății emblemelor
+ * Trimite request către NETOPIA API v2.x pentru embleme folosind JSON POST
  */
 async function initiateEmblemPayment(payload, config) {
-  const dataString = JSON.stringify(payload);
-  const dataBase64 = Buffer.from(dataString).toString("base64");
-  const signature = config.signature;
-
-    console.log("🔮 NETOPIA EMBLEM Payment Debug:", {
-      endpoint: config.endpoint,
-      mode: config.mode,
-      signature: signature?.substring(0, 10) + "...",
-      orderId: payload.payment.data.orderId,
-      amount: payload.payment.data.amount,
-      emblemType: payload.payment.data.customData?.emblemType,
-      userId: payload.payment.data.customData?.userId,
-    });
+  console.log("🔮 Initiating NETOPIA API v2.x payment for emblem:", {
     endpoint: config.endpoint,
-    mode: config.mode,
-    signature: signature?.substring(0, 10) + "...",
-    orderId: payload.payment.data.orderId,
-    amount: payload.payment.data.amount,
-    emblemType: payload.payment.data.customData?.emblemType,
-    userId: payload.payment.data.customData?.userId,
+    orderId: payload.order.orderID,
+    amount: payload.order.amount,
+    emblemType: payload.order.data?.emblemType,
+    hasApiKey: !!config.apiKey,
+    signature: config.signature,
   });
 
-  // Generează formularul HTML pentru 3DS
-  const formHtml = `<!doctype html>
-<html>
-<head>
-  <meta charset="utf-8">
-  <title>🔮 Procesare Plată Emblemă - Lupul și Corbul</title>
-  <style>
-    body { 
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-      color: white;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      min-height: 100vh;
-      margin: 0;
-    }
-    .loading-container {
-      text-align: center;
-      background: rgba(255,255,255,0.1);
-      backdrop-filter: blur(10px);
-      padding: 40px;
-      border-radius: 20px;
-      border: 2px solid rgba(255,215,0,0.3);
-    }
-    .emblem-icon { font-size: 4rem; margin-bottom: 20px; }
-    .loading-text { font-size: 1.2rem; margin-bottom: 10px; }
-    .spinner {
-      border: 3px solid rgba(255,255,255,0.3);
-      border-top: 3px solid #ffd700;
-      border-radius: 50%;
-      width: 40px;
-      height: 40px;
-      animation: spin 1s linear infinite;
-      margin: 20px auto;
-    }
-    @keyframes spin {
-      0% { transform: rotate(0deg); }
-      100% { transform: rotate(360deg); }
-    }
-  </style>
-</head>
-<body>
-  <div class="loading-container">
-    <div class="emblem-icon">🔮</div>
-    <div class="loading-text">Se procesează plata pentru emblema ta...</div>
-    <div class="loading-text">Vei fi redirectat către sistemul de plată securizat.</div>
-    <div class="spinner"></div>
-  </div>
-  
-  <form id="netopia3ds" action="${config.endpoint}" method="post" target="_top">
-    <input type="hidden" name="data" value="${dataBase64}"/>
-    <input type="hidden" name="signature" value="${signature}"/>
-  </form>
-  
-  <script>
-    console.log('🔮 NETOPIA Emblem Payment Initialized:', {
-      orderId: '${payload.payment.data.orderId}',
-      amount: ${payload.payment.data.amount},
-      emblemType: '${payload.payment.data.customData?.emblemType || "unknown"}',
-      currency: '${payload.payment.data.currency}',
-      mode: '${config.mode}'
-    });
-    
-    // Auto-submit după 2 secunde
-    setTimeout(() => {
-      document.getElementById('netopia3ds').submit();
-    }, 2000);
-  </script>
-</body>
-</html>`;
+  if (!config.apiKey) {
+    throw new Error("NETOPIA API KEY not configured for emblems. Please check environment variables.");
+  }
 
-  return {
-    success: true,
-    paymentUrl: formHtml,
-    orderId: payload.payment.data.orderId,
-    html: true,
-  };
+  try {
+    console.log("🔮 Sending JSON request to NETOPIA API v2.x for emblem:", {
+      endpoint: config.endpoint,
+      method: "POST",
+      payloadStructure: {
+        hasConfig: !!payload.config,
+        hasPayment: !!payload.payment,
+        hasOrder: !!payload.order,
+        orderID: payload.order?.orderID,
+        amount: payload.order?.amount,
+        emblemType: payload.order?.data?.emblemType,
+        signature: payload.order?.posSignature,
+      },
+    });
+
+    // Folosește același format ca netopia-v2-api.js
+    const response = await fetch(config.endpoint, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Accept: "application/json",
+        Authorization: config.apiKey, // Direct API key, no Bearer prefix
+        "User-Agent": "LupulSiCorbul-Emblems/1.0 (contact@lupulsicorbul.com)",
+      },
+      body: JSON.stringify(payload),
+    });
+
+    console.log("🔮 NETOPIA API v2.x Response for emblem:", {
+      status: response.status,
+      statusText: response.statusText,
+      contentType: response.headers.get("content-type"),
+    });
+
+    // Verifică tipul de conținut pentru a determina cum să proceseze răspunsul
+    const contentType = response.headers.get("content-type") || "";
+    const isJson = contentType.includes("application/json");
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error("❌ NETOPIA API v2.x Error for emblem:", {
+        status: response.status,
+        statusText: response.statusText,
+        body: errorText.substring(0, 500) + (errorText.length > 500 ? "..." : ""),
+        contentType,
+      });
+
+      // Parse error response if it's JSON
+      let errorDetails = errorText;
+      try {
+        if (isJson) {
+          const errorJson = JSON.parse(errorText);
+          errorDetails = errorJson.message || errorJson.error?.message || errorText;
+        }
+      } catch (e) {
+        // Keep original error text if not JSON
+      }
+
+      throw new Error(`NETOPIA API Error ${response.status}: ${errorDetails}`);
+    }
+
+    // Parse JSON response (v2.x always returns JSON)
+    if (!isJson) {
+      throw new Error(`Unexpected content type: ${contentType}. Expected application/json for v2.x API.`);
+    }
+
+    const responseData = await response.json();
+
+    console.log("✅ NETOPIA API v2.x JSON Response received for emblem:", {
+      hasPayment: !!responseData.payment,
+      hasPaymentUrl: !!responseData.payment?.paymentURL,
+      paymentStatus: responseData.payment?.status,
+      ntpID: responseData.payment?.ntpID,
+      hasError: !!responseData.error,
+      errorCode: responseData.error?.code,
+      errorMessage: responseData.error?.message,
+      hasCustomerAction: !!responseData.customerAction,
+    });
+
+    // Verifică dacă există eroare în răspuns (inclusiv error code 101 pentru redirect)
+    if (responseData.error) {
+      // Code 101 înseamnă "Redirect user to payment page" - this is normal for v2.x
+      if (responseData.error.code === "101") {
+        console.log("🔮 Normal redirect response from NETOPIA v2.x for emblem (code 101)");
+      } else {
+        console.warn("⚠️ NETOPIA returned error for emblem:", responseData.error);
+      }
+    }
+
+    // Verifică formatul răspunsului
+    if (!responseData.payment) {
+      throw new Error("Invalid response format from NETOPIA API v2.x - missing payment object");
+    }
+
+    const payment = responseData.payment;
+
+    // Returnează rezultatul structurat conform cu răspunsul din exemplu
+    return {
+      success: true,
+      paymentUrl: payment.paymentURL,
+      orderId: payload.order.orderID,
+      ntpID: payment.ntpID,
+      status: payment.status,
+      amount: payment.amount,
+      currency: payment.currency,
+      operationDate: payment.operationDate,
+      environment: config.baseUrl.includes("sandbox") ? "sandbox" : "live",
+      apiVersion: "v2.x",
+      errorCode: responseData.error?.code,
+      errorMessage: responseData.error?.message,
+      emblemType: payload.order.data?.emblemType,
+      userId: payload.order.data?.userId,
+      // Include additional fields from your successful response
+      binding: payment.binding,
+      instrument: payment.instrument,
+      options: payment.options,
+      customerAction: responseData.customerAction,
+    };
+  } catch (error) {
+    console.error("🚨 NETOPIA API v2.x Request failed for emblem:", error.message);
+    throw error;
+  }
 }
 
 /**
  * Handler principal pentru funcția Netlify
  */
 const handler = async (event, context) => {
-    // CORS headers
+  // CORS headers
   const headers = {
     "Access-Control-Allow-Origin": "*",
     "Access-Control-Allow-Headers": "Content-Type",
@@ -227,7 +273,7 @@ const handler = async (event, context) => {
     "Content-Type": "application/json",
   };
 
-    // Răspunde la preflight requests
+  // Răspunde la preflight requests
   if (event.httpMethod === "OPTIONS") {
     return { statusCode: 200, headers };
   }
@@ -277,22 +323,46 @@ const handler = async (event, context) => {
       `🔮 Using ${config.mode.toUpperCase()} NETOPIA config for emblem payment`
     );
 
+    console.log("🔧 Emblem Environment configuration:", {
+      mode: config.mode,
+      isProduction,
+      hasLiveCredentials,
+      useLive,
+      apiBaseUrl: config.baseUrl,
+      hasApiKey: !!config.apiKey,
+      apiKeyPreview: config.apiKey?.substring(0, 10) + "...",
+    });
+
+    // Verifică dacă avem API KEY
+    if (!config.apiKey) {
+      const missingKey = useLive ? "NETOPIA_LIVE_API_KEY" : "NETOPIA_SANDBOX_API_KEY";
+      return {
+        statusCode: 500,
+        headers,
+        body: JSON.stringify({
+          error: "NETOPIA API KEY not configured for emblems",
+          details: `Please set ${missingKey} environment variable`,
+          environment: useLive ? "live" : "sandbox",
+        }),
+      };
+    }
+
     // Creează payload-ul pentru NETOPIA
     const payload = createEmblemPayload(paymentData, config);
 
     // Inițiază plata
     const result = await initiateEmblemPayment(payload, config);
 
-    // Returnează HTML form pentru 3DS
-    if (result.html && typeof result.paymentUrl === "string") {
-      return {
-        statusCode: 200,
-        headers: { "Content-Type": "text/html" },
-        body: result.paymentUrl,
-      };
-    }
+    console.log("✅ Emblem payment initiation successful:", {
+      orderId: result.orderId,
+      ntpID: result.ntpID,
+      status: result.status,
+      emblemType: result.emblemType,
+      environment: result.environment,
+      apiVersion: result.apiVersion,
+    });
 
-    // Fallback JSON response
+    // Returnează rezultatul JSON
     return {
       statusCode: 200,
       headers,
@@ -300,6 +370,18 @@ const handler = async (event, context) => {
         success: true,
         paymentUrl: result.paymentUrl,
         orderId: result.orderId,
+        ntpID: result.ntpID,
+        status: result.status,
+        amount: result.amount,
+        currency: result.currency,
+        environment: result.environment,
+        apiVersion: result.apiVersion,
+        emblemType: result.emblemType,
+        userId: result.userId,
+        errorCode: result.errorCode,
+        errorMessage: result.errorMessage,
+        customerAction: result.customerAction,
+        message: `Emblem payment initiated successfully using NETOPIA API ${result.apiVersion}`,
       }),
     };
   } catch (error) {
@@ -314,7 +396,6 @@ const handler = async (event, context) => {
       }),
     };
   }
-
 };
-module.exports = { handler };
-module.exports = { handler };
+
+export { handler };

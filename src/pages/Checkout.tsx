@@ -506,7 +506,8 @@ const Checkout: React.FC = () => {
             county: formData.county,
             postalCode: formData.postalCode,
           },
-          live: false, // Forțat sandbox pentru test
+          // Detectează automat mediul: live în producție, sandbox în dezvoltare
+          live: window.location.hostname === "lupulsicorbul.com" || window.location.hostname === "www.lupulsicorbul.com",
           returnUrl: `${netopiaOrigin}/.netlify/functions/netopia-return?orderId=${realOrderId}`,
           confirmUrl: `${netopiaOrigin}/.netlify/functions/netopia-notify?orderId=${realOrderId}`,
         };

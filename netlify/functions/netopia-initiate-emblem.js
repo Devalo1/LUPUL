@@ -15,7 +15,7 @@ const NETOPIA_CONFIG = {
   live: {
     mode: "live",
     baseUrl: "https://secure.netopia-payments.com",
-    endpoint: "https://secure.netopia-payments.com/payment/card/start",
+    endpoint: "https://secure.netopia-payments.com/api/payment/card/start",
     signature: process.env.NETOPIA_LIVE_SIGNATURE || "2ZOW-PJ5X-HYYC-IENE-APZO",
     apiKey:
       process.env.NETOPIA_LIVE_API_KEY ||

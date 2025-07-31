@@ -298,7 +298,7 @@ export const handler = async (event, context) => {
     const baseUrl = process.env.URL || "https://lupulsicorbul.com";
     const isProduction =
       baseUrl.includes("lupulsicorbul.com") && !baseUrl.includes("localhost");
-    
+
     const hasLiveCredentials = Boolean(
       process.env.NETOPIA_LIVE_SIGNATURE &&
         process.env.NETOPIA_LIVE_SIGNATURE !== "2ZOW-PJ5X-HYYC-IENE-APZO"

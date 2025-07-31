@@ -15,8 +15,8 @@ const NETOPIA_V2_CONFIG = {
     apiKey: "z-2vhwpEKiI7WSe1OjU9BR-vaMgoEVEDDbaToPXkVmXKDojL3afQ4uxItEw=", // Your sandbox API key
   },
   live: {
-    baseUrl: "https://secure.mobilpay.ro/pay",
-    endpoint: "https://secure.mobilpay.ro/pay/payment/card/start",
+    baseUrl: "https://secure.netopia-payments.com",
+    endpoint: "https://secure.netopia-payments.com/payment/card/start",
     signature: process.env.NETOPIA_LIVE_SIGNATURE || "2ZOW-PJ5X-HYYC-IENE-APZO",
     apiKey:
       process.env.NETOPIA_LIVE_API_KEY ||
@@ -342,20 +342,17 @@ export const handler = async (event, context) => {
       "https://lupulsicorbul.com";
     const isProduction =
       baseUrl.includes("lupulsicorbul.com") && !baseUrl.includes("localhost");
-    const hasLiveCredentials = !!(
-      process.env.NETOPIA_LIVE_API_KEY &&
-      process.env.NETOPIA_LIVE_SIGNATURE &&
-      process.env.NETOPIA_LIVE_SIGNATURE !== "2ZOW-PJ5X-HYYC-IENE-APZO"
-    );
+    const hasLiveSignature = Boolean(process.env.NETOPIA_LIVE_SIGNATURE);
 
-    // Folosește live mode când payload-ul specifică live=true
-    const useLive = paymentData.live === true;
+    // Folosește live mode când payload-ul specifică live=true sau când suntem în producție
+    const useLive =
+      paymentData.live === true || (isProduction && hasLiveSignature);
     const config = useLive ? NETOPIA_V2_CONFIG.live : NETOPIA_V2_CONFIG.sandbox;
 
     console.log("🔧 Environment configuration:", {
       baseUrl,
       isProduction,
-      hasLiveCredentials,
+      hasLiveSignature,
       useLive,
       apiBaseUrl: config.baseUrl,
       hasApiKey: !!config.apiKey,

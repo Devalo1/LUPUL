@@ -294,28 +294,26 @@ export const handler = async (event, context) => {
       throw new Error("Missing required fields: orderId or amount");
     }
 
-    // Determină configurația (sandbox vs live) - UNIFIED LOGIC
+    // Determină configurația (sandbox vs live) - FIXED LOGIC
     const baseUrl = process.env.URL || "https://lupulsicorbul.com";
     const isProduction =
       baseUrl.includes("lupulsicorbul.com") && !baseUrl.includes("localhost");
 
-    const hasLiveCredentials = Boolean(
-      process.env.NETOPIA_LIVE_SIGNATURE &&
-        process.env.NETOPIA_LIVE_SIGNATURE !== "2ZOW-PJ5X-HYYC-IENE-APZO"
-    );
+    // În producție folosim LIVE, doar dacă explicit nu este cerut sandbox
+    // Și dacă avem măcar signature-ul setat (chiar dacă e cel de test)
+    const hasLiveSignature = Boolean(process.env.NETOPIA_LIVE_SIGNATURE);
 
-    // Forțează sandbox dacă nu avem credențiale live sau dacă este setat explicit
+    // Folosim LIVE dacă suntem în producție și nu e forțat sandbox
     const useLive =
-      isProduction && hasLiveCredentials && paymentData.live !== false;
+      isProduction && hasLiveSignature && paymentData.live !== false;
 
     const config = useLive ? NETOPIA_CONFIG.live : NETOPIA_CONFIG.sandbox;
 
-    console.log("🔧 Store Environment configuration:", {
+    console.log("🔧 Environment configuration:", {
       baseUrl,
       isProduction,
-      hasLiveCredentials,
+      hasLiveSignature,
       useLive,
-      mode: config.mode,
       endpoint: config.endpoint,
       signature: config.signature.substring(0, 10) + "...",
     });

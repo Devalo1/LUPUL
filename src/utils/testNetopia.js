@@ -17,7 +17,9 @@ const testNetopiaPayment = async () => {
       county: "București",
       postalCode: "010000",
     },
-    live: false, // Force sandbox mode
+    live:
+      window.location.hostname === "lupulsicorbul.com" ||
+      window.location.hostname === "www.lupulsicorbul.com", // Detectează automat mediul
   };
 
   try {

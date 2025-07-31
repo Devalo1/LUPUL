@@ -14,8 +14,8 @@ const NETOPIA_CONFIG = {
   },
   live: {
     mode: "live",
-    baseUrl: "https://secure.mobilpay.ro/pay",
-    endpoint: "https://secure.mobilpay.ro/pay/payment/card/start",
+    baseUrl: "https://secure.netopia-payments.com",
+    endpoint: "https://secure.netopia-payments.com/payment/card/start",
     signature: process.env.NETOPIA_LIVE_SIGNATURE || "2ZOW-PJ5X-HYYC-IENE-APZO",
     apiKey:
       process.env.NETOPIA_LIVE_API_KEY ||
@@ -331,12 +331,9 @@ const handler = async (event, context) => {
     const isProduction =
       baseUrl.includes("lupulsicorbul.com") && !baseUrl.includes("localhost");
 
-    const hasLiveCredentials = Boolean(
-      process.env.NETOPIA_LIVE_SIGNATURE &&
-        process.env.NETOPIA_LIVE_SIGNATURE !== "2ZOW-PJ5X-HYYC-IENE-APZO"
-    );
+    const hasLiveSignature = Boolean(process.env.NETOPIA_LIVE_SIGNATURE);
 
-    const useLive = isProduction && hasLiveCredentials;
+    const useLive = isProduction && hasLiveSignature;
     const config = useLive ? NETOPIA_CONFIG.live : NETOPIA_CONFIG.sandbox;
 
     console.log(
@@ -347,7 +344,7 @@ const handler = async (event, context) => {
       baseUrl,
       mode: config.mode,
       isProduction,
-      hasLiveCredentials,
+      hasLiveSignature,
       useLive,
       endpoint: config.endpoint,
       signature: config.signature?.substring(0, 10) + "...",

@@ -2,25 +2,9 @@ import React, { useEffect, useState, useRef } from "react";
 import { useAuth } from "../contexts";
 import { useNavigate, Link } from "react-router-dom";
 import { motion } from "framer-motion";
-import {
-  collection,
-  query,
-  where,
-  getDocs,
-  doc,
-  updateDoc,
-  getDoc,
-} from "firebase/firestore";
+import { collection, query, where, getDocs } from "firebase/firestore";
 import { db } from "../firebase";
-import {
-  FaStar,
-  FaRegStar,
-  FaCheck,
-  FaUserCog,
-  FaUserMd,
-  FaUser,
-  FaCalculator,
-} from "react-icons/fa";
+import { FaUserCog, FaUserMd, FaUser, FaCalculator } from "react-icons/fa";
 import {
   isUserAdmin,
   isUserSpecialist,
@@ -63,18 +47,6 @@ const Dashboard: React.FC = () => {
   const [events, setEvents] = useState<EventItem[]>([]);
   const [eventsLoading, setEventsLoading] = useState(true);
   const [eventsError, setEventsError] = useState<string | null>(null);
-  const [orders, setOrders] = useState<any[]>([]);
-  const [ordersLoading, setOrdersLoading] = useState(true);
-  const [ordersError, setOrdersError] = useState<string | null>(null);
-  const [userRatings, setUserRatings] = useState<{
-    [productId: string]: number;
-  }>({});
-  const [ratingSubmitting, setRatingSubmitting] = useState<{
-    [productId: string]: boolean;
-  }>({});
-  const [ratingSuccess, setRatingSuccess] = useState<{
-    [productId: string]: boolean;
-  }>({});
 
   // State pentru cererea de rol de specialist
   const [roleChangeReason, setRoleChangeReason] = useState("");
@@ -210,140 +182,11 @@ const Dashboard: React.FC = () => {
   }, [user]);
 
   useEffect(() => {
-    const fetchUserOrders = async () => {
-      if (!user) return;
-
-      try {
-        setOrdersLoading(true);
-        const ordersRef = collection(db, "orders");
-        const q = query(ordersRef, where("userId", "==", user.uid));
-        const querySnapshot = await getDocs(q);
-
-        const userOrders = [];
-
-        for (const orderDoc of querySnapshot.docs) {
-          const orderData = orderDoc.data();
-
-          const orderWithProducts = {
-            id: orderDoc.id,
-            ...orderData,
-            items: await Promise.all(
-              orderData.items.map(async (item: any) => {
-                try {
-                  const productDoc = await getDoc(doc(db, "products", item.id));
-                  return {
-                    ...item,
-                    productDetails: productDoc.exists()
-                      ? productDoc.data()
-                      : null,
-                  };
-                } catch (err) {
-                  console.error(
-                    `Error fetching product details for ${item.id}:`,
-                    err
-                  );
-                  return item;
-                }
-              })
-            ),
-          };
-
-          userOrders.push(orderWithProducts);
-        }
-
-        setOrders(userOrders);
-      } catch (err) {
-        console.error("Eroare la încărcarea comenzilor utilizatorului:", err);
-        setOrdersError("A apărut o eroare la încărcarea comenzilor.");
-      } finally {
-        setOrdersLoading(false);
-      }
-    };
-
-    fetchUserOrders();
-  }, [user]);
-
-  useEffect(() => {
     const hour = new Date().getHours();
     if (hour < 12) setGreeting("Bună dimineața");
     else if (hour < 18) setGreeting("Bună ziua");
     else setGreeting("Bună seara");
   }, []);
-
-  const handleRateProduct = async (productId: string, rating: number) => {
-    if (!user) return;
-
-    setRatingSubmitting({ ...ratingSubmitting, [productId]: true });
-
-    try {
-      const productRef = doc(db, "products", productId);
-      const productSnap = await getDoc(productRef);
-
-      if (!productSnap.exists()) {
-        throw new Error("Produsul nu a fost găsit");
-      }
-
-      const productData = productSnap.data();
-      const currentRatings = productData.ratings || {
-        count: 0,
-        average: 0,
-        userRatings: [],
-      };
-
-      const userRatingIndex = (currentRatings.userRatings || []).findIndex(
-        (r: any) => r.userId === user.uid
-      );
-
-      let newRatings;
-
-      if (userRatingIndex >= 0) {
-        const updatedUserRatings = [...(currentRatings.userRatings || [])];
-        updatedUserRatings[userRatingIndex].rating = rating;
-
-        const sum = updatedUserRatings.reduce(
-          (acc: number, curr: any) => acc + (curr.rating || 0),
-          0
-        );
-        const newAverage =
-          updatedUserRatings.length > 0 ? sum / updatedUserRatings.length : 0;
-
-        newRatings = {
-          count: currentRatings.count || 0,
-          average: newAverage,
-          userRatings: updatedUserRatings,
-        };
-      } else {
-        const currentCount = currentRatings.count || 0;
-        const currentAverage = currentRatings.average || 0;
-        const newCount = currentCount + 1;
-        const newSum = currentAverage * currentCount + rating;
-        const newAverage = newSum / newCount;
-
-        newRatings = {
-          count: newCount,
-          average: newAverage,
-          userRatings: [
-            ...(currentRatings.userRatings || []),
-            { userId: user.uid, rating, date: new Date().toISOString() },
-          ],
-        };
-      }
-
-      await updateDoc(productRef, { ratings: newRatings });
-
-      setUserRatings({ ...userRatings, [productId]: rating });
-      setRatingSuccess({ ...ratingSuccess, [productId]: true });
-
-      setTimeout(() => {
-        setRatingSuccess({ ...ratingSuccess, [productId]: false });
-      }, 3000);
-    } catch (error) {
-      console.error("Error submitting rating:", error);
-      alert("A apărut o eroare la trimiterea recenziei.");
-    } finally {
-      setRatingSubmitting({ ...ratingSubmitting, [productId]: false });
-    }
-  };
 
   const handleRequestRoleChange = async () => {
     if (!user) return;
@@ -614,6 +457,26 @@ const Dashboard: React.FC = () => {
                 />
               </svg>
               Evenimente
+            </button>
+            <button
+              onClick={() => navigate("/my-orders")}
+              className="p-3 bg-orange-600 text-white rounded-md hover:bg-orange-700 transition duration-200 text-sm font-medium flex flex-col items-center"
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                className="h-6 w-6 mb-1"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"
+                />
+              </svg>
+              Comenzile Tale
             </button>{" "}
             {userRole === UserRole.SPECIALIST && (
               <button
@@ -843,134 +706,6 @@ const Dashboard: React.FC = () => {
                         Vezi detalii
                       </Link>
                     </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
-      </section>
-      <section className="mt-8">
-        <h2 className="text-2xl font-bold mb-4">Comenzile Tale</h2>
-        <div className="bg-white rounded-lg shadow-md p-6">
-          {ordersLoading ? (
-            <div className="text-center">Se încarcă comenzile...</div>
-          ) : ordersError ? (
-            <div className="text-center text-red-600">{ordersError}</div>
-          ) : !orders || orders.length === 0 ? (
-            <p className="text-gray-600">Nu ai făcut încă nicio comandă.</p>
-          ) : (
-            <div className="space-y-6">
-              {orders.map((order) => (
-                <div
-                  key={order.id}
-                  className="border border-gray-200 rounded-lg p-4"
-                >
-                  <div className="flex justify-between items-center mb-3">
-                    <h3 className="font-semibold">
-                      Comanda #{order.orderNumber || order.id.substring(0, 8)}
-                    </h3>
-                    <span className="text-sm text-gray-500">
-                      {order.createdAt?.toDate
-                        ? order.createdAt.toDate().toLocaleDateString("ro-RO")
-                        : order.orderDate
-                          ? new Date(order.orderDate).toLocaleDateString(
-                              "ro-RO"
-                            )
-                          : "Data necunoscută"}
-                    </span>
-                  </div>
-
-                  <div className="space-y-4">
-                    {(order.items || []).map((item: any) => (
-                      <div key={item.id} className="order-rating-widget">
-                        <div className="flex items-center">
-                          <img
-                            src={
-                              item.image || "/images/product-placeholder.jpg"
-                            }
-                            alt={item.name}
-                            className="w-16 h-16 object-cover rounded mr-4"
-                          />
-                          <div>
-                            <h4 className="font-medium">{item.name}</h4>
-                            <p className="text-sm text-gray-500">
-                              Cantitate: {item.quantity} ×{" "}
-                              {typeof item.price === "number"
-                                ? item.price.toFixed(2)
-                                : "0.00"}{" "}
-                              RON
-                            </p>
-                          </div>
-                        </div>
-
-                        <div className="mt-3">
-                          <p className="text-sm font-medium text-gray-700">
-                            Evaluează acest produs:
-                          </p>
-                          <div className="rating-stars-input">
-                            {[1, 2, 3, 4, 5].map((star) => (
-                              <span
-                                key={star}
-                                className={`rating-star-input ${
-                                  userRatings[item.id] >= star ? "active" : ""
-                                }`}
-                                onClick={() => handleRateProduct(item.id, star)}
-                              >
-                                {userRatings[item.id] >= star ? (
-                                  <FaStar />
-                                ) : (
-                                  <FaRegStar />
-                                )}
-                              </span>
-                            ))}
-                          </div>
-
-                          {ratingSubmitting[item.id] && (
-                            <p className="text-xs text-blue-600 mt-1">
-                              Se trimite evaluarea...
-                            </p>
-                          )}
-
-                          {ratingSuccess[item.id] && (
-                            <p className="text-xs text-green-600 mt-1 flex items-center">
-                              <FaCheck className="mr-1" /> Evaluare trimisă cu
-                              succes
-                            </p>
-                          )}
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-
-                  <div className="mt-4 pt-3 border-t border-gray-100 flex justify-between">
-                    <p className="font-medium">
-                      Total:{" "}
-                      {typeof order.totalAmount === "number"
-                        ? order.totalAmount.toFixed(2)
-                        : typeof order.total === "number"
-                          ? order.total.toFixed(2)
-                          : "0.00"}{" "}
-                      RON
-                    </p>
-                    <p className="text-sm text-gray-500">
-                      Status:{" "}
-                      {order.status === "new"
-                        ? "Nouă"
-                        : order.status === "confirmed"
-                          ? "Confirmată"
-                          : order.status === "processing"
-                            ? "În procesare"
-                            : order.status === "shipped"
-                              ? "Expediată"
-                              : order.status === "delivered"
-                                ? "Livrată"
-                                : order.status === "cancelled"
-                                  ? "Anulată"
-                                  : order.status === "pending"
-                                    ? "În așteptare"
-                                    : order.status || "Finalizată"}
-                    </p>
                   </div>
                 </div>
               ))}

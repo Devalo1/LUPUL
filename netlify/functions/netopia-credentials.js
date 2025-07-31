@@ -23,7 +23,7 @@ function decodeBase64Credential(envVar, base64EnvVar, fallback) {
   return fallback;
 }
 
-export const NETOPIA_LIVE_PRIVATE_KEY = decodeBase64Credential(
+const NETOPIA_LIVE_PRIVATE_KEY = decodeBase64Credential(
   "NETOPIA_LIVE_PRIVATE_KEY",
   "NETOPIA_LIVE_PRIVATE_KEY_B64",
   `-----BEGIN RSA PRIVATE KEY-----
@@ -43,7 +43,7 @@ pMG6i1YXb4+4Y9NR0QJBANt0qlS2GsS9S79eWhPkAnw5qxDcOEQeekk5z5jil7yw
 -----END RSA PRIVATE KEY-----`
 );
 
-export const NETOPIA_LIVE_CERTIFICATE = decodeBase64Credential(
+const NETOPIA_LIVE_CERTIFICATE = decodeBase64Credential(
   "NETOPIA_LIVE_CERTIFICATE",
   "NETOPIA_LIVE_CERTIFICATE_B64",
   `-----BEGIN CERTIFICATE-----
@@ -65,3 +65,8 @@ gNWC9AwVBt61MTid213yuXDGxkouizSGFr1MjP1tk/YkcWdNka9QB3AtCr4bMers
 RbUx6W/CU+uFDgDY8CdZ3hZ7kg==
 -----END CERTIFICATE-----`
 );
+
+module.exports = {
+  NETOPIA_LIVE_PRIVATE_KEY,
+  NETOPIA_LIVE_CERTIFICATE,
+};

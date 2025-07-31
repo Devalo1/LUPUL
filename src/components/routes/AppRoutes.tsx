@@ -57,6 +57,7 @@ import OrderSuccess from "../../pages/OrderSuccess";
 import CheckoutSuccess from "../../pages/CheckoutSuccess";
 import OrderConfirmation from "../../pages/OrderConfirmation";
 import Orders from "../../pages/Orders";
+import MyOrders from "../../pages/MyOrders";
 import Account from "../../pages/Account";
 import Appointments from "../../pages/Appointments";
 import ProfileInfo from "../../pages/ProfileInfo";
@@ -215,6 +216,22 @@ const AppRoutes = () => {
           element={
             <ProtectedRoute>
               <Orders />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/my-orders"
+          element={
+            <ProtectedRoute>
+              <MyOrders />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/comenzile-mele"
+          element={
+            <ProtectedRoute>
+              <MyOrders />
             </ProtectedRoute>
           }
         />

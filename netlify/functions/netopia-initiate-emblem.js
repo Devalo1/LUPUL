@@ -3,11 +3,11 @@
  * Această funcție procesează comenzile de embleme NFT și inițiază plățile
  */
 
-import crypto from "crypto";
-import {
+const crypto = require("crypto");
+const {
   NETOPIA_LIVE_PRIVATE_KEY,
   NETOPIA_LIVE_CERTIFICATE,
-} from "./netopia-credentials.js";
+} = require("./netopia-credentials.js");
 
 // Configurație NETOPIA pentru embleme
 const NETOPIA_CONFIG = {
@@ -117,7 +117,15 @@ async function initiateEmblemPayment(payload, config) {
   const dataBase64 = Buffer.from(dataString).toString("base64");
   const signature = config.signature;
 
-  console.log("🔮 NETOPIA EMBLEM Payment Debug:", {
+    console.log("🔮 NETOPIA EMBLEM Payment Debug:", {
+      endpoint: config.endpoint,
+      mode: config.mode,
+      signature: signature?.substring(0, 10) + "...",
+      orderId: payload.payment.data.orderId,
+      amount: payload.payment.data.amount,
+      emblemType: payload.payment.data.customData?.emblemType,
+      userId: payload.payment.data.customData?.userId,
+    });
     endpoint: config.endpoint,
     mode: config.mode,
     signature: signature?.substring(0, 10) + "...",
@@ -210,8 +218,8 @@ async function initiateEmblemPayment(payload, config) {
 /**
  * Handler principal pentru funcția Netlify
  */
-export const handler = async (event, context) => {
-  // CORS headers
+const handler = async (event, context) => {
+    // CORS headers
   const headers = {
     "Access-Control-Allow-Origin": "*",
     "Access-Control-Allow-Headers": "Content-Type",
@@ -219,7 +227,7 @@ export const handler = async (event, context) => {
     "Content-Type": "application/json",
   };
 
-  // Răspunde la preflight requests
+    // Răspunde la preflight requests
   if (event.httpMethod === "OPTIONS") {
     return { statusCode: 200, headers };
   }
@@ -306,4 +314,7 @@ export const handler = async (event, context) => {
       }),
     };
   }
+
 };
+module.exports = { handler };
+module.exports = { handler };

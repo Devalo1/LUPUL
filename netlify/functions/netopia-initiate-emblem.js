@@ -17,7 +17,9 @@ const NETOPIA_CONFIG = {
     baseUrl: "https://secure.mobilpay.ro/pay",
     endpoint: "https://secure.mobilpay.ro/pay/payment/card/start",
     signature: process.env.NETOPIA_LIVE_SIGNATURE || "2ZOW-PJ5X-HYYC-IENE-APZO",
-    apiKey: process.env.NETOPIA_LIVE_API_KEY || "LjsMxpFULiMtFXfWZdSIpPJCeaeyl9PhOV9_omeUt_0NTBLSPJk5r19OyqUt",
+    apiKey:
+      process.env.NETOPIA_LIVE_API_KEY ||
+      "LjsMxpFULiMtFXfWZdSIpPJCeaeyl9PhOV9_omeUt_0NTBLSPJk5r19OyqUt",
   },
 };
 
@@ -26,10 +28,12 @@ const NETOPIA_CONFIG = {
  */
 function createEmblemPayload(paymentData, config) {
   // Detectează environment-ul corect pentru development vs production
-  const isDevelopment = process.env.NODE_ENV !== "production" && process.env.CONTEXT !== "production";
-  const baseUrl = isDevelopment 
-    ? "http://localhost:8888" 
-    : (process.env.URL || "https://lupulsicorbul.com");
+  const isDevelopment =
+    process.env.NODE_ENV !== "production" &&
+    process.env.CONTEXT !== "production";
+  const baseUrl = isDevelopment
+    ? "http://localhost:8888"
+    : process.env.URL || "https://lupulsicorbul.com";
 
   console.log("🔮 Creating emblem payload with baseUrl:", baseUrl);
 
@@ -76,7 +80,7 @@ function createEmblemPayload(paymentData, config) {
         lastName: paymentData.customerInfo?.lastName || "Premium",
         city: paymentData.customerInfo?.city || "City",
         country: 642, // Romania country code
-        countryName: "Country", 
+        countryName: "Country",
         state: paymentData.customerInfo?.county || "State",
         postalCode: paymentData.customerInfo?.postalCode || "Zip",
         details: paymentData.customerInfo?.address || "",
@@ -135,7 +139,9 @@ async function initiateEmblemPayment(payload, config) {
   });
 
   if (!config.apiKey) {
-    throw new Error("NETOPIA API KEY not configured for emblems. Please check environment variables.");
+    throw new Error(
+      "NETOPIA API KEY not configured for emblems. Please check environment variables."
+    );
   }
 
   try {
@@ -180,7 +186,8 @@ async function initiateEmblemPayment(payload, config) {
       console.error("❌ NETOPIA API v2.x Error for emblem:", {
         status: response.status,
         statusText: response.statusText,
-        body: errorText.substring(0, 500) + (errorText.length > 500 ? "..." : ""),
+        body:
+          errorText.substring(0, 500) + (errorText.length > 500 ? "..." : ""),
         contentType,
       });
 
@@ -189,7 +196,8 @@ async function initiateEmblemPayment(payload, config) {
       try {
         if (isJson) {
           const errorJson = JSON.parse(errorText);
-          errorDetails = errorJson.message || errorJson.error?.message || errorText;
+          errorDetails =
+            errorJson.message || errorJson.error?.message || errorText;
         }
       } catch (e) {
         // Keep original error text if not JSON
@@ -200,7 +208,9 @@ async function initiateEmblemPayment(payload, config) {
 
     // Parse JSON response (v2.x always returns JSON)
     if (!isJson) {
-      throw new Error(`Unexpected content type: ${contentType}. Expected application/json for v2.x API.`);
+      throw new Error(
+        `Unexpected content type: ${contentType}. Expected application/json for v2.x API.`
+      );
     }
 
     const responseData = await response.json();
@@ -220,15 +230,22 @@ async function initiateEmblemPayment(payload, config) {
     if (responseData.error) {
       // Code 101 înseamnă "Redirect user to payment page" - this is normal for v2.x
       if (responseData.error.code === "101") {
-        console.log("🔮 Normal redirect response from NETOPIA v2.x for emblem (code 101)");
+        console.log(
+          "🔮 Normal redirect response from NETOPIA v2.x for emblem (code 101)"
+        );
       } else {
-        console.warn("⚠️ NETOPIA returned error for emblem:", responseData.error);
+        console.warn(
+          "⚠️ NETOPIA returned error for emblem:",
+          responseData.error
+        );
       }
     }
 
     // Verifică formatul răspunsului
     if (!responseData.payment) {
-      throw new Error("Invalid response format from NETOPIA API v2.x - missing payment object");
+      throw new Error(
+        "Invalid response format from NETOPIA API v2.x - missing payment object"
+      );
     }
 
     const payment = responseData.payment;
@@ -256,7 +273,10 @@ async function initiateEmblemPayment(payload, config) {
       customerAction: responseData.customerAction,
     };
   } catch (error) {
-    console.error("🚨 NETOPIA API v2.x Request failed for emblem:", error.message);
+    console.error(
+      "🚨 NETOPIA API v2.x Request failed for emblem:",
+      error.message
+    );
     throw error;
   }
 }
@@ -306,11 +326,11 @@ const handler = async (event, context) => {
       throw new Error("Date incomplete pentru plata emblemei");
     }
 
-    // Determină configurația (sandbox vs live)
+    // Determină configurația (sandbox vs live) - UNIFIED LOGIC
+    const baseUrl = process.env.URL || "https://lupulsicorbul.com";
     const isProduction =
-      process.env.NODE_ENV === "production" ||
-      process.env.CONTEXT === "production";
-
+      baseUrl.includes("lupulsicorbul.com") && !baseUrl.includes("localhost");
+    
     const hasLiveCredentials = Boolean(
       process.env.NETOPIA_LIVE_SIGNATURE &&
         process.env.NETOPIA_LIVE_SIGNATURE !== "2ZOW-PJ5X-HYYC-IENE-APZO"
@@ -324,10 +344,13 @@ const handler = async (event, context) => {
     );
 
     console.log("🔧 Emblem Environment configuration:", {
+      baseUrl,
       mode: config.mode,
       isProduction,
       hasLiveCredentials,
       useLive,
+      endpoint: config.endpoint,
+      signature: config.signature?.substring(0, 10) + "...",
       apiBaseUrl: config.baseUrl,
       hasApiKey: !!config.apiKey,
       apiKeyPreview: config.apiKey?.substring(0, 10) + "...",
@@ -335,7 +358,9 @@ const handler = async (event, context) => {
 
     // Verifică dacă avem API KEY
     if (!config.apiKey) {
-      const missingKey = useLive ? "NETOPIA_LIVE_API_KEY" : "NETOPIA_SANDBOX_API_KEY";
+      const missingKey = useLive
+        ? "NETOPIA_LIVE_API_KEY"
+        : "NETOPIA_SANDBOX_API_KEY";
       return {
         statusCode: 500,
         headers,

@@ -582,8 +582,16 @@ class NetopiaPayments {
       isProduction: isProduction,
       amount: amount,
       currentHostname: window.location.hostname,
+      currentFullURL: window.location.href,
       environment: import.meta.env.MODE,
-      willSendLiveTrue: isProduction
+      willSendLiveTrue: isProduction,
+      actualDomainDetection: {
+        hostname: window.location.hostname,
+        isLupulSiCorbul: window.location.hostname === "lupulsicorbul.com",
+        isNotLocalhost: window.location.hostname !== "localhost",
+        isNotNetlify: !window.location.hostname.includes("netlify"),
+        isNotPreview: !window.location.hostname.includes("preview")
+      }
     });
 
     const paymentData = {

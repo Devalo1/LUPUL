@@ -1,126 +1,173 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="ro">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Test LIVE Mode - Browser Real</title>
     <style>
-        body { font-family: Arial, sans-serif; padding: 20px; background: #f5f5f5; }
-        .container { max-width: 800px; margin: 0 auto; background: white; padding: 20px; border-radius: 8px; }
-        .result { padding: 10px; margin: 10px 0; border-radius: 4px; }
-        .success { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
-        .error { background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
-        .info { background: #d1ecf1; color: #0c5460; border: 1px solid #bee5eb; }
-        button { background: #007bff; color: white; padding: 10px 20px; border: none; border-radius: 4px; cursor: pointer; margin: 5px; }
-        button:hover { background: #0056b3; }
-        .code { background: #f8f9fa; padding: 10px; border-radius: 4px; font-family: monospace; white-space: pre-wrap; }
+      body {
+        font-family: Arial, sans-serif;
+        padding: 20px;
+        background: #f5f5f5;
+      }
+      .container {
+        max-width: 800px;
+        margin: 0 auto;
+        background: white;
+        padding: 20px;
+        border-radius: 8px;
+      }
+      .result {
+        padding: 10px;
+        margin: 10px 0;
+        border-radius: 4px;
+      }
+      .success {
+        background: #d4edda;
+        color: #155724;
+        border: 1px solid #c3e6cb;
+      }
+      .error {
+        background: #f8d7da;
+        color: #721c24;
+        border: 1px solid #f5c6cb;
+      }
+      .info {
+        background: #d1ecf1;
+        color: #0c5460;
+        border: 1px solid #bee5eb;
+      }
+      button {
+        background: #007bff;
+        color: white;
+        padding: 10px 20px;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        margin: 5px;
+      }
+      button:hover {
+        background: #0056b3;
+      }
+      .code {
+        background: #f8f9fa;
+        padding: 10px;
+        border-radius: 4px;
+        font-family: monospace;
+        white-space: pre-wrap;
+      }
     </style>
-</head>
-<body>
+  </head>
+  <body>
     <div class="container">
-        <h1>🧪 Test LIVE Mode în Browser Real</h1>
-        <p>Acest test verifică dacă frontend-ul din browser real va trimite <code>live: true</code> în producție.</p>
-        
-        <button onclick="testEnvironmentDetection()">🔍 Test Environment Detection</button>
-        <button onclick="testPaymentFlow()">💳 Test Payment Flow</button>
-        <button onclick="clearResults()">🗑️ Clear Results</button>
-        
-        <div id="results"></div>
+      <h1>🧪 Test LIVE Mode în Browser Real</h1>
+      <p>
+        Acest test verifică dacă frontend-ul din browser real va trimite
+        <code>live: true</code> în producție.
+      </p>
+
+      <button onclick="testEnvironmentDetection()">
+        🔍 Test Environment Detection
+      </button>
+      <button onclick="testPaymentFlow()">💳 Test Payment Flow</button>
+      <button onclick="clearResults()">🗑️ Clear Results</button>
+
+      <div id="results"></div>
     </div>
 
     <script>
-        function addResult(message, type = 'info') {
-            const results = document.getElementById('results');
-            const div = document.createElement('div');
-            div.className = `result ${type}`;
-            div.innerHTML = message;
-            results.appendChild(div);
-        }
+      function addResult(message, type = 'info') {
+          const results = document.getElementById('results');
+          const div = document.createElement('div');
+          div.className = `result ${type}`;
+          div.innerHTML = message;
+          results.appendChild(div);
+      }
 
-        function clearResults() {
-            document.getElementById('results').innerHTML = '';
-        }
+      function clearResults() {
+          document.getElementById('results').innerHTML = '';
+      }
 
-        function testEnvironmentDetection() {
-            clearResults();
-            addResult('<h3>🔍 Test Environment Detection</h3>');
-            
-            // Detectează environment-ul actual
-            const hostname = window.location.hostname;
-            const isProduction = hostname === "lupulsicorbul.com" ||
-                (hostname !== "localhost" &&
-                 !hostname.includes("netlify") &&
-                 !hostname.includes("preview"));
-            
-            addResult(`<strong>Hostname:</strong> ${hostname}`, 'info');
-            addResult(`<strong>Is Production:</strong> ${isProduction}`, isProduction ? 'success' : 'error');
-            
-            // Verifică variabilele VITE_
-            const hasViteVars = typeof import !== 'undefined';
-            if (hasViteVars) {
-                addResult('<strong>✅ Este aplicație Vite</strong> - variabilele VITE_ sunt disponibile', 'success');
-            } else {
-                addResult('<strong>⚠️ Nu este aplicație Vite</strong> - testul este aproximativ', 'error');
-            }
-            
-            addResult(`<strong>Environment final:</strong> ${isProduction ? 'PRODUCTION (va folosi LIVE)' : 'DEVELOPMENT (va folosi SANDBOX)'}`, 
-                isProduction ? 'success' : 'info');
-        }
+      function testEnvironmentDetection() {
+          clearResults();
+          addResult('<h3>🔍 Test Environment Detection</h3>');
 
-        async function testPaymentFlow() {
-            clearResults();
-            addResult('<h3>💳 Test Payment Flow Real</h3>');
-            
-            try {
-                const testPayload = {
-                    orderId: 'BROWSER_TEST_' + Date.now(),
-                    amount: 1.00, // 1 RON pentru test
-                    currency: 'RON',
-                    orderDescription: 'Test browser real',
-                    customerInfo: {
-                        email: 'test@browser.com',
-                        firstName: 'Browser',
-                        lastName: 'Test'
-                    },
-                    returnUrl: window.location.origin + '/payment-success',
-                    confirmUrl: window.location.origin + '/.netlify/functions/netopia-notify',
-                    // NU setez live - las frontend-ul să decidă automat
-                };
+          // Detectează environment-ul actual
+          const hostname = window.location.hostname;
+          const isProduction = hostname === "lupulsicorbul.com" ||
+              (hostname !== "localhost" &&
+               !hostname.includes("netlify") &&
+               !hostname.includes("preview"));
 
-                addResult('<strong>Payload trimis:</strong><div class="code">' + JSON.stringify(testPayload, null, 2) + '</div>', 'info');
-                
-                const response = await fetch('/.netlify/functions/netopia-v2-api', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Origin': window.location.origin
-                    },
-                    body: JSON.stringify(testPayload)
-                });
+          addResult(`<strong>Hostname:</strong> ${hostname}`, 'info');
+          addResult(`<strong>Is Production:</strong> ${isProduction}`, isProduction ? 'success' : 'error');
 
-                addResult(`<strong>Response Status:</strong> ${response.status}`, response.ok ? 'success' : 'error');
-                
-                const result = await response.json();
-                addResult('<strong>Response Data:</strong><div class="code">' + JSON.stringify(result, null, 2) + '</div>', 'info');
-                
-                if (result.success && result.paymentUrl) {
-                    if (result.paymentUrl.includes('secure.netopia-payments.com')) {
-                        addResult('<strong>🎉 SUCCESS!</strong> URL este pentru LIVE mode!', 'success');
-                        addResult(`<strong>Environment:</strong> ${result.environment}`, 'success');
-                        addResult(`<strong>Payment URL:</strong> <a href="${result.paymentUrl}" target="_blank">${result.paymentUrl}</a>`, 'success');
-                    } else if (result.paymentUrl.includes('secure-sandbox.netopia-payments.com')) {
-                        addResult('<strong>⚠️ SANDBOX MODE</strong> URL este pentru testare', 'error');
-                        addResult(`<strong>Environment:</strong> ${result.environment}`, 'info');
-                        addResult(`<strong>Payment URL:</strong> <a href="${result.paymentUrl}" target="_blank">${result.paymentUrl}</a>`, 'info');
-                    }
-                } else {
-                    addResult('<strong>❌ EROARE</strong> Nu s-a generat URL de plată', 'error');
-                }
-                
-            } catch (error) {
-                addResult(`<strong>❌ EROARE în request:</strong> ${error.message}`, 'error');
-            }
-        }
+          // Verifică variabilele VITE_
+          const hasViteVars = typeof import !== 'undefined';
+          if (hasViteVars) {
+              addResult('<strong>✅ Este aplicație Vite</strong> - variabilele VITE_ sunt disponibile', 'success');
+          } else {
+              addResult('<strong>⚠️ Nu este aplicație Vite</strong> - testul este aproximativ', 'error');
+          }
+
+          addResult(`<strong>Environment final:</strong> ${isProduction ? 'PRODUCTION (va folosi LIVE)' : 'DEVELOPMENT (va folosi SANDBOX)'}`,
+              isProduction ? 'success' : 'info');
+      }
+
+      async function testPaymentFlow() {
+          clearResults();
+          addResult('<h3>💳 Test Payment Flow Real</h3>');
+
+          try {
+              const testPayload = {
+                  orderId: 'BROWSER_TEST_' + Date.now(),
+                  amount: 1.00, // 1 RON pentru test
+                  currency: 'RON',
+                  orderDescription: 'Test browser real',
+                  customerInfo: {
+                      email: 'test@browser.com',
+                      firstName: 'Browser',
+                      lastName: 'Test'
+                  },
+                  returnUrl: window.location.origin + '/payment-success',
+                  confirmUrl: window.location.origin + '/.netlify/functions/netopia-notify',
+                  // NU setez live - las frontend-ul să decidă automat
+              };
+
+              addResult('<strong>Payload trimis:</strong><div class="code">' + JSON.stringify(testPayload, null, 2) + '</div>', 'info');
+
+              const response = await fetch('/.netlify/functions/netopia-v2-api', {
+                  method: 'POST',
+                  headers: {
+                      'Content-Type': 'application/json',
+                      'Origin': window.location.origin
+                  },
+                  body: JSON.stringify(testPayload)
+              });
+
+              addResult(`<strong>Response Status:</strong> ${response.status}`, response.ok ? 'success' : 'error');
+
+              const result = await response.json();
+              addResult('<strong>Response Data:</strong><div class="code">' + JSON.stringify(result, null, 2) + '</div>', 'info');
+
+              if (result.success && result.paymentUrl) {
+                  if (result.paymentUrl.includes('secure.netopia-payments.com')) {
+                      addResult('<strong>🎉 SUCCESS!</strong> URL este pentru LIVE mode!', 'success');
+                      addResult(`<strong>Environment:</strong> ${result.environment}`, 'success');
+                      addResult(`<strong>Payment URL:</strong> <a href="${result.paymentUrl}" target="_blank">${result.paymentUrl}</a>`, 'success');
+                  } else if (result.paymentUrl.includes('secure-sandbox.netopia-payments.com')) {
+                      addResult('<strong>⚠️ SANDBOX MODE</strong> URL este pentru testare', 'error');
+                      addResult(`<strong>Environment:</strong> ${result.environment}`, 'info');
+                      addResult(`<strong>Payment URL:</strong> <a href="${result.paymentUrl}" target="_blank">${result.paymentUrl}</a>`, 'info');
+                  }
+              } else {
+                  addResult('<strong>❌ EROARE</strong> Nu s-a generat URL de plată', 'error');
+              }
+
+          } catch (error) {
+              addResult(`<strong>❌ EROARE în request:</strong> ${error.message}`, 'error');
+          }
+      }
     </script>
-</body>
+  </body>
 </html>

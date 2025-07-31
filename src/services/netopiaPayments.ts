@@ -575,7 +575,18 @@ class NetopiaPayments {
       localStorage.getItem("netopia_force_sandbox") === "true";
     const isProduction = this.config.live && !forceSandbox;
 
-    return {
+    console.log("🚀 Payment Data Creation DEBUG:", {
+      configLive: this.config.live,
+      forceSandbox: forceSandbox,
+      localStorageForce: localStorage.getItem("netopia_force_sandbox"),
+      isProduction: isProduction,
+      amount: amount,
+      currentHostname: window.location.hostname,
+      environment: import.meta.env.MODE,
+      willSendLiveTrue: isProduction
+    });
+
+    const paymentData = {
       orderId: this.generateOrderId(),
       amount: amount, // Backend now handles conversion to bani, send amount in RON
       currency: "RON",
@@ -595,6 +606,15 @@ class NetopiaPayments {
       returnUrl: `${window.location.origin}/order-confirmation`,
       confirmUrl: `${window.location.origin}/.netlify/functions/netopia-notify`,
     };
+
+    console.log("💫 Final Payment Data siendo sent to backend:", {
+      ...paymentData,
+      customerInfo: "<<HIDDEN>>",
+      live: paymentData.live, // ✅ Destacat pentru debugging
+      willUseBackendEndpoint: paymentData.live ? "LIVE (secure.netopia-payments.com)" : "SANDBOX (secure-sandbox.netopia-payments.com)"
+    });
+
+    return paymentData;
   }
 }
 
@@ -624,7 +644,7 @@ const getNetopiaConfig = (): NetopiaConfig => {
   // În dev, permite utilizarea semnăturii sandbox reale dacă este configurată
   const useSandbox = !isProduction && Boolean(sandboxSignature);
 
-  console.log("Netopia Config:", {
+  console.log("🔧 Netopia Config DEBUG:", {
     isProduction,
     useLive,
     useSandbox,
@@ -632,9 +652,11 @@ const getNetopiaConfig = (): NetopiaConfig => {
     liveSignatureExists: Boolean(liveSignature),
     sandboxSignatureExists: Boolean(sandboxSignature),
     liveSignatureValue: liveSignature?.substring(0, 10) + "...",
+    liveSignatureFullValue: liveSignature, // TEMPORARY DEBUG - va fi eliminat
     sandboxSignatureValue: sandboxSignature?.substring(0, 10) + "...",
     hasRealLiveCredentials,
     environment: import.meta.env.MODE,
+    importMetaEnv: import.meta.env, // TEMPORARY DEBUG - va fi eliminat
     finalSignature:
       (useLive
         ? liveSignature!

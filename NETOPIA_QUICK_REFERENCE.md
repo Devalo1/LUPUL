@@ -9,11 +9,13 @@
 ## 🔧 ENDPOINT-URI CORECTE (NU MODIFICA!)
 
 ### ✅ LIVE (Producție):
+
 ```
 https://secure.mobilpay.ro/pay/payment/card/start
 ```
 
 ### ✅ SANDBOX (Test):
+
 ```
 https://secure.sandbox.netopia-payments.com/payment/card/start
 ```
@@ -23,7 +25,7 @@ https://secure.sandbox.netopia-payments.com/payment/card/start
 ## 🚫 NU ATINGE ACESTE FIȘIERE:
 
 1. `netlify/functions/netopia-v2-api.js` - **FUNCȚIONAL**
-2. `netlify.toml` - **CREDENȚIALE CONFIGURATE**  
+2. `netlify.toml` - **CREDENȚIALE CONFIGURATE**
 3. `src/pages/Checkout.tsx` - **HOSTNAME DETECTION**
 
 ---

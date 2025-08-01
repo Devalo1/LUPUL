@@ -1,14 +1,14 @@
 /**
  * ⚠️  NETOPIA Payment API v2.x - FUNCȚIONAL 100% ÎN PRODUCȚIE! ⚠️
- * 
+ *
  * 🎉 CONFIRMAT SUCCESS: 1 August 2025 - PLĂȚILE FUNCȚIONEAZĂ!
  * 🚨 NU MODIFICA ACEST FIȘIER! ENDPOINT-URILE SUNT CORECTE!
- * 
+ *
  * Documentație: https://doc.netopia-payments.com/docs/payment-api/v2.x/introduction
- * 
+ *
  * LIVE ENDPOINT CORECT: https://secure.mobilpay.ro/pay/payment/card/start
  * SANDBOX ENDPOINT: https://secure.sandbox.netopia-payments.com/payment/card/start
- * 
+ *
  * Această implementare folosește API KEY în loc de POS signature
  * și JSON requests în loc de form POST
  */
@@ -23,7 +23,7 @@ const NETOPIA_V2_CONFIG = {
     signature: "2ZOW-PJ5X-HYYC-IENE-APZO", // Your sandbox signature
     apiKey: "z-2vhwpEKiI7WSe1OjU9BR-vaMgoEVEDDbaToPXkVmXKDojL3afQ4uxItEw=", // Your sandbox API key
   },
-  // 🎯 CONFIGURAȚIA LIVE - TESTATĂ ȘI FUNCȚIONALĂ! 
+  // 🎯 CONFIGURAȚIA LIVE - TESTATĂ ȘI FUNCȚIONALĂ!
   // 🚨 NU SCHIMBA ENDPOINT-UL! ESTE CORECT!
   live: {
     baseUrl: "https://secure.mobilpay.ro", // ✅ CORECT - nu schimba!

@@ -20,15 +20,12 @@ const NETOPIA_CONFIG = {
   },
 };
 
-// Determină configurația (sandbox vs live) - UNIFIED LOGIC
+// Determină configurația (sandbox vs live) - FIXED LOGIC
 const baseUrl = process.env.URL || "https://lupulsicorbul.com";
 const isProduction =
   baseUrl.includes("lupulsicorbul.com") && !baseUrl.includes("localhost");
-const hasLiveCredentials = Boolean(
-  process.env.NETOPIA_LIVE_SIGNATURE &&
-    process.env.NETOPIA_LIVE_SIGNATURE !== "2ZOW-PJ5X-HYYC-IENE-APZO"
-);
-const isLive = isProduction && hasLiveCredentials;
+const hasLiveSignature = Boolean(process.env.NETOPIA_LIVE_SIGNATURE);
+const isLive = isProduction && hasLiveSignature;
 
 const NETOPIA_CURRENT_CONFIG = isLive
   ? NETOPIA_CONFIG.live

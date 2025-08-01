@@ -1,5 +1,12 @@
 /**
- * NETOPIA Payment API v2.x - Conform documentației oficiale
+ * NETOPIA   live: {
+    baseUrl: "https://secure.mobilpay.ro",
+    endpoint: "https://secure.mobilpay.ro/pay/payment/card/start",
+    signature: process.env.NETOPIA_LIVE_SIGNATURE || "2ZOW-PJ5X-HYYC-IENE-APZO",
+    apiKey:
+      process.env.NETOPIA_LIVE_API_KEY ||
+      "LjsMxpFULiMtFXfWZdSIpPJCeaeyl9PhOV9_omeUt",
+  },API v2.x - Conform documentației oficiale
  * https://doc.netopia-payments.com/docs/payment-api/v2.x/introduction
  *
  * Această implementare folosește API KEY în loc de POS signature

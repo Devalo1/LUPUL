@@ -6,6 +6,181 @@
 
 import nodemailer from "nodemailer";
 
+// Firebase will be imported and initialized only when needed to avoid blocking in development
+let firebaseInitialized = false;
+let firestore = null;
+
+// Firebase configuration
+async function initializeFirebase() {
+  if (!firebaseInitialized) {
+    try {
+      console.log("🔥 Initializing Firebase...");
+      const { initializeApp } = await import("firebase/app");
+      const { getFirestore } = await import("firebase/firestore");
+
+      const firebaseConfig = {
+        apiKey: process.env.VITE_FIREBASE_API_KEY,
+        authDomain: process.env.VITE_FIREBASE_AUTH_DOMAIN,
+        projectId: process.env.VITE_FIREBASE_PROJECT_ID,
+        storageBucket: process.env.VITE_FIREBASE_STORAGE_BUCKET,
+        messagingSenderId: process.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
+        appId: process.env.VITE_FIREBASE_APP_ID,
+        measurementId: process.env.VITE_FIREBASE_MEASUREMENT_ID,
+      };
+
+      console.log("🔧 Firebase Config Debug:", {
+        projectId: firebaseConfig.projectId,
+        authDomain: firebaseConfig.authDomain,
+        hasApiKey: !!firebaseConfig.apiKey,
+        hasAppId: !!firebaseConfig.appId,
+        timestamp: new Date().toISOString()
+      });
+
+      // Use unique app name to avoid caching issues
+      const appName = `emblem-app-${Date.now()}`;
+      const app = initializeApp(firebaseConfig, appName);
+      firestore = getFirestore(app);
+      firebaseInitialized = true;
+      console.log("✅ Firebase initialized successfully");
+    } catch (error) {
+      console.error("❌ Firebase initialization failed:", error);
+      throw error;
+    }
+  }
+  return firestore;
+}
+
+/**
+ * Procesează emblemele din comenzi și le salvează în colecția emblems
+ */
+async function processEmblemItems(orderData, orderId) {
+  try {
+    console.log("🔮 Checking for emblem items in order:", orderId);
+    console.log("🔮 OrderData structure:", JSON.stringify(orderData, null, 2));
+
+    if (!orderData.items || !Array.isArray(orderData.items)) {
+      console.log("❌ No items found in order data");
+      return;
+    }
+
+    // Check if we're in development mode to avoid Firebase connection issues
+    const isDevelopment =
+      process.env.NODE_ENV !== "production" ||
+      !process.env.VITE_FIREBASE_API_KEY;
+    if (isDevelopment) {
+      console.log(
+        "🔧 DEVELOPMENT MODE: Will attempt Firebase connection but handle timeouts gracefully"
+      );
+    }
+
+    // Găsește produsele care sunt embleme (id începe cu "emblem_")
+    const emblemItems = orderData.items.filter(
+      (item) => item.id && item.id.startsWith("emblem_")
+    );
+
+    if (emblemItems.length === 0) {
+      console.log("ℹ️ No emblem items found in order");
+      return;
+    }
+
+    console.log("🔮 Found emblem items:", emblemItems.length);
+    console.log("🔮 Emblem items:", JSON.stringify(emblemItems, null, 2));
+
+    // Pentru fiecare emblemă, creează intrarea în colecția emblems
+    for (const emblemItem of emblemItems) {
+      const emblemType = emblemItem.id.replace("emblem_", ""); // ex: "emblem_protection" -> "protection"
+
+      const emblemData = {
+        userId: orderData.userId || "unknown", // Trebuie să ai userId în orderData
+        type: emblemType,
+        name: emblemItem.name || `Emblemă ${emblemType}`,
+        status: "active",
+        createdAt: new Date().toISOString(), // Will be replaced with serverTimestamp in Firebase
+        orderId: orderId,
+        mintedDate: new Date().toISOString(), // Will be replaced with serverTimestamp in Firebase
+        rarity: getEmblemRarity(emblemType), // Funcție helper pentru raritate
+        attributes: getEmblemAttributes(emblemType), // Funcție helper pentru atribute
+      };
+
+      console.log("🔮 Creating emblem:", emblemData);
+
+      try {
+        // Initialize Firebase only when needed
+        const firestoreInstance = await initializeFirebase();
+        const { collection, addDoc, serverTimestamp } = await import(
+          "firebase/firestore"
+        );
+
+        // Salvează emblema în Firebase
+        const emblemRef = await addDoc(
+          collection(firestoreInstance, "emblems"),
+          {
+            ...emblemData,
+            createdAt: serverTimestamp(),
+            mintedDate: serverTimestamp(),
+          }
+        );
+        console.log("✅ Emblem created with ID:", emblemRef.id);
+
+        // Actualizează stocul pentru acea emblemă
+        await updateEmblemStock(emblemType);
+      } catch (firebaseError) {
+        console.error("❌ Firebase error creating emblem:", firebaseError);
+        if (isDevelopment) {
+          console.log("🔧 DEVELOPMENT: Continuing despite Firebase error");
+        } else {
+          throw firebaseError; // Re-throw in production
+        }
+      }
+    }
+
+    console.log("✅ All emblems processed successfully");
+  } catch (error) {
+    console.error("❌ Error processing emblem items:", error);
+    // Nu oprește procesul de plată pentru o eroare la embleme
+  }
+}
+
+/**
+ * Helper pentru raritatea emblemelor
+ */
+function getEmblemRarity(emblemType) {
+  const rarities = {
+    protection: "rare",
+    wisdom: "legendary",
+    courage: "epic",
+    prosperity: "rare",
+  };
+  return rarities[emblemType] || "common";
+}
+
+/**
+ * Helper pentru atributele emblemelor
+ */
+function getEmblemAttributes(emblemType) {
+  const attributes = {
+    protection: { defense: 85, luck: 70 },
+    wisdom: { intelligence: 95, insight: 88 },
+    courage: { strength: 90, bravery: 85 },
+    prosperity: { wealth: 80, fortune: 75 },
+  };
+  return attributes[emblemType] || { power: 50 };
+}
+
+/**
+ * Actualizează stocul pentru un tip de emblemă
+ */
+async function updateEmblemStock(emblemType) {
+  try {
+    // Această funcție ar trebui să decrementeze stocul în colecția emblem_stocks
+    // Pentru moment doar logăm
+    console.log(`📦 Should update stock for emblem type: ${emblemType}`);
+    console.log(`📦 DEVELOPMENT: Skipping Firebase stock update`);
+  } catch (error) {
+    console.error("❌ Error updating emblem stock:", error);
+  }
+}
+
 /**
  * Configurează transportul pentru emailuri
  */
@@ -53,6 +228,7 @@ async function findOrderData(orderId, event) {
     items: [],
     date: new Date().toISOString(),
     paymentMethod: "card",
+    userId: null, // Va fi completat din cookie sau Firebase
   };
 
   // Încearcă să recupereze datele din cookie
@@ -382,6 +558,9 @@ export const handler = async (event, context) => {
         }),
       };
     }
+
+    // Procesează emblemele din comandă (dacă există)
+    await processEmblemItems(finalOrderData, orderId);
 
     // Trimite emailurile de finalizare
     const emailResults = await sendOrderCompletionEmails(

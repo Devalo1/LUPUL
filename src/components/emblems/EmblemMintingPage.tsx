@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../contexts/AuthContext";
+import { useCart } from "../../contexts/CartContext";
 import { emblemService } from "../../services/emblemService";
 import { EMBLEM_COLLECTIONS } from "../../types/emblem";
 import { FaShoppingCart } from "react-icons/fa";
@@ -19,8 +21,8 @@ interface EmblemCollection {
 
 const EmblemMintingPage: React.FC = () => {
   const { user } = useAuth();
-  const [selectedEmblem, setSelectedEmblem] = useState<string | null>(null);
-  const [isLoading, setIsLoading] = useState(false);
+  const { addItem } = useCart();
+  const navigate = useNavigate();
   const [userHasEmblem, setUserHasEmblem] = useState(false);
   const [availableStocks, setAvailableStocks] = useState<
     Record<string, number>
@@ -131,15 +133,8 @@ const EmblemMintingPage: React.FC = () => {
     console.log("🏪 Toate stocurile actualizate:", stocks);
   };
 
-  const handlePurchase = async (emblemType: string) => {
-    // Test alert pentru a verifica dacă funcția este apelată
-    alert(`🧪 TEST: Butonul funcționează! Încerci să cumperi: ${emblemType}`);
-
-    console.log("🛒 Început proces cumpărare pentru:", emblemType);
-    console.log("👤 User:", user ? "autentificat" : "neautentificat");
-    console.log("🎪 Are emblemă:", userHasEmblem);
-    console.log("🔄 Loading:", isLoading);
-    console.log("📦 Stoc disponibil:", availableStocks[emblemType]);
+  const handleAddToCart = async (emblemType: string) => {
+    console.log("🛒 Adăugare emblemă în coș:", emblemType);
 
     if (!user) {
       alert("Trebuie să fii autentificat pentru a cumpăra o emblemă");
@@ -159,83 +154,32 @@ const EmblemMintingPage: React.FC = () => {
       return;
     }
 
-    setIsLoading(true);
-    setSelectedEmblem(emblemType);
-
     try {
-      // Inițiază plată reală cu Netopia
       const collection = EMBLEM_COLLECTIONS[emblemType];
-      const orderId = `emblem_${emblemType}_${user.uid}_${Date.now()}`;
 
-      const paymentData = {
-        orderId: orderId,
-        amount: collection.price * 100, // Convertește în bani (RON * 100)
-        currency: "RON",
-        description: `Emblema NFT: ${collection.name}`,
-        customerInfo: {
-          firstName: user.displayName?.split(" ")[0] || "Client",
-          lastName: user.displayName?.split(" ")[1] || "Lupul",
-          email: user.email || "",
-          phone: "0700000000", // Default - va fi cerut în form
-          address: "Adresa client",
-          city: "Bucuresti",
-          county: "Bucuresti",
-          postalCode: "010000",
-        },
-        emblemType: emblemType,
-        userId: user.uid,
+      // Creăm un produs special pentru emblemă cu livrare fizică
+      const emblemProduct = {
+        id: `emblem_${emblemType}`,
+        name: `${collection.name} + Tricou Premium + QR Cod`,
+        price: collection.price,
+        image: `/images/emblems/${emblemType}.svg`,
+        quantity: 1,
       };
 
-      console.log("💳 Inițiere plată Netopia cu datele:", paymentData);
+      // Adăugăm în coș
+      addItem(emblemProduct);
 
-      // Call Netopia pentru inițiere plată
-      const response = await fetch(
-        "/.netlify/functions/netopia-initiate-emblem",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(paymentData),
-        }
-      );
-
-      console.log("📡 Răspuns de la serverul de plăți:", response.status);
-
-      if (!response.ok) {
-        const errorText = await response.text();
-        console.error("❌ Eroare răspuns server:", errorText);
-        throw new Error("Eroare la inițierea plății");
-      }
-
-      const result = await response.json();
-      console.log("✅ Rezultat plată:", result);
-
-      if (result.paymentUrl) {
-        // Salvează detalii temporare pentru confirmare ulterioară
-        localStorage.setItem(
-          "pendingEmblemPurchase",
-          JSON.stringify({
-            orderId,
-            emblemType,
-            userId: user.uid,
-            timestamp: Date.now(),
-          })
-        );
-
-        console.log("🔄 Redirect către Netopia...");
-        // Redirect la Netopia pentru plată
-        window.location.href = result.paymentUrl;
-      } else {
-        throw new Error("Nu s-a putut obține URL-ul de plată");
-      }
-    } catch (error: unknown) {
-      console.error("❌ Eroare la cumpărarea emblemei:", error);
       alert(
-        `Eroare la inițierea plății: ${error instanceof Error ? error.message : "Eroare necunoscută"}`
+        `✅ Emblema "${collection.name}" a fost adăugată în coș!\n\n� INCLUS:\n• Emblemă digitală exclusivă\n• Tricou premium personalizat\n• QR Cod cu datele emblemei\n• Livrare prin curier\n\nPoți finaliza comanda în coș cu plata cu cardul.`
       );
-      setIsLoading(false);
-      setSelectedEmblem(null);
+
+      // Redirect către coș pentru finalizare
+      navigate("/cart");
+    } catch (error: unknown) {
+      console.error("❌ Eroare la adăugarea în coș:", error);
+      alert(
+        `Eroare la adăugarea în coș: ${error instanceof Error ? error.message : "Eroare necunoscută"}`
+      );
     }
   };
 
@@ -267,7 +211,7 @@ const EmblemMintingPage: React.FC = () => {
         {collections.map((collection) => (
           <div
             key={collection.key}
-            className={`emblem-card tier-${collection.tier} ${selectedEmblem === collection.key ? "purchasing" : ""}`}
+            className={`emblem-card tier-${collection.tier}`}
           >
             <div className="emblem-card-header">
               <div className="emblem-icon-container">{collection.icon}</div>
@@ -305,45 +249,21 @@ const EmblemMintingPage: React.FC = () => {
 
             <button
               className={`purchase-button ${
-                isLoading || (availableStocks[collection.key] || 0) === 0
+                (availableStocks[collection.key] || 0) === 0
                   ? "purchase-button--disabled"
                   : ""
               }`}
-              onClick={() => handlePurchase(collection.key)}
-              disabled={
-                isLoading || (availableStocks[collection.key] || 0) === 0
-              }
+              onClick={() => handleAddToCart(collection.key)}
+              disabled={(availableStocks[collection.key] || 0) === 0}
             >
-              {isLoading && selectedEmblem === collection.key ? (
-                <span>🔮 Se inițiază plata...</span>
-              ) : (availableStocks[collection.key] || 0) === 0 ? (
+              {(availableStocks[collection.key] || 0) === 0 ? (
                 <span>❌ Epuizat</span>
               ) : (
                 <>
-                  <FaShoppingCart /> 💳 Plătește cu Cardul
+                  <FaShoppingCart /> � Adaugă în Coș (+ Tricou & QR)
                 </>
               )}
             </button>
-
-            {/* Debug info - vizibil doar în development */}
-            {process.env.NODE_ENV === "development" && (
-              <div className="debug-info">
-                <div>🐛 Debug Info:</div>
-                <div>• Stock: {availableStocks[collection.key] || 0}</div>
-                <div>• Loading: {isLoading ? "da" : "nu"}</div>
-                <div>
-                  • Selected: {selectedEmblem === collection.key ? "da" : "nu"}
-                </div>
-                <div>• User: {user ? "autentificat" : "neautentificat"}</div>
-                <div>• Are emblemă: {userHasEmblem ? "da" : "nu"}</div>
-                <div>
-                  • Disabled:{" "}
-                  {isLoading || (availableStocks[collection.key] || 0) === 0
-                    ? "da"
-                    : "nu"}
-                </div>
-              </div>
-            )}
           </div>
         ))}
       </div>

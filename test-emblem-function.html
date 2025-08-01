@@ -1,0 +1,151 @@
+<!doctype html>
+<html lang="ro">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Test Netlify Function</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        max-width: 800px;
+        margin: 0 auto;
+        padding: 20px;
+        background-color: #f5f5f5;
+      }
+      .container {
+        background: white;
+        padding: 20px;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      }
+      .test-result {
+        padding: 10px;
+        margin: 10px 0;
+        border-radius: 4px;
+        border-left: 4px solid;
+      }
+      .success {
+        background: #e8f5e8;
+        border-color: #4caf50;
+        color: #2e7d32;
+      }
+      .error {
+        background: #ffe8e8;
+        border-color: #f44336;
+        color: #c62828;
+      }
+      .info {
+        background: #e3f2fd;
+        border-color: #2196f3;
+        color: #1565c0;
+      }
+      button {
+        background: #2196f3;
+        color: white;
+        border: none;
+        padding: 10px 20px;
+        border-radius: 4px;
+        cursor: pointer;
+        margin: 5px;
+      }
+      button:hover {
+        background: #1976d2;
+      }
+      pre {
+        background: #f5f5f5;
+        padding: 10px;
+        border-radius: 4px;
+        overflow: auto;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h1>🧪 Test Netlify Emblem Function</h1>
+      <p>Test the netopia-initiate-emblem Netlify function</p>
+
+      <div id="results"></div>
+
+      <button onclick="testEmblemFunction()">Test Emblem Function</button>
+      <button onclick="testWithValidData()">Test With Valid Data</button>
+    </div>
+
+    <script>
+      function addResult(message, type = "info") {
+        const results = document.getElementById("results");
+        const div = document.createElement("div");
+        div.className = `test-result ${type}`;
+        div.innerHTML = `[${new Date().toLocaleTimeString()}] ${message}`;
+        results.appendChild(div);
+        results.scrollTop = results.scrollHeight;
+      }
+
+      async function testEmblemFunction() {
+        addResult("🔄 Testing emblem function with minimal data...", "info");
+
+        try {
+          const response = await fetch("/api/netopia-initiate-emblem", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              test: "data",
+            }),
+          });
+
+          addResult(
+            `📡 Response status: ${response.status}`,
+            response.ok ? "success" : "error"
+          );
+
+          const data = await response.text();
+          addResult(`📄 Response body: <pre>${data}</pre>`, "info");
+        } catch (error) {
+          addResult(`❌ Error: ${error.message}`, "error");
+        }
+      }
+
+      async function testWithValidData() {
+        addResult("🔄 Testing emblem function with valid data...", "info");
+
+        const testData = {
+          orderId: "TEST-" + Date.now(),
+          amount: 50,
+          emblemType: "lupul_intelepta",
+          userId: "test-user-id",
+          description: "Test emblem purchase",
+          customerInfo: {
+            email: "test@example.com",
+            firstName: "Test",
+            lastName: "User",
+          },
+        };
+
+        try {
+          const response = await fetch("/api/netopia-initiate-emblem", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify(testData),
+          });
+
+          addResult(
+            `📡 Response status: ${response.status}`,
+            response.ok ? "success" : "error"
+          );
+
+          const data = await response.text();
+          addResult(`📄 Response body: <pre>${data}</pre>`, "info");
+        } catch (error) {
+          addResult(`❌ Error: ${error.message}`, "error");
+        }
+      }
+
+      // Initialize
+      addResult("🚀 Ready to test emblem function", "success");
+      addResult(`Current URL: ${window.location.href}`, "info");
+    </script>
+  </body>
+</html>

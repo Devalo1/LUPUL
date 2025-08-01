@@ -204,6 +204,94 @@ service cloud.firestore {
       allow write: if isAdmin();
     }
 
+    // Medical System Collections
+    match /medicines/{medicineId} {
+      // Anyone can read medicine information
+      allow read: if true;
+      // Only admins can manage medicines
+      allow write: if isAdmin();
+    }
+    
+    match /drugInteractions/{interactionId} {
+      // Anyone can read drug interaction information
+      allow read: if true;
+      // Only admins can manage interactions
+      allow write: if isAdmin();
+    }
+    
+    match /aiKnowledgeBase/{knowledgeId} {
+      // Anyone can read AI knowledge base
+      allow read: if true;
+      // Only admins can manage knowledge base
+      allow write: if isAdmin();
+    }
+
+    // Reading Sessions - for tracking user reading behavior
+    match /readingSessions/{sessionId} {
+      // Users can read their own sessions, admins can read all
+      allow read: if isAuthenticated() && (resource.data.userId == request.auth.uid || isAdmin());
+      // Users can create their own sessions
+      allow create: if isAuthenticated() && request.auth.uid == request.resource.data.userId;
+      // Users can update their own sessions, admins can update all
+      allow update: if isAuthenticated() && (resource.data.userId == request.auth.uid || isAdmin());
+      // Only admins can delete sessions
+      allow delete: if isAdmin();
+    }
+
+    // Emblem Collections - for checking available emblem stocks
+    match /emblemCollections/{emblemType} {
+      // Anyone can read emblem availability
+      allow read: if true;
+      // Only admins can update stock
+      allow write: if isAdmin();
+    }
+    
+    // Emblems - main emblem collection for user emblems
+    match /emblems/{emblemId} {
+      // Users can read their own emblems, admins can read all
+      allow read: if isAuthenticated() && (resource.data.userId == request.auth.uid || isAdmin());
+      // Only system can create emblems (through functions)
+      allow create: if true;
+      // Only admins can update/delete
+      allow update, delete: if isAdmin();
+    }
+    
+    // Emblem Stocks - new emblem stock management
+    match /emblem_stocks/{stockId} {
+      // Anyone can read emblem stock
+      allow read: if true;
+      // Only admins can update stock
+      allow write: if isAdmin();
+    }
+    
+    // Emblem Stock Logs - for tracking stock changes
+    match /emblem_stock_logs/{logId} {
+      // Anyone can read stock logs
+      allow read: if true;
+      // Only admins can create logs
+      allow write: if isAdmin();
+    }
+    
+    // User Emblems - emblems owned by users
+    match /userEmblems/{emblemId} {
+      // Users can read their own emblems, admins can read all
+      allow read: if isAuthenticated() && (resource.data.userId == request.auth.uid || isAdmin());
+      // Only system can create emblems (through functions)
+      allow create: if true;
+      // Only admins can update/delete
+      allow update, delete: if isAdmin();
+    }
+    
+    // Emblem Orders - orders for purchasing emblems
+    match /emblemOrders/{orderId} {
+      // Users can read their own orders, admins can read all
+      allow read: if isAuthenticated() && (resource.data.userId == request.auth.uid || isAdmin());
+      // Users can create their own orders
+      allow create: if isAuthenticated() && request.auth.uid == request.resource.data.userId;
+      // Only admins can update/delete orders
+      allow update, delete: if isAdmin();
+    }
+
     // Default rule - deny access unless specific rule allows it
     match /{document=**} {
       allow read: if isAdmin();

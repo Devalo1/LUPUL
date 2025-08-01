@@ -75,7 +75,20 @@ class NetopiaPayments {
       // Use relative path in production - absolute URLs cause routing issues
       return `/.netlify/functions/${functionName}`;
     }
-    // In development, use Vite proxy path
+
+    // In development, check if we need to use direct Netlify dev server URL
+    const currentPort = window.location.port;
+    const isDevelopment = window.location.hostname === "localhost";
+
+    if (isDevelopment && (currentPort === "5174" || currentPort === "5173")) {
+      // We're running through Vite preview/dev, need to connect directly to Netlify dev server
+      console.log(
+        `🔄 Detected Vite server on port ${currentPort}, connecting directly to Netlify dev server`
+      );
+      return `http://localhost:8888/.netlify/functions/${functionName}`;
+    }
+
+    // Default development proxy path (if running through proper Netlify dev)
     return `/api/${functionName}`;
   }
   private isProduction(): boolean {
@@ -591,8 +604,8 @@ class NetopiaPayments {
         isLupulSiCorbul: window.location.hostname === "lupulsicorbul.com",
         isNotLocalhost: window.location.hostname !== "localhost",
         isNotNetlify: !window.location.hostname.includes("netlify"),
-        isNotPreview: !window.location.hostname.includes("preview")
-      }
+        isNotPreview: !window.location.hostname.includes("preview"),
+      },
     });
 
     const paymentData = {
@@ -620,7 +633,9 @@ class NetopiaPayments {
       ...paymentData,
       customerInfo: "<<HIDDEN>>",
       live: paymentData.live, // ✅ Destacat pentru debugging
-      willUseBackendEndpoint: paymentData.live ? "LIVE (secure.netopia-payments.com)" : "SANDBOX (secure-sandbox.netopia-payments.com)"
+      willUseBackendEndpoint: paymentData.live
+        ? "LIVE (secure.netopia-payments.com)"
+        : "SANDBOX (secure-sandbox.netopia-payments.com)",
     });
 
     return paymentData;
@@ -630,21 +645,24 @@ class NetopiaPayments {
 // Configurația pentru producție și dezvoltare
 const getNetopiaConfig = (): NetopiaConfig => {
   const currentHostname = window.location.hostname;
-  const isLupulSiCorbul = currentHostname === "lupulsicorbul.com" || currentHostname === "www.lupulsicorbul.com";
+  const isLupulSiCorbul =
+    currentHostname === "lupulsicorbul.com" ||
+    currentHostname === "www.lupulsicorbul.com";
   const isNotLocalhost = currentHostname !== "localhost";
   const isNotNetlify = !currentHostname.includes("netlify");
   const isNotPreview = !currentHostname.includes("preview");
-  
-  const isProduction = isLupulSiCorbul || (isNotLocalhost && isNotNetlify && isNotPreview);
+
+  const isProduction =
+    isLupulSiCorbul || (isNotLocalhost && isNotNetlify && isNotPreview);
 
   console.log("🌐 HOSTNAME DETECTION DEBUG:", {
     currentHostname,
     isLupulSiCorbul,
     isNotLocalhost,
-    isNotNetlify, 
+    isNotNetlify,
     isNotPreview,
     finalIsProduction: isProduction,
-    detectedAsProduction: isProduction ? "✅ PRODUCTION" : "❌ NOT PRODUCTION"
+    detectedAsProduction: isProduction ? "✅ PRODUCTION" : "❌ NOT PRODUCTION",
   });
 
   // În Vite folosim import.meta.env nu process.env pentru variabile VITE_

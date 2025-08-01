@@ -1,0 +1,50 @@
+<!doctype html>
+<html>
+  <head>
+    <title>Test CORS pentru NETOPIA v2 API</title>
+  </head>
+  <body>
+    <h1>🧪 Test CORS pentru NETOPIA v2 API</h1>
+    <button onclick="testCORS()">Test CORS cu Cache-Control</button>
+    <div id="result"></div>
+
+    <script>
+      async function testCORS() {
+        const resultDiv = document.getElementById("result");
+        resultDiv.innerHTML = "🔄 Testing CORS...";
+
+        try {
+          const response = await fetch(
+            "http://localhost:8888/.netlify/functions/netopia-v2-api",
+            {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+                "Cache-Control": "no-cache",
+                Authorization: "Bearer test",
+              },
+              body: JSON.stringify({
+                test: "cors-test",
+                amount: 100,
+                currency: "RON",
+              }),
+            }
+          );
+
+          const data = await response.text();
+          resultDiv.innerHTML = `
+                    <h3>✅ CORS Test Successful!</h3>
+                    <p><strong>Status:</strong> ${response.status}</p>
+                    <p><strong>Response:</strong> ${data}</p>
+                `;
+        } catch (error) {
+          resultDiv.innerHTML = `
+                    <h3>❌ CORS Test Failed!</h3>
+                    <p><strong>Error:</strong> ${error.message}</p>
+                    <p><strong>Type:</strong> ${error.constructor.name}</p>
+                `;
+        }
+      }
+    </script>
+  </body>
+</html>

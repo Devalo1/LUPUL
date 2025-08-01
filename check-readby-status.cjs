@@ -2,12 +2,12 @@ const { initializeApp } = require('firebase/app');
 const { getFirestore, collection, getDocs } = require('firebase/firestore');
 
 const firebaseConfig = {
-  apiKey: 'AIzaSyDdBgqV1Y0WEDLpqLKKr9BZHWn8tU5yZ-g',
-  authDomain: 'dani-cu-daniel.firebaseapp.com',
-  projectId: 'dani-cu-daniel',
-  storageBucket: 'dani-cu-daniel.appspot.com',
-  messagingSenderId: '674635668500',
-  appId: '1:674635668500:web:e6c0a999a4eb96b75d1c5e'
+  apiKey: 'AIzaSyCZEWoZn-c7NSH1AGbetWEbtxwEz-iaMR4',
+  authDomain: 'lupulcorbul.firebaseapp.com',
+  projectId: 'lupulcorbul',
+  storageBucket: 'lupulcorbul.firebasestorage.app',
+  messagingSenderId: '312943074536',
+  appId: '1:312943074536:web:13fc0660014bc58c5c7d5d'
 };
 
 const app = initializeApp(firebaseConfig);

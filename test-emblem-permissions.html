@@ -1,0 +1,253 @@
+<!doctype html>
+<html lang="ro">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Test Emblem Permissions</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        max-width: 800px;
+        margin: 0 auto;
+        padding: 20px;
+        background-color: #f5f5f5;
+      }
+      .container {
+        background: white;
+        padding: 20px;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      }
+      .test-result {
+        padding: 10px;
+        margin: 10px 0;
+        border-radius: 4px;
+        border-left: 4px solid;
+      }
+      .success {
+        background: #e8f5e8;
+        border-color: #4caf50;
+        color: #2e7d32;
+      }
+      .error {
+        background: #ffe8e8;
+        border-color: #f44336;
+        color: #c62828;
+      }
+      .info {
+        background: #e3f2fd;
+        border-color: #2196f3;
+        color: #1565c0;
+      }
+      .loading {
+        background: #fff3e0;
+        border-color: #ff9800;
+        color: #ef6c00;
+      }
+      button {
+        background: #2196f3;
+        color: white;
+        border: none;
+        padding: 10px 20px;
+        border-radius: 4px;
+        cursor: pointer;
+        margin: 5px;
+      }
+      button:hover {
+        background: #1976d2;
+      }
+      button:disabled {
+        background: #ccc;
+        cursor: not-allowed;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h1>🧪 Test Emblem Permissions</h1>
+      <p>
+        Testează dacă permisiunile Firebase pentru emblemuri funcționează
+        corect.
+      </p>
+
+      <div id="results"></div>
+
+      <button onclick="testEmblemCollections()">Test Emblem Collections</button>
+      <button onclick="testReadingSessions()">Test Reading Sessions</button>
+      <button onclick="testMedicalCollections()">
+        Test Medical Collections
+      </button>
+      <button onclick="runAllTests()">Run All Tests</button>
+    </div>
+
+    <script type="module">
+      import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+      import {
+        getFirestore,
+        collection,
+        getDocs,
+        doc,
+        getDoc,
+      } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+      import {
+        getAuth,
+        signInAnonymously,
+      } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+
+      const firebaseConfig = {
+        apiKey: "AIzaSyCZEWoZn-c7NSH1AGbetWEbtxwEz-iaMR4",
+        authDomain: "lupulcorbul.firebaseapp.com",
+        projectId: "lupulcorbul",
+        storageBucket: "lupulcorbul.firebasestorage.app",
+        messagingSenderId: "312943074536",
+        appId: "1:312943074536:web:13fc0660014bc58c5c7d5d",
+      };
+
+      const app = initializeApp(firebaseConfig);
+      const db = getFirestore(app);
+      const auth = getAuth(app);
+
+      window.db = db;
+      window.auth = auth;
+
+      function addResult(message, type = "info") {
+        const results = document.getElementById("results");
+        const div = document.createElement("div");
+        div.className = `test-result ${type}`;
+        div.innerHTML = `[${new Date().toLocaleTimeString()}] ${message}`;
+        results.appendChild(div);
+        results.scrollTop = results.scrollHeight;
+      }
+
+      window.testEmblemCollections = async function () {
+        addResult("🔄 Testing emblem collections...", "loading");
+
+        try {
+          // Test reading emblemCollections
+          const emblemTypes = [
+            "lupul_intelepta",
+            "corbul_mistic",
+            "gardianul_wellness",
+            "cautatorul_lumina",
+          ];
+
+          for (const emblemType of emblemTypes) {
+            try {
+              const docRef = doc(db, "emblemCollections", emblemType);
+              const docSnap = await getDoc(docRef);
+
+              if (docSnap.exists()) {
+                addResult(
+                  `✅ Successfully read emblemCollections/${emblemType}: available = ${docSnap.data().available || 0}`,
+                  "success"
+                );
+              } else {
+                addResult(
+                  `ℹ️ Document emblemCollections/${emblemType} does not exist`,
+                  "info"
+                );
+              }
+            } catch (error) {
+              addResult(
+                `❌ Error reading emblemCollections/${emblemType}: ${error.message}`,
+                "error"
+              );
+            }
+          }
+
+          // Test reading emblems collection
+          try {
+            const emblemsRef = collection(db, "emblems");
+            const snapshot = await getDocs(emblemsRef);
+            addResult(
+              `✅ Successfully read emblems collection: ${snapshot.size} documents`,
+              "success"
+            );
+          } catch (error) {
+            addResult(
+              `❌ Error reading emblems collection: ${error.message}`,
+              "error"
+            );
+          }
+        } catch (error) {
+          addResult(
+            `❌ General error testing emblem collections: ${error.message}`,
+            "error"
+          );
+        }
+      };
+
+      window.testReadingSessions = async function () {
+        addResult("🔄 Testing reading sessions...", "loading");
+
+        try {
+          const readingSessionsRef = collection(db, "readingSessions");
+          const snapshot = await getDocs(readingSessionsRef);
+          addResult(
+            `✅ Successfully read readingSessions collection: ${snapshot.size} documents`,
+            "success"
+          );
+        } catch (error) {
+          addResult(
+            `❌ Error reading readingSessions: ${error.message}`,
+            "error"
+          );
+        }
+      };
+
+      window.testMedicalCollections = async function () {
+        addResult("🔄 Testing medical collections...", "loading");
+
+        const collections = [
+          "medicines",
+          "drugInteractions",
+          "aiKnowledgeBase",
+        ];
+
+        for (const collectionName of collections) {
+          try {
+            const collectionRef = collection(db, collectionName);
+            const snapshot = await getDocs(collectionRef);
+            addResult(
+              `✅ Successfully read ${collectionName} collection: ${snapshot.size} documents`,
+              "success"
+            );
+          } catch (error) {
+            addResult(
+              `❌ Error reading ${collectionName}: ${error.message}`,
+              "error"
+            );
+          }
+        }
+      };
+
+      window.runAllTests = async function () {
+        addResult("🚀 Starting comprehensive permission tests...", "info");
+
+        // Try to sign in anonymously first
+        try {
+          await signInAnonymously(auth);
+          addResult("✅ Anonymous authentication successful", "success");
+        } catch (error) {
+          addResult(
+            `❌ Anonymous authentication failed: ${error.message}`,
+            "error"
+          );
+        }
+
+        await window.testEmblemCollections();
+        await window.testReadingSessions();
+        await window.testMedicalCollections();
+
+        addResult("🏁 All tests completed!", "info");
+      };
+
+      // Initialize
+      addResult("🔥 Firebase initialized successfully", "success");
+      addResult(
+        "Click a button to test specific collections or run all tests",
+        "info"
+      );
+    </script>
+  </body>
+</html>

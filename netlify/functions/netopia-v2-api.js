@@ -283,13 +283,16 @@ async function initiateNetopiaV2Payment(payload, config) {
 export const handler = async (event, context) => {
   const headers = {
     "Access-Control-Allow-Origin": "*",
-    "Access-Control-Allow-Headers": "Content-Type, Authorization",
-    "Access-Control-Allow-Methods": "POST, OPTIONS",
+    "Access-Control-Allow-Headers":
+      "Content-Type, Authorization, Cache-Control, Accept, User-Agent, X-Requested-With",
+    "Access-Control-Allow-Methods": "POST, OPTIONS, GET",
+    "Access-Control-Max-Age": "86400",
     "Content-Type": "application/json",
   };
 
   // Handle CORS preflight
   if (event.httpMethod === "OPTIONS") {
+    console.log("🔄 CORS preflight request received");
     return { statusCode: 200, headers, body: "" };
   }
 

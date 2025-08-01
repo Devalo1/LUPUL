@@ -1,0 +1,150 @@
+<!doctype html>
+<html lang="ro">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>🔄 Rediredirecționare la Netlify Dev Server</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        max-width: 600px;
+        margin: 50px auto;
+        padding: 20px;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        text-align: center;
+      }
+      .container {
+        background: rgba(255, 255, 255, 0.1);
+        padding: 30px;
+        border-radius: 15px;
+        backdrop-filter: blur(10px);
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+      }
+      .warning {
+        background: rgba(255, 193, 7, 0.2);
+        padding: 15px;
+        border-radius: 8px;
+        margin: 20px 0;
+        border-left: 4px solid #ffc107;
+      }
+      .correct-url {
+        background: rgba(40, 167, 69, 0.2);
+        padding: 15px;
+        border-radius: 8px;
+        margin: 20px 0;
+        border-left: 4px solid #28a745;
+        font-family: monospace;
+        font-size: 18px;
+      }
+      .redirect-btn {
+        background: #28a745;
+        color: white;
+        border: none;
+        padding: 15px 30px;
+        border-radius: 8px;
+        font-size: 16px;
+        cursor: pointer;
+        margin: 10px;
+        transition: background 0.3s;
+      }
+      .redirect-btn:hover {
+        background: #218838;
+      }
+      .info {
+        background: rgba(23, 162, 184, 0.2);
+        padding: 15px;
+        border-radius: 8px;
+        margin: 20px 0;
+        border-left: 4px solid #17a2b8;
+      }
+      h1 {
+        margin-bottom: 20px;
+      }
+      p {
+        margin: 10px 0;
+        line-height: 1.6;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h1>🚨 URL Incorect Detectat!</h1>
+
+      <div class="warning">
+        <strong>⚠️ Problemă:</strong> Accesezi aplicația prin Vite Preview
+        Server (port 5174) în loc de Netlify Dev Server (port 8888).
+      </div>
+
+      <div class="info">
+        <strong>📋 Explicație:</strong><br />
+        • Port 5174 = Vite Preview (doar frontend, fără funcții Netlify)<br />
+        • Port 8888 = Netlify Dev Server (frontend + funcții backend)<br />
+        • Pentru embleme, ai nevoie de funcțiile Netlify!
+      </div>
+
+      <div class="correct-url">
+        <strong>✅ URL Corect:</strong><br />
+        http://localhost:8888
+      </div>
+
+      <button class="redirect-btn" onclick="redirectToNetlify()">
+        🔄 Redirectează la Netlify Dev Server
+      </button>
+
+      <button class="redirect-btn" onclick="openInNewTab()">
+        🆕 Deschide în Tab Nou
+      </button>
+
+      <div class="info" style="margin-top: 30px">
+        <strong>💡 Pentru Dezvoltatori:</strong><br />
+        Întotdeauna folosește <code>http://localhost:8888</code> pentru
+        development când ai nevoie de funcții Netlify.
+      </div>
+    </div>
+
+    <script>
+      // Check if we're on the wrong port
+      if (window.location.port === "5174") {
+        console.log(
+          "🚨 Wrong port detected! User is on Vite Preview instead of Netlify Dev"
+        );
+      }
+
+      function redirectToNetlify() {
+        console.log("🔄 Redirecting to Netlify Dev Server...");
+        window.location.href =
+          "http://localhost:8888" + window.location.pathname;
+      }
+
+      function openInNewTab() {
+        console.log("🆕 Opening Netlify Dev Server in new tab...");
+        window.open(
+          "http://localhost:8888" + window.location.pathname,
+          "_blank"
+        );
+      }
+
+      // Auto-redirect after 10 seconds
+      let countdown = 10;
+      const countdownElement = document.createElement("p");
+      countdownElement.style.marginTop = "20px";
+      countdownElement.style.fontSize = "14px";
+      countdownElement.style.opacity = "0.8";
+      document.querySelector(".container").appendChild(countdownElement);
+
+      const timer = setInterval(() => {
+        countdownElement.textContent = `Redirectare automată în ${countdown} secunde...`;
+        countdown--;
+
+        if (countdown < 0) {
+          clearInterval(timer);
+          redirectToNetlify();
+        }
+      }, 1000);
+
+      // Initial message
+      countdownElement.textContent = `Redirectare automată în ${countdown} secunde...`;
+    </script>
+  </body>
+</html>

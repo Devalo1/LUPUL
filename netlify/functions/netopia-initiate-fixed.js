@@ -8,19 +8,26 @@ const crypto = require("crypto");
 // Configurație NETOPIA
 const NETOPIA_CONFIG = {
   sandbox: {
-    // Use live signature as fallback for sandbox to avoid SVG redirect issue
-    signature:
-      process.env.NETOPIA_SANDBOX_SIGNATURE || "2ZOW-PJ5X-HYYC-IENE-APZO",
-    // Use live endpoint even for sandbox to avoid redirect issues
-    endpoint: "https://secure.netopia-payments.com/payment/card/start",
-    publicKey:
-      process.env.NETOPIA_SANDBOX_PUBLIC_KEY || "2ZOW-PJ5X-HYYC-IENE-APZO",
+    signature: "2ZOW-PJ5X-HYYC-IENE-APZO",
+    endpoint: "https://secure.sandbox.netopia-payments.com/payment/card/start",
+    publicKey: "2ZOW-PJ5X-HYYC-IENE-APZO",
+    apiKey: "z-2vhwpEKiI7WSe1OjU9BR-vaMgoEVEDDbaToPXkVmXKDojL3afQ4uxItEw=",
+    mode: "sandbox",
   },
   live: {
-    signature: process.env.NETOPIA_LIVE_SIGNATURE || "2ZOW-PJ5X-HYYC-IENE-APZO",
+    signature:
+      process.env.NETOPIA_LIVE_SIGNATURE ||
+      process.env.VITE_PAYMENT_LIVE_KEY ||
+      "2ZOW-PJ5X-HYYC-IENE-APZO",
     endpoint: "https://secure.netopia-payments.com/payment/card/start",
     publicKey:
-      process.env.NETOPIA_LIVE_PUBLIC_KEY || "2ZOW-PJ5X-HYYC-IENE-APZO",
+      process.env.NETOPIA_LIVE_PUBLIC_KEY ||
+      process.env.VITE_NETOPIA_PUBLIC_KEY ||
+      "2ZOW-PJ5X-HYYC-IENE-APZO",
+    apiKey:
+      process.env.NETOPIA_LIVE_API_KEY ||
+      "LjsMxpFULiMtFXfWZdSIpPJCeaeyl9PhOV9_omeUt_0NTBLSPJk5r19OyqUt",
+    mode: "live",
   },
 };
 
@@ -297,6 +304,17 @@ export const handler = async (event, context) => {
     // Determină configurația (sandbox vs live) cu detectare automată în producție
     let isLive = false;
 
+    // Pentru producția live, forțează LIVE mode
+    const deployUrl = process.env.URL || "";
+    const isProductionDomain =
+      deployUrl.includes("lupulsicorbul.com") ||
+      deployUrl.includes("netlify.app");
+
+    // Verifică dacă avem credențiale LIVE setate
+    const hasLiveCredentials = !!(
+      process.env.NETOPIA_LIVE_SIGNATURE || process.env.VITE_PAYMENT_LIVE_KEY
+    );
+
     // IMPORTANT: Respectă explicit live: false pentru teste, indiferent de domeniu
     if (paymentData.live === false) {
       isLive = false;
@@ -307,14 +325,20 @@ export const handler = async (event, context) => {
       isLive = true;
       console.log("🚀 Live mode explicitly requested");
     } else {
-      // În producție, forțăm modul live pentru domeniile de producție doar dacă nu e test explicit
-      if (
-        process.env.URL &&
-        (process.env.URL.includes("lupulsicorbul.com") ||
-          process.env.URL.includes("netlify.app"))
-      ) {
+      // Auto-detectare: producție + credențiale = LIVE mode
+      if (isProductionDomain && hasLiveCredentials) {
         isLive = true;
-        console.log("🚀 Production domain detected, forcing LIVE mode");
+        console.log(
+          "🚀 Production domain + live credentials detected, forcing LIVE mode"
+        );
+      } else if (isProductionDomain && !hasLiveCredentials) {
+        isLive = false;
+        console.log(
+          "⚠️ Production domain but no live credentials - using SANDBOX"
+        );
+      } else {
+        isLive = false;
+        console.log("🧪 Development environment - using SANDBOX");
       }
     }
     const hasCustomSignature =
@@ -325,12 +349,17 @@ export const handler = async (event, context) => {
 
     console.log("🔧 Configuration selection:", {
       requestedLive: isLive,
-      hasCustomSignature,
+      deployUrl: deployUrl,
+      isProductionDomain: isProductionDomain,
+      hasLiveCredentials: hasLiveCredentials,
+      hasCustomSignature: hasCustomSignature,
       customSignature: paymentData.posSignature?.substring(0, 10) + "...",
-      hasLiveSignature: !!NETOPIA_CONFIG.live.signature,
-      willUseLive: isLive && !!NETOPIA_CONFIG.live.signature,
+      finalConfig: isLive ? "LIVE" : "SANDBOX",
       envVars: {
         NETOPIA_LIVE_SIGNATURE: process.env.NETOPIA_LIVE_SIGNATURE
+          ? "SET"
+          : "NOT SET",
+        VITE_PAYMENT_LIVE_KEY: process.env.VITE_PAYMENT_LIVE_KEY
           ? "SET"
           : "NOT SET",
         NETOPIA_LIVE_PUBLIC_KEY: process.env.NETOPIA_LIVE_PUBLIC_KEY

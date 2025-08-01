@@ -4,10 +4,12 @@
 
 async function testLiveApiAuth() {
   console.log("🔍 Testing LIVE API with different auth methods...\n");
-  
-  const liveEndpoint = "https://secure.netopia-payments.com/api/payment/card/start";
-  const liveApiKey = "VfjsAdVjct7hQkMXRHKlimzmGGUHztw1e-C1PmvUoBlxkHs05BeWPpx0SXgV";
-  
+
+  const liveEndpoint =
+    "https://secure.netopia-payments.com/api/payment/card/start";
+  const liveApiKey =
+    "VfjsAdVjct7hQkMXRHKlimzmGGUHztw1e-C1PmvUoBlxkHs05BeWPpx0SXgV";
+
   // Test 1: Authorization cu Bearer prefix
   console.log("🧪 Test 1: Bearer authorization");
   try {
@@ -30,7 +32,7 @@ async function testLiveApiAuth() {
   console.log("\n🧪 Test 2: Direct authorization");
   try {
     const response2 = await fetch(liveEndpoint, {
-      method: "POST", 
+      method: "POST",
       headers: {
         "Content-Type": "application/json",
         Accept: "application/json",

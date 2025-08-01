@@ -4,21 +4,24 @@
 
 async function testLiveEndpoint() {
   console.log("🔍 Testing LIVE NETOPIA endpoint...\n");
-  
+
   const liveEndpoint = "https://secure.netopia-payments.com/payment/card/start";
-  const liveApiKey = "VfjsAdVjct7hQkMXRHKlimzmGGUHztw1e-C1PmvUoBlxkHs05BeWPpx0SXgV";
-  
+  const liveApiKey =
+    "VfjsAdVjct7hQkMXRHKlimzmGGUHztw1e-C1PmvUoBlxkHs05BeWPpx0SXgV";
+
   console.log("Testing LIVE endpoint:");
   console.log("Endpoint:", liveEndpoint);
   console.log("API Key:", liveApiKey.substring(0, 10) + "...");
-  
+
   // Payload minimal pentru test
   const testPayload = {
     config: {
       emailTemplate: "",
       emailSubject: "",
-      notifyUrl: "https://lupulsicorbul.com/.netlify/functions/netopia-notify-emblem",
-      redirectUrl: "https://lupulsicorbul.com/.netlify/functions/netopia-return-emblem",
+      notifyUrl:
+        "https://lupulsicorbul.com/.netlify/functions/netopia-notify-emblem",
+      redirectUrl:
+        "https://lupulsicorbul.com/.netlify/functions/netopia-return-emblem",
       language: "ro",
     },
     payment: {
@@ -95,21 +98,27 @@ async function testLiveEndpoint() {
     });
 
     console.log(`\nResponse Status: ${response.status} ${response.statusText}`);
-    
+
     const responseText = await response.text();
-    
+
     if (response.ok) {
       try {
         const responseData = JSON.parse(responseText);
-        console.log("✅ LIVE SUCCESS! Response:", JSON.stringify(responseData, null, 2));
+        console.log(
+          "✅ LIVE SUCCESS! Response:",
+          JSON.stringify(responseData, null, 2)
+        );
       } catch (e) {
-        console.log("✅ LIVE SUCCESS but non-JSON response:", responseText.substring(0, 200));
+        console.log(
+          "✅ LIVE SUCCESS but non-JSON response:",
+          responseText.substring(0, 200)
+        );
       }
     } else {
       console.log("❌ LIVE ERROR Response:", responseText.substring(0, 500));
-      
+
       // Verifică dacă e HTML (404 page)
-      if (responseText.includes('<html')) {
+      if (responseText.includes("<html")) {
         console.log("🚨 Received HTML page - LIVE endpoint might be wrong!");
       } else {
         try {
@@ -120,7 +129,6 @@ async function testLiveEndpoint() {
         }
       }
     }
-
   } catch (error) {
     console.error("❌ LIVE Request failed:", error.message);
   }

@@ -98,56 +98,30 @@ export const handler = async (event, context) => {
     // Verificăm dacă suntem în modul dezvoltare/test
     const isDevelopment = process.env.NODE_ENV === "development";
 
-    // Fallback la credențiale cunoscute pentru producție
+    // Configurația SMTP pentru emailuri reale
     const smtpUser = process.env.SMTP_USER || "lupulsicorbul@gmail.com";
-    const smtpPass = process.env.SMTP_PASS; // Folosim doar variabila de mediu pentru securitate
+    const smtpPass = process.env.SMTP_PASS; // Folosim variabila de mediu
 
-    // Pentru dezvoltare, permitem și testarea emailurilor reale
-    // Dacă SMTP_PASS este "test-development-mode", simulăm
-    // Dacă SMTP_PASS este o parolă reală, trimitem emailuri reale
-    // FOLOSIM PAROLA REALĂ PENTRU TRIMITERE
-    const shouldSimulate =
-      !smtpPass ||
-      smtpPass === "test-development-mode" ||
-      smtpPass === "your-gmail-app-password" ||
-      smtpPass === "your-gmail-app-password-here";
-    // const shouldSimulate = false; // Forțăm trimiterea reală
+    console.log("📧 FORȚEZ TRIMITEREA REALĂ DE EMAILURI!");
+    console.log("📋 SMTP Config:", {
+      user: smtpUser,
+      passConfigured: !!smtpPass,
+      orderNumber: orderNumber,
+      customerEmail: orderData.email,
+    });
 
-    if (shouldSimulate) {
-      // În modul dezvoltare, simulăm trimiterea emailurilor
-      console.log("🔧 MOD SIMULARE: Simulăm trimiterea emailurilor");
-      console.log("💡 Pentru emailuri reale în dezvoltare:");
-      console.log("   1. Configurează o parolă Gmail de aplicație");
-      console.log("   2. Actualizează SMTP_PASS în fișierul .env");
-      console.log("   3. Vezi GMAIL_SETUP_GUIDE.md pentru detalii");
-      console.log("📧 Email client simulat pentru:", orderData.email);
-      console.log("📧 Email admin simulat pentru: lupulsicorbul@gmail.com");
-      console.log("📋 Detalii comandă:", {
-        orderNumber,
-        totalAmount: totalAmount + " bani (raw)",
-        client: `${orderData.firstName || orderData.name} ${orderData.lastName || ""}`,
-        phone: orderData.phone,
-        address: `${orderData.address}, ${orderData.city}, ${orderData.county}`,
-      });
-
+    // Verifică dacă avem parola SMTP
+    if (!smtpPass) {
+      console.error("❌ SMTP_PASS nu este configurat!");
       return {
-        statusCode: 200,
+        statusCode: 500,
         headers: {
           "Access-Control-Allow-Origin": "*",
-          "Access-Control-Allow-Headers": "Content-Type",
-          "Access-Control-Allow-Methods": "POST, OPTIONS",
         },
         body: JSON.stringify({
-          success: true,
-          message:
-            "Emailuri simulate în dezvoltare - vezi GMAIL_SETUP_GUIDE.md pentru emailuri reale",
-          development: true,
-          simulated: true,
-          customerEmail: orderData.email,
-          adminEmail: "lupulsicorbul@gmail.com",
-          orderNumber: orderNumber,
-          setupGuide:
-            "Pentru emailuri reale, configurează SMTP_PASS în .env cu parola ta Gmail de aplicație",
+          success: false,
+          error: "SMTP configuration missing - emails cannot be sent",
+          message: "Set SMTP_PASS in Netlify environment variables",
         }),
       };
     }

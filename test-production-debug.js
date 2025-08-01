@@ -3,7 +3,7 @@
  */
 
 console.log("🚨 TESTARE PRODUCȚIE - Debugging probleme live");
-console.log("=" .repeat(60));
+console.log("=".repeat(60));
 
 // Configurare pentru producție
 const BASE_URL = "https://lupulsicorbul.com";
@@ -122,7 +122,10 @@ async function testProductionEmblem() {
     });
 
     if (result.paymentUrl) {
-      console.log("🔗 URL emblemă:", result.paymentUrl.substring(0, 50) + "...");
+      console.log(
+        "🔗 URL emblemă:",
+        result.paymentUrl.substring(0, 50) + "..."
+      );
     }
 
     return true;
@@ -184,7 +187,9 @@ async function testProductionEmail() {
     const result = await response.json();
     console.log("✅ Succes email:", {
       success: result.success,
-      customerEmailId: result.customerEmailId ? "✅ Trimis" : "❌ Nu s-a trimis",
+      customerEmailId: result.customerEmailId
+        ? "✅ Trimis"
+        : "❌ Nu s-a trimis",
       adminEmailId: result.adminEmailId ? "✅ Trimis" : "❌ Nu s-a trimis",
       simulated: result.simulated,
     });
@@ -207,25 +212,38 @@ async function runProductionTests() {
 
   console.log("\n" + "=".repeat(60));
   console.log("📊 REZULTATE PRODUCȚIE:");
-  console.log("💳 Plată normală:", results.payment ? "✅ FUNCȚIONEAZĂ" : "❌ EROARE");
-  console.log("🔮 Embleme NFT:", results.emblem ? "✅ FUNCȚIONEAZĂ" : "❌ EROARE");
-  console.log("📧 Email ramburs:", results.email ? "✅ FUNCȚIONEAZĂ" : "❌ EROARE");
+  console.log(
+    "💳 Plată normală:",
+    results.payment ? "✅ FUNCȚIONEAZĂ" : "❌ EROARE"
+  );
+  console.log(
+    "🔮 Embleme NFT:",
+    results.emblem ? "✅ FUNCȚIONEAZĂ" : "❌ EROARE"
+  );
+  console.log(
+    "📧 Email ramburs:",
+    results.email ? "✅ FUNCȚIONEAZĂ" : "❌ EROARE"
+  );
 
   const allWorking = results.payment && results.emblem && results.email;
-  
+
   if (allWorking) {
     console.log("\n🎉 TOATE FUNCȚIONEAZĂ ÎN PRODUCȚIE!");
   } else {
     console.log("\n⚠️ PROBLEME DETECTATE ÎN PRODUCȚIE!");
-    
+
     if (!results.payment) {
-      console.log("🚨 Plățile normale nu funcționează - verifică API keys live");
+      console.log(
+        "🚨 Plățile normale nu funcționează - verifică API keys live"
+      );
     }
     if (!results.emblem) {
       console.log("🚨 Emblemele nu funcționează - verifică configurația live");
     }
     if (!results.email) {
-      console.log("🚨 Email-urile nu funcționează - verifică SMTP în producție");
+      console.log(
+        "🚨 Email-urile nu funcționează - verifică SMTP în producție"
+      );
     }
   }
 

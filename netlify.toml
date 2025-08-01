@@ -26,6 +26,12 @@
   VITE_FIREBASE_MESSAGING_SENDER_ID = "312943074536"
   VITE_FIREBASE_APP_ID = "1:312943074536:web:13fc0660014bc58c5c7d5d"
   VITE_FIREBASE_MEASUREMENT_ID = "G-38YSZKVXDC"
+  
+  # NETOPIA Live Configuration pentru producție
+  NETOPIA_LIVE_SIGNATURE = "2ZOW-PJ5X-HYYC-IENE-APZO"
+  NETOPIA_LIVE_API_KEY = "LjsMxpFULiMtFXfWZdSIpPJCeaeyl9PhOV9_omeUt_0NTBLSPJk5r19OyqUt"
+  VITE_NETOPIA_SIGNATURE_LIVE = "2ZOW-PJ5X-HYYC-IENE-APZO"
+  VITE_PAYMENT_LIVE_KEY = "LjsMxpFULiMtFXfWZdSIpPJCeaeyl9PhOV9_omeUt_0NTBLSPJk5r19OyqUt"
 
 [dev]
   # Servește direct din dist/ fără proxy către Vite
@@ -51,6 +57,13 @@
   from = "/api/*"
   to = "/.netlify/functions/:splat"
   status = 200
+
+# Protecție pentru funcțiile Netlify - nu intercepta cu SPA
+[[redirects]]
+  from = "/.netlify/functions/*"
+  to = "/.netlify/functions/:splat"
+  status = 200
+  force = true
 
 # CRITICAL: Protejăm rutele specifice de aplicație înainte de fișierele statice
 [[redirects]]

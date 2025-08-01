@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🔧 Test Funcții NETOPIA Production</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            min-height: 100vh;
+        }
+        .container {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 8px 32px rgba(31, 38, 135, 0.37);
+            border: 1px solid rgba(255, 255, 255, 0.18);
+        }
+        h1 {
+            text-align: center;
+            margin-bottom: 30px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+        .test-section {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 15px;
+            padding: 20px;
+            margin: 20px 0;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .test-button {
+            background: linear-gradient(45deg, #ff6b6b, #ee5a24);
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: bold;
+            margin: 10px 5px;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        }
+        .test-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.3);
+        }
+        .test-button:disabled {
+            background: #666;
+            cursor: not-allowed;
+            transform: none;
+        }
+        .result {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 10px;
+            padding: 15px;
+            margin: 15px 0;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            white-space: pre-wrap;
+            max-height: 400px;
+            overflow-y: auto;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        .success { border-left: 4px solid #2ecc71; }
+        .error { border-left: 4px solid #e74c3c; }
+        .warning { border-left: 4px solid #f39c12; }
+        .info { border-left: 4px solid #3498db; }
+        .status {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: bold;
+            margin-left: 10px;
+        }
+        .status.success { background: #2ecc71; }
+        .status.error { background: #e74c3c; }
+        .status.pending { background: #f39c12; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔧 Test Funcții NETOPIA Production</h1>
+        
+        <div class="test-section">
+            <h3>🌐 Test Funcție Simplă</h3>
+            <p>Testează dacă funcțiile Netlify sunt accesibile în general</p>
+            <button class="test-button" onclick="testBasicFunction()">Test Funcție de Bază</button>
+            <div id="basic-result" class="result" style="display: none;"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>🔍 Test Debug NETOPIA</h3>
+            <p>Verifică configurația NETOPIA și variabilele de mediu</p>
+            <button class="test-button" onclick="testNetopiaDrebug()">Test Debug NETOPIA</button>
+            <div id="debug-result" class="result" style="display: none;"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>💳 Test API NETOPIA</h3>
+            <p>Testează funcția principală NETOPIA cu date demo</p>
+            <button class="test-button" onclick="testNetopiaAPI()">Test API NETOPIA</button>
+            <div id="api-result" class="result" style="display: none;"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>📊 Raport Final</h3>
+            <button class="test-button" onclick="runAllTests()">Rulează Toate Testele</button>
+            <div id="final-report" class="result" style="display: none;"></div>
+        </div>
+    </div>
+
+    <script>
+        const baseUrl = window.location.origin;
+        
+        function showResult(elementId, content, type = 'info') {
+            const element = document.getElementById(elementId);
+            element.className = `result ${type}`;
+            element.style.display = 'block';
+            element.textContent = content;
+        }
+
+        function addStatus(buttonText, status) {
+            return buttonText + `<span class="status ${status}">${status.toUpperCase()}</span>`;
+        }
+
+        async function testBasicFunction() {
+            const button = event.target;
+            button.disabled = true;
+            button.innerHTML = 'Se testează...';
+            
+            try {
+                const response = await fetch(`${baseUrl}/.netlify/functions/test-function`, {
+                    method: 'GET',
+                    headers: { 'Content-Type': 'application/json' }
+                });
+                
+                const text = await response.text();
+                let result;
+                
+                try {
+                    result = JSON.parse(text);
+                } catch (e) {
+                    result = { error: 'Response is not JSON', content: text };
+                }
+                
+                if (response.ok && result.success) {
+                    showResult('basic-result', JSON.stringify(result, null, 2), 'success');
+                    button.innerHTML = addStatus('Test Funcție de Bază', 'success');
+                } else {
+                    showResult('basic-result', JSON.stringify(result, null, 2), 'error');
+                    button.innerHTML = addStatus('Test Funcție de Bază', 'error');
+                }
+            } catch (error) {
+                showResult('basic-result', `Error: ${error.message}`, 'error');
+                button.innerHTML = addStatus('Test Funcție de Bază', 'error');
+            }
+            
+            button.disabled = false;
+        }
+
+        async function testNetopiaDrebug() {
+            const button = event.target;
+            button.disabled = true;
+            button.innerHTML = 'Se testează...';
+            
+            try {
+                const response = await fetch(`${baseUrl}/.netlify/functions/netopia-debug`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ test: true })
+                });
+                
+                const text = await response.text();
+                let result;
+                
+                try {
+                    result = JSON.parse(text);
+                } catch (e) {
+                    result = { error: 'Response is not JSON', content: text };
+                }
+                
+                if (response.ok && result.success) {
+                    showResult('debug-result', JSON.stringify(result, null, 2), 'success');
+                    button.innerHTML = addStatus('Test Debug NETOPIA', 'success');
+                } else {
+                    showResult('debug-result', JSON.stringify(result, null, 2), 'error');
+                    button.innerHTML = addStatus('Test Debug NETOPIA', 'error');
+                }
+            } catch (error) {
+                showResult('debug-result', `Error: ${error.message}`, 'error');
+                button.innerHTML = addStatus('Test Debug NETOPIA', 'error');
+            }
+            
+            button.disabled = false;
+        }
+
+        async function testNetopiaAPI() {
+            const button = event.target;
+            button.disabled = true;
+            button.innerHTML = 'Se testează...';
+            
+            const testData = {
+                live: true,
+                order: {
+                    ntpID: 'TEST-' + Date.now(),
+                    amount: 100,
+                    currency: 'RON',
+                    description: 'Test payment'
+                },
+                billing: {
+                    email: 'test@example.com',
+                    phone: '0700000000'
+                }
+            };
+            
+            try {
+                const response = await fetch(`${baseUrl}/.netlify/functions/netopia-v2-api`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(testData)
+                });
+                
+                const text = await response.text();
+                let result;
+                
+                try {
+                    result = JSON.parse(text);
+                } catch (e) {
+                    result = { error: 'Response is not JSON', content: text, status: response.status };
+                }
+                
+                if (response.ok) {
+                    showResult('api-result', JSON.stringify(result, null, 2), 'success');
+                    button.innerHTML = addStatus('Test API NETOPIA', 'success');
+                } else {
+                    showResult('api-result', JSON.stringify(result, null, 2), 'warning');
+                    button.innerHTML = addStatus('Test API NETOPIA', 'warning');
+                }
+            } catch (error) {
+                showResult('api-result', `Error: ${error.message}`, 'error');
+                button.innerHTML = addStatus('Test API NETOPIA', 'error');
+            }
+            
+            button.disabled = false;
+        }
+
+        async function runAllTests() {
+            const reportDiv = document.getElementById('final-report');
+            reportDiv.style.display = 'block';
+            reportDiv.className = 'result info';
+            reportDiv.textContent = 'Se rulează toate testele...\n';
+            
+            const tests = [
+                { name: 'Funcție de Bază', fn: testBasicFunction },
+                { name: 'Debug NETOPIA', fn: testNetopiaDrebug },
+                { name: 'API NETOPIA', fn: testNetopiaAPI }
+            ];
+            
+            const results = [];
+            
+            for (const test of tests) {
+                try {
+                    reportDiv.textContent += `\n🔄 Rulând ${test.name}...\n`;
+                    await test.fn();
+                    results.push(`✅ ${test.name}: SUCCESS`);
+                } catch (error) {
+                    results.push(`❌ ${test.name}: ERROR - ${error.message}`);
+                }
+            }
+            
+            const finalReport = `
+🎯 RAPORT FINAL TESTE NETOPIA
+====================================
+
+${results.join('\n')}
+
+📋 SUMÁR:
+- Total teste: ${tests.length}
+- Teste reușite: ${results.filter(r => r.includes('SUCCESS')).length}
+- Teste eșuate: ${results.filter(r => r.includes('ERROR')).length}
+
+⏰ Finalizat la: ${new Date().toLocaleString('ro-RO')}
+            `;
+            
+            reportDiv.textContent = finalReport;
+            
+            if (results.every(r => r.includes('SUCCESS'))) {
+                reportDiv.className = 'result success';
+            } else {
+                reportDiv.className = 'result warning';
+            }
+        }
+    </script>
+</body>
+</html>

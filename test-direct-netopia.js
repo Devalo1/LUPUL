@@ -2,10 +2,10 @@
  * Test LOCAL pentru a verifica dacă sandbox-ul NETOPIA funcționează direct
  */
 
-import fetch from 'node-fetch';
+import fetch from "node-fetch";
 
 console.log("🧪 Test LOCAL SANDBOX NETOPIA");
-console.log("=" .repeat(50));
+console.log("=".repeat(50));
 
 // Exact aceleași configurări ca în funcțiile care funcționează local
 const SANDBOX_CONFIG = {
@@ -92,7 +92,7 @@ async function testDirectNetopia() {
     console.log("📤 Trimit request DIRECT către NETOPIA sandbox...");
     console.log("🔗 Endpoint:", SANDBOX_CONFIG.endpoint);
     console.log("🔑 API Key:", SANDBOX_CONFIG.apiKey.substring(0, 10) + "...");
-    
+
     const response = await fetch(SANDBOX_CONFIG.endpoint, {
       method: "POST",
       headers: {
@@ -132,7 +132,6 @@ async function testDirectNetopia() {
     } else {
       console.log("❌ Nu s-a generat URL de plată");
     }
-
   } catch (error) {
     console.error("🚨 Eroare în test:", error.message);
   }

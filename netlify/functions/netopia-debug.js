@@ -1,13 +1,58 @@
 /**
- * Funcție Netlify pentru debugging configurației NETOPIA în producție
+ * 🔧 NETOPIA DEBUG FUNCTION
+ * 
+ * Versiune simplificată pentru debugging care nu face request real către NETOPIA
  */
 
-import {
-  NETOPIA_LIVE_PRIVATE_KEY,
-  NETOPIA_LIVE_CERTIFICATE,
-} from "./netopia-credentials.js";
-
 export const handler = async (event, context) => {
+  const headers = {
+    'Access-Control-Allow-Origin': '*',
+    'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+    'Access-Control-Allow-Methods': 'POST, OPTIONS',
+    'Content-Type': 'application/json'
+  };
+
+  if (event.httpMethod === 'OPTIONS') {
+    return { statusCode: 200, headers, body: '' };
+  }
+
+  let paymentData;
+  try {
+    let rawBody = event.body || '';
+    if (event.isBase64Encoded) {
+      rawBody = Buffer.from(rawBody, 'base64').toString('utf-8');
+    }
+    paymentData = JSON.parse(rawBody || '{}');
+  } catch (e) {
+    paymentData = {};
+  }
+
+  const baseUrl = process.env.URL || 'https://lupulsicorbul.com';
+  const isProduction = baseUrl.includes('lupulsicorbul.com');
+  const hasLiveSignature = Boolean(process.env.NETOPIA_LIVE_SIGNATURE);
+  const hasLiveApiKey = Boolean(process.env.NETOPIA_LIVE_API_KEY);
+  const useLive = paymentData.live === true || (isProduction && hasLiveSignature);
+
+  const debugInfo = {
+    success: true,
+    message: 'NETOPIA Debug Function Working',
+    timestamp: new Date().toISOString(),
+    environment: { baseUrl, isProduction, useLive },
+    configuration: {
+      hasLiveSignature,
+      hasLiveApiKey,
+      configuredForProduction: hasLiveSignature && hasLiveApiKey
+    },
+    validation: {
+      canProceed: hasLiveSignature && hasLiveApiKey
+    }
+  };
+
+  return {
+    statusCode: 200,
+    headers,
+    body: JSON.stringify(debugInfo, null, 2)
+  };
   try {
     const headers = {
       "Access-Control-Allow-Origin": "*",

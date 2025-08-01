@@ -2,28 +2,31 @@
  * Test pentru diferite endpoint-uri LIVE NETOPIA
  */
 
-const liveApiKey = "VfjsAdVjct7hQkMXRHKlimzmGGUHztw1e-C1PmvUoBlxkHs05BeWPpx0SXgV";
+const liveApiKey =
+  "VfjsAdVjct7hQkMXRHKlimzmGGUHztw1e-C1PmvUoBlxkHs05BeWPpx0SXgV";
 
 const ENDPOINTS_TO_TEST = [
   "https://secure.netopia-payments.com/payment/card/start",
-  "https://live.netopia-payments.com/payment/card/start", 
+  "https://live.netopia-payments.com/payment/card/start",
   "https://secure.netopia-payments.com/payment/start",
   "https://live.netopia-payments.com/payment/start",
   "https://api.netopia-payments.com/payment/card/start",
   "https://payments.netopia.ro/payment/card/start",
-  "https://secure.netopia-payments.com/api/payment/card/start"
+  "https://secure.netopia-payments.com/api/payment/card/start",
 ];
 
 async function testLiveEndpoints() {
   console.log("🔍 Testing different LIVE endpoints...\n");
-  
+
   // Payload minimal pentru test
   const testPayload = {
     config: {
       emailTemplate: "",
       emailSubject: "",
-      notifyUrl: "https://lupulsicorbul.com/.netlify/functions/netopia-notify-emblem",
-      redirectUrl: "https://lupulsicorbul.com/.netlify/functions/netopia-return-emblem",
+      notifyUrl:
+        "https://lupulsicorbul.com/.netlify/functions/netopia-notify-emblem",
+      redirectUrl:
+        "https://lupulsicorbul.com/.netlify/functions/netopia-return-emblem",
       language: "ro",
     },
     payment: {
@@ -81,7 +84,7 @@ async function testLiveEndpoints() {
 
   for (const endpoint of ENDPOINTS_TO_TEST) {
     console.log(`\n🧪 Testing: ${endpoint}`);
-    
+
     try {
       const response = await fetch(endpoint, {
         method: "POST",
@@ -95,7 +98,7 @@ async function testLiveEndpoints() {
       });
 
       console.log(`Status: ${response.status} ${response.statusText}`);
-      
+
       if (response.status === 404) {
         console.log("❌ 404 - Endpoint doesn't exist");
       } else if (response.status === 400) {
@@ -104,19 +107,21 @@ async function testLiveEndpoints() {
         console.log("🔑 401 - Endpoint exists but auth error");
       } else {
         const responseText = await response.text();
-        if (responseText.includes('<html')) {
+        if (responseText.includes("<html")) {
           console.log("❌ HTML response - wrong endpoint");
         } else {
-          console.log("✅ Valid endpoint response:", responseText.substring(0, 100));
+          console.log(
+            "✅ Valid endpoint response:",
+            responseText.substring(0, 100)
+          );
         }
       }
-
     } catch (error) {
       console.log(`❌ Error: ${error.message}`);
     }
-    
+
     // Small delay to avoid rate limiting
-    await new Promise(resolve => setTimeout(resolve, 500));
+    await new Promise((resolve) => setTimeout(resolve, 500));
   }
 }
 

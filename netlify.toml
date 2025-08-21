@@ -58,19 +58,11 @@
   to = "/.netlify/functions/:splat"
   status = 200
 
-# Protecție specifică pentru funcția NETOPIA - PRIORITATE MARE
-[[redirects]]
-  from = "/.netlify/functions/netopia-v2-api"
-  to = "/.netlify/functions/netopia-v2-api"
-  status = 200
-  force = true
-
 # Protecție pentru funcțiile Netlify - nu intercepta cu SPA  
 [[redirects]]
-  from = "/.netlify/functions/*"
+  from = "/functions/*"
   to = "/.netlify/functions/:splat"
   status = 200
-  force = true
 
 # CRITICAL: Protejăm rutele specifice de aplicație înainte de fișierele statice
 [[redirects]]

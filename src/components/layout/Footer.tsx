@@ -12,8 +12,16 @@ const Footer: React.FC = () => {
       return;
     }
 
+    // Validare email mai riguroasă
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      setMessage("Te rugăm să introduci o adresă de email validă.");
+      return;
+    }
+
     try {
-      await fetch("https://formsubmit.co/ajax/lupulsicorbul@gmail.com", {
+      // Trimite către noua funcție Netlify pentru newsletter
+      const response = await fetch("/.netlify/functions/newsletter-subscribe", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -21,9 +29,20 @@ const Footer: React.FC = () => {
         body: JSON.stringify({ email }),
       });
 
-      setMessage("Te-ai abonat cu succes la newsletter!");
-      setEmail("");
+      const result = await response.json();
+
+      if (response.ok && result.success) {
+        setMessage("Te-ai abonat cu succes la newsletter!");
+        setEmail("");
+        
+        // Log pentru debugging
+        console.log("✅ Newsletter subscription successful:", result);
+      } else {
+        console.error("Newsletter subscription failed:", result);
+        setMessage(result.error || "A apărut o eroare. Te rugăm să încerci din nou.");
+      }
     } catch (error) {
+      console.error("Newsletter subscription error:", error);
       setMessage("A apărut o eroare. Te rugăm să încerci din nou.");
     }
   };
@@ -277,7 +296,7 @@ const Footer: React.FC = () => {
                   >
                     <path d="M12 2L2 7v10c0 5.55 3.84 9.74 9 11 5.16-1.26 9-5.45 9-11V7l-10-5z" />
                     <path
-                      d="M10 15l-3-3 1.41-1.41L10 12.17l5.59-5.59L17 8l-7 7z"
+                      d="M10 15l-3-3 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"
                       fill="white"
                     />
                   </svg>

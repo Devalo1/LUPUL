@@ -13,9 +13,16 @@ const Footer: React.FC = () => {
       return;
     }
 
+    // Validare email mai riguroasă
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      setMessage("Te rugăm să introduci o adresă de email validă.");
+      return;
+    }
+
     try {
-      // Simulare trimitere email către lupulsicorbul@gmail.com
-      await fetch("https://formsubmit.co/ajax/lupulsicorbul@gmail.com", {
+      // Trimite către noua funcție Netlify pentru newsletter
+      const response = await fetch("/.netlify/functions/newsletter-subscribe", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -23,9 +30,20 @@ const Footer: React.FC = () => {
         body: JSON.stringify({ email }),
       });
 
-      setMessage("Te-ai abonat cu succes la newsletter!");
-      setEmail("");
+      const result = await response.json();
+
+      if (response.ok && result.success) {
+        setMessage("Te-ai abonat cu succes la newsletter!");
+        setEmail("");
+        
+        // Log pentru debugging
+        console.log("✅ Newsletter subscription successful:", result);
+      } else {
+        console.error("Newsletter subscription failed:", result);
+        setMessage(result.error || "A apărut o eroare. Te rugăm să încerci din nou.");
+      }
     } catch (error) {
+      console.error("Newsletter subscription error:", error);
       setMessage("A apărut o eroare. Te rugăm să încerci din nou.");
     }
   };

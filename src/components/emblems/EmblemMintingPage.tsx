@@ -29,11 +29,11 @@ const EmblemMintingPage: React.FC = () => {
   >({});
 
   const emblemIcons = {
-    lupul_intelepta: (
+    lupul_intelept: (
       <div className="emblem-image-container">
         <img
-          src="/images/emblems/lupul_intelepta.svg"
-          alt="Lupul Înțeleapta"
+          src="/images/emblems/lupul_intelept.svg"
+          alt="Lupul Înțelept"
           className="emblem-image"
         />
       </div>
@@ -60,7 +60,7 @@ const EmblemMintingPage: React.FC = () => {
       <div className="emblem-image-container">
         <img
           src="/images/emblems/cautatorul_lumina.svg"
-          alt="Căutătorul Lumină"
+          alt="Căutătorul de Lumină"
           className="emblem-image"
         />
       </div>

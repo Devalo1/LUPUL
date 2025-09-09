@@ -18,7 +18,7 @@ export interface Emblem {
   id: string;
   userId: string;
   type:
-    | "lupul_intelepta"
+    | "lupul_intelept"
     | "corbul_mistic"
     | "gardianul_wellness"
     | "cautatorul_lumina";
@@ -61,7 +61,7 @@ export interface UserEmblemStatus {
 }
 
 export const EMBLEM_COLLECTIONS: Record<string, EmblemCollection> = {
-  lupul_intelepta: {
+  lupul_intelept: {
     name: "Lupul Înțelept",
     description: "Simbolul înțelepciunii și ghidării spirituale",
     totalSupply: 10,
@@ -72,7 +72,7 @@ export const EMBLEM_COLLECTIONS: Record<string, EmblemCollection> = {
       "Badge special în comunitate",
       "Acces la meetup-uri fizice exclusive",
     ],
-    image: "/emblems/lupul-intelepta.svg",
+    image: "/emblems/lupul-intelept.svg",
     available: 10,
     tier: 4,
   },

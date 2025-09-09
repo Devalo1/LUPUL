@@ -146,10 +146,10 @@ async function processEmblemItems(orderData, orderId) {
  */
 function getEmblemRarity(emblemType) {
   const rarities = {
-    protection: "rare",
-    wisdom: "legendary",
-    courage: "epic",
-    prosperity: "rare",
+    lupul_intelept: "legendary",
+    corbul_mistic: "epic",
+    gardianul_wellness: "rare",
+    cautatorul_lumina: "common"
   };
   return rarities[emblemType] || "common";
 }
@@ -159,10 +159,10 @@ function getEmblemRarity(emblemType) {
  */
 function getEmblemAttributes(emblemType) {
   const attributes = {
-    protection: { defense: 85, luck: 70 },
-    wisdom: { intelligence: 95, insight: 88 },
-    courage: { strength: 90, bravery: 85 },
-    prosperity: { wealth: 80, fortune: 75 },
+    lupul_intelept: { wisdom: 95, leadership: 90 },
+    corbul_mistic: { mysticism: 90, knowledge: 85 },
+    gardianul_wellness: { healing: 85, balance: 80 },
+    cautatorul_lumina: { discovery: 75, potential: 70 }
   };
   return attributes[emblemType] || { power: 50 };
 }

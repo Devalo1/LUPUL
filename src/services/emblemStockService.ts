@@ -2,13 +2,13 @@ import { db } from "../firebase";
 import { doc, setDoc, getDoc, updateDoc } from "firebase/firestore";
 
 export type EmblemType =
-  | "lupul_intelepta"
+  | "lupul_intelept"
   | "corbul_mistic"
   | "gardianul_wellness"
   | "cautatorul_lumina";
 
 export interface EmblemStock {
-  lupul_intelepta: number;
+  lupul_intelept: number;
   corbul_mistic: number;
   gardianul_wellness: number;
   cautatorul_lumina: number;
@@ -28,7 +28,7 @@ export class EmblemStockService {
       if (docSnap.exists()) {
         const data = docSnap.data();
         return {
-          lupul_intelepta: data.lupul_intelepta || 0,
+          lupul_intelept: data.lupul_intelept || 0,
           corbul_mistic: data.corbul_mistic || 0,
           gardianul_wellness: data.gardianul_wellness || 0,
           cautatorul_lumina: data.cautatorul_lumina || 0,
@@ -38,7 +38,7 @@ export class EmblemStockService {
       } else {
         // Initialize with default stock
         const defaultStock: EmblemStock = {
-          lupul_intelepta: 100,
+          lupul_intelept: 100,
           corbul_mistic: 100,
           gardianul_wellness: 100,
           cautatorul_lumina: 100,
@@ -131,7 +131,7 @@ export class EmblemStockService {
   static async resetAllStock(adminId: string): Promise<void> {
     try {
       const resetStock: EmblemStock = {
-        lupul_intelepta: 100,
+        lupul_intelept: 100,
         corbul_mistic: 100,
         gardianul_wellness: 100,
         cautatorul_lumina: 100,

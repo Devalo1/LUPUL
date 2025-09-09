@@ -197,7 +197,7 @@ function generateEmblemMetadata(emblemType, userId) {
 
 function generateTraits(emblemType, rarity) {
   const baseTraits = {
-    lupul_intelepta: ["Wisdom", "Leadership", "Spiritual Guide"],
+    lupul_intelept: ["Wisdom", "Leadership", "Spiritual Guide"],
     corbul_mistic: ["Mystery", "Knowledge", "Mysticism"],
     gardianul_wellness: ["Healing", "Balance", "Protection"],
     cautatorul_lumina: ["Discovery", "Hope", "Beginning"],
@@ -205,8 +205,8 @@ function generateTraits(emblemType, rarity) {
 
   const rarityTraits = {
     common: ["Determined"],
-    rare: ["Determined", "Focused"],
-    epic: ["Determined", "Focused", "Powerful"],
+    rare: ["Determined"],
+    epic: ["Determined", "Focused"],
     legendary: ["Determined", "Focused", "Powerful", "Divine"],
   };
 
@@ -215,7 +215,7 @@ function generateTraits(emblemType, rarity) {
 
 function getEmblemDescription(emblemType) {
   const descriptions = {
-    lupul_intelepta:
+    lupul_intelept:
       "Simbolul înțelepciunii și ghidării spirituale în comunitatea Lupul și Corbul",
     corbul_mistic:
       "Păzitorul secretelor și al cunoașterii ascunse din lumea digitală",
@@ -233,7 +233,7 @@ function getEmblemDescription(emblemType) {
 
 function getEmblemBenefits(emblemType) {
   const benefits = {
-    lupul_intelepta: [
+    lupul_intelept: [
       "Acces VIP la toate evenimentele",
       "AI prioritar cu răspunsuri extinse",
       "Badge special în comunitate",

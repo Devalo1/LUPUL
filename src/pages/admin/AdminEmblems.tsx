@@ -21,7 +21,7 @@ const AdminEmblems: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [stockLoading, setStockLoading] = useState(false);
   const [emblemStocks, setEmblemStocks] = useState<EmblemStock>({
-    lupul_intelepta: 0,
+    lupul_intelept: 0,
     corbul_mistic: 0,
     gardianul_wellness: 0,
     cautatorul_lumina: 0,
@@ -82,10 +82,10 @@ const AdminEmblems: React.FC = () => {
 
   const getEmblemTypeDisplay = (type: string) => {
     const types: { [key: string]: string } = {
-      lupul_intelepta: "🐺 Lupul Înțeleapta",
+      lupul_intelept: "🐺 Lupul Înțelept",
       corbul_mistic: "🐦 Corbul Mistic",
       gardianul_wellness: "💚 Gardianul Wellness",
-      cautatorul_lumina: "✨ Căutătorul Lumina",
+      cautatorul_lumina: "✨ Căutătorul de Lumină"
     };
     return types[type] || type;
   };

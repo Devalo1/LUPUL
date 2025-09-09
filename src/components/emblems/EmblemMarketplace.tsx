@@ -2,7 +2,19 @@ import React, { useState, useEffect } from "react";
 import { useAuth } from "../../contexts/AuthContext";
 import { emblemMarketplaceService } from "../../services/emblemMarketplaceService";
 import { emblemService } from "../../services/emblemService";
+import { testDataService } from "../../services/testDataService";
 import { Emblem } from "../../types/emblem";
+import { isDev } from "../../utils/env";
+import {
+  collection,
+  query,
+  where,
+  getDocs,
+  doc,
+  setDoc,
+  Timestamp,
+} from "firebase/firestore";
+import { firestore } from "../../firebase";
 import {
   FaShoppingCart,
   FaCrown,
@@ -12,6 +24,9 @@ import {
   FaFire,
   FaTag,
   FaUser,
+  FaTimes,
+  FaLock,
+  FaSpinner,
 } from "react-icons/fa";
 import "./EmblemMarketplace.css";
 
@@ -22,7 +37,7 @@ interface MarketplaceListing {
   price: number;
   listedDate: Date | { toDate: () => Date };
   isActive: boolean;
-  emblem: Emblem;
+  emblem?: Emblem | null; // made optional to handle malformed/partial listings
 }
 
 const EmblemMarketplace: React.FC = () => {
@@ -33,9 +48,12 @@ const EmblemMarketplace: React.FC = () => {
   const [showMyEmblem, setShowMyEmblem] = useState(false);
   const [listingPrice, setListingPrice] = useState<string>("");
   const [isListing, setIsListing] = useState(false);
+  const [seedingTestData, setSeedingTestData] = useState(false);
+  const [selectedListing, setSelectedListing] = useState<MarketplaceListing | null>(null);
+  const [purchaseLoading, setPurchaseLoading] = useState(false);
 
   const emblemIcons = {
-    lupul_intelepta: <FaCrown className="emblem-icon crown" />,
+    lupul_intelept: <FaCrown className="emblem-icon crown" />,
     corbul_mistic: <FaMagic className="emblem-icon magic" />,
     gardianul_wellness: <FaHeart className="emblem-icon heart" />,
     cautatorul_lumina: <FaGem className="emblem-icon gem" />,
@@ -113,15 +131,21 @@ const EmblemMarketplace: React.FC = () => {
       return;
     }
 
+    setSelectedListing(listing);
+  };
+
+  const handleConfirmPurchase = async () => {
+    if (!selectedListing || !user) return;
+
+    setPurchaseLoading(true);
     try {
-      // Inițiază plată prin Netopia pentru marketplace
-      const orderId = `marketplace_${listing.id}_${user.uid}_${Date.now()}`;
+      const orderId = `marketplace_${selectedListing.id}_${user.uid}_${Date.now()}`;
 
       const paymentData = {
         orderId: orderId,
-        amount: listing.price * 100, // RON -> bani
+        amount: selectedListing.price * 100,
         currency: "RON",
-        description: `Cumpărare emblemă marketplace: ${listing.emblem.metadata?.description || listing.emblem.type}`,
+        description: `Cumpărare emblemă marketplace: ${selectedListing.emblem?.metadata?.description || selectedListing.emblem?.type}`,
         customerInfo: {
           firstName: user.displayName?.split(" ")[0] || "Client",
           lastName: user.displayName?.split(" ")[1] || "Marketplace",
@@ -132,9 +156,9 @@ const EmblemMarketplace: React.FC = () => {
           county: "Bucuresti",
           postalCode: "010000",
         },
-        listingId: listing.id,
-        emblemId: listing.emblemId,
-        sellerId: listing.sellerId,
+        listingId: selectedListing.id,
+        emblemId: selectedListing.emblemId,
+        sellerId: selectedListing.sellerId,
         buyerId: user.uid,
         isMarketplacePurchase: true,
       };
@@ -155,33 +179,54 @@ const EmblemMarketplace: React.FC = () => {
       const result = await response.json();
 
       if (result.paymentUrl) {
-        // Salvează detalii pentru confirmare
         localStorage.setItem(
           "pendingMarketplacePurchase",
           JSON.stringify({
             orderId,
-            listingId: listing.id,
-            emblemId: listing.emblemId,
+            listingId: selectedListing.id,
+            emblemId: selectedListing.emblemId,
             buyerId: user.uid,
             timestamp: Date.now(),
           })
         );
 
-        // Deschide pop-up pentru plata Netopia
-        const paymentWindow = window.open(
-          "",
-          "netopia-payment",
-          "width=800,height=600,scrollbars=yes"
-        );
-        if (paymentWindow) {
-          paymentWindow.document.write(result.paymentUrl);
-          paymentWindow.document.close();
-        } else {
-          // Fallback - redirect în aceeași fereastră
-          const tempDiv = document.createElement("div");
-          tempDiv.innerHTML = result.paymentUrl;
-          document.body.appendChild(tempDiv);
-        }
+        // Open payment in the same window with a more elegant transition
+        const container = document.createElement("div");
+        container.style.position = "fixed";
+        container.style.top = "0";
+        container.style.left = "0";
+        container.style.width = "100%";
+        container.style.height = "100%";
+        container.style.background = "rgba(0,0,0,0.75)";
+        container.style.zIndex = "9999";
+        container.style.display = "flex";
+        container.style.alignItems = "center";
+        container.style.justifyContent = "center";
+
+        const frame = document.createElement("iframe");
+        frame.style.width = "90%";
+        frame.style.maxWidth = "600px";
+        frame.style.height = "80vh";
+        frame.style.border = "none";
+        frame.style.borderRadius = "12px";
+        frame.style.boxShadow = "0 4px 32px rgba(0,0,0,0.2)";
+        frame.srcdoc = result.paymentUrl;
+
+        container.appendChild(frame);
+        document.body.appendChild(container);
+
+        // Clean up the container when payment is complete/cancelled
+        const cleanup = (e: MessageEvent) => {
+          if (e.data === "payment_complete" || e.data === "payment_cancelled") {
+            document.body.removeChild(container);
+            window.removeEventListener("message", cleanup);
+            setSelectedListing(null);
+            setPurchaseLoading(false);
+            loadMarketplaceData();
+          }
+        };
+
+        window.addEventListener("message", cleanup);
       } else {
         throw new Error("Nu s-a putut obține formularul de plată");
       }
@@ -189,6 +234,24 @@ const EmblemMarketplace: React.FC = () => {
       const errorMessage =
         error instanceof Error ? error.message : "Eroare necunoscută";
       alert(`Eroare la cumpărare: ${errorMessage}`);
+      setPurchaseLoading(false);
+      setSelectedListing(null);
+    }
+  };
+
+  const seedTestListings = async () => {
+    if (!isDev || !user || seedingTestData) return;
+
+    try {
+      setSeedingTestData(true);
+      await testDataService.createMultipleTestEmblems(user.uid, 4);
+      await loadMarketplaceData();
+      alert("Am creat 4 embleme de test pentru development!");
+    } catch (e) {
+      console.error("Eroare la crearea datelor de test:", e);
+      alert("Nu am putut crea listing-uri de test: " + (e as Error).message);
+    } finally {
+      setSeedingTestData(false);
     }
   };
 
@@ -228,6 +291,15 @@ const EmblemMarketplace: React.FC = () => {
         <p className="marketplace-subtitle">
           Cumpără și vinde embleme rare cu membri ai comunității Lupul și Corbul
         </p>
+        {isDev && (
+          <button
+            onClick={seedTestListings}
+            disabled={seedingTestData}
+            className="px-3 py-2 bg-yellow-500 text-white rounded mt-4"
+          >
+            {seedingTestData ? "Se creează..." : "Creează listing-uri de test (dev)"}
+          </button>
+        )}
       </div>
 
       {/* My Emblem Section */}
@@ -301,125 +373,216 @@ const EmblemMarketplace: React.FC = () => {
       <div className="marketplace-listings">
         <div className="section-header">
           <h2>🔥 Embleme Disponibile</h2>
-          <span className="listings-count">{listings.length} embleme</span>
+          <span className="listings-count">{listings.filter(l => l.emblem).length} embleme</span>
         </div>
 
-        {listings.length === 0 ? (
+        {listings.filter(l => l.emblem).length === 0 ? (
           <div className="no-listings">
             <h3>📭 Nicio emblemă disponibilă momentan</h3>
             <p>Fii primul care listează o emblemă pe marketplace!</p>
           </div>
         ) : (
           <div className="listings-grid">
-            {listings.map((listing) => (
-              <div key={listing.id} className="marketplace-card">
-                <div className="card-header">
-                  <div className="emblem-icon-container">
-                    {
-                      emblemIcons[
-                        listing.emblem.type as keyof typeof emblemIcons
-                      ]
-                    }
-                  </div>
-                  <div className="listing-time">
-                    <FaTag /> {getTimeSinceList(listing.listedDate)}
-                  </div>
-                </div>
+            {listings.filter(l => l.emblem).map((listing) => {
+              const emblem = listing.emblem as Emblem; // safe cast: we've filtered undefined
+              const emblemType = emblem?.type || "lupul_intelept";
+              const icon = emblemIcons[emblemType as keyof typeof emblemIcons] || (
+                <FaTag className="emblem-icon default" />
+              );
 
-                <div className="emblem-info">
-                  <h3>
-                    {listing.emblem.type
-                      .replace("_", " ")
-                      .replace(/\b\w/g, (l) => l.toUpperCase())}
-                  </h3>
-
-                  <div className="emblem-stats">
-                    <div className="stat">
-                      <span className="stat-label">Raritate:</span>
-                      <span
-                        className={`stat-value rarity ${listing.emblem.metadata?.rarity || "common"}`}
-                      >
-                        <FaGem /> {listing.emblem.metadata?.rarity || "common"}
-                      </span>
+              return (
+                <div key={listing.id} className="marketplace-card">
+                  <div className="card-header">
+                    <div className="emblem-icon-container">
+                      {icon}
                     </div>
-
-                    <div className="stat">
-                      <span className="stat-label">Level:</span>
-                      <span className="stat-value">{listing.emblem.level}</span>
-                    </div>
-
-                    <div className="stat">
-                      <span className="stat-label">Engagement:</span>
-                      <span className="stat-value">
-                        {listing.emblem.engagement} pts
-                      </span>
+                    <div className="listing-time">
+                      <FaTag /> {getTimeSinceList(listing.listedDate)}
                     </div>
                   </div>
 
-                  {listing.emblem.metadata?.uniqueTraits && (
-                    <div className="unique-traits">
-                      <span className="traits-label">Trăsături unice:</span>
-                      <div className="traits-list">
-                        {listing.emblem.metadata.uniqueTraits
-                          .slice(0, 2)
-                          .map((trait, idx) => (
-                            <span key={idx} className="trait-tag">
-                              {trait}
-                            </span>
-                          ))}
+                  <div className="emblem-info">
+                    <h3>
+                      {(emblem?.type || "unknown")
+                        .replace("_", " ")
+                        .replace(/\b\w/g, (l) => l.toUpperCase())}
+                    </h3>
+
+                    <div className="emblem-stats">
+                      <div className="stat">
+                        <span className="stat-label">Raritate:</span>
+                        <span
+                          className={`stat-value rarity ${emblem?.metadata?.rarity || "common"}`}>
+                          <FaGem /> {emblem?.metadata?.rarity || "common"}
+                        </span>
+                      </div>
+
+                      <div className="stat">
+                        <span className="stat-label">Level:</span>
+                        <span className="stat-value">{emblem?.level ?? "-"}</span>
+                      </div>
+
+                      <div className="stat">
+                        <span className="stat-label">Engagement:</span>
+                        <span className="stat-value">{emblem?.engagement ?? 0} pts</span>
                       </div>
                     </div>
-                  )}
-                </div>
 
-                <div className="price-section">
-                  <div className="original-price">
-                    Original: {formatPrice(listing.emblem.purchasePrice)}
+                    {emblem?.metadata?.uniqueTraits && (
+                      <div className="unique-traits">
+                        <span className="traits-label">Trăsături unice:</span>
+                        <div className="traits-list">
+                          {emblem.metadata.uniqueTraits
+                            .slice(0, 2)
+                            .map((trait, idx) => (
+                              <span key={idx} className="trait-tag">
+                                {trait}
+                              </span>
+                            ))}
+                        </div>
+                      </div>
+                    )}
                   </div>
-                  <div className="current-price">
-                    {formatPrice(listing.price)}
-                  </div>
-                  {listing.price > listing.emblem.purchasePrice && (
-                    <div className="price-increase">
-                      <FaFire /> +
-                      {Math.round(
-                        ((listing.price - listing.emblem.purchasePrice) /
-                          listing.emblem.purchasePrice) *
-                          100
-                      )}
-                      %
+
+                  <div className="price-section">
+                    <div className="original-price">
+                      Original: {formatPrice(emblem?.purchasePrice ?? 0)}
                     </div>
-                  )}
-                </div>
+                    <div className="current-price">
+                      {formatPrice(listing.price)}
+                    </div>
+                    {listing.price > (emblem?.purchasePrice ?? 0) && (
+                      <div className="price-increase">
+                        <FaFire /> +
+                        {Math.round(
+                          ((listing.price - (emblem?.purchasePrice ?? 0)) /
+                            (emblem?.purchasePrice ?? 1)) *
+                            100
+                        )}
+                        %
+                      </div>
+                    )}
+                  </div>
 
-                <div className="seller-info">
-                  <FaUser /> Vândător: {listing.sellerId.substring(0, 8)}...
-                </div>
+                  <div className="seller-info">
+                    <FaUser /> Vândător: {listing.sellerId.substring(0, 8)}...
+                  </div>
 
-                <button
-                  className="buy-button"
-                  onClick={() => handlePurchaseFromMarketplace(listing)}
-                  disabled={
-                    !user || myEmblem !== null || listing.sellerId === user?.uid
-                  }
-                >
-                  {!user ? (
-                    "🔐 Autentifică-te"
-                  ) : myEmblem ? (
-                    "❌ Ai deja o emblemă"
-                  ) : listing.sellerId === user?.uid ? (
-                    "🚫 Emblema ta"
-                  ) : (
-                    <>
-                      <FaShoppingCart /> 💳 Cumpără acum
-                    </>
-                  )}
-                </button>
-              </div>
-            ))}
+                  <button
+                    className="buy-button"
+                    onClick={() => handlePurchaseFromMarketplace(listing)}
+                    disabled={
+                      !user || myEmblem !== null || listing.sellerId === user?.uid
+                    }
+                  >
+                    {!user ? (
+                      "🔐 Autentifică-te"
+                    ) : myEmblem ? (
+                      "❌ Ai deja o emblemă"
+                    ) : listing.sellerId === user?.uid ? (
+                      "🚫 Emblema ta"
+                    ) : (
+                      <>
+                        <FaShoppingCart /> 💳 Cumpără acum
+                      </>
+                    )}
+                  </button>
+                </div>
+              );
+            })}
           </div>
         )}
       </div>
+
+      {/* Purchase Modal */}
+      {selectedListing && (
+        <div className="fixed inset-0 z-50 overflow-y-auto">
+          <div className="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+            <div
+              className="fixed inset-0 transition-opacity"
+              aria-hidden="true"
+              onClick={() => !purchaseLoading && setSelectedListing(null)}
+            >
+              <div className="absolute inset-0 bg-gray-500 opacity-75"></div>
+            </div>
+
+            <span
+              className="hidden sm:inline-block sm:align-middle sm:h-screen"
+              aria-hidden="true"
+            >
+              &#8203;
+            </span>
+
+            <div className="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
+              <div className="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+                <div className="sm:flex sm:items-start">
+                  <div className="mx-auto flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-full bg-blue-100 sm:mx-0 sm:h-10 sm:w-10">
+                    <FaShoppingCart className="h-6 w-6 text-blue-600" />
+                  </div>
+                  <div className="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left w-full">
+                    <h3 className="text-lg leading-6 font-medium text-gray-900">
+                      Confirmă achiziția emblemei
+                    </h3>
+                    <div className="mt-4">
+                      <div className="bg-gray-50 rounded-lg p-4 mb-4">
+                        <div className="flex items-center gap-3 mb-3">
+                          {emblemIcons[selectedListing.emblem?.type as keyof typeof emblemIcons]}
+                          <div>
+                            <div className="font-semibold">
+                              {(selectedListing.emblem?.type || "unknown")
+                                .replace("_", " ")
+                                .replace(/\b\w/g, (l) => l.toUpperCase())}
+                            </div>
+                            <div className="text-sm text-gray-500">
+                              {selectedListing.emblem?.metadata?.rarity || "common"}
+                            </div>
+                          </div>
+                        </div>
+                        <div className="text-2xl font-bold text-blue-600 mb-2">
+                          {formatPrice(selectedListing.price)}
+                        </div>
+                        <p className="text-sm text-gray-600">
+                          Vei fi redirecționat către pagina securizată de plată Netopia
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div className="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
+                <button
+                  type="button"
+                  onClick={handleConfirmPurchase}
+                  disabled={purchaseLoading}
+                  className={`w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-blue-600 text-base font-medium text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 sm:ml-3 sm:w-auto sm:text-sm ${
+                    purchaseLoading ? "opacity-75 cursor-not-allowed" : ""
+                  }`}
+                >
+                  {purchaseLoading ? (
+                    <>
+                      <FaSpinner className="animate-spin mr-2" />
+                      Se procesează...
+                    </>
+                  ) : (
+                    <>
+                      <FaLock className="mr-2" />
+                      Confirmă și plătește
+                    </>
+                  )}
+                </button>
+                <button
+                  type="button"
+                  className="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm"
+                  onClick={() => !purchaseLoading && setSelectedListing(null)}
+                  disabled={purchaseLoading}
+                >
+                  Anulează
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Info Section */}
       <div className="marketplace-info">

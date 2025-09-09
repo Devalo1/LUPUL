@@ -1,10 +1,10 @@
-import React, { useEffect, useState, useRef } from "react";
+import React, { useEffect, useState, useRef, useMemo } from "react";
 import { useAuth } from "../contexts";
 import { useNavigate, Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { collection, query, where, getDocs } from "firebase/firestore";
 import { db } from "../firebase";
-import { FaUserCog, FaUserMd, FaUser, FaCalculator } from "react-icons/fa";
+import { FaUserCog, FaUserMd, FaUser, FaCalculator, FaCrown, FaGem, FaMagic, FaHeart } from "react-icons/fa";
 import {
   isUserAdmin,
   isUserSpecialist,
@@ -13,6 +13,8 @@ import {
   requestRoleChange,
   checkPendingRoleRequests,
 } from "../utils/userRoles";
+import { emblemService } from "../services/emblemService";
+import { UserEmblemStatus } from "../types/emblem";
 import "../components/AssistantProfileDashboard.css";
 
 // Define custom user type extending Firebase User
@@ -39,11 +41,11 @@ interface EventItem {
 const Dashboard: React.FC = () => {
   const [userRole, setUserRole] = useState<UserRole | null>(null);
   const [checkingRole, setCheckingRole] = useState<boolean>(true);
+  const [emblemStatus, setEmblemStatus] = useState<UserEmblemStatus | null>(null);
   const { user, loading } = useAuth();
   const { isAdmin, isSpecialist, isAccountant } = useAuth(); // Extragerea separată pentru dependența useEffect
   const navigate = useNavigate();
   const hasRedirected = useRef(false);
-  const [greeting, setGreeting] = useState("");
   const [events, setEvents] = useState<EventItem[]>([]);
   const [eventsLoading, setEventsLoading] = useState(true);
   const [eventsError, setEventsError] = useState<string | null>(null);
@@ -57,6 +59,13 @@ const Dashboard: React.FC = () => {
     "none" | "success" | "error" | "existing"
   >("none");
   const [hasPendingRoleRequest, setHasPendingRoleRequest] = useState(false);
+
+  const emblemIcons = {
+    lupul_intelept: <FaCrown className="text-4xl text-yellow-500" />,
+    corbul_mistic: <FaMagic className="text-4xl text-purple-500" />,
+    gardianul_wellness: <FaHeart className="text-4xl text-red-500" />,
+    cautatorul_lumina: <FaGem className="text-4xl text-blue-500" />,
+  };
 
   // Redirect if not authenticated
   useEffect(() => {
@@ -181,11 +190,15 @@ const Dashboard: React.FC = () => {
     fetchUserEvents();
   }, [user]);
 
-  useEffect(() => {
+  // Extract username
+  const username = user?.displayName?.split(" ")[0] || user?.email?.split("@")[0] || "Utilizator";
+  
+  // Determine greeting based on time of day
+  const greeting = useMemo(() => {
     const hour = new Date().getHours();
-    if (hour < 12) setGreeting("Bună dimineața");
-    else if (hour < 18) setGreeting("Bună ziua");
-    else setGreeting("Bună seara");
+    if (hour < 12) return "Bună dimineața";
+    if (hour < 18) return "Bună ziua";
+    return "Bună seara";
   }, []);
 
   const handleRequestRoleChange = async () => {
@@ -247,6 +260,21 @@ const Dashboard: React.FC = () => {
     }
   };
 
+  // Add useEffect for loading emblem status
+  useEffect(() => {
+    const loadEmblemStatus = async () => {
+      if (!user) return;
+      try {
+        const status = await emblemService.getUserEmblemStatus(user.uid);
+        setEmblemStatus(status);
+      } catch (error) {
+        console.error("Eroare la încărcarea emblemei:", error);
+      }
+    };
+
+    loadEmblemStatus();
+  }, [user]);
+
   if (loading) {
     return (
       <div className="flex justify-center items-center min-h-screen">
@@ -264,13 +292,9 @@ const Dashboard: React.FC = () => {
     );
   }
 
-  const username =
-    (user as unknown as ExtendedUser)?.firstName ||
-    user?.displayName?.split(" ")[0] ||
-    "Utilizator";
-
   return (
     <div className="container mx-auto px-4 py-16">
+      {/* Welcome Card */}
       <div className="bg-white rounded-lg shadow-md p-6 text-center">
         <h1 className="text-2xl font-bold text-gray-800">
           {greeting}, <span className="text-blue-600">{username}</span>!
@@ -279,7 +303,10 @@ const Dashboard: React.FC = () => {
           Bun venit înapoi pe panoul tău de control personal.
         </p>
       </div>
+
+      {/* User Profile & Emblem Section */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-8">
+        {/* Profile Card */}
         <motion.div
           className="bg-white rounded-lg shadow-md p-6"
           initial={{ opacity: 0, x: -20 }}
@@ -369,6 +396,101 @@ const Dashboard: React.FC = () => {
           </button>
         </motion.div>
 
+        {/* Emblem Showcase Card */}
+        <motion.div
+          className="bg-white rounded-lg shadow-md p-6"
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, delay: 0.2 }}
+        >
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-xl font-semibold text-gray-800">Emblema Ta</h2>
+            {!checkingRole && userRole && (
+              <div className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold ${
+                userRole === UserRole.ADMIN
+                  ? "bg-red-100 text-red-800"
+                  : userRole === UserRole.SPECIALIST
+                    ? "bg-green-100 text-green-800"
+                    : userRole === UserRole.ACCOUNTANT
+                      ? "bg-yellow-100 text-yellow-800"
+                      : "bg-blue-100 text-blue-800"
+              }`}>
+                {userRole}
+              </div>
+            )}
+          </div>
+
+          {emblemStatus?.hasEmblem && emblemStatus.emblem ? (
+            <div className="space-y-4">
+              <div className="flex items-center gap-4 p-4 bg-gradient-to-r from-blue-500 via-blue-600 to-blue-700 rounded-lg text-white">
+                <div className="p-3 bg-white/10 rounded-lg backdrop-blur-sm">
+                  {emblemIcons[emblemStatus.emblem.type as keyof typeof emblemIcons] || 
+                   <FaGem className="text-4xl text-gray-300" />}
+                </div>
+                <div>
+                  <h3 className="font-bold text-lg">
+                    {emblemStatus.emblem.type.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase())}
+                  </h3>
+                  <div className="flex items-center gap-2 text-sm text-blue-100">
+                    <span className={`px-2 py-0.5 rounded text-xs font-bold
+                      ${emblemStatus.emblem.metadata?.rarity === 'legendary' ? 'bg-yellow-500/20 text-yellow-300' :
+                      emblemStatus.emblem.metadata?.rarity === 'epic' ? 'bg-purple-500/20 text-purple-300' :
+                      emblemStatus.emblem.metadata?.rarity === 'rare' ? 'bg-blue-500/20 text-blue-300' :
+                      'bg-gray-500/20 text-gray-300'}`}>
+                      {emblemStatus.emblem.metadata?.rarity?.toUpperCase() || 'COMMON'}
+                    </span>
+                    <span>•</span>
+                    <span>{emblemStatus.emblem.level.toUpperCase()}</span>
+                  </div>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div className="p-3 bg-blue-50 rounded-lg">
+                  <div className="text-sm text-blue-600 font-medium">Rang</div>
+                  <div className="text-2xl font-bold text-blue-700">#{emblemStatus.communityRank}</div>
+                </div>
+                <div className="p-3 bg-green-50 rounded-lg">
+                  <div className="text-sm text-green-600 font-medium">Engagement</div>
+                  <div className="text-2xl font-bold text-green-700">{emblemStatus.emblem.engagement}</div>
+                </div>
+              </div>
+
+              {emblemStatus.emblem.metadata?.uniqueTraits && (
+                <div className="border-t pt-4">
+                  <h4 className="text-sm font-medium text-gray-600 mb-2">Trăsături Unice</h4>
+                  <div className="flex flex-wrap gap-2">
+                    {emblemStatus.emblem.metadata.uniqueTraits.map((trait, idx) => (
+                      <span key={idx} className="px-2 py-1 bg-gray-100 text-gray-700 rounded-full text-xs">
+                        {trait}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              <Link
+                to="/emblems/marketplace"
+                className="mt-4 block w-full py-2 px-4 bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-md hover:from-blue-600 hover:to-blue-700 transition duration-200 text-center text-sm font-medium"
+              >
+                Explorează Marketplace
+              </Link>
+            </div>
+          ) : (
+            <div className="text-center py-8">
+              <FaGem className="mx-auto text-4xl text-gray-300 mb-3" />
+              <p className="text-gray-600 mb-4">Nu deții încă o emblemă</p>
+              <Link
+                to="/emblems/mint"
+                className="inline-block px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
+              >
+                Obține Prima Ta Emblemă
+              </Link>
+            </div>
+          )}
+        </motion.div>
+
+        {/* Quick Actions Card */}
         <motion.div
           className="bg-white rounded-lg shadow-md p-6"
           initial={{ opacity: 0, y: 20 }}
@@ -463,7 +585,7 @@ const Dashboard: React.FC = () => {
               className="p-3 bg-orange-600 text-white rounded-md hover:bg-orange-700 transition duration-200 text-sm font-medium flex flex-col items-center"
             >
               <svg
-                xmlns="http://www.w3.org/2000/svg"
+                xmlns="http://0 0 24 24"
                 className="h-6 w-6 mb-1"
                 fill="none"
                 viewBox="0 0 24 24"
@@ -517,14 +639,10 @@ const Dashboard: React.FC = () => {
             </button>
           </div>
         </motion.div>
-
-        <motion.div
-          className="bg-white rounded-lg shadow-md p-6"
-          initial={{ opacity: 0, x: 20 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ duration: 0.5, delay: 0.3 }}
-        >
-          <h2 className="text-lg font-semibold mb-4">Programări Viitoare</h2>
+      </div>
+      <section className="mt-8">
+        <h2 className="text-2xl font-bold mb-4">Programări Viitoare</h2>
+        <div className="bg-white rounded-lg shadow-md p-6">
           <div className="space-y-3">
             <div className="p-3 bg-blue-50 rounded-md border border-blue-100">
               <p className="text-sm font-medium text-blue-800">
@@ -567,8 +685,8 @@ const Dashboard: React.FC = () => {
               Vezi toate programările
             </button>
           </div>
-        </motion.div>
-      </div>
+        </div>
+      </section>
       <section className="mt-8">
         <h2 className="text-2xl font-bold mb-4">Activitate Recentă</h2>
         <div className="bg-white rounded-lg shadow-md p-6">
@@ -635,7 +753,7 @@ const Dashboard: React.FC = () => {
                     strokeLinecap="round"
                     strokeLinejoin="round"
                     strokeWidth={2}
-                    d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 00-2-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
+                    d="M11 5H6a2 2 0 00-2 2v11a2 2 0 0011a2 2 0 00-2-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
                   />
                 </svg>
               </div>

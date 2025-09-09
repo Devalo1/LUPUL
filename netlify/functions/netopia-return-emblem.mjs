@@ -411,7 +411,7 @@ export const handler = async (event, context) => {
 // Funcții helper pentru afișare
 function getEmblemDisplayName(emblemType) {
   const names = {
-    lupul_intelepta: "Lupul Înțelept",
+    lupul_înțelept: "Lupul Înțelept",
     corbul_mistic: "Corbul Mistic",
     gardianul_wellness: "Gardianul Wellness",
     cautatorul_lumina: "Căutătorul de Lumină",

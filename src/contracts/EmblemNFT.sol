@@ -13,7 +13,7 @@ contract LupulSiCorbulEmblems is ERC721Enumerable, Ownable, ReentrancyGuard, ERC
     Counters.Counter private _tokenIds;
     
     // Emblem Types
-    enum EmblemType { LupulIntelepta, CorbulMistic, GardianulWellness, Cautatorul }
+    enum EmblemType { LupulIntelept, CorbulMistic, GardianulWellness, CautatorulLumina }
     
     struct EmblemMetadata {
         EmblemType emblemType;
@@ -52,8 +52,8 @@ contract LupulSiCorbulEmblems is ERC721Enumerable, Ownable, ReentrancyGuard, ERC
     
     constructor() ERC721("Lupul si Corbul Emblems", "LSCEM") {
         // Initialize collections with Romanian pricing (in wei equivalent to RON)
-        collections[EmblemType.LupulIntelepta] = EmblemCollection({
-            name: "Lupul Intelepta",
+        collections[EmblemType.LupulIntelept] = EmblemCollection({
+            name: "Lupul Intelept",
             maxSupply: 10,
             currentSupply: 0,
             price: 0.03 ether, // ~150 RON equivalent
@@ -76,7 +76,7 @@ contract LupulSiCorbulEmblems is ERC721Enumerable, Ownable, ReentrancyGuard, ERC
             isActive: true
         });
         
-        collections[EmblemType.Cautatorul] = EmblemCollection({
+        collections[EmblemType.CautatorulLumina] = EmblemCollection({
             name: "Cautatorul de Lumina",
             maxSupply: 50,
             currentSupply: 0, 

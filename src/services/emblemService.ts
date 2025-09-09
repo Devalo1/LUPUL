@@ -80,7 +80,7 @@ class EmblemService {
     userHash: number
   ): string[] {
     const traitPools = {
-      lupul_intelepta: [
+      lupul_intelept: [
         "Ochii Înțelepți",
         "Blana Argintie",
         "Coama Majestică",
@@ -96,26 +96,26 @@ class EmblemService {
         "Zborul Silent",
         "Cunoașterea Ascunsă",
         "Înțelepciunea Străveche",
-        "Ghidarea Spirituală",
+        "Ghidarea Spirituală"
       ],
       gardianul_wellness: [
         "Aura Calmă",
-        "Energia Vindecătoare",
+        "Energia Vindecătoare", 
         "Echilibrul Perfect",
         "Seninătatea Interioară",
         "Forța Vitală",
         "Armonia Naturală",
-        "Protecția Emoțională",
+        "Protecția Emoțională"
       ],
       cautatorul_lumina: [
         "Speranța Vie",
         "Luminozitatea Interioară",
         "Călătoria Începe",
-        "Curiositatea Pură",
+        "Curiositatea Pură", 
         "Potențialul Ascuns",
         "Drumul Deschis",
-        "Prima Scânteie",
-      ],
+        "Prima Scânteie"
+      ]
     };
 
     const pool = traitPools[emblemType as keyof typeof traitPools] || [];

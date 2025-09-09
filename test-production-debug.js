@@ -76,7 +76,7 @@ async function testProductionEmblem() {
     const emblemPayload = {
       orderId: `EMBLEM-PROD-${Date.now()}`,
       amount: 50, // 50 RON
-      emblemType: "lupul_intelepta",
+      emblemType: "lupul_înțelept",
       userId: "test-user-prod",
       tier: 1,
       description: "Test emblemă producție",

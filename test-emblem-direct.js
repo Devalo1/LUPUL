@@ -5,7 +5,7 @@ const testEmblemFunction = async () => {
     const testData = {
       orderId: "TEST-" + Date.now(),
       amount: 50,
-      emblemType: "lupul_intelepta",
+      emblemType: "lupul_înțelept",
       userId: "test-user-123",
       description: "Test emblem purchase",
       customerInfo: {

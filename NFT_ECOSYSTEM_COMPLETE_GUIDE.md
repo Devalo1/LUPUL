@@ -58,12 +58,12 @@ DISTRIBUȚIA BANILOR:
   ├── emblem_user123_1640995200000
   │   ├── id: "emblem_user123_1640995200000"
   │   ├── userId: "user123"
-  │   ├── type: "lupul_intelepta"
+  │   ├── type: "lupul_înțelept"
   │   ├── metadata: {
   │   │   ├── rarity: "epic"
   │   │   ├── attributes: { strength: 85, wisdom: 92, ... }
   │   │   ├── uniqueTraits: ["Ochii Înțelepți", "Ghidarea Divină"]
-  │   │   └── image: "/emblems/lupul-intelepta.svg"
+  │   │   └── image: "/emblems/lupul-înțelept.svg"
   │   │   }
   │   ├── isTransferable: true
   │   ├── purchasePrice: 150
